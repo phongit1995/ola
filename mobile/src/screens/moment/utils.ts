@@ -7,9 +7,11 @@ import {
 import { readableTextColor, resolveMomentTextFace } from '@ola/shared/lib';
 import type { MomentOverlay } from '@ola/shared/types';
 import {
+  MOMENT_ASPECT_RATIO,
   MOMENT_FONT_FACE,
   MOMENT_OVERLAY_LINE_HEIGHT,
   MOMENT_PLAIN_SHADOW,
+  MOMENT_VIEWER_MAX_CROP,
 } from './constants';
 
 export interface GradientPoints {
@@ -25,6 +27,15 @@ export function gradientPoints(angleDeg: number): GradientPoints {
     start: { x: 0.5 - dx, y: 0.5 - dy },
     end: { x: 0.5 + dx, y: 0.5 + dy },
   };
+}
+
+export function momentViewerContent(width: number, height: number): { width: number; height: number } {
+  const fullHeight = width / MOMENT_ASPECT_RATIO;
+  if (fullHeight * (1 - MOMENT_VIEWER_MAX_CROP) <= height) {
+    return { width, height: Math.min(height, fullHeight) };
+  }
+  const fitWidth = Math.min(width, height * MOMENT_ASPECT_RATIO);
+  return { width: fitWidth, height: fitWidth / MOMENT_ASPECT_RATIO };
 }
 
 export function overlayFontSize(overlay: MomentOverlay, canvasWidth: number): number {

@@ -47,7 +47,8 @@ import { OlaModal } from '@components/ui/OlaModal';
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { ToastHost } from '@components/ui/ToastHost';
 import { releaseVoicePlayback } from '@lib/voicePlaybackSession';
-import { MOMENT_ASPECT_RATIO, MOMENT_TURN_FLING_VELOCITY } from '../constants';
+import { MOMENT_TURN_FLING_VELOCITY } from '../constants';
+import { momentViewerContent } from '../utils';
 import { MomentCommentSheet } from './MomentCommentSheet';
 import { MomentViewerFace, type MomentMediaStatus } from './MomentViewerFace';
 
@@ -133,9 +134,9 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
   const hasPrev = groupIndex > 0;
   const hasNext = groupIndex < groups.length - 1;
 
-  const availableHeight = window.height - insets.top - insets.bottom;
-  const canvasWidth = Math.min(window.width, availableHeight * MOMENT_ASPECT_RATIO);
-  const canvasHeight = canvasWidth / MOMENT_ASPECT_RATIO;
+  const frameWidth = window.width;
+  const frameHeight = window.height - insets.top - insets.bottom;
+  const content = useMemo(() => momentViewerContent(frameWidth, frameHeight), [frameWidth, frameHeight]);
 
   const goTo = useCallback(
     (nextGroup: number, nextItem: number) => {
@@ -256,8 +257,11 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
   }, [session.own, moment, paused, mediaStatus, markSeen]);
 
   const handleTap = useCallback(
-    (x: number) => advance(x < canvasWidth * MOMENT_PREV_TAP_ZONE ? -1 : 1),
-    [advance, canvasWidth]
+    (x: number) => {
+      const contentX = x - (frameWidth - content.width) / 2;
+      advance(contentX < content.width * MOMENT_PREV_TAP_ZONE ? -1 : 1);
+    },
+    [advance, frameWidth, content.width]
   );
 
   const handleClose = useCallback(
@@ -307,7 +311,7 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
           axis.value = dragAxis(event.translationX, event.translationY);
         }
         if (axis.value === AXIS_X) {
-          const raw = Math.max(-1, Math.min(1, -event.translationX / canvasWidth));
+          const raw = Math.max(-1, Math.min(1, -event.translationX / frameWidth));
           const blocked = (raw > 0 && !hasNext) || (raw < 0 && !hasPrev);
           position.value = groupIndex + (blocked ? raw * MOMENT_TURN_EDGE_RESISTANCE : raw);
         } else {
@@ -327,7 +331,7 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
     return Gesture.Race(swipe, hold, tap);
   }, [
     turning,
-    canvasWidth,
+    frameWidth,
     hasPrev,
     hasNext,
     groupIndex,
@@ -371,11 +375,11 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
       <StatusBar barStyle="light-content" />
       <Animated.View
         style={[
-          { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: insets.top, paddingBottom: insets.bottom },
+          { flex: 1, alignItems: 'center', paddingTop: insets.top, paddingBottom: insets.bottom },
           dragStyle,
         ]}
       >
-        <View style={{ width: canvasWidth, height: canvasHeight }}>
+        <View style={{ width: frameWidth, height: frameHeight }}>
           <GestureDetector gesture={gesture}>
             <View collapsable={false} style={StyleSheet.absoluteFill} />
           </GestureDetector>
@@ -389,7 +393,9 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
                 key={index}
                 index={index}
                 position={position}
-                width={canvasWidth}
+                width={frameWidth}
+                height={frameHeight}
+                content={content}
                 author={faceGroup.author}
                 moments={faceGroup.moments}
                 moment={faceMoment}

@@ -2,6 +2,7 @@ import { Platform, type TextStyle } from 'react-native';
 import type { MomentFontKey } from '@ola/shared/constants';
 
 export const MOMENT_ASPECT_RATIO = 9 / 16;
+export const MOMENT_VIEWER_MAX_CROP = 0.12;
 export const MOMENT_GRADIENT_ANGLE_DEG = 160;
 export const MOMENT_OVERLAY_LINE_HEIGHT = 1.35;
 export const MOMENT_TRAY_CARD_WIDTH = 90;

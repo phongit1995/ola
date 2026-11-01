@@ -50,7 +50,6 @@ import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import { useMomentHiddenToggle } from '@ola/shared/stores/moment/useMomentHiddenToggle';
 import { useMomentTray } from '@ola/shared/stores/moment/useMomentTray';
 import { useMomentViewerGroups } from '@ola/shared/stores/moment/useMomentViewerGroups';
-import { MOMENT_FIT_STYLE } from '../constants';
 import type { MomentMediaStatus } from '../types';
 import { MomentStage } from './MomentCanvas';
 import { MomentCommentSheet } from './MomentCommentSheet';
@@ -125,6 +124,7 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
   const pressRef = useRef<PressGesture | null>(null);
   const turnRef = useRef({ frame: 0 });
   const videoRef = useRef<HTMLVideoElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const formatTime = useMemo(
     () => createTimeFormatter(i18n.language),
     [i18n.language]
@@ -384,8 +384,8 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
       return;
     }
     if (wasHolding) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    advance(event.clientX - rect.left < rect.width * MOMENT_PREV_TAP_ZONE ? -1 : 1);
+    const content = (contentRef.current ?? event.currentTarget).getBoundingClientRect();
+    advance(event.clientX - content.left < content.width * MOMENT_PREV_TAP_ZONE ? -1 : 1);
   }
 
   function handlePointerCancel() {
@@ -425,8 +425,8 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
       onTouchMove={keepTouchInViewer}
       onTouchEnd={keepTouchInViewer}
     >
-      <MomentStage className="sm:py-4">
-        <div className="relative" style={MOMENT_FIT_STYLE}>
+      <MomentStage>
+        <div className="relative h-full w-full">
           <div
             className="absolute inset-0 touch-none"
             onPointerDown={handlePointerDown}
@@ -455,6 +455,7 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
                 muted={muted}
                 paused={userPaused}
                 videoRef={videoRef}
+                contentRef={contentRef}
                 onVideoEnded={() => advance(1)}
                 onMediaStatus={recordMediaStatus}
                 onToggleMute={() => setMuted((value) => !value)}
