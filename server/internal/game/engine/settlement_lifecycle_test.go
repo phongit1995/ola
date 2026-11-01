@@ -51,9 +51,9 @@ func (s *fakeSettlement) Balance(string) (int, bool) {
 	return MaxBet, true
 }
 
-func (s *fakeSettlement) WinnerAmounts(_ string, bet int) (payout, net int) {
+func (s *fakeSettlement) WinnerAmounts(_ string, bet, playerCount int) (payout, net int) {
 	commission := bet * s.commissionPercent / 100
-	payout = bet*2 - commission
+	payout = bet*playerCount - commission
 	return payout, payout - bet
 }
 
@@ -123,9 +123,13 @@ func TestEngineUsesSettlementWinnerAmounts(t *testing.T) {
 	gameEngine := NewEngine(zap.NewNop().Sugar(), 30, 30, newMemoryRoomStore(), newMemoryActiveMatchStore())
 	gameEngine.SetSettlement(&fakeSettlement{commissionPercent: 5})
 
-	payout, net := gameEngine.winnerAmounts("caro", 10_000)
+	payout, net := gameEngine.winnerAmounts("caro", 10_000, 2)
 	if payout != 19_500 || net != 9_500 {
 		t.Fatalf("winner amounts = payout %d, net %d; want 19500 and 9500", payout, net)
+	}
+	payout, net = gameEngine.winnerAmounts("tycoon", 10_000, 4)
+	if payout != 39_500 || net != 29_500 {
+		t.Fatalf("four-seat amounts = payout %d, net %d; want 39500 and 29500", payout, net)
 	}
 }
 

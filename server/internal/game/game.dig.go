@@ -7,6 +7,7 @@ import (
 
 	_ "ola-chat-server/internal/game/games/caro"
 	_ "ola-chat-server/internal/game/games/thirteen"
+	_ "ola-chat-server/internal/game/games/tycoon"
 	_ "ola-chat-server/internal/game/games/war-god"
 	_ "ola-chat-server/internal/game/games/xiangqi"
 

@@ -1,6 +1,10 @@
 # 05 — Gameplay: luật v1, bàn 32 ô, thẻ bài, state, protocol
 
-> **Hiện trạng (20/10/2026):** bản đang chạy là **chơi với máy, toàn bộ luật chạy ở client** (`game/tycoon/logic/engine.ts`, bot ở `logic/bot.ts`); chưa có package server. Các mục server / protocol / MOVE / steps bên dưới là thiết kế cho bản online — engine client đã viết theo đúng các pha, nước đi và step đó để port sang Go 1-1.
+> **Hiện trạng (01/11/2026):** bản chơi với máy vẫn chạy toàn bộ luật ở client (`game/tycoon/logic/engine.ts`, bot ở `logic/bot.ts`). **Server đã có** package `server/internal/game/games/tycoon/` (port 1:1 từ `engine.ts`, đã đăng ký engine, phí `TYCOON_COMMISSION_PERCENT`, BXH dùng nhánh thắng của Tiến Lên) nhưng **client chưa nối**: chưa có màn online nào gửi `joinGame('tycoon')`. Parity Go ↔ TS:
+- `go generate ./internal/game/games/tycoon` **chỉ** sinh `testdata/parity.json` (dữ liệu tĩnh + 3 ván chơi theo seed, mỗi ván tối đa 120 nước + 5 tình huống hiếm: Sinh nhật nhiều con nợ, con nợ/người rút thẻ bỏ cuộc, phạt tù bắt buộc khi thiếu tiền, phá sản chuyển đất thành thắng ngay) — tổng **8 ván / 471 nước**. Chưa sinh `constants.gen.ts` / `board.gen.json` / `cards.gen.json` cho client (§11).
+- Kiểm fixture đã commit: `node game/scripts/tycoon-parity.mjs` (bundle `logic/engine.ts` bằng esbuild, chơi lại từng nước, so steps + mã lỗi + state cuối; exit 1 nếu lệch).
+- Kiểm lớn, không commit file: `cd server && go run ./cmd/tycoongen -stress /tmp/tycoon-stress.json -games 300` rồi `node game/scripts/tycoon-parity.mjs /tmp/tycoon-stress.json` — 305 ván / 75.099 nước (có state sau mỗi nước, ~130 MB). Kết quả 01/11/2026: 0 lệch.
+- Client chưa có `parity.test.ts`; khi nối client thì chuyển phần kiểm này vào vitest (như thirteen).
 
 Server (`server/internal/game/games/tycoon/`) là nguồn chân lý. Client **không mirror luật diễn tiến** (khác cờ tướng): không tự tính ô đích, tiền thuê, thẻ hay kết quả — mọi số đều từ `STATE`. Client chỉ có hai thứ: (1) bảng dữ liệu tĩnh (giá, tiền thuê, tên ô, nội dung thẻ) sinh từ Go bằng codegen `constants.gen.ts` + `board.gen.json` (pattern `thirteengen`); (2) `rules-hint.ts` — hàm `canBuild/canSell(view, seat, tile)` trả `{ok, reason}` chỉ để **enable/disable nút và hiện lý do** trong S7/S8; server validate lại y hệt, parity test so khớp cả dữ liệu tĩnh lẫn `canBuild/canSell` trên fixture.
 
@@ -195,16 +199,21 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
   "rng": "<uint64 splitmix64>",        // ẨN
   "round": 1,
   "bankruptOrder": [],
+  "pendingDebts": [],                  // nợ đang xếp hàng sau debt hiện tại (Sinh nhật nhiều con nợ)
+  "finished": false, "winner": -1, "endReason": null,
   "moveCount": 0,
+  "startedAt": 1761980000000,          // unix ms lúc tạo ván, dùng cho giới hạn 25 phút
   "steps": []                          // replay lượt vừa apply, không tích lũy
 }
 ```
 
-`StateVersion()` = 1. `DecodeState` phải reject: số người ngoài 2..4, `tiles` ≠ 32, `owner` ngoài −1..n−1, `houses` > 3, `phase` lạ, state đã kết thúc.
+`debt` trong code có thêm `returnTo` (seat nhận lại lượt sau khi trả), `reason` (lý do trả, dùng cho step `pay`) và `after: "move"` (nợ phạt tù lượt 3: trả xong thì ra tù và đi theo số vừa gieo). JSON server giữ đúng tên field của `GameState` trong `engine.ts`, `rng` là chuỗi số uint64.
+
+`StateVersion()` = 1. `DecodeState` reject: số người ngoài 2..4, `tiles` ≠ 32, `owner` ngoài −1..n−1, `houses` > 3 hoặc có nhà trên ô không phải thành phố/không chủ, `phase` lạ, `turn` sai, `rng` không phải số, bộ thẻ trùng/sai id, `debt` hoặc `card` không khớp `phase`. State **đã kết thúc vẫn nhận** (như thirteen): khi server khôi phục snapshot ván đã xong, `outcomeFromSnapshot` cần decode được để lấy `Rankings` (ghi `game_match_players.place`) và `moveCount` (EXP); ván đang chơi không bao giờ được lưu ở trạng thái đã kết thúc.
 
 ### 5.1 View gửi client (`ViewFor`)
 
-Giống state nhưng **bỏ** `rng`, `chanceDeck`, `chestDeck`; thêm `you`, `chanceLeft`, `chestLeft` (số thẻ còn trong bộ, để UI hiện chồng thẻ). `card` chỉ có khi đang hiện thẻ. Mọi người chơi nhận cùng view trừ `you` — game không có thông tin riêng ngoài rng/bộ thẻ.
+Giống state nhưng **bỏ** `rng`, `chanceDeck`, `chestDeck`; thêm `you`, `chanceLeft`, `chestLeft` (số thẻ còn trong bộ, để UI hiện chồng thẻ). `card` chỉ có khi đang hiện thẻ. Mọi người chơi nhận cùng view trừ `you` — game không có thông tin riêng ngoài rng/bộ thẻ. `ViewFor` với seat ngoài khoảng trả view `you = -1` (dành cho người xem sau này); engine hiện vẫn chặn xem trận Tycoon vì game có `StateViewer` (§9).
 
 ## 6. Lệnh MOVE
 
@@ -222,6 +231,7 @@ Giống state nhưng **bỏ** `rng`, `chanceDeck`, `chestDeck`; thêm `you`, `ch
 | `BUILD` | manage | idx | luật §4.4 |
 | `SELL_HOUSE` | manage, debt | idx | |
 | `PAY_DEBT` | debt | — | cần `cash ≥ amount` |
+| `SETTLE_DEBT` | debt | — | tự hạ cấp nhà (cấp cao nhất trước, bằng nhau thì ô đắt hơn) đến khi đủ rồi trả; không đủ thì phá sản. Cũng là nước hết giờ của pha `debt` |
 | `DECLARE_BANKRUPT` | debt | — | |
 | `END_TURN` | manage | — | |
 
@@ -241,15 +251,16 @@ Thẻ "Sinh nhật" có thể khiến người **không tới lượt** thiếu 
 | `TurnKeeper` | `KeepTurn` = `turn` chưa đổi sau Apply | giữ lượt cả chuỗi pha; đôi → giữ tiếp |
 | `TurnOrder` | `NextTurn` = `state.turn` (game tự tính seat kế tiếp, bỏ qua phá sản/quit; dùng cho §6.1) | như thirteen |
 | `TurnTimer` | 30 s | mỗi MOVE hợp lệ cấp lại 30 s vì engine reset deadline sau Apply |
-| `TimeoutMover` | `MoveOnTimeout`: roll→`ROLL`, jail→`JAIL_ROLL` (lượt 3: `JAIL_PAY`), decide→`DECLINE`, takeover→`DECLINE`, festival→`FESTIVAL` ô thuê cao nhất, travel→`ROLL`, card→`CARD_ACK`, manage→`END_TURN`, debt→tự hạ cấp nhà rồi `PAY_DEBT` hoặc `DECLARE_BANKRUPT` | engine vẫn đếm 3 lần liên tiếp → quit |
+| `TimeoutMover` | `MoveOnTimeout`: roll→`ROLL`, jail→`JAIL_ROLL` (lượt 3 tự nộp phạt bên trong luật), decide→`DECLINE`, takeover→`DECLINE`, festival→`FESTIVAL` ô thuê cao nhất, travel→`ROLL`, card→`CARD_ACK`, manage→`END_TURN`, debt→`SETTLE_DEBT` | engine đếm hết giờ theo **từng pha**, 3 lần liên tiếp không tự bấm → loại. Engine đã sửa (01/11): game có `QuitHandler` và còn ≥ 2 người sau khi loại thì gọi `eliminatePlayer` (ván tiếp tục), không kết thúc cả ván như trước. Một lượt treo máy (gieo → mua/bỏ → kết thúc) là đủ 3 lần |
 | `TimeoutSkipper` | **không implement** (skip lượt làm hỏng chuỗi pha) | |
 | `TurnSkipHandler` | không cần | |
 | `StateViewer` | `ViewFor` §5.1 | kéo theo chặn spectate (§9) |
 | `QuitHandler` | `OnPlayerQuit` = phá sản chủ nợ ngân hàng §4.6 | |
 | `Ranker` | `Rankings` §4.7 | `MATCH_OVER.rankings` cho màn kết quả |
-| `TurnStartDelayer` | 0 cho pha trong cùng lượt; 600 ms khi đổi người (turn announce) | |
+| `TurnStartDelayer` | cộng thời gian replay của `steps` vừa apply theo `STEP_MS` của client (gieo 940 ms, mỗi ô 140/110 ms, trả tiền 520 ms, phá sản 900 ms…), +1,2 s khi đổi người (turn announce), tối đa 8 s; lượt đầu ván 1,5 s | để 30 s của nước sau không bị animation ăn mất |
+| Giới hạn 25 phút | `startedAt` trong state; `Apply` kết thúc `time` khi nước vừa đi chuyển sang lượt người khác (`isNewTurn`) và đã quá 25 phút | thay cho `endByTime` của client |
 
-Commission: `TYCOON_COMMISSION_PERCENT` (default 5). Cược và thanh toán 2–4 người theo [11 §1.4](./11-room-settings.md#14-thanh-toán).
+Commission: `TYCOON_COMMISSION_PERCENT` (default 5, đã thêm vào `config.go` + map phí trong `settlement.repository.go`). Cược và thanh toán 2–4 người theo [11 §1.4](./11-room-settings.md#14-thanh-toán).
 
 ## 8. steps[] — animation script
 
@@ -288,7 +299,7 @@ Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* →
 
 ### 9.1 Bảng xếp hạng và cấp độ
 
-**Trạng thái 23/10/2026: đặc tả, server chưa sửa.** UI ở [02 §S11](./02-screen-specs.md#s11-bảng-xếp-hạng).
+**Trạng thái 01/11/2026: bảng thắng đã làm, bảng cấp độ chưa.** `Repository.Leaderboard` cho `tycoon` dùng chung nhánh của Tiến Lên: đếm mọi ghế qua `game_matches` + ghế 3–4, chỉ người có ≥ 1 ván Nhất, xếp `wins DESC, losses ASC, ken DESC, username` (thắng bằng nhau thì ít ván thua hơn, tương đương ít ván hơn), bàn cược 0 vẫn tính. Mục 2–5 dưới đây (bảng `level`, `me`, hợp đồng `board`) vẫn chưa làm. UI ở [02 §S11](./02-screen-specs.md#s11-bảng-xếp-hạng).
 
 **Hiện có.** `Repository.Leaderboard` (`server/internal/game/game.repository.go`) trả top 100 theo kỳ `day`/`week` (GMT+7). Caro, War God, Tiến Lên, Cờ tướng đếm thắng/thua theo `winner_id`/`loser_id`; mọi game khác, gồm `tycoon`, rơi vào nhánh xếp theo **tổng KEN thắng > 0**. Bàn Tycoon mặc định cược 0 (11 §1.4) nên với nhánh này **bàn giao lưu không bao giờ lên BXH**. EXP lưu ở `user_game_levels(user_id, game_id, exp, level)`, cộng trong `settleFinish` (một lần mỗi ván); item BXH đã có `level` nhưng chưa có bảng xếp theo EXP.
 
@@ -312,7 +323,7 @@ Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* →
 
 ### 9.2 Lịch sử ván
 
-**Trạng thái 23/10/2026: đặc tả, server chưa sửa.** UI ở [02 §S10](./02-screen-specs.md#s10-lịch-sử).
+**Trạng thái 01/11/2026: dùng được phần chung, phần riêng chưa làm.** `MatchHistory` hiện đã tìm cả ghế 3–4 qua `game_match_players` và trả `place`, `playerCount`, `players` cho mọi game (làm cho Tiến Lên), nên Tycoon có lịch sử 2–4 người ngay. Còn thiếu: migration `end_reason` / `exit_reason` và field `endReason` / `exitReason` dưới đây. UI ở [02 §S10](./02-screen-specs.md#s10-lịch-sử).
 
 **Hiện có.** `Repository.MatchHistory` (`server/internal/game/game.repository.go`) trả 100 ván `finished` gần nhất, bỏ `void`, nhưng theo mô hình **2 người**: chỉ tìm ván có mình ở `player0_id`/`player1_id`, mỗi mục một đối thủ, `outcome` thắng/thua/hòa, `kenDelta` = `game_matches.ken_delta` nếu thắng, `−bet` nếu thua. Với Tycoon:
 
@@ -356,7 +367,7 @@ Bất biến:
 ## 11. Kiểm thử
 
 - Go table-driven: gieo đôi ×3 vào tù, qua Xuất phát (kể cả đáp đúng ô 0; thẻ di chuyển và Du lịch bay qua ô 0 cũng cộng, bị đưa vào tù thì không), tiền thuê từng loại (nhóm trọn ×2, sân bay 1–4, Lễ hội ×2), Thuế 10% tài sản, Du lịch (bay qua Xuất phát nhận lương, ROLL bỏ quyền bay, vào tù mất quyền), xây/bán đều, nợ → bán tự động → phá sản, chuyển đất cho chủ nợ/ngân hàng, `collectEach` với con nợ ngoài lượt (NextTurn tạm), MAX_ROUNDS xếp hạng tài sản + tie-break, DecodeState reject, `MoveOnTimeout` mọi pha, `OnPlayerQuit` giữa pha debt.
-- Codegen: `go generate ./internal/game/games/tycoon` → `game/tycoon/logic/constants.gen.ts` + `board.gen.json` + `cards.gen.json` + `testdata/parity.json` (vitest chỉ kiểm dữ liệu tĩnh khớp Go).
+- Codegen: đích là `go generate ./internal/game/games/tycoon` → `game/tycoon/logic/constants.gen.ts` + `board.gen.json` + `cards.gen.json` + `testdata/parity.json`. **Hiện mới sinh `testdata/parity.json`** (đầu file); phần TS làm khi nối client, lúc đó bỏ `board.json` / `cards.json` / hằng số viết tay ở client.
 - E2E: `game/scripts/tycoon-e2e-bots.mjs` — 4 bot (mua nếu đủ tiền, xây khi trọn nhóm, END_TURN) chạy tới khi ván kết thúc (thắng ngay / phá sản / 30 vòng), assert MATCH_OVER có 4 rankings, tổng tiền hệ thống hợp lý; cần `JWT_SECRET` + `TL_USERS` như thirteen.
 - UI: harness `tycoon/mock-ui.html?screen=<tên>&state=<fixture>` + `scripts/tycoon-shots.mjs` (pattern xiangqi).
 

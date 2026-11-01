@@ -19,9 +19,14 @@ const (
 	settlementRetryDelay       = time.Second
 	settlementMaxRetryDelay    = 30 * time.Second
 
-	// MaxBet keeps a winner payout (2 * bet) within a PostgreSQL integer.
+	// MaxBet keeps a two-player winner payout (2 * bet) within a PostgreSQL
+	// integer; tables with more seats use MaxBetFor.
 	MaxBet = math.MaxInt32 / 2
 )
+
+func MaxBetFor(playerCount int) int {
+	return math.MaxInt32 / max(playerCount, 2)
+}
 
 var (
 	// ErrEscrowClosed means a durable start record exists but can no longer
@@ -79,7 +84,7 @@ type SettledBalance struct {
 
 type Settlement interface {
 	Balance(userID string) (int, bool)
-	WinnerAmounts(gameID string, bet int) (payout, net int)
+	WinnerAmounts(gameID string, bet, playerCount int) (payout, net int)
 	EscrowStart(ctx context.Context, rec MatchRecord) ([]SettledBalance, error)
 	AbortStart(ctx context.Context, matchID string) ([]SettledBalance, error)
 	SettleFinish(ctx context.Context, out MatchOutcome) ([]SettledBalance, error)

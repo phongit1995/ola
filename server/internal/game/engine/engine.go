@@ -770,7 +770,7 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 		e.sendError(gameID, owner.ID, protocol.ErrorCodeInvalidBet, "invalid room capacity")
 		return
 	}
-	if bet < 0 || bet > MaxBet {
+	if bet < 0 || bet > MaxBetFor(maxPlayers) {
 		e.sendError(gameID, owner.ID, protocol.ErrorCodeInvalidBet, "bet is outside the allowed range")
 		return
 	}
@@ -2015,7 +2015,7 @@ func (e *Engine) startMatchWithRoom(
 	allowRoomReservation bool,
 	queueKeys []string,
 ) error {
-	if bet < 0 || bet > MaxBet {
+	if bet < 0 || bet > MaxBetFor(len(players)) {
 		return fmt.Errorf("bet is outside the allowed range")
 	}
 	if len(players) < logic.MinPlayers(gameLogic) || len(players) > logic.MaxPlayers(gameLogic) {
@@ -2323,6 +2323,10 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 			}
 		}
 		e.clearTimeoutMove(m)
+		if handler, ok := m.logic.(logic.QuitHandler); ok && len(m.activeIdxs())-1 >= 2 {
+			e.eliminatePlayer(m, timedOut, handler, "timeout")
+			return
+		}
 		e.finishMatch(m, timeoutWinner(), "timeout")
 		return
 	}
@@ -2506,14 +2510,15 @@ func (e *Engine) abortMatchTechnically(m *Match) {
 		"match_id", m.ID, "game_id", m.GameID, "attempts", maxTimeoutMoveRetries)
 }
 
-func (e *Engine) winnerAmounts(gameID string, bet int) (payout, net int) {
+func (e *Engine) winnerAmounts(gameID string, bet, playerCount int) (payout, net int) {
 	if bet <= 0 {
 		return 0, 0
 	}
+	playerCount = max(playerCount, 2)
 	if settlement := e.currentSettlement(); settlement != nil {
-		return settlement.WinnerAmounts(gameID, bet)
+		return settlement.WinnerAmounts(gameID, bet, playerCount)
 	}
-	return bet * 2, bet
+	return bet * playerCount, bet * (playerCount - 1)
 }
 
 func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
@@ -2597,7 +2602,7 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	}
 	payout, kenDelta := 0, 0
 	if winnerID != "" {
-		payout, kenDelta = e.winnerAmounts(m.GameID, m.bet)
+		payout, kenDelta = e.winnerAmounts(m.GameID, m.bet, len(m.players))
 	}
 	// Exp only reaches the database through settlement, so a match that will
 	// never be settled must not announce gains the players would lose on
@@ -3136,7 +3141,7 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) bool {
 	}
 	payout, kenDelta := 0, 0
 	if snapshot.WinnerID != "" {
-		payout, kenDelta = e.winnerAmounts(snapshot.GameID, snapshot.Bet)
+		payout, kenDelta = e.winnerAmounts(snapshot.GameID, snapshot.Bet, len(snapshot.Players))
 	}
 	var expGains []protocol.ExpGainEntry
 	if e.currentSettlement() != nil || snapshot.Bet > 0 {

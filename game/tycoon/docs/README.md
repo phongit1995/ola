@@ -6,7 +6,9 @@ Tài liệu thiết kế cho mini-game **Cờ Tỷ Phú** (gameId `tycoon`).
 
 **Đang có (15/10/2026): bản client-only chơi với máy** ở `game/tycoon/` — luật v1 đầy đủ chạy trong `logic/engine.ts` (port 1:1 từ thiết kế server ở 05), bot ở `logic/bot.ts`, store local `store/useTycoon.ts`, hiệu ứng bậc Lite (chưa có lớp hạt Pixi, chưa có nhân vật/raster, quân cờ là hình học). Chạy `pnpm --filter @ola/game dev` rồi mở `http://localhost:5174/tycoon/`.
 
-**Chưa làm:** server Go + protocol (05 §5–§9), danh sách bàn/phòng chờ/chat/lịch sử/BXH online. Khi làm server, `logic/engine.ts` là bản tham chiếu để port sang Go; lúc đó server là nguồn chân lý và client chỉ render view + gửi lệnh như docs mô tả. Bảng dữ liệu tĩnh hiện nằm ở `logic/board.json`, `logic/cards.json`, `logic/constants.ts` (sau này sinh từ Go bằng codegen).
+**Server Go (01/11/2026):** `server/internal/game/games/tycoon/` đã port 1:1 từ `logic/engine.ts`, đăng ký với engine game, có test luật + test tích hợp engine 4 người. Parity với `engine.ts`: fixture commit 8 ván / 471 nước, kiểm bằng `node game/scripts/tycoon-parity.mjs`; bản lớn 305 ván / 75.099 nước tái lập bằng lệnh ở [05](./05-gameplay-rules-and-protocol.md) đầu file — cả hai 0 lệch. Bàn có cược 3–4 người cần migration `20261101000002` ([11 §4](./11-room-settings.md#4-việc-phía-server)).
+
+**Chưa làm:** nối client online (danh sách bàn/phòng chờ/chat/lịch sử/BXH đang dùng dữ liệu giả, chưa gửi `joinGame('tycoon')`), codegen dữ liệu tĩnh Go → TS, `parity.test.ts` phía client, E2E bot qua socket, bảng cấp độ + `endReason` lịch sử (05 §9), cho người xem (11 §4). Khi nối client, server là nguồn chân lý và client chỉ render view + gửi lệnh như docs mô tả. Bảng dữ liệu tĩnh client hiện vẫn ở `logic/board.json`, `logic/cards.json`, `logic/constants.ts` — sửa luật/giá phải sửa cả `server/internal/game/games/tycoon/board.go` + `constants.go` rồi `go generate`.
 
 Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Không dùng tên "Monopoly", tên phố/nhân vật/hình ảnh của Hasbro — cơ chế chơi không được bảo hộ, nhưng tên và mỹ thuật thì có.
 
