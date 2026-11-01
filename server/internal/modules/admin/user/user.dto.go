@@ -1,5 +1,9 @@
 package adminuser
 
+import "ola-chat-server/internal/modules/moderation"
+
+type ViolationSummary = moderation.ViolationSummary
+
 type UserListItem struct {
 	ID            string `json:"id"`
 	Username      string `json:"username"`
@@ -10,6 +14,8 @@ type UserListItem struct {
 	Ken           int    `json:"ken"`
 	IsVip         bool   `json:"isVip"`
 	IsActive      bool   `json:"isActive"`
+	LockedUntil   string `json:"lockedUntil,omitempty"`
+	LockReason    string `json:"lockReason,omitempty"`
 	EmailVerified bool   `json:"emailVerified"`
 	CreatedAt     string `json:"createdAt"`
 	LastLoginAt   string `json:"lastLoginAt,omitempty"`
@@ -40,6 +46,8 @@ type UserDetail struct {
 	FollowerCount   int    `json:"followerCount"`
 	FollowingCount  int    `json:"followingCount"`
 	IsActive        bool   `json:"isActive"`
+	LockedUntil     string `json:"lockedUntil,omitempty"`
+	LockReason      string `json:"lockReason,omitempty"`
 	EmailVerified   bool   `json:"emailVerified"`
 	EmailVerifiedAt string `json:"emailVerifiedAt,omitempty"`
 	LastLoginIP     string `json:"lastLoginIp,omitempty"`

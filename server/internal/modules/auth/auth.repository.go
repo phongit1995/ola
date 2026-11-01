@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"time"
+
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -52,6 +54,13 @@ func (r *Repository) UpdatePassword(userID uuid.UUID, hashedPassword string) err
 	return r.db.Model(&models.User{}).
 		Where("id = ?", userID).
 		Update("password", hashedPassword).Error
+}
+
+func (r *Repository) ReleaseExpiredLock(userID uuid.UUID, now time.Time) (bool, error) {
+	result := r.db.Model(&models.User{}).
+		Where("id = ? AND is_active = ? AND locked_until IS NOT NULL AND locked_until <= ?", userID, false, now).
+		Updates(map[string]interface{}{"is_active": true, "locked_until": nil, "lock_reason": ""})
+	return result.RowsAffected > 0, result.Error
 }
 
 func (r *Repository) UpdateLastLogin(userID uuid.UUID, ip string) error {

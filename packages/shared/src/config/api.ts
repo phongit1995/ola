@@ -86,6 +86,7 @@ export const API_PATH = {
     base: '/notifications',
     unread: '/notifications/unread-count',
     readAll: '/notifications/read-all',
+    detail: (id: string) => `/notifications/${id}`,
   },
   push: {
     token: '/push/token',

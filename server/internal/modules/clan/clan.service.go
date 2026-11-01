@@ -560,7 +560,7 @@ func (s *Service) DeletePost(userID, clanID, postID uuid.UUID) error {
 	if userID != clan.OwnerID && post.AuthorID == clan.OwnerID {
 		return errOwnerPostsOnly
 	}
-	if err := s.meRepo.Disable(postID); err != nil {
+	if err := s.meRepo.Disable(postID, me.MeHiddenByClan); err != nil {
 		return err
 	}
 	s.repo.OnPostDisabled(postID)

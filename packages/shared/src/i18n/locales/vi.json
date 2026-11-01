@@ -1810,7 +1810,9 @@
     "msg_divorce": "đã từ chối lời cầu hôn của bạn",
     "empty": "Không có thông báo",
     "loadError": "Không tải được thông báo",
-    "actionError": "Thao tác thất bại, vui lòng thử lại"
+    "actionError": "Thao tác thất bại, vui lòng thử lại",
+    "systemSender": "Hệ thống",
+    "hide": "Ẩn thông báo"
   },
   "ken": {
     "title": "KEN",

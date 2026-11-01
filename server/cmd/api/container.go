@@ -22,6 +22,7 @@ import (
 	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/message"
 	minigame "ola-chat-server/internal/modules/mini-game"
+	"ola-chat-server/internal/modules/moderation"
 	"ola-chat-server/internal/modules/moment"
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/pen"
@@ -105,6 +106,7 @@ func NewContainer(opts ...dig.Option) (*dig.Container, error) {
 		push.Provider,
 		story.Provider,
 		report.Provider,
+		moderation.Provider,
 		moment.Provider,
 	}
 

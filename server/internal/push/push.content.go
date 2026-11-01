@@ -144,6 +144,8 @@ var appNotifBodies = map[string]string{
 	models.AppNotificationClanVerified:     "Clan của bạn đã được xác minh",
 	models.AppNotificationClanUnverified:   "Clan của bạn đã bị bỏ xác minh",
 	models.AppNotificationClanBanned:       "Clan của bạn đã bị khoá",
+	models.AppNotificationContentViolation: "Vi phạm tiêu chuẩn cộng đồng",
+	models.AppNotificationReportResolved:   "Báo cáo đã được xử lý",
 }
 
 var appNotifSystemTypes = map[string]bool{
@@ -152,6 +154,8 @@ var appNotifSystemTypes = map[string]bool{
 	models.AppNotificationClanVerified:     true,
 	models.AppNotificationClanUnverified:   true,
 	models.AppNotificationClanBanned:       true,
+	models.AppNotificationContentViolation: true,
+	models.AppNotificationReportResolved:   true,
 }
 
 func buildAppNotifContent(id, actorName, ntype, preview string, unread int) Content {

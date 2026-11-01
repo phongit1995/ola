@@ -1,5 +1,7 @@
 package auth
 
+import "time"
+
 const (
 	CacheKeyRegisterDone          = "REGISTER_DONE:%s"
 	CacheKeyRegisterThrottle      = "REGISTER_THROTTLE:%s"
@@ -32,3 +34,7 @@ var EmailVerifyAllowedDomains = map[string]struct{}{
 }
 
 const CacheTTLOTP = 300
+
+const lockTimeLayout = "15:04 02/01/2006"
+
+var vietnamTime = time.FixedZone("ICT", 7*60*60)

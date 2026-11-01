@@ -57,9 +57,16 @@ func (r *Repository) Create(n *models.AppNotification) (*models.AppNotification,
 }
 
 func (r *Repository) Delete(recipientID uuid.UUID, ntype string, refID uuid.UUID) (*models.AppNotification, error) {
+	return r.deleteFirst(r.db.Where("recipient_id = ? AND type = ? AND ref_id = ?", recipientID, ntype, refID))
+}
+
+func (r *Repository) DeleteByID(recipientID, id uuid.UUID) (*models.AppNotification, error) {
+	return r.deleteFirst(r.db.Where("recipient_id = ? AND id = ?", recipientID, id))
+}
+
+func (r *Repository) deleteFirst(scope *gorm.DB) (*models.AppNotification, error) {
 	var row models.AppNotification
-	err := r.db.Where("recipient_id = ? AND type = ? AND ref_id = ?", recipientID, ntype, refID).First(&row).Error
-	if err != nil {
+	if err := scope.First(&row).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

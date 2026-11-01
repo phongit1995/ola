@@ -22,8 +22,12 @@ func newGormStore(db *gorm.DB, logger *zap.SugaredLogger) *gormStore {
 }
 
 func (s *gormStore) ActiveTokens(userID string) ([]models.DeviceToken, error) {
+	return ActiveDeviceTokens(s.db, userID)
+}
+
+func ActiveDeviceTokens(db *gorm.DB, userID string) ([]models.DeviceToken, error) {
 	var tokens []models.DeviceToken
-	err := s.db.
+	err := db.
 		Joins("JOIN user_sessions ON user_sessions.id = device_tokens.session_id").
 		Where("device_tokens.user_id = ? AND device_tokens.platform IN ? AND user_sessions.revoked_at IS NULL", userID, []string{constants.PushPlatformAndroid, constants.PushPlatformIOS}).
 		Find(&tokens).Error

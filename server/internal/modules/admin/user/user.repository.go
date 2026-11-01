@@ -153,7 +153,7 @@ func (r *Repository) UpdatePassword(id uuid.UUID, hashedPassword string) error {
 func (r *Repository) SetActive(id uuid.UUID, active bool) error {
 	return r.db.Model(&models.User{}).
 		Where("id = ?", id).
-		Update("is_active", active).Error
+		Updates(map[string]interface{}{"is_active": active, "locked_until": nil, "lock_reason": ""}).Error
 }
 
 func (r *Repository) SoftDelete(id uuid.UUID) error {

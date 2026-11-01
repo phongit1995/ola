@@ -18,4 +18,8 @@ export class NotificationService {
   static markAllRead(): Promise<MessageResult> {
     return http.post<MessageResult>(API_PATH.notifications.readAll, {});
   }
+
+  static hide(id: string): Promise<MessageResult> {
+    return http.del<MessageResult>(API_PATH.notifications.detail(id));
+  }
 }

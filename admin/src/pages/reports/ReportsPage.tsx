@@ -1,22 +1,18 @@
 import { useState } from 'react'
 import { Badge, Button, Card, Input, Select, Space, Table, Tag, type TableColumnsType } from 'antd'
-import { EyeOutlined, SettingOutlined } from '@ant-design/icons'
+import { EyeOutlined, SafetyOutlined, SettingOutlined } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
 import { UserBriefCell } from '@/components/UserBriefCell'
 import { formatDateTime } from '@/lib/format'
 import { PAGE_SIZE } from '@/lib/constants'
+import { REPORT_REASON_LABEL, REPORT_TARGET_LABEL } from '@/lib/moderation'
 import type { AdminReport, ReportStatus, ReportTargetType } from '@/types'
 import { useReports } from './useReportQueries'
 import { ReportDetailModal } from './ReportDetailModal'
 import { ReportAlertSettingsModal } from './ReportAlertSettingsModal'
+import { ModerationSettingsModal } from './ModerationSettingsModal'
 import { reportExcerpt } from './utils'
-import {
-  REPORT_REASON_LABEL,
-  REPORT_STATUS_OPTIONS,
-  REPORT_STATUS_TAG,
-  REPORT_TARGET_LABEL,
-  REPORT_TARGET_OPTIONS,
-} from './constants'
+import { REPORT_STATUS_OPTIONS, REPORT_STATUS_TAG, REPORT_TARGET_OPTIONS } from './constants'
 
 type StatusFilter = ReportStatus | 'all'
 type TargetFilter = ReportTargetType | 'all'
@@ -28,6 +24,7 @@ export function ReportsPage() {
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<AdminReport | null>(null)
   const [alertSettingsOpen, setAlertSettingsOpen] = useState(false)
+  const [moderationSettingsOpen, setModerationSettingsOpen] = useState(false)
   const q = useDebounce(search.trim())
 
   const { data, isFetching } = useReports({
@@ -140,9 +137,14 @@ export function ReportsPage() {
           onChange={(event) => resetPage(setSearch)(event.target.value)}
           style={{ maxWidth: 360 }}
         />
-        <Button icon={<SettingOutlined />} style={{ marginLeft: 'auto' }} onClick={() => setAlertSettingsOpen(true)}>
-          Cài đặt thông báo
-        </Button>
+        <Space wrap style={{ marginLeft: 'auto' }}>
+          <Button icon={<SafetyOutlined />} onClick={() => setModerationSettingsOpen(true)}>
+            Cài đặt điểm vi phạm
+          </Button>
+          <Button icon={<SettingOutlined />} onClick={() => setAlertSettingsOpen(true)}>
+            Cài đặt thông báo
+          </Button>
+        </Space>
       </div>
       <Table<AdminReport>
         rowKey="id"
@@ -163,6 +165,7 @@ export function ReportsPage() {
         <ReportDetailModal key={selected.id} report={selected} onClose={() => setSelected(null)} />
       )}
       {alertSettingsOpen && <ReportAlertSettingsModal onClose={() => setAlertSettingsOpen(false)} />}
+      {moderationSettingsOpen && <ModerationSettingsModal onClose={() => setModerationSettingsOpen(false)} />}
     </Card>
   )
 }

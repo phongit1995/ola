@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   App,
   Avatar,
@@ -24,6 +24,8 @@ import {
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { VISIBILITY } from './constants'
+import { MeHideModal } from './MeHideModal'
+import { meHiddenByLabel } from './utils'
 
 interface MeDetailModalProps {
   postId: string | null
@@ -73,21 +75,23 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
   const { data: comments, isLoading: commentsLoading } = useMeComments(id)
   const updateStatus = useUpdateMeStatus()
   const deleteComment = useDeleteMeComment()
+  const [hiding, setHiding] = useState(false)
 
   function toggleEnabled(enabled: boolean) {
     if (!postId) return
+    if (!enabled) {
+      setHiding(true)
+      return
+    }
     modal.confirm({
-      title: enabled ? 'Hiện bài đăng này?' : 'Ẩn bài đăng này?',
-      content: enabled
-        ? 'Bài sẽ hiển thị lại với người dùng.'
-        : 'Bài sẽ bị ẩn khỏi người dùng.',
-      okText: enabled ? 'Hiện' : 'Ẩn',
-      okButtonProps: { danger: !enabled },
+      title: 'Hiện bài đăng này?',
+      content: 'Bài sẽ hiển thị lại với người dùng.',
+      okText: 'Hiện',
       cancelText: 'Huỷ',
       onOk: async () => {
         try {
           await updateStatus.mutateAsync({ id: postId, enabled })
-          message.success(enabled ? 'Đã hiện bài' : 'Đã ẩn bài')
+          message.success('Đã hiện bài')
         } catch (err) {
           message.error(errorMessage(err, 'Thao tác thất bại'))
         }
@@ -116,6 +120,7 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
   const visibility = data
     ? VISIBILITY[data.visibility] ?? { label: data.visibility, color: 'default' }
     : null
+  const hiddenBy = data ? meHiddenByLabel(data) : null
 
   return (
     <Modal
@@ -164,6 +169,12 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
                 loading={updateStatus.isPending}
                 onChange={toggleEnabled}
               />
+              {hiddenBy && (
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  {hiddenBy}
+                  {data.hiddenAt ? ` · ${formatDateTime(data.hiddenAt)}` : ''}
+                </Typography.Text>
+              )}
             </Space>
           </div>
 
@@ -306,6 +317,7 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
           )}
         </>
       )}
+      {hiding && id && <MeHideModal postId={id} onClose={() => setHiding(false)} />}
     </Modal>
   )
 }

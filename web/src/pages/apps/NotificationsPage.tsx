@@ -15,7 +15,7 @@ import {
   Spinner,
   ConfirmDialog,
 } from '@components';
-import { APP_NOTIFICATION_TYPE } from '@constants';
+import { APP_NOTIFICATION_TYPE, isSystemNotice } from '@constants';
 import { MarriageService, RelationshipService } from '@services';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useFriendsStore } from '@/store/friendsStore';
@@ -24,11 +24,20 @@ import type { AppNotification } from '@app-types';
 import icAddSmall from '@/assets/icons/notify/ic_action_add_small.png';
 import icFriend from '@/assets/icons/notify/ic_notification_add_friend.png';
 import icHeart from '@/assets/icons/notify/ic_notification_heart.png';
+import olaLogo from '@/assets/images/ola-logo.png';
 
 const KIND_CONFIG: Record<string, { icon: string; messageKey: ParseKeys }> = {
   friend_request: { icon: icFriend, messageKey: 'notify.msg_friend' },
   marriage_proposal: { icon: icHeart, messageKey: 'notify.msg_proposal' },
 };
+
+function SystemAvatar() {
+  return (
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ola-primary">
+      <img src={olaLogo} alt="" className="h-6 w-6 object-contain" />
+    </span>
+  );
+}
 
 interface RowButtonProps {
   variant: 'green' | 'default';
@@ -64,6 +73,7 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
   const loadMore = useAppNotificationStore((s) => s.loadMore);
   const markAllRead = useAppNotificationStore((s) => s.markAllRead);
   const removeLocal = useAppNotificationStore((s) => s.removeLocal);
+  const hide = useAppNotificationStore((s) => s.hide);
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [proposalAction, setProposalAction] = useState<ProposalAction>(null);
@@ -195,17 +205,24 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
           <ul>
             {items.map((item) => {
               const config = KIND_CONFIG[item.type];
-              const name = item.actor?.fullName || item.actor?.username || '';
+              const system = isSystemNotice(item.type);
+              const name = system
+                ? t('notify.systemSender')
+                : item.actor?.fullName || item.actor?.username || '';
               const message =
                 config != null ? t(config.messageKey) : item.preview ?? '';
               return (
                 <li key={item.id} className="bg-white/80">
                   <div className="flex min-h-[72px] items-start p-4">
-                    <Avatar
-                      name={name}
-                      src={item.actor?.avatar}
-                      color={colorForName(name)}
-                    />
+                    {system ? (
+                      <SystemAvatar />
+                    ) : (
+                      <Avatar
+                        name={name}
+                        src={item.actor?.avatar}
+                        color={colorForName(name)}
+                      />
+                    )}
                     <div className="ml-4 min-w-0 flex-1">
                       {name !== '' && (
                         <p className="truncate text-base font-bold text-black/87">
@@ -239,6 +256,26 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                       </div>
                     </div>
                     {busyId === item.id && <Spinner size={16} />}
+                    {system && (
+                      <button
+                        type="button"
+                        onClick={() => void hide(item.id)}
+                        aria-label={t('notify.hide')}
+                        title={t('notify.hide')}
+                        className="-mt-2 -mr-2 ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-black/54 transition-colors hover:bg-black/5"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          aria-hidden="true"
+                        >
+                          <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                   <div className="mx-4 h-px bg-black/12" />
                 </li>

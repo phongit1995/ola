@@ -92,12 +92,20 @@ func (s *Service) RevokeForUser(userID, sessionID uuid.UUID) (bool, error) {
 	}
 	if found {
 		s.markRevoked(sessionID)
-		s.kickSession(sessionID, "session_revoked")
+		s.kickSession(sessionID, constants.ForceLogoutReasonSessionRevoked)
 	}
 	return found, nil
 }
 
 func (s *Service) RevokeAllForUser(userID uuid.UUID) (int, error) {
+	return s.revokeAll(userID, constants.ForceLogoutReasonSessionRevoked)
+}
+
+func (s *Service) RevokeAllForBannedUser(userID uuid.UUID) (int, error) {
+	return s.revokeAll(userID, constants.ForceLogoutReasonBanned)
+}
+
+func (s *Service) revokeAll(userID uuid.UUID, reason string) (int, error) {
 	ids, err := s.repo.ListActiveIDsForUser(userID)
 	if err != nil {
 		return 0, err
@@ -110,7 +118,7 @@ func (s *Service) RevokeAllForUser(userID uuid.UUID) (int, error) {
 		return 0, err
 	}
 	for _, id := range ids {
-		s.kickSession(id, "session_revoked")
+		s.kickSession(id, reason)
 	}
 	return int(revoked), nil
 }
@@ -128,7 +136,7 @@ func (s *Service) RevokeOthers(userID, keepID uuid.UUID) (int, error) {
 		return 0, err
 	}
 	for _, id := range ids {
-		s.kickSession(id, "session_revoked")
+		s.kickSession(id, constants.ForceLogoutReasonSessionRevoked)
 	}
 	return int(revoked), nil
 }

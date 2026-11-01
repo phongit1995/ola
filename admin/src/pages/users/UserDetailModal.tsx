@@ -10,22 +10,24 @@ import {
   PlusOutlined,
   UserOutlined,
   WalletOutlined,
+  WarningOutlined,
 } from '@ant-design/icons'
 import { useUserDetail } from '@/hooks/useUserQueries'
 import { formatDateTime } from '@/lib/format'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
-import { GENDER } from './constants'
+import { GENDER, VIOLATION_LOCK_LABEL } from './constants'
 import { KenAdjustModal } from './KenAdjustModal'
 import { KenHistoryModal } from './KenHistoryModal'
 import { UserMeModal } from './UserMeModal'
 import { UserVipIconsModal } from './UserVipIconsModal'
 import { UserVipHistoryModal } from './UserVipHistoryModal'
 import { UserSessionsModal } from './UserSessionsModal'
+import { UserViolationsModal } from './UserViolationsModal'
 import { EditUsernameModal } from './EditUsernameModal'
 import { ResetPasswordModal } from './ResetPasswordModal'
 import { AddVipDaysModal } from './AddVipDaysModal'
 import { UserConversationsModal } from '@/pages/conversations/UserConversationsModal'
-import { vipDaysLeft } from './utils'
+import { isViolationLock, vipDaysLeft, violationLockPeriod } from './utils'
 
 interface UserDetailModalProps {
   userId: string | null
@@ -90,6 +92,8 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [vipDaysOpen, setVipDaysOpen] = useState(false)
   const [conversationsOpen, setConversationsOpen] = useState(false)
+  const [violationsOpen, setViolationsOpen] = useState(false)
+  const violationLocked = data != null && isViolationLock(data)
 
   return (
     <>
@@ -116,6 +120,9 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
           </Button>
           <Button icon={<HistoryOutlined />} disabled={!userId} onClick={() => setSessionsOpen(true)}>
             Lịch sử đăng nhập
+          </Button>
+          <Button icon={<WarningOutlined />} disabled={!userId} onClick={() => setViolationsOpen(true)}>
+            Vi phạm
           </Button>
           <Button icon={<LockOutlined />} disabled={!userId} onClick={() => setPasswordOpen(true)}>
             Đổi mật khẩu
@@ -167,11 +174,16 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
                 {data.isActive ? (
                   <Tag color="green">Hoạt động</Tag>
                 ) : (
-                  <Tag color="red">Đã khoá</Tag>
+                  <Tag color="red">{violationLocked ? VIOLATION_LOCK_LABEL : 'Đã khoá'}</Tag>
                 )}
                 {gender && <Tag color={gender.color}>{gender.label}</Tag>}
                 {data.isVip && <Tag color="gold">VIP</Tag>}
               </div>
+              {violationLocked && (
+                <div style={{ fontSize: 12, color: '#cf1322', marginTop: 4 }}>
+                  {VIOLATION_LOCK_LABEL} {violationLockPeriod(data.lockedUntil)}
+                </div>
+              )}
             </div>
             <Button icon={<CommentOutlined />} onClick={() => setConversationsOpen(true)} style={{ flexShrink: 0 }}>
               Hội thoại
@@ -351,6 +363,13 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setVipDaysOpen(false)}
+    />
+    <UserViolationsModal
+      open={violationsOpen}
+      userId={userId}
+      username={data?.username}
+      user={data}
+      onClose={() => setViolationsOpen(false)}
     />
     <UserConversationsModal
       open={conversationsOpen}

@@ -1,4 +1,6 @@
 import { VIP_CATALOG } from '@/lib/vipCatalog'
+import type { ViolationSource } from '@/types'
+import type { ViolationState } from './types'
 
 export const KEN_TX_TYPE: Record<string, string> = {
   VIP_PACKAGE: 'Mua gói VIP',
@@ -58,4 +60,19 @@ export const VIP_ICON_SOURCE_LABEL: Record<string, string> = {
   transfer: 'Nhận chuyển',
   gift: 'Tặng',
   admin: 'Admin',
+}
+
+export const LOCK_REASON_VIOLATIONS = 'violations'
+
+export const VIOLATION_LOCK_LABEL = 'Khoá do vi phạm'
+
+export const VIOLATION_SOURCE_LABEL: Record<ViolationSource, string> = {
+  report: 'Báo cáo',
+  me_hide: 'Admin ẩn bài',
+}
+
+export const VIOLATION_STATE_TAG: Record<ViolationState, { label: string; color: string }> = {
+  active: { label: 'Đang tính', color: 'red' },
+  expired: { label: 'Hết hạn', color: 'default' },
+  revoked: { label: 'Đã gỡ', color: 'default' },
 }

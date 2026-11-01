@@ -3,6 +3,7 @@ package adminme
 import (
 	"net/http"
 
+	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -101,9 +102,13 @@ func (ctrl *Controller) GetPost(c *gin.Context) (interface{}, error) {
 // @Security     BearerAuth
 // @Param        id      path string              true "Post ID"
 // @Param        request body UpdateStatusRequest true "Status Request"
-// @Success      200  {object}  utils.BaseResponse[MeDetail]
+// @Success      200  {object}  utils.BaseResponse[UpdateStatusResponse]
 // @Router       /admin/me/{id}/status [patch]
 func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
+	adminID, ok := middleware.GetAdminID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
 	id, err := utils.ParseUUIDParam(c, "id", "invalid post id")
 	if err != nil {
 		return nil, err
@@ -112,7 +117,7 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.SetEnabled(id, *req.Enabled)
+	resp, err := ctrl.service.SetEnabled(adminID, id, req)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

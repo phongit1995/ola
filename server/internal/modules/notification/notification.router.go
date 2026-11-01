@@ -20,5 +20,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		notifications.GET("", r.controller.List)
 		notifications.GET("/unread-count", r.controller.UnreadCount)
 		notifications.POST("/read-all", r.controller.ReadAll)
+		notifications.DELETE("/:id", r.controller.Hide)
 	}
 }

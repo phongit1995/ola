@@ -134,12 +134,14 @@ type Me struct {
 	Sticker      string       `gorm:"type:varchar(500)"`
 	Visibility   MeVisibility `gorm:"type:varchar(20);not null;default:'public'"`
 	Enabled      bool         `gorm:"not null;default:true"`
-	LikeCount    int          `gorm:"not null;default:0"`
-	DislikeCount int          `gorm:"not null;default:0"`
-	CommentCount int          `gorm:"not null;default:0"`
-	PinnedAt     *time.Time   `gorm:"index"`
-	Author       *User        `gorm:"foreignKey:AuthorID;constraint:OnDelete:CASCADE"`
-	Clan         *Clan        `gorm:"foreignKey:ClanID"`
+	HiddenBy     *string      `gorm:"type:varchar(10)"`
+	HiddenAt     *time.Time
+	LikeCount    int        `gorm:"not null;default:0"`
+	DislikeCount int        `gorm:"not null;default:0"`
+	CommentCount int        `gorm:"not null;default:0"`
+	PinnedAt     *time.Time `gorm:"index"`
+	Author       *User      `gorm:"foreignKey:AuthorID;constraint:OnDelete:CASCADE"`
+	Clan         *Clan      `gorm:"foreignKey:ClanID"`
 }
 
 func (Me) TableName() string {

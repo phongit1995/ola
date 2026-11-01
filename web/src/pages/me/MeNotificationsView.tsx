@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader, Avatar, Spinner } from '@components';
-import { ME_NOTIFICATION_LABEL_KEY } from '@constants';
+import { ME_ERROR_CODE, ME_NOTIFICATION_LABEL_KEY } from '@constants';
 import {
   colorForName,
   createTimeFormatter,
@@ -12,6 +12,7 @@ import {
   momentOpenErrorKey,
   REACTION_IMAGE,
   SmileyText,
+  toApiError,
   toast,
 } from '@lib';
 import { MeService } from '@services';
@@ -111,8 +112,13 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
     try {
       const post = await MeService.getById(item.postId);
       setOpenPost(toMePost(post, formatTime));
-    } catch {
-      toast.error(t('me.commentLoadError'));
+    } catch (error) {
+      const apiError = toApiError(error);
+      toast.error(
+        apiError.code === ME_ERROR_CODE.postHiddenByAdmin
+          ? apiError.message
+          : t('me.commentLoadError')
+      );
     } finally {
       setOpeningId(null);
     }

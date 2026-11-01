@@ -303,6 +303,8 @@ export interface AdminUserListItem {
   ken: number
   isVip: boolean
   isActive: boolean
+  lockedUntil?: string
+  lockReason?: string
   emailVerified: boolean
   createdAt: string
   lastLoginAt?: string | null
@@ -709,6 +711,8 @@ export interface MeCheckIn {
   actionIcon?: string
 }
 
+export type MeHiddenBy = 'owner' | 'admin' | 'clan'
+
 export interface MeListItem {
   id: string
   content?: string
@@ -717,6 +721,8 @@ export interface MeListItem {
   sticker?: string
   visibility: string
   enabled: boolean
+  hiddenBy?: MeHiddenBy
+  hiddenAt?: string
   likeCount: number
   dislikeCount: number
   commentCount: number
@@ -733,6 +739,8 @@ export interface MeDetail {
   sticker?: string
   visibility: string
   enabled: boolean
+  hiddenBy?: MeHiddenBy
+  hiddenAt?: string
   likeCount: number
   dislikeCount: number
   commentCount: number
@@ -2520,14 +2528,79 @@ export interface ReportSummary {
   pending: number
 }
 
+export type PenaltySeverity = 'none' | 'violation' | 'deliberate'
+
+export interface PenaltyOutcome {
+  counted: boolean
+  points: number
+  total: number
+  threshold: number
+  locked: boolean
+  lockedUntil?: string
+}
+
+export interface ReportPenaltyRequest {
+  severity: PenaltySeverity
+  contentRemoved: boolean
+}
+
 export interface UpdateReportStatusRequest {
   status: Exclude<ReportStatus, 'pending'>
   note?: string
+  penalty?: ReportPenaltyRequest
 }
 
 export interface UpdateReportStatusResult {
   report: AdminReport
   affected: number
+  penalty?: PenaltyOutcome
+}
+
+export interface MePenaltyRequest {
+  reason: ReportReason
+  severity: PenaltySeverity
+  note?: string
+}
+
+export interface MeStatusResult extends MeDetail {
+  penalty?: PenaltyOutcome
+}
+
+export type ViolationSource = 'report' | 'me_hide'
+
+export interface UserViolation {
+  id: string
+  source: ViolationSource
+  targetType: ReportTargetType
+  targetId: string
+  reportId?: string
+  reason: ReportReason
+  severity: PenaltySeverity
+  points: number
+  note?: string
+  admin?: ReportAdminBrief
+  revokedAt?: string
+  revokedBy?: ReportAdminBrief
+  createdAt: string
+}
+
+export interface ModerationLockStep {
+  points: number
+  hours: number
+}
+
+export interface UserViolationSummary {
+  items: UserViolation[]
+  total: number
+  threshold: number
+  expireHours: number
+  lockSteps: ModerationLockStep[]
+}
+
+export interface ModerationSetting {
+  deliberatePoints: number
+  expireHours: number
+  lockSteps: ModerationLockStep[]
 }
 
 export type PushAudience = 'all' | 'vip' | 'user'

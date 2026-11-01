@@ -24,7 +24,8 @@ import { useDeleteUser, useUpdateUserStatus, useUsers } from '@/hooks/useUserQue
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { UserDetailModal } from './UserDetailModal'
-import { GENDER, SORT_OPTIONS } from './constants'
+import { GENDER, SORT_OPTIONS, VIOLATION_LOCK_LABEL } from './constants'
+import { isViolationLock, violationLockPeriod } from './utils'
 import type { AdminUserListItem } from '@/types'
 import { PAGE_SIZE } from '@/lib/constants'
 
@@ -98,7 +99,9 @@ export function UsersPage() {
     const next = !user.isActive
     modal.confirm({
       title: next ? 'Mở khoá người dùng?' : 'Khoá người dùng?',
-      content: `@${user.username}`,
+      content: isViolationLock(user)
+        ? `@${user.username} đang bị khoá do vi phạm. Mở khoá không gỡ điểm vi phạm, nếu điểm còn chạm mốc khoá thì lần bị cộng điểm tiếp theo sẽ khoá lại ngay. Muốn xoá điểm thì vào Chi tiết → Vi phạm → Xoá sạch điểm.`
+        : `@${user.username}`,
       okText: next ? 'Mở khoá' : 'Khoá',
       okButtonProps: { danger: !next },
       cancelText: 'Huỷ',
@@ -170,9 +173,19 @@ export function UsersPage() {
     {
       title: 'Trạng thái',
       dataIndex: 'isActive',
-      width: 130,
-      render: (isActive: boolean) =>
-        isActive ? <Tag color="green">Hoạt động</Tag> : <Tag color="red">Đã khoá</Tag>,
+      width: 170,
+      render: (_, user) => {
+        if (user.isActive) return <Tag color="green">Hoạt động</Tag>
+        if (!isViolationLock(user)) return <Tag color="red">Đã khoá</Tag>
+        return (
+          <div style={{ lineHeight: 1.3 }}>
+            <Tag color="red">{VIOLATION_LOCK_LABEL}</Tag>
+            <div style={{ fontSize: 12, color: '#6b7785', marginTop: 2 }}>
+              {violationLockPeriod(user.lockedUntil)}
+            </div>
+          </div>
+        )
+      },
     },
     {
       title: 'Email',
@@ -305,7 +318,7 @@ export function UsersPage() {
         columns={columns}
         dataSource={data?.items ?? []}
         loading={isFetching}
-        scroll={{ x: 1100 }}
+        scroll={{ x: 1140 }}
         pagination={{
           current: page,
           pageSize: PAGE_SIZE,

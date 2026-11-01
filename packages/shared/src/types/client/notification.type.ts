@@ -21,6 +21,7 @@ interface NotificationStateBase<TNotification> {
 export interface AppNotificationState extends NotificationStateBase<AppNotification> {
   handleIncoming: (payload: AppNotificationIncoming) => void;
   removeLocal: (id: string) => void;
+  hide: (id: string) => Promise<void>;
 }
 
 export interface MeNotificationState extends NotificationStateBase<MeNotification> {

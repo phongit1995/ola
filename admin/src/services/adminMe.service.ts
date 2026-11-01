@@ -8,6 +8,8 @@ import type {
   MeDetail,
   MeListItem,
   MeListParams,
+  MePenaltyRequest,
+  MeStatusResult,
 } from '@/types'
 
 export const AdminMeService = {
@@ -23,9 +25,10 @@ export const AdminMeService = {
     return data.data
   },
 
-  async setStatus(id: string, enabled: boolean): Promise<MeDetail> {
-    const { data } = await http.patch<ApiResponse<MeDetail>>(`/admin/me/${id}/status`, {
+  async setStatus(id: string, enabled: boolean, penalty?: MePenaltyRequest): Promise<MeStatusResult> {
+    const { data } = await http.patch<ApiResponse<MeStatusResult>>(`/admin/me/${id}/status`, {
       enabled,
+      penalty,
     })
     return data.data
   },

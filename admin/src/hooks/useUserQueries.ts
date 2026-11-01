@@ -8,7 +8,7 @@ import type {
   UsernameChangeListParams,
 } from '@/types'
 
-const USERS_KEY = 'admin-users'
+export const USERS_KEY = 'admin-users'
 
 export function useUsers(params: UserListParams) {
   return useQuery({
@@ -48,6 +48,41 @@ export function useUserSessions(id: string | null, params: ListParams) {
     queryFn: () => AdminUserService.listSessions(id as string, params),
     enabled: id != null,
     placeholderData: (prev) => prev,
+  })
+}
+
+export function useUserViolations(id: string | null) {
+  return useQuery({
+    queryKey: [USERS_KEY, 'violations', id],
+    queryFn: () => AdminUserService.listViolations(id as string),
+    enabled: id != null,
+  })
+}
+
+export function useRevokeUserViolation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, violationId }: { id: string; violationId: string }) =>
+      AdminUserService.revokeViolation(id, violationId),
+    onSuccess: (summary, { id }) => {
+      queryClient.setQueryData([USERS_KEY, 'violations', id], summary)
+    },
+    onError: (_err, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY, 'violations', id] })
+    },
+  })
+}
+
+export function useClearUserViolations() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => AdminUserService.clearViolations(id),
+    onSuccess: (summary, id) => {
+      queryClient.setQueryData([USERS_KEY, 'violations', id], summary)
+    },
+    onError: (_err, id) => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY, 'violations', id] })
+    },
   })
 }
 

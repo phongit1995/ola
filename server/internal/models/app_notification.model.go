@@ -10,6 +10,8 @@ const (
 	AppNotificationClanVerified     = "clan_verified"
 	AppNotificationClanUnverified   = "clan_unverified"
 	AppNotificationClanBanned       = "clan_banned"
+	AppNotificationContentViolation = "content_violation"
+	AppNotificationReportResolved   = "report_resolved"
 )
 
 type AppNotification struct {
