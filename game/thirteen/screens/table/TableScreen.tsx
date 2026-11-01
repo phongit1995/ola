@@ -3,6 +3,7 @@ import { cardAsset, CARD_BACK, REACTION_ASSETS, type ReactionKey } from '../../a
 import backIcon from '../../assets/icons/ic-back.svg';
 import chatIcon from '../../assets/icons/ic-chat.svg';
 import closeIcon from '../../assets/icons/ic-close.svg';
+import eyeIcon from '../../assets/icons/ic-eye.svg';
 import hintIcon from '../../assets/icons/ic-hint.svg';
 import sendIcon from '../../assets/icons/ic-send.svg';
 import wifiOffIcon from '../../assets/icons/ic-wifi-off.svg';
@@ -19,6 +20,7 @@ import { detectCombo } from '../../logic/combos';
 import { hintPlays } from '../../logic/hints';
 import { seatSlots, placeLabel } from '../../helpers/seats';
 import { useThirteen, type TableEvent } from '../../store/useThirteen';
+import type { PlayerInfo } from '../../../src/sdk';
 import { QUICK_CHATS } from './constants';
 import { useCardFlight } from './useCardFlight';
 import { useElementWidth } from './useElementWidth';
@@ -349,6 +351,58 @@ function HandFan({ handRects }: { handRects: RefObject<HandRects> }) {
   );
 }
 
+const NO_SPECTATORS: PlayerInfo[] = [];
+
+function SpectatorDrawer() {
+  const spectators = useThirteen((s) => (s.spectators?.matchId === s.matchId ? s.spectators.spectators : NO_SPECTATORS));
+  const userId = useThirteen((s) => s.user?.id);
+  const [open, setOpen] = useState(false);
+  if (spectators.length === 0) {
+    if (open) setOpen(false);
+    return null;
+  }
+  return (
+    <div className={'tl-viewers' + (open ? ' open' : '')}>
+      <button
+        type="button"
+        className="tl-viewers-tab"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-label={open ? 'Ẩn danh sách người xem' : `${spectators.length} người đang xem`}
+      >
+        <img src={eyeIcon} alt="" />
+        <span>{spectators.length}</span>
+      </button>
+      <div className="tl-viewers-panel" inert={!open}>
+        <span className="tl-viewers-title">Người đang xem</span>
+        <ul className="tl-viewers-list">
+          {spectators.map((viewer) => (
+            <li key={viewer.id} className="tl-viewers-item">
+              <PlayerAvatar name={viewer.name} vipType={viewer.vipType} size="sm" />
+              <PlayerName name={viewer.name} self={viewer.id === userId} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function SpectatorBar() {
+  const stopWatching = useThirteen((s) => s.stopWatching);
+  return (
+    <div className="tl-action-bar tl-spectator-bar">
+      <span className="tl-spectator-note">
+        <img src={eyeIcon} alt="" />
+        <span>Bạn đang xem ván này</span>
+      </span>
+      <button type="button" className="tl-btn tl-btn-ghost tl-btn-wide" onClick={stopWatching}>
+        Rời xem
+      </button>
+    </div>
+  );
+}
+
 function HintButton() {
   const hand = useThirteen((s) => s.hand);
   const table = useThirteen((s) => s.table);
@@ -436,6 +490,7 @@ function ChatOverlay() {
   const sendReaction = useThirteen((s) => s.sendReaction);
   const user = useThirteen((s) => s.user);
   const roomOwnerId = useThirteen((s) => s.roomOwnerId || s.room?.ownerId || '');
+  const spectating = useThirteen((s) => s.spectating);
   const [draft, setDraft] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
 
@@ -473,42 +528,51 @@ function ChatOverlay() {
             </div>
           ))}
         </div>
-        <div className="tl-reaction-row">
-          {(Object.keys(REACTION_ASSETS) as ReactionKey[]).map((key) => (
-            <button
-              key={key}
-              type="button"
-              className="tl-reaction-btn"
-              onClick={() => {
-                sendReaction(key);
-                setChatOpen(false);
-              }}
-            >
-              <img src={REACTION_ASSETS[key]} alt={key} />
-            </button>
-          ))}
-        </div>
-        <div className="tl-quick-row">
-          {QUICK_CHATS.map((text) => (
-            <button key={text} type="button" className="tl-quick-chip" onClick={() => sendQuick(text)}>
-              {text}
-            </button>
-          ))}
-        </div>
-        <div className="tl-chat-input-row">
-          <input
-            className="tl-input"
-            value={draft}
-            maxLength={120}
-            placeholder="Nhập tin nhắn..."
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && send()}
-          />
-          <button type="button" className="tl-btn tl-btn-gold tl-send-btn" disabled={!draft.trim()} onClick={send}>
-            <span>Gửi</span>
-            <img src={sendIcon} alt="" />
-          </button>
-        </div>
+        {spectating ? (
+          <p className="tl-chat-readonly">
+            <img src={eyeIcon} alt="" />
+            Người xem chỉ đọc được trò chuyện của bàn
+          </p>
+        ) : (
+          <>
+            <div className="tl-reaction-row">
+              {(Object.keys(REACTION_ASSETS) as ReactionKey[]).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  className="tl-reaction-btn"
+                  onClick={() => {
+                    sendReaction(key);
+                    setChatOpen(false);
+                  }}
+                >
+                  <img src={REACTION_ASSETS[key]} alt={key} />
+                </button>
+              ))}
+            </div>
+            <div className="tl-quick-row">
+              {QUICK_CHATS.map((text) => (
+                <button key={text} type="button" className="tl-quick-chip" onClick={() => sendQuick(text)}>
+                  {text}
+                </button>
+              ))}
+            </div>
+            <div className="tl-chat-input-row">
+              <input
+                className="tl-input"
+                value={draft}
+                maxLength={120}
+                placeholder="Nhập tin nhắn..."
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && send()}
+              />
+              <button type="button" className="tl-btn tl-btn-gold tl-send-btn" disabled={!draft.trim()} onClick={send}>
+                <span>Gửi</span>
+                <img src={sendIcon} alt="" />
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -525,27 +589,41 @@ export function TableScreen() {
   const passed = useThirteen((s) => s.passed);
   const finishOrder = useThirteen((s) => s.finishOrder);
   const practice = useThirteen((s) => s.practice != null);
+  const spectating = useThirteen((s) => s.spectating);
+  const anchor = spectating ? 0 : you;
 
-  const slots = seatSlots(players.length, you);
+  const slots = seatSlots(players.length, anchor);
   const seatsBySlot = new Map<string, number>();
   slots.forEach((slot, seat) => seatsBySlot.set(slot, seat));
   const leftSeat = seatsBySlot.get('left');
   const topSeat = seatsBySlot.get('top');
   const rightSeat = seatsBySlot.get('right');
+  const bottomSeat = spectating ? anchor : null;
   const myPlace = finishOrder.indexOf(you);
   const handRects = useRef<HandRects>(new Map());
 
   return (
     <div className="tl-screen tl-table-screen">
       <div className="tl-topbar">
-        <button type="button" className="tl-icon-btn" onClick={requestExit} aria-label="Rời ván">
+        <button type="button" className="tl-icon-btn" onClick={requestExit} aria-label={spectating ? 'Rời xem' : 'Rời ván'}>
           <img src={backIcon} alt="" />
         </button>
-        <span className="tl-table-title">{practice ? 'Tập luyện' : 'Tiến Lên Miền Nam'}</span>
+        {spectating ? (
+          <span className="tl-table-title tl-watch-title">
+            <img src={eyeIcon} alt="" />
+            Đang xem
+          </span>
+        ) : (
+          <span className="tl-table-title">{practice ? 'Tập luyện' : 'Tiến Lên Miền Nam'}</span>
+        )}
         <ChatButton />
       </div>
 
-      <div className={'tl-felt' + (players.length >= 4 ? ' full' : players.length === 3 ? ' trio' : '')}>
+      <div
+        className={
+          'tl-felt' + (players.length >= 4 ? ' full' : players.length === 3 ? ' trio' : '') + (spectating ? ' watching' : '')
+        }
+      >
         {topSeat != null && (
           <div className="tl-seat-slot top">
             <OpponentSeat seat={topSeat} />
@@ -561,7 +639,13 @@ export function TableScreen() {
             <OpponentSeat seat={rightSeat} />
           </div>
         )}
+        {bottomSeat != null && (
+          <div className="tl-seat-slot bottom">
+            <OpponentSeat seat={bottomSeat} />
+          </div>
+        )}
         <TableCenter handRects={handRects} />
+        <SpectatorDrawer />
       </div>
 
       {finishFx && (
@@ -571,25 +655,31 @@ export function TableScreen() {
         </div>
       )}
 
-      <div className="tl-bottom">
-        <div className="tl-my-row">
-          <span className="tl-seat-avatar" data-seat={you}>
-            <TurnRing seat={you}>
-              <PlayerAvatar name="Bạn" vipType={user?.vipType ?? players[you]?.vipType} size="md" />
-            </TurnRing>
-            <SeatReactions seat={you} />
-            <SeatChatBubble seat={you} />
-          </span>
-          <div className="tl-my-info">
-            <span className="tl-my-name">Bạn</span>
-            {myPlace >= 0 && <span className="tl-badge tl-badge-gold">{placeLabel(myPlace + 1, players.length)}</span>}
-            {(passed[you] || passFxSeat === you) && <span className="tl-pass-chip">Bỏ lượt</span>}
-          </div>
-          <HintButton />
+      {spectating ? (
+        <div className="tl-bottom">
+          <SpectatorBar />
         </div>
-        <HandFan handRects={handRects} />
-        <ActionBar />
-      </div>
+      ) : (
+        <div className="tl-bottom">
+          <div className="tl-my-row">
+            <span className="tl-seat-avatar" data-seat={you}>
+              <TurnRing seat={you}>
+                <PlayerAvatar name="Bạn" vipType={user?.vipType ?? players[you]?.vipType} size="md" />
+              </TurnRing>
+              <SeatReactions seat={you} />
+              <SeatChatBubble seat={you} />
+            </span>
+            <div className="tl-my-info">
+              <span className="tl-my-name">Bạn</span>
+              {myPlace >= 0 && <span className="tl-badge tl-badge-gold">{placeLabel(myPlace + 1, players.length)}</span>}
+              {(passed[you] || passFxSeat === you) && <span className="tl-pass-chip">Bỏ lượt</span>}
+            </div>
+            <HintButton />
+          </div>
+          <HandFan handRects={handRects} />
+          <ActionBar />
+        </div>
+      )}
       <ChatOverlay />
 
       {selfDisconnected && (

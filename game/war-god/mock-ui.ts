@@ -852,6 +852,8 @@ function makeMockPvpSession(
     spectateList: () => {},
     spectateJoin: () => {},
     spectateLeave: () => {},
+    roomWatch: () => {},
+    roomUnwatch: () => {},
     onUserInfo: subscription,
     onQueueWaiting: subscription,
     onRoomList: subscription,
@@ -868,6 +870,7 @@ function makeMockPvpSession(
     onSpectateList: subscription,
     onSpectateJoined: subscription,
     onSpectateLeft: subscription,
+    onSpectators: subscription,
     startBotTurn: scheduleBotTurn,
     disconnect: () => {
       if (botTimer != null) window.clearTimeout(botTimer);

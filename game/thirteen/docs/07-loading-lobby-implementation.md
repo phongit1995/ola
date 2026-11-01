@@ -39,6 +39,7 @@ Kết quả là mockup chỉ đóng vai trò tham chiếu. Production không ph�
 | `assets/icons/ic-back.svg` | 24 × 24 | 24 px | mũi tên quay lại |
 | `assets/icons/ic-refresh.svg` | 24 × 24 | 22 px | tải lại room list |
 | `assets/icons/ic-lock.svg` | 16 × 16 | 16 px | phòng có mật khẩu |
+| `assets/icons/ic-eye.svg` | 24 × 24 | 18/20/22 px | nút “Xem”, tiêu đề và thanh của chế độ xem, tab số người xem |
 | `../../../web/src/assets/icons/apps/ken.png` | existing | 15/22/26 px | room bet / balance pill / bet input |
 | `assets/icons/ic-check.svg` | 24 × 24 | 19 px trong circle | capacity đang chọn |
 | `assets/icons/ic-cards-empty.svg` | 64 × 64 | 58 px | room list rỗng |
@@ -151,7 +152,9 @@ Avatar trong balance pill dùng ảnh VIP từ `user.vipType`, cùng mapping `/v
 
 - joinable: button sun;
 - locked: icon lock SVG cạnh tên;
-- playing: badge coral + button soft aqua;
+- playing: badge coral.
+  - Bàn công khai có button aqua đậm kèm icon mắt, label “Xem”; bấm vào thì đổi thành “Đang mở” cho tới khi server trả về.
+  - Bàn có mật khẩu giữ button soft aqua “Đang chơi” và bị disable, vì không cho người ngoài xem bàn riêng.
 - full: button soft aqua và label “Đầy”;
 - không đủ số dư cho `room.bet`: button coral nhạt, label “Thiếu Ken”, disable join;
 - meta luôn hiện icon Ken và số cược; `0` là giá trị hợp lệ và vẫn hiển thị;

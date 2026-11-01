@@ -7,6 +7,8 @@ import (
 
 type Deliver func(envelope protocol.OutEnvelope)
 
+const roomUnavailableReason = "unavailable"
+
 func spectateError(deliver Deliver, code, message string) bool {
 	deliver(protocol.OutEnvelope{Type: protocol.S2CError, Data: protocol.ErrorData{Code: code, Message: message}})
 	return false
@@ -21,7 +23,7 @@ func (e *Engine) SpectateList(gameID, userID string) {
 	}
 	entries := make([]protocol.SpectateListEntry, 0, len(snapshots))
 	for _, snapshot := range snapshots {
-		if snapshot.Status != matchStatusPlaying || snapshot.GameID != gameID {
+		if snapshot.Status != matchStatusPlaying || snapshot.GameID != gameID || privateRoom(snapshot.Room) {
 			continue
 		}
 		count, countErr := e.activeStore.SpectatorCount(gameID, snapshot.ID)
@@ -50,7 +52,8 @@ func (e *Engine) SpectateList(gameID, userID string) {
 // room; the snapshot is delivered while the match lock is held so no STATE can
 // slip in between the snapshot and the live stream. spectatorID identifies one
 // socket (not a user) so every tab holds its own seat.
-func (e *Engine) SpectateJoin(gameID, userID, matchID, spectatorID string, deliver Deliver) bool {
+func (e *Engine) SpectateJoin(gameID string, viewer protocol.PlayerInfo, matchID, spectatorID string, deliver Deliver) bool {
+	userID := viewer.ID
 	gameLogic, err := logic.Get(gameID)
 	if err != nil {
 		return spectateError(deliver, protocol.ErrorCodeUnknownGame, err.Error())
@@ -65,7 +68,7 @@ func (e *Engine) SpectateJoin(gameID, userID, matchID, spectatorID string, deliv
 		return spectateError(deliver, protocol.ErrorCodeSpectateOwnMatch, "you are playing a match")
 	}
 
-	count, status, err := e.activeStore.AddSpectator(gameID, matchID, spectatorID, MaxSpectators)
+	_, status, err := e.activeStore.AddSpectator(gameID, matchID, spectatorID, viewer, MaxSpectators)
 	if err != nil {
 		e.logger.Errorw("Failed to add spectator", "match_id", matchID, "user_id", userID, "error", err)
 		return spectateError(deliver, protocol.ErrorCodeSpectateFailed, "failed to join as spectator")
@@ -82,7 +85,7 @@ func (e *Engine) SpectateJoin(gameID, userID, matchID, spectatorID string, deliv
 			e.logger.Warnw("Failed to roll back spectator", "match_id", matchID, "error", removeErr)
 		}
 	}
-	joined, ok := e.deliverSpectateSnapshot(gameID, userID, matchID, count, deliver)
+	joined, ok := e.deliverSpectateSnapshot(gameLogic, gameID, userID, matchID, len(e.spectatorList(gameID, matchID)), deliver)
 	if !ok {
 		release()
 		return false
@@ -91,6 +94,7 @@ func (e *Engine) SpectateJoin(gameID, userID, matchID, spectatorID string, deliv
 		release()
 		return spectateError(deliver, protocol.ErrorCodeSpectateOwnMatch, "you are playing this match")
 	}
+	e.broadcastSpectators(gameID, matchID)
 	return true
 }
 
@@ -101,12 +105,63 @@ func (e *Engine) SpectateLeave(gameID, matchID, spectatorID string, deliver Deli
 	if err := e.activeStore.RemoveSpectator(gameID, matchID, spectatorID); err != nil {
 		e.logger.Warnw("Failed to remove spectator", "match_id", matchID, "error", err)
 	}
+	e.broadcastSpectators(gameID, matchID)
 	if deliver != nil {
 		deliver(protocol.OutEnvelope{
 			Type: protocol.S2CSpectateLeft,
 			Data: protocol.SpectateLeftData{MatchID: matchID, Reason: protocol.SpectateLeftReasonLeft},
 		})
 	}
+}
+
+func (e *Engine) spectatorList(gameID, matchID string) []protocol.PlayerInfo {
+	viewers, err := e.activeStore.Spectators(gameID, matchID)
+	if err != nil {
+		e.logger.Warnw("Failed to list spectators", "match_id", matchID, "error", err)
+	}
+	if viewers == nil {
+		viewers = []protocol.PlayerInfo{}
+	}
+	return viewers
+}
+
+func (e *Engine) spectatorsEnvelope(gameID, matchID string) protocol.OutEnvelope {
+	return protocol.OutEnvelope{
+		Type: protocol.S2CSpectators,
+		Data: protocol.SpectatorsData{MatchID: matchID, Spectators: e.spectatorList(gameID, matchID)},
+	}
+}
+
+func (e *Engine) playingMatchPlayers(gameID, matchID string) ([]protocol.PlayerInfo, bool) {
+	if m := e.matchByID(matchID); m != nil && m.GameID == gameID {
+		m.mu.Lock()
+		defer m.mu.Unlock()
+		if m.over {
+			return nil, false
+		}
+		return append([]protocol.PlayerInfo(nil), m.players...), true
+	}
+	snapshot, found, err := e.activeStore.Get(gameID, matchID)
+	if err != nil || !found || snapshot.Status != matchStatusPlaying || snapshot.GameID != gameID {
+		return nil, false
+	}
+	return snapshot.Players, true
+}
+
+func (e *Engine) broadcastSpectators(gameID, matchID string) {
+	players, playing := e.playingMatchPlayers(gameID, matchID)
+	if !playing {
+		return
+	}
+	envelope := e.spectatorsEnvelope(gameID, matchID)
+	for _, p := range players {
+		e.toUser(gameID, p.ID, envelope)
+	}
+	e.toMatch(gameID, matchID, envelope)
+}
+
+func privateRoom(room *Room) bool {
+	return room != nil && room.Password != ""
 }
 
 func isPlayer(players []protocol.PlayerInfo, userID string) bool {
@@ -119,7 +174,7 @@ func isPlayer(players []protocol.PlayerInfo, userID string) bool {
 }
 
 // Returns (joined, found). joined=false with found=true means the user is a player.
-func (e *Engine) deliverSpectateSnapshot(gameID, userID, matchID string, count int, deliver Deliver) (bool, bool) {
+func (e *Engine) deliverSpectateSnapshot(gameLogic logic.GameLogic, gameID, userID, matchID string, count int, deliver Deliver) (bool, bool) {
 	if m := e.matchByID(matchID); m != nil && m.GameID == gameID {
 		m.mu.Lock()
 		defer m.mu.Unlock()
@@ -130,6 +185,10 @@ func (e *Engine) deliverSpectateSnapshot(gameID, userID, matchID string, count i
 		if isPlayer(m.players, userID) {
 			return false, true
 		}
+		if privateRoom(m.room) {
+			spectateError(deliver, protocol.ErrorCodeSpectateNotAllowed, "private rooms cannot be spectated")
+			return false, false
+		}
 		roomOwnerID := ""
 		if m.room != nil {
 			roomOwnerID = m.room.OwnerID
@@ -138,7 +197,7 @@ func (e *Engine) deliverSpectateSnapshot(gameID, userID, matchID string, count i
 			MatchID:     m.ID,
 			GameID:      m.GameID,
 			Players:     append([]protocol.PlayerInfo(nil), m.players...),
-			State:       m.state,
+			State:       spectatorView(m.logic, m.state),
 			Turn:        m.turnIdx,
 			Deadline:    m.deadline.UnixMilli(),
 			Bet:         m.bet,
@@ -161,6 +220,16 @@ func (e *Engine) deliverSpectateSnapshot(gameID, userID, matchID string, count i
 	if isPlayer(snapshot.Players, userID) {
 		return false, true
 	}
+	if privateRoom(snapshot.Room) {
+		spectateError(deliver, protocol.ErrorCodeSpectateNotAllowed, "private rooms cannot be spectated")
+		return false, false
+	}
+	state, err := gameLogic.DecodeState(snapshot.State)
+	if err != nil {
+		e.logger.Errorw("Failed to decode match snapshot for spectating", "match_id", matchID, "error", err)
+		deliver(protocol.OutEnvelope{Type: protocol.S2CError, Data: protocol.ErrorData{Code: protocol.ErrorCodeSpectateFailed, Message: "failed to join as spectator"}})
+		return false, false
+	}
 	roomOwnerID := ""
 	if snapshot.Room != nil {
 		roomOwnerID = snapshot.Room.OwnerID
@@ -169,7 +238,7 @@ func (e *Engine) deliverSpectateSnapshot(gameID, userID, matchID string, count i
 		MatchID:     snapshot.ID,
 		GameID:      snapshot.GameID,
 		Players:     snapshot.Players,
-		State:       snapshot.State,
+		State:       spectatorView(gameLogic, state),
 		Turn:        snapshot.TurnIndex,
 		Deadline:    snapshot.TurnDeadline,
 		Bet:         snapshot.Bet,
@@ -185,6 +254,7 @@ func (e *Engine) notifySpectatorsMatchOver(m *Match, data protocol.MatchOverData
 	}
 	data.Payout = 0
 	data.KenDelta = 0
+	data.State = spectatorView(m.logic, m.state)
 	e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
 	e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{
 		Type: protocol.S2CSpectateLeft,
@@ -193,4 +263,37 @@ func (e *Engine) notifySpectatorsMatchOver(m *Match, data protocol.MatchOverData
 	if err := e.activeStore.ClearSpectators(m.GameID, m.ID); err != nil {
 		e.logger.Warnw("Failed to clear spectators", "match_id", m.ID, "error", err)
 	}
+}
+
+func (e *Engine) WatchRoom(gameID, userID, roomID string, deliver Deliver) bool {
+	unavailable := func() bool {
+		deliver(protocol.OutEnvelope{
+			Type: protocol.S2CRoomClosed,
+			Data: protocol.RoomClosedData{RoomID: roomID, Reason: roomUnavailableReason},
+		})
+		return false
+	}
+	if roomID == "" {
+		return unavailable()
+	}
+	if room, exists := e.store.Get(gameID, roomID); exists {
+		if privateRoom(&room) || room.hasMember(userID) {
+			return unavailable()
+		}
+		state := roomStateData(room, "", "")
+		state.Watcher = true
+		deliver(protocol.OutEnvelope{Type: protocol.S2CRoomState, Data: state})
+		return true
+	}
+	m := e.matchByID(e.matchIDForRoom(roomID))
+	if m == nil || m.GameID != gameID {
+		return unavailable()
+	}
+	m.mu.Lock()
+	watchable := !m.over && m.room != nil && !privateRoom(m.room) && !isPlayer(m.players, userID)
+	m.mu.Unlock()
+	if !watchable {
+		return unavailable()
+	}
+	return true
 }

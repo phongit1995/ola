@@ -35,6 +35,12 @@ const ERROR_TEXT: Record<string, string> = {
   INVALID_REACTION: 'Cảm xúc không hợp lệ',
   REACTION_RATE_LIMITED: 'Bạn thả cảm xúc quá nhanh',
   USER_INFO_FAILED: 'Không tải được thông tin người chơi',
+  MATCH_NOT_FOUND: 'Ván đấu đã kết thúc',
+  SPECTATE_FAILED: 'Không mở được bàn để xem, vui lòng thử lại',
+  SPECTATE_FULL: 'Bàn này đã đủ người xem',
+  SPECTATE_NOT_ALLOWED: 'Bàn có mật khẩu nên không xem được',
+  SPECTATE_NOT_SUPPORTED: 'Trò chơi này chưa hỗ trợ xem bàn',
+  SPECTATE_OWN_MATCH: 'Bạn đang chơi ván này',
 };
 
 export function errorText(code: string): string {

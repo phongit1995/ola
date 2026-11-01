@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	"ola-chat-server/internal/game/protocol"
@@ -16,7 +17,7 @@ const (
 	activeMatchKey      = "GAME:%s:MATCH:%s"
 	userMatchKey        = "GAME:%s:USERMATCH:%s"
 	activeMatchesKey    = "GAME:%s:ACTIVE_MATCHES"
-	spectatorsKey       = "GAME:%s:MATCH:%s:SPECTATORS"
+	spectatorsKey       = "GAME:%s:MATCH:%s:VIEWERS"
 	matchStatusPlaying  = "playing"
 	matchStatusFinished = "finished"
 	matchStatusAborting = "aborting"
@@ -52,9 +53,10 @@ type ActiveMatchRepository interface {
 	DeleteIfStatus(gameID, matchID, status string, userIDs ...string) (bool, error)
 	Get(gameID, matchID string) (ActiveMatchSnapshot, bool, error)
 	List(gameID string) ([]ActiveMatchSnapshot, error)
-	AddSpectator(gameID, matchID, spectatorID string, limit int) (count int, status SpectatorAddStatus, err error)
+	AddSpectator(gameID, matchID, spectatorID string, viewer protocol.PlayerInfo, limit int) (count int, status SpectatorAddStatus, err error)
 	RemoveSpectator(gameID, matchID, spectatorID string) error
 	SpectatorCount(gameID, matchID string) (int, error)
+	Spectators(gameID, matchID string) ([]protocol.PlayerInfo, error)
 	ClearSpectators(gameID, matchID string) error
 }
 
@@ -163,9 +165,18 @@ func matchDeleteKeys(gameID, matchID string, userIDs []string) []string {
 	return keys
 }
 
-func (s *MatchStore) AddSpectator(gameID, matchID, spectatorID string, limit int) (int, SpectatorAddStatus, error) {
+type spectatorEntry struct {
+	protocol.PlayerInfo
+	JoinedAt int64 `json:"joinedAt"`
+}
+
+func (s *MatchStore) AddSpectator(gameID, matchID, spectatorID string, viewer protocol.PlayerInfo, limit int) (int, SpectatorAddStatus, error) {
 	ctx, cancel := gameRedisContext(s.cache)
 	defer cancel()
+	entry, err := json.Marshal(spectatorEntry{PlayerInfo: viewer, JoinedAt: time.Now().UnixMilli()})
+	if err != nil {
+		return 0, SpectatorFull, fmt.Errorf("encode spectator: %w", err)
+	}
 	const addSpectatorScript = `
 local raw = redis.call("GET", KEYS[2])
 if not raw then
@@ -175,14 +186,14 @@ local snapshot = cjson.decode(raw)
 if snapshot["status"] ~= ARGV[4] then
   return -2
 end
-if redis.call("SISMEMBER", KEYS[1], ARGV[1]) == 1 then
-  return redis.call("SCARD", KEYS[1])
+if redis.call("HEXISTS", KEYS[1], ARGV[1]) == 1 then
+  return redis.call("HLEN", KEYS[1])
 end
-local count = redis.call("SCARD", KEYS[1])
+local count = redis.call("HLEN", KEYS[1])
 if count >= tonumber(ARGV[2]) then
   return -1
 end
-redis.call("SADD", KEYS[1], ARGV[1])
+redis.call("HSET", KEYS[1], ARGV[1], ARGV[5])
 redis.call("EXPIRE", KEYS[1], ARGV[3])
 return count + 1`
 	keys := []string{
@@ -190,7 +201,7 @@ return count + 1`
 		fmt.Sprintf(activeMatchKey, gameID, matchID),
 	}
 	count, err := s.cache.GetClient().
-		Eval(ctx, addSpectatorScript, keys, spectatorID, limit, int(activeMatchTTL.Seconds()), matchStatusPlaying).
+		Eval(ctx, addSpectatorScript, keys, spectatorID, limit, int(activeMatchTTL.Seconds()), matchStatusPlaying, string(entry)).
 		Int()
 	if err != nil {
 		return 0, SpectatorFull, fmt.Errorf("add spectator: %w", err)
@@ -207,20 +218,47 @@ return count + 1`
 func (s *MatchStore) RemoveSpectator(gameID, matchID, spectatorID string) error {
 	ctx, cancel := gameRedisContext(s.cache)
 	defer cancel()
-	if err := s.cache.GetClient().SRem(ctx, fmt.Sprintf(spectatorsKey, gameID, matchID), spectatorID).Err(); err != nil {
+	if err := s.cache.GetClient().HDel(ctx, fmt.Sprintf(spectatorsKey, gameID, matchID), spectatorID).Err(); err != nil {
 		return fmt.Errorf("remove spectator: %w", err)
 	}
 	return nil
 }
 
 func (s *MatchStore) SpectatorCount(gameID, matchID string) (int, error) {
+	viewers, err := s.Spectators(gameID, matchID)
+	return len(viewers), err
+}
+
+func (s *MatchStore) Spectators(gameID, matchID string) ([]protocol.PlayerInfo, error) {
 	ctx, cancel := gameRedisContext(s.cache)
 	defer cancel()
-	count, err := s.cache.GetClient().SCard(ctx, fmt.Sprintf(spectatorsKey, gameID, matchID)).Result()
+	values, err := s.cache.GetClient().HVals(ctx, fmt.Sprintf(spectatorsKey, gameID, matchID)).Result()
 	if err != nil {
-		return 0, fmt.Errorf("count spectators: %w", err)
+		return nil, fmt.Errorf("list spectators: %w", err)
 	}
-	return int(count), nil
+	entries := make([]spectatorEntry, 0, len(values))
+	for _, value := range values {
+		var entry spectatorEntry
+		if err := json.Unmarshal([]byte(value), &entry); err != nil || entry.ID == "" {
+			continue
+		}
+		entries = append(entries, entry)
+	}
+	return uniqueSpectators(entries), nil
+}
+
+func uniqueSpectators(entries []spectatorEntry) []protocol.PlayerInfo {
+	sort.SliceStable(entries, func(i, j int) bool { return entries[i].JoinedAt < entries[j].JoinedAt })
+	seen := make(map[string]bool, len(entries))
+	viewers := make([]protocol.PlayerInfo, 0, len(entries))
+	for _, entry := range entries {
+		if seen[entry.ID] {
+			continue
+		}
+		seen[entry.ID] = true
+		viewers = append(viewers, entry.PlayerInfo)
+	}
+	return viewers
 }
 
 func (s *MatchStore) ClearSpectators(gameID, matchID string) error {

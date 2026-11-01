@@ -349,6 +349,8 @@ export function createPracticeSession({ user, bots, random = Math.random }: Prac
     spectateList() {},
     spectateJoin() {},
     spectateLeave() {},
+    roomWatch() {},
+    roomUnwatch() {},
 
     onUserInfo: () => () => {},
     onQueueWaiting: () => () => {},
@@ -373,6 +375,7 @@ export function createPracticeSession({ user, bots, random = Math.random }: Prac
     onSpectateList: () => () => {},
     onSpectateJoined: () => () => {},
     onSpectateLeft: () => () => {},
+    onSpectators: () => () => {},
     onConnectionChange: () => () => {},
     onConnectionError: () => () => {},
 

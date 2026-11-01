@@ -30,6 +30,7 @@ import {
   type SpectateJoinedData,
   type SpectateLeftData,
   type SpectateListData,
+  type SpectatorsData,
   type StateData,
   type UserInfoData,
 } from './protocol';
@@ -57,6 +58,8 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   spectateList(): void;
   spectateJoin(matchId: string): void;
   spectateLeave(matchId?: string): void;
+  roomWatch(roomId: string): void;
+  roomUnwatch(): void;
   onUserInfo(handler: (data: UserInfoData) => void): () => void;
   onQueueWaiting(handler: () => void): () => void;
   onRoomList(handler: (data: RoomListData) => void): () => void;
@@ -80,6 +83,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onSpectateList(handler: (data: SpectateListData) => void): () => void;
   onSpectateJoined(handler: (data: SpectateJoinedData<TState>) => void): () => void;
   onSpectateLeft(handler: (data: SpectateLeftData) => void): () => void;
+  onSpectators(handler: (data: SpectatorsData) => void): () => void;
   onConnectionChange(handler: (connected: boolean) => void): () => void;
   onConnectionError(handler: (error: Error) => void): () => void;
   disconnect(): void;
@@ -157,6 +161,8 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     spectateList: () => send(C2S.SpectateList),
     spectateJoin: (matchId) => send(C2S.SpectateJoin, { matchId }),
     spectateLeave: (matchId) => send(C2S.SpectateLeave, matchId ? { matchId } : undefined),
+    roomWatch: (roomId) => send(C2S.RoomWatch, { roomId }),
+    roomUnwatch: () => send(C2S.RoomUnwatch),
     onUserInfo: (handler) => on(S2C.UserInfo, handler as Handler),
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),
     onRoomList: (handler) => on(S2C.RoomList, handler as Handler),
@@ -180,6 +186,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     onSpectateList: (handler) => on(S2C.SpectateList, handler as Handler),
     onSpectateJoined: (handler) => on(S2C.SpectateJoined, handler as Handler),
     onSpectateLeft: (handler) => on(S2C.SpectateLeft, handler as Handler),
+    onSpectators: (handler) => on(S2C.Spectators, handler as Handler),
     onConnectionChange: (handler) => on('connection', handler as Handler),
     onConnectionError: (handler) => on('connection_error', handler as Handler),
     disconnect: () => socket.disconnect(),

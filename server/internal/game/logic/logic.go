@@ -79,6 +79,12 @@ type StateViewer interface {
 	ViewFor(state any, playerIdx int) any
 }
 
+// SpectatorViewer lets a hidden-information game be watched: spectators only
+// ever receive this projection, which must leave out every private field.
+type SpectatorViewer interface {
+	SpectatorView(state any) any
+}
+
 // QuitHandler lets a match continue after a player forfeits, times out
 // repeatedly, or exceeds the reconnect grace, as long as enough active
 // players remain. The game marks the seat as quit inside its state.

@@ -23,6 +23,8 @@ const (
 	C2SSpectateList  = "SPECTATE_LIST"
 	C2SSpectateJoin  = "SPECTATE_JOIN"
 	C2SSpectateLeave = "SPECTATE_LEAVE"
+	C2SRoomWatch     = "ROOM_WATCH"
+	C2SRoomUnwatch   = "ROOM_UNWATCH"
 
 	S2CUserInfo             = "USER_INFO"
 	S2CQueueWaiting         = "QUEUE_WAITING"
@@ -47,6 +49,7 @@ const (
 	S2CSpectateList         = "SPECTATE_LIST"
 	S2CSpectateJoined       = "SPECTATE_JOINED"
 	S2CSpectateLeft         = "SPECTATE_LEFT"
+	S2CSpectators           = "SPECTATORS"
 )
 
 const (
@@ -91,6 +94,7 @@ const (
 	ErrorCodeSpectateFull         = "SPECTATE_FULL"
 	ErrorCodeSpectateNotSupported = "SPECTATE_NOT_SUPPORTED"
 	ErrorCodeSpectateOwnMatch     = "SPECTATE_OWN_MATCH"
+	ErrorCodeSpectateNotAllowed   = "SPECTATE_NOT_ALLOWED"
 	ErrorCodeMatchNotFound        = "MATCH_NOT_FOUND"
 	ErrorCodeStateSaveFailed      = "STATE_SAVE_FAILED"
 	ErrorCodeUnknownGame          = "UNKNOWN_GAME"
@@ -271,6 +275,11 @@ type SpectateLeftData struct {
 	Reason  string `json:"reason"`
 }
 
+type SpectatorsData struct {
+	MatchID    string       `json:"matchId"`
+	Spectators []PlayerInfo `json:"spectators"`
+}
+
 type ErrorData struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -388,6 +397,7 @@ type RoomStateData struct {
 	MaxPlayers   int          `json:"maxPlayers,omitempty"`
 	Members      []RoomMember `json:"members"`
 	AfterMatchID string       `json:"afterMatchId,omitempty"`
+	Watcher      bool         `json:"watcher,omitempty"`
 }
 
 type RoomSyncData struct {

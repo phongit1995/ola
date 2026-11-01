@@ -2,32 +2,156 @@ import { useEffect, useRef, useState } from 'react';
 import backIcon from '../../assets/icons/ic-back.svg';
 import checkIcon from '../../assets/icons/ic-check.svg';
 import crownIcon from '../../assets/icons/ic-crown.svg';
+import eyeIcon from '../../assets/icons/ic-eye.svg';
 import plusIcon from '../../assets/icons/ic-plus.svg';
 import sendIcon from '../../assets/icons/ic-send.svg';
 import userMinusIcon from '../../assets/icons/ic-user-minus.svg';
+import type { RoomStateData } from '../../../src/sdk';
 import { PlayerAvatar } from '../../components/PlayerAvatar';
 import { PlayerName } from '../../components/PlayerName';
 import { formatKen } from '../../helpers/room';
 import { useThirteen } from '../../store/useThirteen';
 
-export function RoomScreen() {
-  const room = useThirteen((s) => s.room);
-  const user = useThirteen((s) => s.user);
+function roomSummary(room: RoomStateData): string {
+  const maxPlayers = room.maxPlayers ?? 4;
+  return `${room.members.length}/${maxPlayers} người · ${formatKen(room.bet)} Ken${room.locked ? ' · Có mật khẩu' : ''}`;
+}
+
+function RoomSeats({ room, selfId, onKick }: { room: RoomStateData; selfId: string; onKick?: (userId: string) => void }) {
+  return (
+    <div className="tl-seat-grid">
+      {Array.from({ length: room.maxPlayers ?? 4 }, (_, i) => {
+        const member = room.members[i];
+        if (!member) {
+          return (
+            <div key={`empty-${i}`} className="tl-seat tl-seat-empty">
+              <div className="tl-seat-plus">
+                <img src={plusIcon} alt="" />
+              </div>
+              <span>Ghế trống</span>
+            </div>
+          );
+        }
+        return (
+          <div key={member.id} className={'tl-seat' + (member.owner ? ' owner' : '')}>
+            {member.owner && <img className="tl-crown" src={crownIcon} alt="Chủ bàn" />}
+            {onKick && !member.owner && (
+              <button type="button" className="tl-kick-btn" aria-label={`Mời ${member.name} rời bàn`} onClick={() => onKick(member.id)}>
+                <img src={userMinusIcon} alt="" />
+              </button>
+            )}
+            <PlayerAvatar name={member.name} vipType={member.vipType} size="lg" />
+            <span className="tl-seat-name">
+              <PlayerName name={member.name} self={member.id === selfId} />
+            </span>
+            {member.owner ? (
+              <span className="tl-badge tl-badge-gold">Chủ bàn</span>
+            ) : member.ready ? (
+              <span className="tl-badge tl-badge-green">
+                <img src={checkIcon} alt="" /> Đã sẵn sàng
+              </span>
+            ) : (
+              <span className="tl-badge">Chưa sẵn sàng</span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function RoomChatLog({ room, selfId, empty }: { room: RoomStateData; selfId: string; empty: string }) {
   const roomChat = useThirteen((s) => s.roomChat);
-  const leaveRoom = useThirteen((s) => s.leaveRoom);
-  const setReady = useThirteen((s) => s.setReady);
-  const startRoom = useThirteen((s) => s.startRoom);
-  const kickMember = useThirteen((s) => s.kickMember);
-  const sendRoomChatText = useThirteen((s) => s.sendRoomChatText);
-  const [draft, setDraft] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
   }, [roomChat]);
 
+  return (
+    <div ref={logRef} className="tl-room-chat-log">
+      {roomChat.length === 0 && <span className="tl-chat-hint">{empty}</span>}
+      {roomChat.map((msg) => (
+        <div key={`${msg.userId}-${msg.sentAt}`} className="tl-chat-line">
+          <b>
+            <PlayerName name={msg.name} self={msg.userId === selfId} owner={msg.userId === room.ownerId} />:
+          </b>{' '}
+          {msg.text}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WatchedRoomScreen() {
+  const room = useThirteen((s) => s.watchedRoom);
+  const stopWatching = useThirteen((s) => s.stopWatching);
+  const joinWatchedRoom = useThirteen((s) => s.joinWatchedRoom);
+
+  if (!room) return null;
+  const freeSeat = room.members.length < (room.maxPlayers ?? 4);
+  const waitingFor = room.members.filter((m) => !m.owner && !m.ready).length;
+
+  return (
+    <div className="tl-screen tl-room tl-room-watch">
+      <div className="tl-topbar">
+        <button type="button" className="tl-icon-btn" onClick={stopWatching} aria-label="Rời xem">
+          <img src={backIcon} alt="" />
+        </button>
+        <div className="tl-room-title">
+          <span className="tl-watch-title">
+            <img src={eyeIcon} alt="" />
+            Đang xem bàn chờ
+          </span>
+          <small>{roomSummary(room)}</small>
+        </div>
+        <span className="tl-topbar-spacer" />
+      </div>
+
+      <RoomSeats room={room} selfId="" />
+
+      <p className="tl-room-watch-status" role="status">
+        {waitingFor > 0 ? `Đang chờ ${waitingFor} người sẵn sàng` : 'Chờ chủ bàn bắt đầu ván mới'}
+        <span>Ván mới bắt đầu bạn sẽ được xem tiếp</span>
+      </p>
+
+      <div className="tl-room-chat">
+        <RoomChatLog room={room} selfId="" empty="Chưa có ai trò chuyện..." />
+        <p className="tl-chat-readonly">
+          <img src={eyeIcon} alt="" />
+          Người xem chỉ đọc được trò chuyện của bàn
+        </p>
+      </div>
+
+      <div className="tl-room-actions">
+        <button type="button" className="tl-btn tl-btn-ghost" onClick={stopWatching}>
+          Rời xem
+        </button>
+        {freeSeat ? (
+          <button type="button" className="tl-btn tl-btn-gold" onClick={joinWatchedRoom}>
+            Vào chơi
+          </button>
+        ) : (
+          <button type="button" className="tl-btn tl-btn-disabled" disabled>
+            Bàn đã đủ người
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MemberRoomScreen() {
+  const room = useThirteen((s) => s.room);
+  const user = useThirteen((s) => s.user);
+  const leaveRoom = useThirteen((s) => s.leaveRoom);
+  const setReady = useThirteen((s) => s.setReady);
+  const startRoom = useThirteen((s) => s.startRoom);
+  const kickMember = useThirteen((s) => s.kickMember);
+  const sendRoomChatText = useThirteen((s) => s.sendRoomChatText);
+  const [draft, setDraft] = useState('');
+
   if (!room || !user) return null;
-  const maxPlayers = room.maxPlayers ?? 4;
   const isOwner = room.ownerId === user.id;
   const me = room.members.find((m) => m.id === user.id);
   const readyGuests = room.members.filter((m) => !m.owner && m.ready).length;
@@ -48,69 +172,15 @@ export function RoomScreen() {
         </button>
         <div className="tl-room-title">
           <span>Bàn chờ</span>
-          <small>
-            {room.members.length}/{maxPlayers} người · {formatKen(room.bet)} Ken{room.locked ? ' · Có mật khẩu' : ''}
-          </small>
+          <small>{roomSummary(room)}</small>
         </div>
         <span className="tl-topbar-spacer" />
       </div>
 
-      <div className="tl-seat-grid">
-        {Array.from({ length: maxPlayers }, (_, i) => {
-          const member = room.members[i];
-          if (!member) {
-            return (
-              <div key={`empty-${i}`} className="tl-seat tl-seat-empty">
-                <div className="tl-seat-plus">
-                  <img src={plusIcon} alt="" />
-                </div>
-                <span>Ghế trống</span>
-              </div>
-            );
-          }
-          return (
-            <div key={member.id} className={'tl-seat' + (member.owner ? ' owner' : '')}>
-              {member.owner && <img className="tl-crown" src={crownIcon} alt="Chủ bàn" />}
-              {isOwner && !member.owner && (
-                <button
-                  type="button"
-                  className="tl-kick-btn"
-                  aria-label={`Mời ${member.name} rời bàn`}
-                  onClick={() => kickMember(member.id)}
-                >
-                  <img src={userMinusIcon} alt="" />
-                </button>
-              )}
-              <PlayerAvatar name={member.name} vipType={member.vipType} size="lg" />
-              <span className="tl-seat-name">
-                <PlayerName name={member.name} self={member.id === user.id} />
-              </span>
-              {member.owner ? (
-                <span className="tl-badge tl-badge-gold">Chủ bàn</span>
-              ) : member.ready ? (
-                <span className="tl-badge tl-badge-green">
-                  <img src={checkIcon} alt="" /> Đã sẵn sàng
-                </span>
-              ) : (
-                <span className="tl-badge">Chưa sẵn sàng</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <RoomSeats room={room} selfId={user.id} onKick={isOwner ? kickMember : undefined} />
 
       <div className="tl-room-chat">
-        <div ref={logRef} className="tl-room-chat-log">
-          {roomChat.length === 0 && <span className="tl-chat-hint">Trò chuyện với người trong bàn...</span>}
-          {roomChat.map((msg) => (
-            <div key={`${msg.userId}-${msg.sentAt}`} className="tl-chat-line">
-              <b>
-                <PlayerName name={msg.name} self={msg.userId === user.id} owner={msg.userId === room.ownerId} />:
-              </b>{' '}
-              {msg.text}
-            </div>
-          ))}
-        </div>
+        <RoomChatLog room={room} selfId={user.id} empty="Trò chuyện với người trong bàn..." />
         <div className="tl-chat-input-row">
           <input
             className="tl-input"
@@ -153,4 +223,9 @@ export function RoomScreen() {
       </div>
     </div>
   );
+}
+
+export function RoomScreen() {
+  const watching = useThirteen((s) => s.watchingRoomId !== '');
+  return watching ? <WatchedRoomScreen /> : <MemberRoomScreen />;
 }

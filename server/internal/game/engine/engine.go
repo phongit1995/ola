@@ -24,6 +24,7 @@ type Emitter interface {
 	ToUser(gameID string, userID string, envelope protocol.OutEnvelope)
 	ToGame(gameID string, envelope protocol.OutEnvelope)
 	ToMatch(gameID string, matchID string, envelope protocol.OutEnvelope)
+	ToRoomWatchers(gameID string, roomID string, envelope protocol.OutEnvelope)
 }
 
 const (
@@ -45,8 +46,9 @@ const (
 	maxChatRunes       = 120
 	chatCooldown       = 500 * time.Millisecond
 	reactionCooldown   = 800 * time.Millisecond
-	playingRoomGameID  = "war-god"
 )
+
+var playingRoomGames = map[string]bool{"war-god": true, "thirteen": true}
 
 type Engine struct {
 	// mu protects only the match registries. Match state is protected by Match.mu.
@@ -224,7 +226,7 @@ func (e *Engine) broadcastStateAutoMoved(m *Match, lastMove json.RawMessage, las
 	if spectatable(m.logic) {
 		e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{Type: protocol.S2CState, Data: protocol.StateData{
 			MatchID:   m.ID,
-			State:     m.state,
+			State:     spectatorView(m.logic, m.state),
 			Turn:      m.turnIdx,
 			Deadline:  deadline,
 			LastMove:  lastMove,
@@ -235,8 +237,18 @@ func (e *Engine) broadcastStateAutoMoved(m *Match, lastMove json.RawMessage, las
 }
 
 func spectatable(gameLogic logic.GameLogic) bool {
-	_, hidden := gameLogic.(logic.StateViewer)
-	return !hidden
+	if _, hidden := gameLogic.(logic.StateViewer); !hidden {
+		return true
+	}
+	_, public := gameLogic.(logic.SpectatorViewer)
+	return public
+}
+
+func spectatorView(gameLogic logic.GameLogic, state any) any {
+	if viewer, ok := gameLogic.(logic.SpectatorViewer); ok {
+		return viewer.SpectatorView(state)
+	}
+	return state
 }
 
 func (e *Engine) matchRankings(m *Match) []protocol.RankingEntry {
@@ -294,6 +306,12 @@ func (e *Engine) toGame(gameID string, envelope protocol.OutEnvelope) {
 func (e *Engine) toMatch(gameID, matchID string, envelope protocol.OutEnvelope) {
 	if emitter := e.currentEmitter(); emitter != nil {
 		emitter.ToMatch(gameID, matchID, envelope)
+	}
+}
+
+func (e *Engine) toRoomWatchers(gameID, roomID string, envelope protocol.OutEnvelope) {
+	if emitter := e.currentEmitter(); emitter != nil {
+		emitter.ToRoomWatchers(gameID, roomID, envelope)
 	}
 }
 
@@ -1219,7 +1237,7 @@ func (e *Engine) ListRooms(gameID, userID string) {
 }
 
 func listsPlayingRooms(gameID string) bool {
-	return gameID == playingRoomGameID
+	return playingRoomGames[gameID]
 }
 
 func roomInfo(room Room) protocol.RoomInfo {
@@ -1255,9 +1273,13 @@ func (e *Engine) matchIDForRoom(roomID string) string {
 }
 
 func (e *Engine) emitPlayingRoomUpsert(room Room) {
+	matchID := e.matchIDForRoom(room.ID)
+	if matchID == "" {
+		return
+	}
 	info := roomInfo(room)
 	info.Status = protocol.RoomStatusPlaying
-	info.MatchID = e.matchIDForRoom(room.ID)
+	info.MatchID = matchID
 	e.toGame(room.GameID, protocol.OutEnvelope{
 		Type: protocol.S2CRoomUpsert,
 		Data: protocol.RoomUpsertData{Room: info},
@@ -1286,6 +1308,11 @@ func (e *Engine) emitRoomStateAfterMatch(room Room, matchID string) {
 	for _, memberID := range room.memberIDs() {
 		e.emitRoomStateToAfterMatch(room, memberID, matchID)
 	}
+	if !privateRoom(&room) {
+		state := roomStateData(room, "", matchID)
+		state.Watcher = true
+		e.toRoomWatchers(room.GameID, room.ID, protocol.OutEnvelope{Type: protocol.S2CRoomState, Data: state})
+	}
 }
 
 func (e *Engine) emitRoomStateTo(room Room, userID string) {
@@ -1293,6 +1320,10 @@ func (e *Engine) emitRoomStateTo(room Room, userID string) {
 }
 
 func (e *Engine) emitRoomStateToAfterMatch(room Room, userID, matchID string) {
+	e.toUser(room.GameID, userID, protocol.OutEnvelope{Type: protocol.S2CRoomState, Data: roomStateData(room, userID, matchID)})
+}
+
+func roomStateData(room Room, youID, matchID string) protocol.RoomStateData {
 	members := make([]protocol.RoomMember, 0, room.playerCount())
 	members = append(members, protocol.RoomMember{
 		ID: room.OwnerID, Name: room.OwnerName, VipType: room.OwnerVipType, Level: room.OwnerLevel, Owner: true, Ready: true,
@@ -1302,13 +1333,10 @@ func (e *Engine) emitRoomStateToAfterMatch(room Room, userID, matchID string) {
 			ID: g.ID, Name: g.Name, VipType: g.VipType, Level: g.Level, Ready: g.Ready,
 		})
 	}
-	e.toUser(room.GameID, userID, protocol.OutEnvelope{
-		Type: protocol.S2CRoomState,
-		Data: protocol.RoomStateData{
-			RoomID: room.ID, OwnerID: room.OwnerID, YouID: userID, Bet: room.Bet,
-			Locked: room.Password != "", MaxPlayers: room.capacity(), Members: members, AfterMatchID: matchID,
-		},
-	})
+	return protocol.RoomStateData{
+		RoomID: room.ID, OwnerID: room.OwnerID, YouID: youID, Bet: room.Bet,
+		Locked: room.Password != "", MaxPlayers: room.capacity(), Members: members, AfterMatchID: matchID,
+	}
 }
 
 func (e *Engine) emitRoomSync(gameID, userID, roomID string) {
@@ -1323,6 +1351,7 @@ func (e *Engine) emitRoomClosed(room Room, reason string) {
 	for _, memberID := range room.memberIDs() {
 		e.toUser(room.GameID, memberID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
 	}
+	e.toRoomWatchers(room.GameID, room.ID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
 }
 
 func (e *Engine) emitRoomClosedExcept(room Room, excludedID, reason string) {
@@ -1334,6 +1363,7 @@ func (e *Engine) emitRoomClosedExcept(room Room, excludedID, reason string) {
 		e.toUser(room.GameID, memberID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
 		e.emitRoomSync(room.GameID, memberID, "")
 	}
+	e.toRoomWatchers(room.GameID, room.ID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
 }
 
 func (e *Engine) roomForAction(gameID, userID, roomID string) (Room, func(), bool) {
@@ -1856,6 +1886,9 @@ func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
 			Data: data,
 		})
 	}
+	if !privateRoom(&room) {
+		e.toRoomWatchers(room.GameID, room.ID, protocol.OutEnvelope{Type: protocol.S2CChatMessage, Data: data})
+	}
 }
 
 func (e *Engine) MatchReaction(gameID, userID, matchID, reactionType string) {
@@ -2227,6 +2260,9 @@ func (e *Engine) sendMatchFoundTo(m *Match, userID string, resumed bool) {
 			RoomOwnerID: roomOwnerID,
 		},
 	})
+	if resumed && spectatable(m.logic) {
+		e.toUser(m.GameID, userID, e.spectatorsEnvelope(m.GameID, m.ID))
+	}
 }
 
 func (e *Engine) armTimerDuration(m *Match, d time.Duration) {

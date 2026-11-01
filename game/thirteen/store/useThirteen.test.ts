@@ -6,7 +6,9 @@ import type {
   MatchOverData,
   OpponentReconnectedData,
   PlayerInfo,
+  RoomInfo,
   RoomStateData,
+  SpectateJoinedData,
   StateData,
   UserInfoData,
 } from '../../src/sdk';
@@ -86,6 +88,7 @@ afterEach(() => {
   sessionHandlers.clear();
   sessionCalls.length = 0;
   vi.useRealTimers();
+  vi.unstubAllGlobals();
   useThirteen.setState(originalState, true);
 });
 
@@ -620,5 +623,322 @@ describe('Thirteen history and leaderboard', () => {
 
     await vi.advanceTimersByTimeAsync(RECORD_REQUEST_TIMEOUT_MS);
     expect(useThirteen.getState().leaderboard.error).toBeNull();
+  });
+});
+
+describe('Thirteen spectating', () => {
+  const watchedPlayers: PlayerInfo[] = [
+    { id: 'p1', name: 'Một' },
+    { id: 'p2', name: 'Hai' },
+    { id: 'p3', name: 'Ba' },
+  ];
+  const playingRoom: RoomInfo = { id: 'room-w', owner: 'Một', bet: 0, locked: false, players: 3, maxPlayers: 3, status: 'playing', matchId: 'match-w' };
+  const spectatorState = (turn: number, handCounts: number[], steps: unknown[] = []) => ({
+    you: -1,
+    yourHand: [],
+    handCounts,
+    passed: [false, false, false],
+    quit: [false, false, false],
+    finishOrder: [],
+    turn,
+    starter: 0,
+    require3s: false,
+    moveCount: steps.length,
+    steps,
+  });
+  const joined = (matchId = 'match-w'): SpectateJoinedData => ({
+    matchId,
+    gameId: 'thirteen',
+    players: watchedPlayers,
+    state: spectatorState(1, [10, 12, 13]),
+    turn: 1,
+    deadline: Date.now() + 30_000,
+    spectators: 1,
+  });
+  const calls = (name: string) => sessionCalls.filter(([key]) => key === name).map(([, args]) => args);
+
+  const startWatching = async (): Promise<void> => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby', user: me });
+    useThirteen.getState().watchRoom(playingRoom);
+    emit('onSpectateJoined', joined());
+    await vi.waitFor(() => expect(useThirteen.getState().handCounts).toEqual([10, 12, 13]));
+  };
+
+  it('opens the watched table without a seat or a hand', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby', user: me });
+
+    useThirteen.getState().watchRoom(playingRoom);
+    expect(calls('roomWatch')).toEqual([['room-w']]);
+    expect(calls('spectateJoin')).toEqual([['match-w']]);
+    expect(useThirteen.getState()).toMatchObject({ watchPendingId: 'match-w', watchingRoomId: 'room-w' });
+
+    emit('onSpectateJoined', joined());
+    await vi.waitFor(() => expect(useThirteen.getState().handCounts).toEqual([10, 12, 13]));
+    expect(useThirteen.getState()).toMatchObject({
+      phase: 'table',
+      spectating: true,
+      watchPendingId: '',
+      matchId: 'match-w',
+      you: -1,
+      hand: [],
+      turn: 1,
+    });
+  });
+
+  it('does not watch private or waiting rooms', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby', user: me });
+
+    useThirteen.getState().watchRoom({ ...playingRoom, locked: true });
+    useThirteen.getState().watchRoom({ ...playingRoom, status: 'waiting', matchId: undefined });
+
+    expect(calls('spectateJoin')).toEqual([]);
+  });
+
+  it('ignores a spectate snapshot nobody asked for', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby', user: me });
+
+    emit('onSpectateJoined', joined('match-other'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'lobby', spectating: false });
+    expect(calls('spectateLeave')).toEqual([['match-other']]);
+  });
+
+  it('gives the seat back when the snapshot arrives after the player started practising', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby', user: me });
+    useThirteen.getState().watchRoom(playingRoom);
+    useThirteen.setState({ practice: [] });
+
+    emit('onSpectateJoined', joined());
+
+    expect(useThirteen.getState()).toMatchObject({ spectating: false, watchPendingId: '' });
+    expect(calls('spectateLeave')).toEqual([['match-w']]);
+  });
+
+  it('leaves the stale table when rejoining is refused', async () => {
+    await startWatching();
+
+    emit('onError', { code: 'SPECTATE_FULL', message: 'spectator slots are full' });
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'lobby', spectating: false, notice: 'Bàn này đã đủ người xem' });
+  });
+
+  it('follows plays from every seat', async () => {
+    await startWatching();
+    vi.useFakeTimers();
+
+    emit('onState', {
+      matchId: 'match-w',
+      state: { ...spectatorState(2, [10, 10, 13], [{ kind: 'play', by: 1, cards: [20, 21] }]), table: { cards: [20, 21], by: 1 } },
+      turn: 2,
+      deadline: Date.now() + 30_000,
+      lastBy: 1,
+    } satisfies StateData);
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(useThirteen.getState()).toMatchObject({ turn: 2, handCounts: [10, 10, 13], table: { cards: [20, 21], by: 1 } });
+  });
+
+  const watchedWaitingRoom = (memberCount = 3): RoomStateData => ({
+    roomId: 'room-w',
+    ownerId: 'p1',
+    youId: '',
+    bet: 0,
+    locked: false,
+    maxPlayers: 4,
+    watcher: true,
+    afterMatchId: 'match-w',
+    members: watchedPlayers.slice(0, memberCount).map((p, i) => ({ id: p.id, name: p.name, owner: i === 0, ready: false })),
+  });
+
+  let watchedMatches = 0;
+  const watchUntilWaitingRoom = async (): Promise<string> => {
+    watchedMatches += 1;
+    const matchId = `match-room-${watchedMatches}`;
+    await connect();
+    useThirteen.setState({ phase: 'lobby', user: me });
+    useThirteen.getState().watchRoom({ ...playingRoom, matchId });
+    emit('onSpectateJoined', joined(matchId));
+    await vi.waitFor(() => expect(useThirteen.getState()).toMatchObject({ spectating: true, matchId }));
+    vi.useFakeTimers();
+    vi.stubGlobal('window', globalThis);
+    emit('onMatchOver', { matchId, winnerId: 'p2', reason: 'win', rankings: [{ userId: 'p2', place: 1 }], kenDelta: 0 });
+    emit('onSpectateLeft', { matchId, reason: 'match_over' });
+    emit('onRoomUpsert', { room: { ...playingRoom, status: 'waiting', matchId: undefined } });
+    emit('onRoomState', { ...watchedWaitingRoom(), afterMatchId: matchId });
+    await vi.advanceTimersByTimeAsync(700);
+    return matchId;
+  };
+
+  it('moves to the waiting room when the watched match ends', async () => {
+    const matchId = await watchUntilWaitingRoom();
+
+    expect(useThirteen.getState()).toMatchObject({
+      phase: 'room',
+      spectating: false,
+      matchId: '',
+      result: null,
+      room: null,
+      watchingRoomId: 'room-w',
+      watchedRoom: { roomId: 'room-w', watcher: true },
+    });
+    expect(calls('spectateLeave')).toEqual([[matchId]]);
+  });
+
+  it('watches the next match the room starts', async () => {
+    const finished = await watchUntilWaitingRoom();
+    sessionCalls.length = 0;
+
+    emit('onRoomUpsert', { room: { ...playingRoom, matchId: finished } });
+    expect(calls('spectateJoin')).toEqual([]);
+
+    emit('onRoomUpsert', { room: { ...playingRoom, matchId: 'match-2' } });
+    expect(calls('spectateJoin')).toEqual([['match-2']]);
+
+    emit('onSpectateJoined', joined('match-2'));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(useThirteen.getState()).toMatchObject({ phase: 'table', spectating: true, matchId: 'match-2', watchingRoomId: 'room-w' });
+  });
+
+  it('goes back to the lobby when the watched room breaks up', async () => {
+    await watchUntilWaitingRoom();
+
+    emit('onRoomClosed', { roomId: 'room-w', reason: 'owner_left' });
+
+    expect(useThirteen.getState()).toMatchObject({
+      phase: 'lobby',
+      watchingRoomId: '',
+      watchedRoom: null,
+      notice: null,
+      toast: 'Bàn bạn đang xem đã giải tán.',
+    });
+    expect(calls('roomUnwatch')).toEqual([[]]);
+  });
+
+  it('goes straight back to the lobby when the room is gone by the end of the match', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby', user: me });
+    useThirteen.getState().watchRoom({ ...playingRoom, matchId: 'match-gone' });
+    emit('onSpectateJoined', joined('match-gone'));
+    await vi.waitFor(() => expect(useThirteen.getState()).toMatchObject({ spectating: true, matchId: 'match-gone' }));
+    vi.useFakeTimers();
+    vi.stubGlobal('window', globalThis);
+
+    emit('onRoomRemoved', { roomId: 'room-w' });
+    expect(useThirteen.getState()).toMatchObject({ phase: 'table', spectating: true, watchingRoomId: '' });
+
+    emit('onMatchOver', { matchId: 'match-gone', winnerId: 'p2', reason: 'win', rankings: [{ userId: 'p2', place: 1 }], kenDelta: 0 });
+    await vi.advanceTimersByTimeAsync(700);
+
+    expect(useThirteen.getState()).toMatchObject({
+      phase: 'lobby',
+      spectating: false,
+      matchId: '',
+      result: null,
+      notice: null,
+      toast: 'Ván đấu bạn đang xem đã kết thúc.',
+    });
+    expect(calls('spectateLeave')).toEqual([['match-gone']]);
+  });
+
+  it('takes a free seat in the watched room', async () => {
+    await watchUntilWaitingRoom();
+
+    useThirteen.getState().joinWatchedRoom();
+    expect(calls('joinRoom')).toEqual([['room-w']]);
+
+    emit('onRoomState', { ...watchedWaitingRoom(), watcher: undefined, youId: me.id, afterMatchId: undefined });
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'room', watchingRoomId: '', watchedRoom: null, room: { roomId: 'room-w', youId: me.id } });
+    expect(calls('roomUnwatch')).toEqual([[]]);
+  });
+
+  it('follows the room again after the connection comes back', async () => {
+    await watchUntilWaitingRoom();
+    sessionCalls.length = 0;
+
+    emit('onConnectionChange', false);
+    emit('onConnectionChange', true);
+
+    expect(calls('roomWatch')).toEqual([['room-w']]);
+    expect(calls('listRooms')).toEqual([[]]);
+  });
+
+  it('stops following the room when leaving the waiting room', async () => {
+    await watchUntilWaitingRoom();
+
+    useThirteen.getState().stopWatching();
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'lobby', watchingRoomId: '', watchedRoom: null });
+    expect(calls('roomUnwatch')).toEqual([[]]);
+  });
+
+  it('keeps the viewers list of the table being watched', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby', user: me });
+    useThirteen.getState().watchRoom(playingRoom);
+    const viewers = [{ id: 'v1', name: 'Lan' }, { id: me.id, name: me.username }];
+
+    emit('onSpectators', { matchId: 'match-w', spectators: viewers });
+    emit('onSpectateJoined', joined());
+    emit('onSpectators', { matchId: 'match-other', spectators: [] });
+
+    await vi.waitFor(() => expect(useThirteen.getState().spectating).toBe(true));
+    expect(useThirteen.getState().spectators).toEqual({ matchId: 'match-w', spectators: viewers });
+
+    useThirteen.getState().stopWatching();
+    expect(useThirteen.getState().spectators).toBeNull();
+  });
+
+  it('leaves without the forfeit prompt', async () => {
+    await startWatching();
+
+    useThirteen.getState().requestExit();
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'lobby', spectating: false, confirmExit: false });
+    expect(calls('spectateLeave')).toEqual([['match-w']]);
+    expect(calls('forfeit')).toEqual([]);
+  });
+
+  it('shows players who is watching their own table', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'table', matchId: 'match-p', user: me });
+
+    emit('onSpectators', { matchId: 'match-p', spectators: [{ id: 'v1', name: 'Lan' }] });
+
+    expect(useThirteen.getState().spectators).toEqual({ matchId: 'match-p', spectators: [{ id: 'v1', name: 'Lan' }] });
+  });
+
+  it('rejoins the watched match after the connection comes back', async () => {
+    await startWatching();
+    sessionCalls.length = 0;
+
+    emit('onConnectionChange', false);
+    emit('onConnectionChange', true);
+
+    expect(calls('spectateJoin')).toEqual([['match-w']]);
+  });
+
+  it('returns to the lobby when the watched match is already gone', async () => {
+    await startWatching();
+
+    emit('onError', { code: 'MATCH_NOT_FOUND', message: 'match not found' });
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'lobby', spectating: false, notice: 'Ván đấu bạn đang xem đã kết thúc.' });
+  });
+
+  it('never sends chat or reactions as a spectator', async () => {
+    await startWatching();
+
+    useThirteen.getState().sendChat('xin chào');
+    useThirteen.getState().sendReaction('LIKE');
+
+    expect(calls('sendChat')).toEqual([]);
+    expect(calls('sendReaction')).toEqual([]);
   });
 });

@@ -25,9 +25,23 @@ func (Logic) ViewFor(state any, playerIdx int) any {
 	if playerIdx < 0 || playerIdx >= s.playerCount() {
 		return s
 	}
+	view := publicView(s, playerIdx)
+	view.YourHand = append([]int{}, s.Hands[playerIdx]...)
+	return view
+}
+
+func (Logic) SpectatorView(state any) any {
+	s, ok := state.(*State)
+	if !ok {
+		return state
+	}
+	return publicView(s, SpectatorSeat)
+}
+
+func publicView(s *State, you int) PlayerView {
 	view := PlayerView{
-		You:                playerIdx,
-		YourHand:           append([]int{}, s.Hands[playerIdx]...),
+		You:                you,
+		YourHand:           []int{},
 		HandCounts:         make([]int, s.playerCount()),
 		Passed:             append([]bool(nil), s.Passed...),
 		Quit:               append([]bool(nil), s.Quit...),

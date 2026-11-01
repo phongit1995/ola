@@ -218,3 +218,65 @@ func TestMatchStoreStaleCleanupPreservesNewUserReference(t *testing.T) {
 		t.Fatal("active match set was corrupted by old cleanup")
 	}
 }
+
+func TestMatchStoreSpectatorsKeepViewerInfo(t *testing.T) {
+	store, server, _ := newRedisMatchStoreTest(t)
+	if _, status, err := store.AddSpectator("thirteen", "match-1", "sock-0", protocol.PlayerInfo{ID: "lan", Name: "lan"}, 3); err != nil || status != SpectatorMatchNotFound {
+		t.Fatalf("a missing match must refuse spectators, got %v %v", status, err)
+	}
+	if err := store.Save(redisStoreSnapshot("thirteen", "match-1")); err != nil {
+		t.Fatalf("save snapshot: %v", err)
+	}
+
+	vip := "vip-2"
+	viewers := []struct {
+		socket string
+		info   protocol.PlayerInfo
+	}{
+		{"sock-1", protocol.PlayerInfo{ID: "lan", Name: "lan", VipType: &vip, Level: 4}},
+		{"sock-2", protocol.PlayerInfo{ID: "minh", Name: "minh"}},
+		{"sock-3", protocol.PlayerInfo{ID: "lan", Name: "lan", VipType: &vip, Level: 4}},
+	}
+	for i, viewer := range viewers {
+		count, status, err := store.AddSpectator("thirteen", "match-1", viewer.socket, viewer.info, 3)
+		if err != nil || status != SpectatorAdded || count != i+1 {
+			t.Fatalf("add %s: count=%d status=%v err=%v", viewer.socket, count, status, err)
+		}
+		time.Sleep(2 * time.Millisecond)
+	}
+	if _, status, _ := store.AddSpectator("thirteen", "match-1", "sock-4", protocol.PlayerInfo{ID: "ha", Name: "ha"}, 3); status != SpectatorFull {
+		t.Fatalf("the fourth seat should be refused, got %v", status)
+	}
+	if ttl := server.TTL("GAME:thirteen:MATCH:match-1:VIEWERS"); ttl != activeMatchTTL {
+		t.Fatalf("viewers hash should expire with the match, got %s", ttl)
+	}
+
+	list, err := store.Spectators("thirteen", "match-1")
+	if err != nil {
+		t.Fatalf("list spectators: %v", err)
+	}
+	if len(list) != 2 || list[0].ID != "lan" || list[1].ID != "minh" || list[0].Level != 4 {
+		t.Fatalf("expected each viewer once in join order, got %+v", list)
+	}
+	requireVipType(t, list[0].VipType, vip)
+
+	if err := store.RemoveSpectator("thirteen", "match-1", "sock-1"); err != nil {
+		t.Fatalf("remove spectator: %v", err)
+	}
+	if count, _ := store.SpectatorCount("thirteen", "match-1"); count != 2 {
+		t.Fatalf("a viewer with another open tab is still counted once, got %d", count)
+	}
+	if list, _ := store.Spectators("thirteen", "match-1"); len(list) != 2 {
+		t.Fatalf("a viewer with another open tab stays listed, got %+v", list)
+	}
+	if count, status, _ := store.AddSpectator("thirteen", "match-1", "sock-4", protocol.PlayerInfo{ID: "ha", Name: "ha"}, 3); status != SpectatorAdded || count != 3 {
+		t.Fatalf("one tab leaving frees one seat, got count=%d status=%v", count, status)
+	}
+
+	if err := store.Delete("thirteen", "match-1", "player-a", "player-b"); err != nil {
+		t.Fatalf("delete snapshot: %v", err)
+	}
+	if server.Exists("GAME:thirteen:MATCH:match-1:VIEWERS") {
+		t.Fatal("viewers hash remains after the match is deleted")
+	}
+}
