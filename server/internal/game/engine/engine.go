@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -318,7 +319,9 @@ func (e *Engine) sendActiveMatch(gameID, userID string) bool {
 	if m.over {
 		return false
 	}
-	e.sendMatchFound(m, true)
+	m.ensureSeats()
+	e.markSeatReconnected(m, m.playerIndex(userID))
+	e.sendMatchFoundTo(m, userID, true)
 	return true
 }
 
@@ -368,7 +371,10 @@ func (e *Engine) installMatchDetailed(m *Match, restored, allowRoomReservation b
 	if _, exists := e.matches[m.ID]; exists {
 		return matchAlreadyInstalled
 	}
-	for _, player := range m.players {
+	for idx, player := range m.players {
+		if m.quit[idx] {
+			continue
+		}
 		key := userKey(m.GameID, player.ID)
 		if _, reserved := e.roomReservations[key]; reserved && !allowRoomReservation {
 			return matchRoomTransition
@@ -378,10 +384,21 @@ func (e *Engine) installMatchDetailed(m *Match, restored, allowRoomReservation b
 		}
 	}
 	e.matches[m.ID] = m
-	for _, player := range m.players {
-		e.byUser[userKey(m.GameID, player.ID)] = m
+	for idx, player := range m.players {
+		if !m.quit[idx] {
+			e.byUser[userKey(m.GameID, player.ID)] = m
+		}
 	}
 	return matchInstalled
+}
+
+func (e *Engine) releaseSeat(m *Match, idx int) {
+	key := userKey(m.GameID, m.players[idx].ID)
+	e.mu.Lock()
+	if e.byUser[key] == m {
+		delete(e.byUser, key)
+	}
+	e.mu.Unlock()
 }
 
 func (e *Engine) markMatchTerminal(matchID string) {
@@ -499,38 +516,7 @@ func (e *Engine) reconnectActiveMatch(gameID, userID string) bool {
 		if !m.over {
 			m.ensureSeats()
 			idx := m.playerIndex(userID)
-			if m.disconnected[idx] {
-				delete(m.disconnected, idx)
-				delete(m.disconnectedAt, idx)
-				if len(m.disconnected) == 0 {
-					e.cancelGrace(m)
-					if m.pausedRemain > 0 {
-						e.armTimerDuration(m, m.pausedRemain)
-						m.pausedRemain = 0
-					}
-				}
-				reconnected := protocol.OpponentReconnectedData{
-					UserID:   userID,
-					Turn:     m.turnIdx,
-					Deadline: m.deadline.UnixMilli(),
-				}
-				for otherIdx, other := range m.players {
-					if otherIdx == idx || m.disconnected[otherIdx] || m.quit[otherIdx] {
-						continue
-					}
-					e.toUser(m.GameID, other.ID, protocol.OutEnvelope{
-						Type: protocol.S2COpponentReconnected,
-						Data: reconnected,
-					})
-				}
-				e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{
-					Type: protocol.S2COpponentReconnected,
-					Data: reconnected,
-				})
-				if err := e.persistMatch(m); err != nil {
-					e.logger.Errorw("Failed to persist reconnected match", "match_id", m.ID, "error", err)
-				}
-			}
+			e.markSeatReconnected(m, idx)
 			e.sendMatchFoundTo(m, userID, true)
 			for oppIdx := range m.players {
 				if oppIdx != idx && m.disconnected[oppIdx] {
@@ -546,6 +532,42 @@ func (e *Engine) reconnectActiveMatch(gameID, userID string) bool {
 		m.mu.Unlock()
 	}
 	return false
+}
+
+func (e *Engine) markSeatReconnected(m *Match, idx int) {
+	if idx < 0 || !m.disconnected[idx] {
+		return
+	}
+	delete(m.disconnected, idx)
+	delete(m.disconnectedAt, idx)
+	if len(m.disconnected) == 0 {
+		e.cancelGrace(m)
+	}
+	if m.pausedRemain > 0 && !m.disconnected[m.turnIdx] {
+		e.armTimerDuration(m, m.pausedRemain)
+		m.pausedRemain = 0
+	}
+	reconnected := protocol.OpponentReconnectedData{
+		UserID:   m.players[idx].ID,
+		Turn:     m.turnIdx,
+		Deadline: m.deadline.UnixMilli(),
+	}
+	for otherIdx, other := range m.players {
+		if otherIdx == idx || m.disconnected[otherIdx] || m.quit[otherIdx] {
+			continue
+		}
+		e.toUser(m.GameID, other.ID, protocol.OutEnvelope{
+			Type: protocol.S2COpponentReconnected,
+			Data: reconnected,
+		})
+	}
+	e.toMatch(m.GameID, m.ID, protocol.OutEnvelope{
+		Type: protocol.S2COpponentReconnected,
+		Data: reconnected,
+	})
+	if err := e.persistMatch(m); err != nil {
+		e.logger.Errorw("Failed to persist reconnected match", "match_id", m.ID, "error", err)
+	}
 }
 
 func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
@@ -1482,7 +1504,7 @@ func (e *Engine) onGraceExpire(matchID string, gen int) {
 		}
 	}
 	if connected == 0 {
-		e.finishMatch(m, "", "disconnect")
+		e.finishMatch(m, e.winnerWhenEveryoneLeft(m), "disconnect")
 		return
 	}
 
@@ -1557,6 +1579,20 @@ func (e *Engine) onGraceExpire(matchID string, gen int) {
 
 func anySeatCanWin(int) bool { return true }
 
+func (e *Engine) winnerWhenEveryoneLeft(m *Match) string {
+	handler, ok := m.logic.(logic.QuitHandler)
+	if !ok {
+		return ""
+	}
+	for _, idx := range m.activeIdxs() {
+		handler.OnPlayerQuit(m.state, idx)
+	}
+	if over, winnerIdx := m.logic.Result(m.state); over && winnerIdx >= 0 && winnerIdx < len(m.players) {
+		return m.players[winnerIdx].ID
+	}
+	return ""
+}
+
 // winnerAfterSeatLeaves picks the winner when a leaving seat ends the match.
 // Games with a QuitHandler record the quit first and decide through their own
 // Result, so a player who already finished first keeps the win after leaving
@@ -1584,6 +1620,7 @@ func (e *Engine) winnerAfterSeatLeaves(m *Match, leavingIdx int, canWin func(int
 // at least two active players remain afterwards.
 func (e *Engine) eliminatePlayer(m *Match, idx int, handler logic.QuitHandler, cause string) {
 	m.quit[idx] = true
+	e.releaseSeat(m, idx)
 	delete(m.disconnected, idx)
 	delete(m.disconnectedAt, idx)
 	handler.OnPlayerQuit(m.state, idx)
@@ -1654,6 +1691,7 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 		e.sendError(gameID, userID, protocol.ErrorCodeNotYourTurn, "not your turn")
 		return
 	}
+	e.markSeatReconnected(m, playerIdx)
 	if time.Now().After(m.deadline) {
 		return
 	}
@@ -1712,6 +1750,7 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 		e.sendError(gameID, userID, protocol.ErrorCodeStateSaveFailed, "failed to save the move, please retry")
 		return
 	}
+	e.clearTimeoutMove(m)
 	if m.pausedRemain == 0 {
 		e.scheduleTurnTimer(m)
 	}
@@ -2594,6 +2633,7 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	}
 	e.notifySpectatorsMatchOver(m, data)
 	if willSettle {
+		snapshot.roomSaved = waitingRoom != nil
 		e.queueFinishedSettlement(snapshot, outcome)
 	} else if _, err := e.activeStore.DeleteIfStatus(
 		m.GameID,
@@ -2899,7 +2939,10 @@ func (e *Engine) restorePlayingSnapshot(snapshot ActiveMatchSnapshot, expectedGa
 }
 
 func (e *Engine) snapshotHasRoomMemberLocked(snapshot ActiveMatchSnapshot) bool {
-	for _, player := range snapshot.Players {
+	for idx, player := range snapshot.Players {
+		if slices.Contains(snapshot.Quit, idx) {
+			continue
+		}
 		ref, exists := e.store.RoomByUser(snapshot.GameID, player.ID)
 		if !exists {
 			continue
@@ -2947,7 +2990,7 @@ func (e *Engine) abortUnrecoverableRestore(snapshot ActiveMatchSnapshot, settlem
 
 func (e *Engine) handleFinishedRestore(snapshot ActiveMatchSnapshot) {
 	e.markMatchTerminal(snapshot.ID)
-	e.restoreFinishedSnapshot(snapshot)
+	snapshot.roomSaved = e.restoreFinishedSnapshot(snapshot)
 	if outcome, ok := outcomeFromSnapshot(snapshot); ok && e.currentSettlement() != nil {
 		e.queueFinishedSettlement(snapshot, outcome)
 	}
@@ -2988,7 +3031,7 @@ func (e *Engine) discardRestoredSnapshot(snapshot ActiveMatchSnapshot, match *Ma
 }
 
 func (e *Engine) restoreSnapshotRoom(snapshot ActiveMatchSnapshot) bool {
-	if snapshot.Room == nil {
+	if snapshot.Room == nil || snapshot.roomSaved {
 		return true
 	}
 	room := prepareNextRound(*snapshot.Room, snapshot.WinnerID)
@@ -3079,16 +3122,17 @@ func (e *Engine) deleteSnapshot(snapshot ActiveMatchSnapshot) bool {
 	return true
 }
 
-func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
+func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) bool {
 	gameLogic, err := logic.Get(snapshot.GameID)
 	if err != nil || snapshot.StateVersion != gameLogic.StateVersion() {
 		e.logger.Errorw("Could not restore finished match result because its game state is unsupported", "game_id", snapshot.GameID, "match_id", snapshot.ID)
-		return
+		return false
 	}
-	state, err := gameLogic.DecodeState(snapshot.State)
-	if err != nil {
-		e.logger.Errorw("Failed to decode finished match state", "match_id", snapshot.ID, "error", err)
-		return
+	var state any = snapshot.State
+	moveCount := 0
+	if decoded, err := gameLogic.DecodeState(snapshot.State); err == nil {
+		state = decoded
+		moveCount = stateMoveCount(gameLogic, decoded)
 	}
 	payout, kenDelta := 0, 0
 	if snapshot.WinnerID != "" {
@@ -3096,7 +3140,7 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 	}
 	var expGains []protocol.ExpGainEntry
 	if e.currentSettlement() != nil || snapshot.Bet > 0 {
-		expGains = matchExpGains(snapshotPlayerIDs(snapshot), snapshot.WinnerID, snapshot.ResultReason, stateMoveCount(gameLogic, state))
+		expGains = matchExpGains(snapshotPlayerIDs(snapshot), snapshot.WinnerID, snapshot.ResultReason, moveCount)
 	}
 	data := protocol.MatchOverData{
 		MatchID:  snapshot.ID,
@@ -3108,7 +3152,8 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 		KenDelta: kenDelta,
 		ExpGains: expGains,
 	}
-	if !e.restoreSnapshotRoom(snapshot) {
+	roomRestored := e.restoreSnapshotRoom(snapshot)
+	if !roomRestored {
 		e.logger.Errorw("Deferred waiting-room restore from finished match", "match_id", snapshot.ID)
 	}
 	keys := make([]string, 0, len(snapshot.Players))
@@ -3122,6 +3167,7 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 	for _, key := range keys {
 		e.scheduleFinishedCleanup(key, snapshot.ID)
 	}
+	return roomRestored
 }
 
 func prepareNextRound(room Room, winnerID string) Room {

@@ -50,12 +50,12 @@ export type ServerMove = { type: 'play'; cards: number[] } | { type: 'pass' };
 
 export function decodeServerState(raw: unknown): ServerState {
   const state = raw as Partial<ServerState> | null | undefined;
-  if (!state || !Array.isArray(state.yourHand) || !Array.isArray(state.handCounts)) {
+  if (!state || !Array.isArray(state.handCounts)) {
     throw new RangeError('invalid tien len state payload');
   }
   return {
     you: numberOr(state.you, 0),
-    yourHand: state.yourHand.filter((card) => Number.isInteger(card)),
+    yourHand: Array.isArray(state.yourHand) ? state.yourHand.filter((card) => Number.isInteger(card)) : [],
     handCounts: state.handCounts.map((count) => numberOr(count, 0)),
     table: state.table && Array.isArray(state.table.cards) ? { cards: state.table.cards, by: numberOr(state.table.by, 0) } : null,
     passed: Array.isArray(state.passed) ? state.passed.map(Boolean) : [],

@@ -27,7 +27,7 @@ func (Logic) ViewFor(state any, playerIdx int) any {
 	}
 	view := PlayerView{
 		You:                playerIdx,
-		YourHand:           append([]int(nil), s.Hands[playerIdx]...),
+		YourHand:           append([]int{}, s.Hands[playerIdx]...),
 		HandCounts:         make([]int, s.playerCount()),
 		Passed:             append([]bool(nil), s.Passed...),
 		Quit:               append([]bool(nil), s.Quit...),

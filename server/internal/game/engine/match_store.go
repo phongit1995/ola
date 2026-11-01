@@ -43,6 +43,7 @@ type ActiveMatchSnapshot struct {
 	PausedRemainMillis int64                 `json:"pausedRemainMillis,omitempty"`
 	Room               *Room                 `json:"room,omitempty"`
 	ClosedRoom         *Room                 `json:"closedRoom,omitempty"`
+	roomSaved          bool
 }
 
 type ActiveMatchRepository interface {

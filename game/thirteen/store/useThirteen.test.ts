@@ -304,6 +304,173 @@ describe('Thirteen opening lead', () => {
   });
 });
 
+describe('Thirteen first finisher', () => {
+  it('keeps following the table after playing the last cards', async () => {
+    await connect();
+    vi.useFakeTimers();
+    const table3: PlayerInfo[] = [...players, { id: 'third', name: 'Người thứ ba' }];
+    useThirteen.setState({ phase: 'table', matchId: 'match-win', players: table3, you: 0, turn: 0, hand: [20, 25, 31], movePending: true });
+
+    emit('onState', {
+      matchId: 'match-win',
+      state: {
+        you: 0,
+        yourHand: null,
+        handCounts: [0, 10, 6],
+        table: { cards: [20, 25, 31], by: 0 },
+        passed: [false, false, false],
+        quit: [false, false, false],
+        finishOrder: [0],
+        turn: 1,
+        starter: 0,
+        require3s: false,
+        moveCount: 9,
+        steps: [
+          { kind: 'play', by: 0, cards: [20, 25, 31] },
+          { kind: 'finish', by: 0, place: 1 },
+        ],
+      },
+      turn: 1,
+      deadline: Date.now() + 30_000,
+      lastBy: 0,
+    } satisfies StateData);
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect(useThirteen.getState()).toMatchObject({ hand: [], handCounts: [0, 10, 6], finishOrder: [0], turn: 1, movePending: false, animating: false });
+  });
+});
+
+describe('Thirteen room after a match', () => {
+  const found = (matchId: string): MatchFoundData => ({
+    matchId,
+    gameId: 'thirteen',
+    players,
+    you: 0,
+    state: serverState(0),
+    turn: 0,
+    deadline: Date.now() + 30_000,
+    resumed: true,
+  });
+  const over = (matchId: string): MatchOverData<unknown> => ({
+    matchId,
+    winnerId: 'opp',
+    reason: 'win',
+    rankings: [
+      { userId: 'opp', place: 1 },
+      { userId: 'me', place: 2 },
+    ],
+  });
+
+  it('sends a player the server dropped from the room back to the lobby', async () => {
+    await connect();
+    vi.useFakeTimers();
+    useThirteen.setState({ phase: 'room', room: waitingRoom, user: me });
+    emit('onMatchFound', found('match-r1'));
+    emit('onMatchOver', over('match-r1'));
+    await vi.advanceTimersByTimeAsync(700);
+
+    expect(useThirteen.getState().room).toBeNull();
+    useThirteen.getState().closeResult(true);
+    expect(useThirteen.getState()).toMatchObject({ phase: 'lobby', room: null });
+  });
+
+  it('keeps the room for members the server confirms after the match', async () => {
+    await connect();
+    vi.useFakeTimers();
+    useThirteen.setState({ phase: 'room', room: waitingRoom, user: me });
+    emit('onMatchFound', found('match-r2'));
+    emit('onMatchOver', over('match-r2'));
+    emit('onRoomState', { ...waitingRoom, afterMatchId: 'match-r2' });
+    await vi.advanceTimersByTimeAsync(700);
+
+    useThirteen.getState().closeResult(true);
+    expect(useThirteen.getState()).toMatchObject({ phase: 'room', room: { roomId: waitingRoom.roomId } });
+  });
+
+  it('tells the players when the owner closed the room during the match', async () => {
+    await connect();
+    vi.useFakeTimers();
+    useThirteen.setState({ phase: 'room', room: waitingRoom, user: me });
+    emit('onMatchFound', found('match-r3'));
+    emit('onMatchOver', over('match-r3'));
+    emit('onRoomClosed', { roomId: waitingRoom.roomId, reason: 'owner_left' });
+    await vi.advanceTimersByTimeAsync(700);
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'table', room: null });
+    expect(useThirteen.getState().notice).not.toBeNull();
+    expect(useThirteen.getState().result).not.toBeNull();
+  });
+});
+
+describe('Thirteen connecting screen', () => {
+  it('explains a failed player load instead of spinning forever', async () => {
+    await connect();
+
+    emit('onError', { code: 'USER_INFO_FAILED', message: 'failed to load user info' });
+
+    expect(useThirteen.getState()).toMatchObject({
+      phase: 'connecting',
+      notice: 'Không tải được thông tin người chơi. Hãy thoát ra rồi mở lại trò chơi.',
+      toast: null,
+    });
+  });
+});
+
+describe('Thirteen selection after an automatic move', () => {
+  it('drops selected cards the server played for the player when the clock ran out', async () => {
+    await connect();
+    vi.useFakeTimers();
+    useThirteen.setState({ phase: 'table', matchId: 'match-auto', players, you: 0, turn: 0, hand: [8, 12, 20], selected: [8, 20] });
+
+    emit('onState', {
+      matchId: 'match-auto',
+      state: { ...serverState(1, [{ kind: 'play', by: 0, cards: [8] }]), yourHand: [12, 20], handCounts: [2, 1] },
+      turn: 1,
+      deadline: Date.now() + 30_000,
+      lastBy: 0,
+      autoMoved: true,
+    } satisfies StateData);
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(useThirteen.getState()).toMatchObject({ hand: [12, 20], selected: [20] });
+  });
+});
+
+describe('Thirteen table the server no longer has', () => {
+  it('returns to the waiting room when the match ended while the player was away', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'table', matchId: 'match-gone', players, you: 0, turn: 1, room: waitingRoom, movePending: true });
+
+    emit('onRoomState', waitingRoom);
+    emit('onRoomSync', { roomId: waitingRoom.roomId });
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'room', room: waitingRoom, matchId: '', movePending: false });
+    expect(useThirteen.getState().notice).toBe('Bạn mất kết nối quá lâu nên đã rời ván đấu.');
+  });
+
+  it('returns to the lobby when the room is gone as well', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'table', matchId: 'match-gone', players, you: 0, turn: 1, room: waitingRoom });
+
+    emit('onRoomSync', {});
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'lobby', room: null, matchId: '' });
+  });
+
+  it('keeps the table while the result of that match is on its way', async () => {
+    await connect();
+    vi.useFakeTimers();
+    useThirteen.setState({ phase: 'table', matchId: 'match-done', players, you: 0, user: me, room: waitingRoom });
+
+    emit('onMatchOver', { matchId: 'match-done', winnerId: 'me', reason: 'win', rankings: [{ userId: 'me', place: 1 }, { userId: 'opp', place: 2 }] });
+    emit('onRoomSync', {});
+    await vi.advanceTimersByTimeAsync(700);
+
+    expect(useThirteen.getState()).toMatchObject({ phase: 'table', notice: null });
+    expect(useThirteen.getState().result?.winnerId).toBe('me');
+  });
+});
+
 describe('Thirteen online events during practice', () => {
   const practiceBots = [{ id: 'bot-1', vipType: '1', level: 'easy' as const }];
 

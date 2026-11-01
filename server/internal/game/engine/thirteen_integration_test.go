@@ -3,9 +3,12 @@ package engine
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	thirteen "ola-chat-server/internal/game/games/thirteen"
 	"ola-chat-server/internal/game/protocol"
+
+	"go.uber.org/zap"
 )
 
 func startThirteenMatch(t *testing.T, playerCount int) (*Engine, *captureEmitter, *Match) {
@@ -448,4 +451,193 @@ func TestThirteenRoomWinnerLeadsTheNextRound(t *testing.T) {
 		return
 	}
 	t.Fatal("every attempt hit an instant win")
+}
+
+func TestThirteenTurnTimerResumesWhenTheTurnPlayerReturnsWhileAnotherIsAway(t *testing.T) {
+	gameEngine, emitter, match := startThirteenMatch(t, 3)
+	defer stopEngineTimers(gameEngine)
+	if match == nil {
+		t.Skip("instant win at deal")
+	}
+	forcedThirteenState(t, gameEngine, match, [][]int{{4, 8}, {5, 9}, {6, 10}}, 0)
+	players := match.players
+
+	gameEngine.OnDisconnect(match.GameID, players[2].ID)
+	gameEngine.OnDisconnect(match.GameID, players[0].ID)
+	match.mu.Lock()
+	match.deadline = time.Now().Add(-time.Second)
+	match.mu.Unlock()
+	gameEngine.OnConnect(match.GameID, players[0].ID)
+
+	match.mu.Lock()
+	paused, armed, remaining := match.pausedRemain, match.timer != nil, time.Until(match.deadline)
+	match.mu.Unlock()
+	if paused != 0 || !armed || remaining <= 0 {
+		t.Fatalf("turn clock after the turn player returned: paused=%v armed=%v remaining=%v", paused, armed, remaining)
+	}
+
+	emitter.clear()
+	gameEngine.Move(match.GameID, players[0].ID, match.ID, tienLenMoveRaw(t, "play", 4))
+	if _, ok := emitter.last(players[0].ID, protocol.S2CState); !ok {
+		t.Fatal("the returning turn player's move was dropped without a reply")
+	}
+}
+
+func finishFirstThenEveryoneLeaves(t *testing.T, firstLeaves func(gameEngine *Engine, m *Match)) (string, []protocol.RankingEntry, string) {
+	t.Helper()
+	gameEngine, emitter, match := startThirteenMatch(t, 3)
+	defer stopEngineTimers(gameEngine)
+	if match == nil {
+		t.Skip("instant win at deal")
+	}
+	forcedThirteenState(t, gameEngine, match, [][]int{{4}, {5, 9}, {6, 10}}, 0)
+	players := match.players
+	gameEngine.Move(match.GameID, players[0].ID, match.ID, tienLenMoveRaw(t, "play", 4))
+	firstLeaves(gameEngine, match)
+	gameEngine.OnDisconnect(match.GameID, players[1].ID)
+	gameEngine.OnDisconnect(match.GameID, players[2].ID)
+	match.mu.Lock()
+	gen := match.graceGen
+	match.mu.Unlock()
+	gameEngine.onGraceExpire(match.ID, gen)
+
+	env, ok := emitter.last(players[1].ID, protocol.S2CMatchOver)
+	if !ok {
+		t.Fatal("match did not end after every remaining seat stayed away")
+	}
+	result := env.Data.(protocol.MatchOverData)
+	return result.WinnerID, result.Rankings, players[0].ID
+}
+
+func TestThirteenFirstFinisherKeepsWinWhenEveryoneElseDisconnects(t *testing.T) {
+	for name, firstLeaves := range map[string]func(*Engine, *Match){
+		"first finisher disconnects": func(gameEngine *Engine, m *Match) {
+			gameEngine.OnDisconnect(m.GameID, m.players[0].ID)
+		},
+		"first finisher leaves the table": func(gameEngine *Engine, m *Match) {
+			gameEngine.forfeit(m.GameID, m.players[0].ID, m.ID, true)
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			winnerID, rankings, firstID := finishFirstThenEveryoneLeaves(t, firstLeaves)
+			if winnerID != firstID || len(rankings) == 0 || rankings[0].UserID != firstID {
+				t.Fatalf("winner=%q rankings=%+v, want first finisher %s", winnerID, rankings, firstID)
+			}
+		})
+	}
+}
+
+func TestThirteenPlayerWhoLeftIsNotPulledBackToTheTable(t *testing.T) {
+	gameEngine, emitter, match := startThirteenMatch(t, 3)
+	defer stopEngineTimers(gameEngine)
+	if match == nil {
+		t.Skip("instant win at deal")
+	}
+	leaver := match.players[2]
+	gameEngine.forfeit(match.GameID, leaver.ID, match.ID, true)
+	if over := match.over; over {
+		t.Fatal("match should continue with two players")
+	}
+
+	emitter.clear()
+	gameEngine.CreateRoom(match.GameID, leaver, 0, "", 4)
+	if emitter.count(leaver.ID, protocol.S2CMatchFound) != 0 {
+		t.Fatal("creating a room pulled the player back into the match they left")
+	}
+	if _, ok := emitter.last(leaver.ID, protocol.S2CRoomWaiting); !ok {
+		t.Fatal("the player who left could not open a new room")
+	}
+
+	emitter.clear()
+	gameEngine.OnConnect(match.GameID, leaver.ID)
+	if emitter.count(leaver.ID, protocol.S2CMatchFound) != 0 {
+		t.Fatal("reconnecting pulled the player back into the match they left")
+	}
+	for _, p := range match.players[:2] {
+		if gameEngine.matchForUser(match.GameID, p.ID) != match {
+			t.Fatalf("%s lost the match they are still playing", p.ID)
+		}
+	}
+
+	emitter.clear()
+	gameEngine.CreateRoom(match.GameID, match.players[0], 0, "", 4)
+	if found, ok := emitter.last(match.players[0].ID, protocol.S2CMatchFound); !ok || !found.Data.(protocol.MatchFoundData).Resumed {
+		t.Fatal("a seated player asking for a room was not sent back to their match")
+	}
+	if emitter.count(leaver.ID, protocol.S2CMatchFound) != 0 {
+		t.Fatal("another player's room request pulled the player who left back into the match")
+	}
+}
+
+func TestThirteenRestartKeepsTheMatchWhenAPlayerWhoLeftOpenedANewRoom(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	rooms := newMemoryRoomStore()
+	gameEngine := NewEngine(zap.NewNop().Sugar(), 300, 30, rooms, activeStore)
+	gameEngine.SetEmitter(&captureEmitter{})
+	players := []protocol.PlayerInfo{{ID: "tl-a", Name: "tl-a"}, {ID: "tl-b", Name: "tl-b"}, {ID: "tl-c", Name: "tl-c"}}
+	if err := gameEngine.startMatchWithRoom("thirteen", thirteen.Logic{}, players, 0, nil, false, nil); err != nil {
+		t.Fatalf("start tien len match: %v", err)
+	}
+	var match *Match
+	for _, m := range gameEngine.matches {
+		match = m
+	}
+	if match == nil {
+		t.Skip("instant win at deal")
+	}
+	leaver := match.players[2]
+	gameEngine.forfeit(match.GameID, leaver.ID, match.ID, true)
+	gameEngine.CreateRoom(match.GameID, leaver, 0, "", 4)
+	ref, ok := rooms.RoomByUser(match.GameID, leaver.ID)
+	if !ok {
+		t.Fatal("the player who left could not open a new room")
+	}
+	stopEngineTimers(gameEngine)
+
+	settlement := &fakeSettlement{}
+	restarted := NewEngine(zap.NewNop().Sugar(), 300, 30, rooms, activeStore)
+	defer stopEngineTimers(restarted)
+	restarted.SetSettlement(settlement)
+	restarted.SetEmitter(&captureEmitter{})
+
+	if restarted.matchByID(match.ID) == nil {
+		t.Fatal("the match was dropped after a restart because the player who left is in a new room")
+	}
+	if len(settlement.abortCalls) != 0 {
+		t.Fatalf("the match was aborted after a restart: %v", settlement.abortCalls)
+	}
+	for _, p := range match.players[:2] {
+		if restarted.matchForUser(match.GameID, p.ID) == nil {
+			t.Fatalf("%s lost the match they are still playing", p.ID)
+		}
+	}
+	if room, ok := rooms.Get(match.GameID, ref.RoomID); !ok || !room.hasMember(leaver.ID) {
+		t.Fatal("the new room of the player who left was removed")
+	}
+}
+
+func TestThirteenMoveFromASeatWronglyMarkedAwayKeepsTheClockRunning(t *testing.T) {
+	gameEngine, emitter, match := startThirteenMatch(t, 3)
+	defer stopEngineTimers(gameEngine)
+	if match == nil {
+		t.Skip("instant win at deal")
+	}
+	forcedThirteenState(t, gameEngine, match, [][]int{{4, 8}, {5, 9}, {6, 10}}, 0)
+	players := match.players
+
+	gameEngine.OnDisconnect(match.GameID, players[0].ID)
+	match.mu.Lock()
+	match.deadline = time.Now().Add(-time.Second)
+	match.mu.Unlock()
+
+	emitter.clear()
+	gameEngine.Move(match.GameID, players[0].ID, match.ID, tienLenMoveRaw(t, "play", 4))
+	if _, ok := emitter.last(players[0].ID, protocol.S2CState); !ok {
+		t.Fatal("a move from a seat marked away was dropped without a reply")
+	}
+	match.mu.Lock()
+	defer match.mu.Unlock()
+	if match.disconnected[0] || match.pausedRemain != 0 || match.timer == nil || match.turnIdx != 1 {
+		t.Fatalf("after the move: away=%v paused=%v armed=%v turn=%d", match.disconnected[0], match.pausedRemain, match.timer != nil, match.turnIdx)
+	}
 }

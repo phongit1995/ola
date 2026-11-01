@@ -416,3 +416,29 @@ func TestTimeoutWithoutFallbackMoveForfeitsMatch(t *testing.T) {
 		t.Fatalf("unexpected timeout result: %+v", data)
 	}
 }
+
+func TestRegularMoveDropsAPendingFallbackMove(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, _ := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	match := startTimeoutMoveTestMatch(t, gameEngine)
+	moverID := match.players[match.turnIdx].ID
+
+	activeStore.failSave = true
+	expireTurnAndFire(gameEngine, match)
+	if match.timeoutMove == nil {
+		t.Fatal("setup expected a pending fallback move after the failed save")
+	}
+	activeStore.failSave = false
+	match.mu.Lock()
+	gameEngine.armTimerDuration(match, time.Minute)
+	match.mu.Unlock()
+
+	gameEngine.Move(match.GameID, moverID, match.ID, json.RawMessage(`{}`))
+	if match.state.(*timeoutMoveTestState).MoveCount != 1 {
+		t.Fatal("setup expected the regular move to be applied")
+	}
+	if match.timeoutMove != nil || match.timeoutMoveFails != 0 {
+		t.Fatalf("regular move kept the previous turn's fallback move: fails=%d", match.timeoutMoveFails)
+	}
+}

@@ -16,6 +16,7 @@ import type {
   StateData,
   UserInfoData,
 } from '../../src/sdk';
+import { GAME_ERROR_CODE } from '../../src/sdk/protocol';
 import { GAME_ID } from '../logic/constants.gen';
 import { sortHand } from '../logic/cards';
 import { detectCombo, type Combo } from '../logic/combos';
@@ -167,6 +168,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     handledMatchOvers: new RecentMatchIds(),
     handledMatchStarts: new RecentMatchIds(),
     leftMatchId: '',
+    matchRoomId: '',
     toastTimer: 0,
     historyTimer: 0 as ReturnType<typeof setTimeout> | 0,
     leaderboardTimer: 0 as ReturnType<typeof setTimeout> | 0,
@@ -240,9 +242,10 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
   const toPerfDeadline = (deadline: number): number => performance.now() + (deadline - Date.now());
 
   const snapState = (state: ServerState, turn: number, deadline: number): void => {
-    set({
+    set((s) => ({
       you: state.you,
       hand: sortHand(state.yourHand),
+      selected: s.selected.filter((card) => state.yourHand.includes(card)),
       handCounts: state.handCounts,
       table: state.table ?? null,
       lastPlaySeat: state.table?.by ?? -1,
@@ -256,7 +259,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       movePending: false,
       animating: false,
       dealing: false,
-    });
+    }));
     const mine = turn === state.you;
     bridge.turnChanged({ yourTurn: mine, deadline });
     if (mine) bridge.attention({ reason: ARCADE_ATTENTION_REASON.YourTurn });
@@ -345,9 +348,13 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     const fresh = refs.handledMatchStarts.mark(data.matchId);
     closeOverlay();
     if (data.matchId === refs.leftMatchId) refs.leftMatchId = '';
+    const room = get().room;
+    if (room) refs.matchRoomId = room.roomId;
+    else if (fresh) refs.matchRoomId = '';
     set({
       phase: 'table',
       matchId: data.matchId,
+      room: null,
       roomOwnerId: data.roomOwnerId ?? '',
       players: data.players,
       you: data.you,
@@ -481,6 +488,10 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       }),
       source.onError((data) => {
         if (!active()) return;
+        if (data.code === GAME_ERROR_CODE.UserInfoFailed && get().phase === 'connecting') {
+          set({ notice: 'Không tải được thông tin người chơi. Hãy thoát ra rồi mở lại trò chơi.' });
+          return;
+        }
         set({ movePending: false });
         get().showToast(errorText(data.code));
       }),
@@ -531,6 +542,22 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         });
       }),
       session.onRoomSync((data) => {
+        const s = get();
+        if (s.phase === 'table' && !s.practice && !s.result && s.matchId && !refs.handledMatchOvers.has(s.matchId)) {
+          const backToRoom = Boolean(data.roomId) && s.room?.roomId === data.roomId;
+          refs.replayEpoch += 1;
+          set({
+            phase: backToRoom ? 'room' : 'lobby',
+            matchId: '',
+            selected: [],
+            movePending: false,
+            animating: false,
+            notice: 'Bạn mất kết nối quá lâu nên đã rời ván đấu.',
+            ...(backToRoom ? {} : { room: null, roomChat: [] }),
+          });
+          session.listRooms();
+          return;
+        }
         if (!data.roomId && get().phase === 'room') {
           set({ phase: 'lobby', room: null, roomChat: [] });
           session.listRooms();
@@ -539,6 +566,10 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       session.onRoomClosed((data) => {
         if (get().practice) {
           if (get().room?.roomId === data.roomId) set({ room: null, roomChat: [] });
+          return;
+        }
+        if (get().phase === 'table' && data.roomId === refs.matchRoomId) {
+          if (data.reason !== 'guest_left') set({ notice: roomClosedText(data.reason) });
           return;
         }
         if (get().room?.roomId === data.roomId || get().phase === 'room') {
