@@ -11,6 +11,7 @@ import { GameLog, TurnPanel } from '../components/TurnPanel';
 import { TyIcon } from '../components/TyIcon';
 import { MAX_ROUNDS, TIME_LIMIT_MS } from '../logic/constants';
 import { useTycoon } from '../store/useTycoon';
+import bgUrl from '../assets/lobby/bg-board-pixel.webp';
 
 function LogSheet() {
   const { log, closeSheet } = useTycoon(useShallow((s) => ({ log: s.log, closeSheet: s.closeSheet })));
@@ -70,7 +71,7 @@ export function BoardScreen() {
   }, [state.result]);
 
   return (
-    <div className="ty-screen ty-board-screen">
+    <div className="ty-screen ty-board-screen" style={{ '--ty-board-bg': `url(${bgUrl})` } as React.CSSProperties}>
       <div className="ty-topbar ty-board-topbar">
         <span className={`ty-round-chip ${roundTone}`} aria-label={`Vòng ${round} trên ${MAX_ROUNDS}`}>
           <span className="ty-round-label">

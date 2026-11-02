@@ -7,13 +7,13 @@ import {
 } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCMrFALsexFmHSLhtDvovjJp3ZjkMc-5RY',
-  authDomain: 'ola-chat-net.firebaseapp.com',
-  projectId: 'ola-chat-net',
-  storageBucket: 'ola-chat-net.firebasestorage.app',
-  messagingSenderId: '380249924077',
-  appId: '1:380249924077:web:1541375a200563180e47e4',
-  measurementId: 'G-BK44FYX684',
+  apiKey: 'AIzaSyDCaj1CkQrJtuscR5-vw-sXNCt407pvoTQ',
+  authDomain: 'ola-me-67e75.firebaseapp.com',
+  projectId: 'ola-me-67e75',
+  storageBucket: 'ola-me-67e75.firebasestorage.app',
+  messagingSenderId: '372046068923',
+  appId: '1:372046068923:web:06b4321e84b35456e67d9e',
+  measurementId: 'G-G9V5NELCHY',
 };
 
 let analytics: Analytics | null = null;
