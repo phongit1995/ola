@@ -1,0 +1,405 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-02",
+  "tool": "built-in image_gen (sprite sheets) + ImageMagick crop/export",
+  "style": "Cờ Tỷ Phú UI v3; pixel art tiles and transparent flat mascots/tokens",
+  "sources": [
+    "assets/screens/board/tiles-sheet.png",
+    "assets/screens/board/chars-sheet.png",
+    "assets/screens/board/tokens-sheet.png"
+  ],
+  "counts": {
+    "background": 1,
+    "tiles": 19,
+    "characters": 48,
+    "tokens": 8,
+    "pawn": 1
+  },
+  "files": [
+    {
+      "file": "lobby/bg-board-pixel.webp",
+      "bytes": 89714,
+      "sha256": "9197216c550ce340dd235104cc33e14670d27cdd2f912c6d0a7a89a94bdf7dfa"
+    },
+    {
+      "file": "tiles/art/buon-ma-thuot.webp",
+      "bytes": 9164,
+      "sha256": "3b276885e0a55e62a0d194fab8d88706f3e2c75e4d3032ecbd840b0019d192e0"
+    },
+    {
+      "file": "tiles/art/can-tho.webp",
+      "bytes": 10708,
+      "sha256": "1f06e9f1ec1c92e765a04257917675299bfb2a9704530dea762ba61c10721855"
+    },
+    {
+      "file": "tiles/art/da-lat.webp",
+      "bytes": 11176,
+      "sha256": "715ca2b337638fe9fb5dfd10f0bafb391a08e640c3433456088adbe0a05630c4"
+    },
+    {
+      "file": "tiles/art/da-nang.webp",
+      "bytes": 7066,
+      "sha256": "296af6001174558525fd67b80af977dd975c46fe7c9d8547e33f8a7b9c787687"
+    },
+    {
+      "file": "tiles/art/ha-long.webp",
+      "bytes": 8204,
+      "sha256": "e280c85eadd6c19dafe9abe0b7960e994a050acef502f79d0491453100c654be"
+    },
+    {
+      "file": "tiles/art/ha-noi.webp",
+      "bytes": 10142,
+      "sha256": "c8eccd654f402f1e157732de52fee75fccd8e463c464238cd07d9944d1551cae"
+    },
+    {
+      "file": "tiles/art/hai-phong.webp",
+      "bytes": 10366,
+      "sha256": "d8f0f6729517ac1ef335ef5799a0d8ab229af03b2421ffcb380591ff013949dc"
+    },
+    {
+      "file": "tiles/art/ho-chi-minh.webp",
+      "bytes": 7924,
+      "sha256": "07d4b3e2f3c2b1950bbbc9d46630b076dade1d19c3e588bc4d23a68a288184ea"
+    },
+    {
+      "file": "tiles/art/hoi-an.webp",
+      "bytes": 11342,
+      "sha256": "147fd40f93b345ac0f040152536a47420f774f668280c05b8e2ea82e30955e6f"
+    },
+    {
+      "file": "tiles/art/hue.webp",
+      "bytes": 9896,
+      "sha256": "8c67d6d495d17722be05b768c2e21bceaa29db3584cf52fd2663e8e1d704a0fe"
+    },
+    {
+      "file": "tiles/art/le-hoi.webp",
+      "bytes": 8424,
+      "sha256": "59146196a9773689df5580e5b98197d9b7deb605f1e4d13f90f370b5404fa4d7"
+    },
+    {
+      "file": "tiles/art/nha-trang.webp",
+      "bytes": 8406,
+      "sha256": "0f3174ae67ec3af2e3f0a8713793c73a82384740fed020ba6da9517a38adb8fc"
+    },
+    {
+      "file": "tiles/art/nha-tu.webp",
+      "bytes": 5736,
+      "sha256": "11730f2625f388f2b9a69d85ecd362fd01ae47950e4a455b202a8a11909b5497"
+    },
+    {
+      "file": "tiles/art/phu-quoc.webp",
+      "bytes": 8018,
+      "sha256": "58ebaabb47cfa2f139ebd77a35b261e80eb9685e7d799608636f2797c997e2d6"
+    },
+    {
+      "file": "tiles/art/quy-nhon.webp",
+      "bytes": 7696,
+      "sha256": "1d911914caa27e36639d41e5ebe9ae0ebf078d43deaa00b966e832685508e35e"
+    },
+    {
+      "file": "tiles/art/san-bay.webp",
+      "bytes": 6558,
+      "sha256": "a3a47b3124f40ac69daedf9341f496a6656045c744aa5c64b7c32ea83b409ad6"
+    },
+    {
+      "file": "tiles/art/thanh-hoa.webp",
+      "bytes": 7776,
+      "sha256": "c7a7f860a3026cede5404418bb1cfdecd9b2a411153f0a1d28072fc34262d47d"
+    },
+    {
+      "file": "tiles/art/vinh.webp",
+      "bytes": 8174,
+      "sha256": "c7e367df6db55b1f34b984fc1edc616e942eca6494423c82f80bcdd335a8eca8"
+    },
+    {
+      "file": "tiles/art/vung-tau.webp",
+      "bytes": 7864,
+      "sha256": "00ef44718cce75636ff2d9d1c7e9ada91d2b974960b18b31ebe13560e89b2c09"
+    },
+    {
+      "file": "chars/canh-happy-bust.webp",
+      "bytes": 3122,
+      "sha256": "afb076b1b318097d88051a78962537ec0c1c5f746999e28e9711389eb671499b"
+    },
+    {
+      "file": "chars/canh-happy-full.webp",
+      "bytes": 5078,
+      "sha256": "93845ea79cacf2002faac86bc44de1824ff13a5f5367bcb6e47438767ec5ca14"
+    },
+    {
+      "file": "chars/canh-idle-bust.webp",
+      "bytes": 2682,
+      "sha256": "5911c240e7582e215aaeefdb4cc24649bb47f54877595f991aacb57f52ecb404"
+    },
+    {
+      "file": "chars/canh-idle-full.webp",
+      "bytes": 4926,
+      "sha256": "a4c8c5ce9e1814e1106170b8ee7ccc9faeb9643ed731795dfd776b68ea2ec689"
+    },
+    {
+      "file": "chars/canh-point-bust.webp",
+      "bytes": 3452,
+      "sha256": "c9733eb3643d89d5e7c3d781704130cb24e39569e6e67420d97225c474ff735c"
+    },
+    {
+      "file": "chars/canh-point-full.webp",
+      "bytes": 5544,
+      "sha256": "df4f57c25ac54c2d697addf50c40a18441abfd53755224c70a4646af421a6486"
+    },
+    {
+      "file": "chars/canh-sad-bust.webp",
+      "bytes": 2896,
+      "sha256": "f54966721f9d1f5ae0b08630a88ea868e930c7aee029eff69b58247b21e82f50"
+    },
+    {
+      "file": "chars/canh-sad-full.webp",
+      "bytes": 4668,
+      "sha256": "7db009e79a3e44a2d90fd86ada7134ec4a0b733983c08da2340af44c90c32cb3"
+    },
+    {
+      "file": "chars/dau-happy-bust.webp",
+      "bytes": 2242,
+      "sha256": "bf0b70886393a1242588a18e941f4322403871ff776c3962d7958b6395fd49d9"
+    },
+    {
+      "file": "chars/dau-happy-full.webp",
+      "bytes": 4826,
+      "sha256": "2487bd48f862ea205ca2b6622bf827fe73cede453198ebb36c2e1a6db1d7fc92"
+    },
+    {
+      "file": "chars/dau-idle-bust.webp",
+      "bytes": 1702,
+      "sha256": "aa5bd7fb3e20441999ed0d4ecc6839dc4fd52c02e29dc625cd11fe05387dd88c"
+    },
+    {
+      "file": "chars/dau-idle-full.webp",
+      "bytes": 4352,
+      "sha256": "717e8bd7a1ae858483970424e7d488f10020c67c43c7afaf95b681c2e1f8eee1"
+    },
+    {
+      "file": "chars/dau-point-bust.webp",
+      "bytes": 3212,
+      "sha256": "2a23fa262e48798599bc61f4177ef1c61a61cd4a8fccc082cda288eeb2c3a890"
+    },
+    {
+      "file": "chars/dau-point-full.webp",
+      "bytes": 5936,
+      "sha256": "6398daf20f1011c2fcb2d76ea1f2f4b82602a782aab02e752b0f2f00422f1165"
+    },
+    {
+      "file": "chars/dau-sad-bust.webp",
+      "bytes": 2138,
+      "sha256": "5c9dce3b58a78534c589da8bb2bee8c61e69798a07faf5281a647fcf256cf5ba"
+    },
+    {
+      "file": "chars/dau-sad-full.webp",
+      "bytes": 4998,
+      "sha256": "9700d4fcae85e67166ec4d890632982d38cf2be257b380bcb6b220bca0a871a3"
+    },
+    {
+      "file": "chars/loc-happy-bust.webp",
+      "bytes": 2788,
+      "sha256": "c8f495d7b3683ad706e7d1b87f441cef015c30d9d3a7735f6f0ba43612943d10"
+    },
+    {
+      "file": "chars/loc-happy-full.webp",
+      "bytes": 5462,
+      "sha256": "1f02afac1480191671eaf7c562672c3dfb7d0267374f98e97f789480e3d8793c"
+    },
+    {
+      "file": "chars/loc-idle-bust.webp",
+      "bytes": 2536,
+      "sha256": "190e7575fe4596ba700b65a6f863464705f8d4e42ccb2038587300d7e5d13629"
+    },
+    {
+      "file": "chars/loc-idle-full.webp",
+      "bytes": 4806,
+      "sha256": "7e2b8899e00b2d3da51b95b4dba238dc1c66e3f9044732f9aa5db34384fbe2ac"
+    },
+    {
+      "file": "chars/loc-point-bust.webp",
+      "bytes": 3102,
+      "sha256": "f2e8a49f9f7f04ecc1f395ac234036efcf132a2006e9b752116f7854588757e1"
+    },
+    {
+      "file": "chars/loc-point-full.webp",
+      "bytes": 5064,
+      "sha256": "d70886d166e0ad1b4ee08bb5f08dc4217b7c0fd4ddef49e9b891c0ef1e39e3d5"
+    },
+    {
+      "file": "chars/loc-sad-bust.webp",
+      "bytes": 2786,
+      "sha256": "2fb755901df3ef31ca2588a274f710dd97cb02fbc627ba4787a4b184f2bfe528"
+    },
+    {
+      "file": "chars/loc-sad-full.webp",
+      "bytes": 4704,
+      "sha256": "2e7a597bd6559246ba3d89ce891b2f095e1e2ef7dfdde1772e107db81405dc7a"
+    },
+    {
+      "file": "chars/ngan-happy-bust.webp",
+      "bytes": 2902,
+      "sha256": "cc18fa99854abd6468e6bbf1ed8c1e6512946bfca6a7329f63fd6d292c7eefdf"
+    },
+    {
+      "file": "chars/ngan-happy-full.webp",
+      "bytes": 4544,
+      "sha256": "577ab9162f1101188020211398dcb961259ce5c8653be903bafe402179ea0a01"
+    },
+    {
+      "file": "chars/ngan-idle-bust.webp",
+      "bytes": 2556,
+      "sha256": "53037b77012cbf975d072092a5c1a0bcc2299ca80d869438aedfe9685c249d1f"
+    },
+    {
+      "file": "chars/ngan-idle-full.webp",
+      "bytes": 4288,
+      "sha256": "878c5a074b0f64fb3b60f8e0cc03a40ca3969a62ba8452132a912aebe4b246e5"
+    },
+    {
+      "file": "chars/ngan-point-bust.webp",
+      "bytes": 2556,
+      "sha256": "d2d4f08c81232a9971ec15e6cd79e2ebb77f75bf5da1e3c7c849abf0f299a5e3"
+    },
+    {
+      "file": "chars/ngan-point-full.webp",
+      "bytes": 4786,
+      "sha256": "eb5073c6dfe03c27717ae6f626071ef3c089b898725698e821c3893d27f143bd"
+    },
+    {
+      "file": "chars/ngan-sad-bust.webp",
+      "bytes": 2822,
+      "sha256": "77f05b52a3711ce2c4bdad24a87ea01b4911adbdf23bfb1e39eeab34befd8d0b"
+    },
+    {
+      "file": "chars/ngan-sad-full.webp",
+      "bytes": 4480,
+      "sha256": "c900d5ab3dd635abac2a30733c9605c1fae00e7e97797c2ff7bb815b8b54d250"
+    },
+    {
+      "file": "chars/teo-happy-bust.webp",
+      "bytes": 3582,
+      "sha256": "ce0532d85d8d7c10d8871c5c8035a1ac343dc13c13df55ef1338da070a021ecc"
+    },
+    {
+      "file": "chars/teo-happy-full.webp",
+      "bytes": 6474,
+      "sha256": "53bd75036f6a82687430fb29643aaccaf30ecdfcfe42880a0126f5e5ace64c27"
+    },
+    {
+      "file": "chars/teo-idle-bust.webp",
+      "bytes": 3122,
+      "sha256": "72298f60d89033337d949abdb9397f71e29ce49597208b07558ca7918f255a64"
+    },
+    {
+      "file": "chars/teo-idle-full.webp",
+      "bytes": 4988,
+      "sha256": "872618380041876d4e492e2607ec0e30d730d5c063f5934dc656aa50c3c85594"
+    },
+    {
+      "file": "chars/teo-point-bust.webp",
+      "bytes": 3336,
+      "sha256": "6653a619ba79a8cf19fa405dfccff8dc5e1f39b1b400c911b477780c3fcca852"
+    },
+    {
+      "file": "chars/teo-point-full.webp",
+      "bytes": 6008,
+      "sha256": "a789116c0283ecd77e0c5a8e815c9198a6d9ccbec681c540cd469035bcd712f8"
+    },
+    {
+      "file": "chars/teo-sad-bust.webp",
+      "bytes": 3262,
+      "sha256": "9cc232f2aecf52aa823d99610f54d757b507a1db21c0047ddffad9f976b820c6"
+    },
+    {
+      "file": "chars/teo-sad-full.webp",
+      "bytes": 5168,
+      "sha256": "c035b96ed697bc643b8c8bc00eeae3ab0cb839170755cd36cfa7c7fe7a2ed2bd"
+    },
+    {
+      "file": "chars/ty-happy-bust.webp",
+      "bytes": 3540,
+      "sha256": "03dadcb8171179c685ce7eeedc6b7e5d5f3eb969f6ca83aa30212b57cb3015cd"
+    },
+    {
+      "file": "chars/ty-happy-full.webp",
+      "bytes": 5842,
+      "sha256": "83b276dd74c2480efcbd56c5271fac610909e6ce2044911ba885949dc0042d4b"
+    },
+    {
+      "file": "chars/ty-idle-bust.webp",
+      "bytes": 3510,
+      "sha256": "9f255b7b0d56d2ef71ed70217a68537715c2b7b3e9017f8bcde6da1fe74d3ce5"
+    },
+    {
+      "file": "chars/ty-idle-full.webp",
+      "bytes": 22558,
+      "sha256": "4c880d55ba39f5b58d8b49fff3baef38982aaf862c39c348ee914b3359cbd555"
+    },
+    {
+      "file": "chars/ty-point-bust.webp",
+      "bytes": 3306,
+      "sha256": "74f29203aaca511c5fa475b9a33fcace64d93ce4ffd7a69de7bea5873e380a31"
+    },
+    {
+      "file": "chars/ty-point-full.webp",
+      "bytes": 5668,
+      "sha256": "8875307e461aead3e5f29aeaea2d340a5bb090070998b96cc4f9e8fd552df6b3"
+    },
+    {
+      "file": "chars/ty-sad-bust.webp",
+      "bytes": 3556,
+      "sha256": "667fffe82d944c1565a34ef67085480a0801bf16c8976ad01d4c881f9445d64c"
+    },
+    {
+      "file": "chars/ty-sad-full.webp",
+      "bytes": 5816,
+      "sha256": "bf360519f3c418e8a18c68deac3cf0efea6af362b0522602c27321f4b2d93387"
+    },
+    {
+      "file": "tokens/tk-banh-mi.webp",
+      "bytes": 1460,
+      "sha256": "73781d866322190ac14ac6ec5f3badc0da66dfd6ea360c5efc7ba90239f93e32"
+    },
+    {
+      "file": "tokens/tk-ca-phe.webp",
+      "bytes": 1546,
+      "sha256": "34dbaa9912ab597e9f169528822f30ed53e2e41d4f875fa03096b04ce10e952d"
+    },
+    {
+      "file": "tokens/tk-den-long.webp",
+      "bytes": 1346,
+      "sha256": "0efa693e265a1156606b76eeaaf6cfe4b93509ef24117e9205ffbfaae3dbcec0"
+    },
+    {
+      "file": "tokens/tk-non-la.webp",
+      "bytes": 1148,
+      "sha256": "1abfe188e1973f14f05db175ab81953bb582b8e8973fd227b02d3cd330f86153"
+    },
+    {
+      "file": "tokens/tk-pawn.svg",
+      "bytes": 658,
+      "sha256": "0a0e27165aa3bd76eecf4d16cced09c298afac0bfd5e9a6db5b1c52087e6881c"
+    },
+    {
+      "file": "tokens/tk-thuyen.webp",
+      "bytes": 1446,
+      "sha256": "29e22df20023f27a69b1367e2338e474d9db41bfd2d03b37a4653f063892bfbe"
+    },
+    {
+      "file": "tokens/tk-trau.webp",
+      "bytes": 1310,
+      "sha256": "0009002019ca8030d5c444f723998a322acf6300d5d6acc4537da76faaed7f75"
+    },
+    {
+      "file": "tokens/tk-xe-may.webp",
+      "bytes": 1286,
+      "sha256": "8a8abec38ae67c1a76e0e9736ea65fe17e2966d439e244213bba0950de4a451f"
+    },
+    {
+      "file": "tokens/tk-xich-lo.webp",
+      "bytes": 1710,
+      "sha256": "8a3ba452baa5dc3d4a857ff775d574fedb51b5189f84244ebcbb7f876a35635d"
+    }
+  ]
+}
