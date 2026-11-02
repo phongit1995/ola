@@ -14,6 +14,7 @@ import {
   setUserId as setCrashlyticsUserId,
 } from '@react-native-firebase/crashlytics';
 import type { Crashlytics } from '@react-native-firebase/crashlytics';
+import { AppState } from 'react-native';
 
 (globalThis as { RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS?: boolean }).RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS =
   true;
@@ -41,6 +42,9 @@ export function initTelemetry(): void {
   if (__DEV__) {
     fireAndForget(() => setCrashlyticsCollectionEnabled(crashlytics(), true));
   }
+  AppState.addEventListener('change', (state) => {
+    fireAndForget(() => crashlyticsLog(crashlytics(), `app state: ${state}`));
+  });
 }
 
 export function trackEvent(name: string, params?: TelemetryParams): void {

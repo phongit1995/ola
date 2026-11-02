@@ -90,12 +90,12 @@ jobs:
           test -f keystore.properties || { echo "Thiếu mobile/android/keystore.properties"; exit 1; }
           test -f app/olame.keystore || { echo "Thiếu mobile/android/app/olame.keystore"; exit 1; }
 
-      - name: Build release APK (arm64)
+      - name: Build release APK (arm64 + armv7, máy 32-bit vẫn cài được)
         if: env.BUILD_APK == 'true'
         working-directory: mobile/android
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a $VERSION_CODE_ARG $VERSION_NAME_ARG
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a $VERSION_CODE_ARG $VERSION_NAME_ARG
 
       - name: Build release AAB (arm64 + armv7 cho Play)
         if: env.BUILD_AAB == 'true'
@@ -103,6 +103,12 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew bundleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a $VERSION_CODE_ARG $VERSION_NAME_ARG
+
+      - name: Upload symbol native lên Crashlytics
+        if: env.BUILD_APK == 'true' || env.BUILD_AAB == 'true'
+        continue-on-error: true
+        working-directory: mobile/android
+        run: ./gradlew uploadCrashlyticsSymbolFileRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a $VERSION_CODE_ARG $VERSION_NAME_ARG
 
       - name: Gom artifact + kiểm tra chữ ký
         run: |

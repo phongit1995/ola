@@ -1890,7 +1890,8 @@
     "comingSoon": "Feature coming soon",
     "save": "Save image",
     "saved": "Image saved to your library",
-    "saveFailed": "Couldn't save image"
+    "saveFailed": "Couldn't save image",
+    "permissionDenied": "Ola Me isn't allowed to save photos. Turn on Photos access in Settings to save images."
   },
   "nearby": {
     "title": "Nearby places",

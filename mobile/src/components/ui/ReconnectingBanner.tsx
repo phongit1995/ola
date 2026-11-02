@@ -3,11 +3,13 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SocketService } from '@ola/shared/services';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 
 export function ReconnectingBanner() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const status = useSyncExternalStore(SocketService.subscribeStatus, SocketService.getStatus);
+  useOverlayBreadcrumb('ReconnectingBanner', status === 'reconnecting' ? 'shown' : null);
   if (status !== 'reconnecting') return null;
   return (
     <View

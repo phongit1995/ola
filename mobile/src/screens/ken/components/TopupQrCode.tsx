@@ -5,7 +5,11 @@ import { SvgXml, type Svg } from 'react-native-svg';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { DIVIDER, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { savePngBase64ToGallery } from '@lib/saveImage';
+import {
+  alertPhotoPermissionDenied,
+  isPhotoPermissionDenied,
+  savePngBase64ToGallery,
+} from '@lib/saveImage';
 import { recordAppError } from '@lib/telemetry';
 import { QR_SIZE } from '../constants';
 
@@ -60,8 +64,13 @@ export function TopupQrCode({ uri }: { uri: string }) {
           return;
         }
         savePngBase64ToGallery(base64)
-          .then(finishSave)
+          .then(() => finishSave(true))
           .catch((error) => {
+            if (isPhotoPermissionDenied(error)) {
+              setSaving(false);
+              alertPhotoPermissionDenied(t);
+              return;
+            }
             recordAppError(error, 'saveTopupQr');
             finishSave(false);
           });

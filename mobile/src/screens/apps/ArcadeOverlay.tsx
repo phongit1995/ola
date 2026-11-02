@@ -25,6 +25,7 @@ import {
   FloatingBubble,
 } from '@components/ui/FloatingBubble';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import { mmkvStorage } from '@platform/storage';
 
 interface BubblePosition {
@@ -181,6 +182,7 @@ export function ArcadeOverlay() {
   const ken = useAuthStore(state => state.user?.ken);
   const insets = useSafeAreaInsets();
   const webRef = useRef<WebView<object>>(null);
+  useOverlayBreadcrumb('ArcadeOverlay', active ? (minimized ? 'minimized' : 'open') : null);
 
   useEffect(() => {
     if (!active || minimized) return;

@@ -26,6 +26,7 @@ import {
 import type { KenTreasureChest } from '@ola/shared/types';
 import { assetRatio } from '@screens/games/pen/penUi';
 import { APP_REVIEW_TRIGGERS, maybeAskForReview } from '@lib/appReview';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import { kenTreasureAssets, openingFrames } from './kenTreasureAssets';
 
 const STACK_OFFSET_PX = 150;
@@ -544,6 +545,7 @@ export function KenTreasureOverlay() {
   const dismiss = useKenTreasureStore((s) => s.dismiss);
 
   const list = Object.values(chests);
+  useOverlayBreadcrumb('KenTreasureOverlay', list.length > 0 ? `${list.length} chests` : null);
   if (list.length === 0) return null;
 
   const active = list.find((c) => c.phase === 'opening' || c.phase === 'result');

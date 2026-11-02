@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AppState, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import { openStoreForUpdate } from '@lib/appUpdate';
 import { useAppUpdateStore } from '@store/appUpdateStore';
 
@@ -14,6 +15,7 @@ export function AppUpdateGate() {
   const required = useAppUpdateStore((s) => s.required);
   const [attempt, setAttempt] = useState(0);
   const shownRef = useRef(false);
+  useOverlayBreadcrumb('AppUpdateGate', required ? 'shown' : null);
 
   useEffect(() => {
     const { check } = useAppUpdateStore.getState();

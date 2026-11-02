@@ -1890,7 +1890,8 @@
     "comingSoon": "Tính năng đang được phát triển",
     "save": "Tải ảnh",
     "saved": "Đã lưu ảnh vào thư viện",
-    "saveFailed": "Không thể lưu ảnh"
+    "saveFailed": "Không thể lưu ảnh",
+    "permissionDenied": "Ola Me chưa được phép lưu ảnh. Bật quyền Ảnh trong Cài đặt để tải ảnh về máy."
   },
   "nearby": {
     "title": "Địa điểm lân cận",
