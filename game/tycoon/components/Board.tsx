@@ -8,6 +8,7 @@ import { useTycoon } from '../store/useTycoon';
 import { Skyline } from './Skyline';
 import { glyphForTile, TileGlyph } from './TileGlyph';
 import { Token } from './Token';
+import { TILE_ART } from './tileArt';
 
 const CORNER = 13.6;
 const EDGE = (100 - 2 * CORNER) / (SIDE_TILES - 1);
@@ -90,7 +91,12 @@ function TileHouses({ houses }: { houses: number }) {
   );
 }
 
-function CornerContent({ idx }: { idx: number }) {
+function TileArt({ src, className }: { src: string; className: string }) {
+  return <img className={className} src={src} alt="" aria-hidden="true" draggable={false} />;
+}
+
+// Ô có ảnh thì ảnh thay cho glyph, không vẽ chồng lên chữ.
+function CornerContent({ idx, art }: { idx: number; art?: string }) {
   switch (BOARD[idx].kind) {
     case 'go':
       return (
@@ -107,9 +113,9 @@ function CornerContent({ idx }: { idx: number }) {
     case 'jail':
       return (
         <>
-          <span className="ty-jail-cell">
-            <TileGlyph name="jail" size={18} color="var(--ty-cream)" />
-            <span>NHÀ TÙ</span>
+          <span className={art ? 'ty-jail-cell ty-jail-cell-art' : 'ty-jail-cell'}>
+            {art ? <TileArt className="ty-jail-art" src={art} /> : <TileGlyph name="jail" size={18} color="var(--ty-cream)" />}
+            <span className="ty-jail-label">NHÀ TÙ</span>
           </span>
           <span className="ty-jail-visit">Thăm tù</span>
         </>
@@ -117,7 +123,7 @@ function CornerContent({ idx }: { idx: number }) {
     case 'festival':
       return (
         <span className="ty-corner ty-corner-festival">
-          <TileGlyph name="festival" size={22} />
+          {art ? <TileArt className="ty-corner-art" src={art} /> : <TileGlyph name="festival" size={22} />}
           <span className="ty-corner-title">
             LỄ
             <br />
@@ -184,7 +190,8 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
         const owner = state?.owner ?? -1;
         const houses = state?.houses ?? 0;
         const corner = rect.side === 'corner';
-        const glyph = corner ? null : glyphForTile(tile.kind);
+        const art = TILE_ART[tile.idx];
+        const glyph = corner || art ? null : glyphForTile(tile.kind);
         const owned = owner >= 0;
         const priceText = owned ? rentLabel(tiles, tile.idx, festival) : tile.price ? String(tile.price) : tile.kind === 'tax' ? `−${TAX_RATE * 100}%` : '';
         const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}${festival === tile.idx ? `, đang có Lễ hội, thuê ×${FESTIVAL_MULTIPLIER}` : ''}`;
@@ -226,9 +233,10 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
               </span>
             ) : null}
             {corner ? (
-              <CornerContent idx={tile.idx} />
+              <CornerContent idx={tile.idx} art={art} />
             ) : (
               <span className="ty-tile-body">
+                {art ? <TileArt className="ty-tile-art" src={art} /> : null}
                 {glyph ? <TileGlyph name={glyph} size={16} /> : null}
                 <span className="ty-tile-text">
                   <span className="ty-tile-name">{shortName(tile.idx)}</span>
