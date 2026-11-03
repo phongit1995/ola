@@ -230,7 +230,8 @@
       "changeNickname": "Đổi nickname",
       "removeAccount": "Xóa tài khoản",
       "appLock": "Khoá ứng dụng",
-      "support": "Hỗ trợ khách hàng"
+      "support": "Hỗ trợ khách hàng",
+      "gifts": "Quà tặng"
     },
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
     "appMallSubtitle": "Kho Video vô cùng phong phú và đa dạng"
@@ -539,6 +540,7 @@
     "attachTransferKen": "Chuyển KEN",
     "attachTradingVip": "Giao dịch VIP",
     "attachSendVipDays": "Tặng ngày VIP",
+    "attachSendGift": "Tặng quà",
     "transferKenTitle": "Nhập thông tin giao dịch KEN",
     "transferKenConfirmTitle": "Xác nhận",
     "transferKenBalance": "Đang có",
@@ -1812,7 +1814,8 @@
     "loadError": "Không tải được thông báo",
     "actionError": "Thao tác thất bại, vui lòng thử lại",
     "systemSender": "Hệ thống",
-    "hide": "Ẩn thông báo"
+    "hide": "Ẩn thông báo",
+    "msg_gift": "Đã tặng bạn một món quà"
   },
   "ken": {
     "title": "KEN",
@@ -2439,5 +2442,71 @@
     "hiddenByAdminError": "Khoảnh khắc này đã bị ẩn, bạn không thể hiện lại",
     "historyMore": "Xem thêm",
     "open": "Xem khoảnh khắc"
+  },
+  "gift": {
+    "title": "Tặng quà",
+    "send": "Tặng",
+    "sending": "Đang tặng…",
+    "charm": "Sức hút",
+    "charmCount": "{{value}} sức hút",
+    "charmGain": "+{{value}} sức hút",
+    "quantity": "Số lượng",
+    "notePlaceholder": "Gửi kèm lời nhắn (không bắt buộc)",
+    "total": "Tổng",
+    "balance": "Số dư",
+    "kenAmount": "{{ken}} KEN",
+    "topUp": "Nạp KEN",
+    "notEnoughKen": "Không đủ KEN",
+    "toReceiver": "Tặng {{name}}",
+    "confirmTitle": "Xác nhận tặng quà",
+    "confirmMessage": "Tặng {{quantity}} {{name}} cho {{receiver}} với giá {{ken}} KEN?",
+    "sentToast": "Đã tặng {{name}} ×{{quantity}}",
+    "empty": "Chưa có quà nào",
+    "loadFailed": "Không tải được danh sách quà",
+    "disabledHint": "Tính năng tặng quà đang tạm tắt",
+    "messageOut": "Bạn đã tặng",
+    "messageIn": "Đã tặng bạn",
+    "quantityTimes": "×{{count}}",
+    "notification": "đã tặng bạn {{preview}}",
+    "wall": {
+      "title": "Tường quà",
+      "totalGifts": "{{value}} món quà",
+      "empty": "Chưa nhận được món quà nào",
+      "leaderboard": "Bảng xếp hạng",
+      "history": "Lịch sử quà"
+    },
+    "history": {
+      "received": "Đã nhận",
+      "sent": "Đã tặng",
+      "empty": "Chưa có lịch sử",
+      "loadMore": "Xem thêm",
+      "receivedLine": "{{name}} tặng {{gift}} ×{{quantity}}",
+      "sentLine": "Tặng {{name}} {{gift}} ×{{quantity}}"
+    },
+    "leaderboard": {
+      "title": "Bảng xếp hạng quà",
+      "sender": "Đại gia",
+      "receiver": "Được yêu thích",
+      "week": "Tuần này",
+      "month": "Tháng này",
+      "all": "Tất cả",
+      "myRank": "Hạng của bạn",
+      "notRanked": "Chưa có hạng",
+      "kenValue": "{{value}} KEN",
+      "charmValue": "{{value}} sức hút",
+      "empty": "Chưa có ai trên bảng xếp hạng"
+    },
+    "errors": {
+      "disabled": "Tính năng tặng quà đang tạm tắt",
+      "notFound": "Món quà này không còn bán",
+      "self": "Bạn không thể tự tặng quà cho mình",
+      "blocked": "Không thể tặng quà cho người này",
+      "receiverUnavailable": "Người nhận không còn khả dụng",
+      "insufficientKen": "Bạn không đủ KEN để tặng quà này",
+      "invalidQuantity": "Số lượng quà không hợp lệ",
+      "noteTooLong": "Lời nhắn quá dài",
+      "rateLimited": "Bạn tặng quá nhanh, thử lại sau ít phút",
+      "failed": "Tặng quà thất bại, thử lại sau"
+    }
   }
 }

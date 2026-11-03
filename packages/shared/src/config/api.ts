@@ -209,6 +209,14 @@ export const API_PATH = {
     transfer: '/ken/transfer',
     transactions: '/ken/transactions',
   },
+  gifts: {
+    base: '/gifts',
+    send: '/gifts/send',
+    received: '/gifts/received',
+    sent: '/gifts/sent',
+    leaderboard: '/gifts/leaderboard',
+    wall: (userId: string) => `/gifts/users/${userId}/wall`,
+  },
   kenTreasure: {
     open: (id: string) => `/ken/chests/${id}/open`,
   },

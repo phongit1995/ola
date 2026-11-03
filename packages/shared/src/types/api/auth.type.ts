@@ -26,6 +26,8 @@ export interface AuthUser {
   vipEndTime?: string | null;
   followerCount?: number;
   followingCount?: number;
+  kisses?: number;
+  charm?: number;
   spouse?: SpouseInfo;
   createdAt?: string;
 }

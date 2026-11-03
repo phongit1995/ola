@@ -29,6 +29,7 @@ export interface PublicProfile {
   spouse?: SpouseInfo;
   verified: boolean;
   kisses: number;
+  charm?: number;
   vipUsed?: string | null;
   vipEndTime?: string | null;
   followerCount: number;

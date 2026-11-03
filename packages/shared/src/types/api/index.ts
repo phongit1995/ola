@@ -23,3 +23,4 @@ export type * from './story.type';
 export type * from './moment.type';
 export type * from './report.type';
 export type * from './wordChain.type';
+export type * from './gift.type';

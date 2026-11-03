@@ -28,6 +28,7 @@ export * from './relationshipLabels';
 export * from './vipPurchase';
 export * from './presence';
 export * from './messageGroups';
+export * from './gift';
 export * from './wordChain';
 export * from './chatBotView';
 export * from './penHistory';

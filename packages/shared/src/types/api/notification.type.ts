@@ -2,7 +2,8 @@ export type AppNotificationType =
   | 'friend_request'
   | 'marriage_proposal'
   | 'content_violation'
-  | 'report_resolved';
+  | 'report_resolved'
+  | 'gift_received';
 
 export interface AppNotificationActor {
   id: string;

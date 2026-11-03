@@ -26,3 +26,4 @@ export * from './story';
 export * from './storyIcons';
 export * from './moment';
 export * from './wordChain';
+export * from './gift';

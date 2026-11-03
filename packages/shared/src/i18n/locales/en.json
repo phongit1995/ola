@@ -230,7 +230,8 @@
       "changeNickname": "Change nickname",
       "removeAccount": "Delete account",
       "appLock": "App lock",
-      "support": "Customer support"
+      "support": "Customer support",
+      "gifts": "Gifts"
     },
     "appGameSubtitle": "The BEST games for you",
     "appMallSubtitle": "Diverse video clips collected by editors"
@@ -539,6 +540,7 @@
     "attachTransferKen": "Transfer KEN",
     "attachTradingVip": "Trading VIP icon",
     "attachSendVipDays": "Send VIP days",
+    "attachSendGift": "Send gift",
     "transferKenTitle": "Enter KEN transaction info",
     "transferKenConfirmTitle": "Confirmation",
     "transferKenBalance": "Balance",
@@ -1812,7 +1814,8 @@
     "loadError": "Failed to load notifications",
     "actionError": "Action failed, please try again",
     "systemSender": "System",
-    "hide": "Hide notification"
+    "hide": "Hide notification",
+    "msg_gift": "Sent you a gift"
   },
   "ken": {
     "title": "KEN",
@@ -2439,5 +2442,71 @@
     "hiddenByAdminError": "This moment has been hidden and can't be shown again",
     "historyMore": "Load more",
     "open": "View moment"
+  },
+  "gift": {
+    "title": "Send a gift",
+    "send": "Send",
+    "sending": "Sending…",
+    "charm": "Charm",
+    "charmCount": "{{value}} charm",
+    "charmGain": "+{{value}} charm",
+    "quantity": "Quantity",
+    "notePlaceholder": "Add a message (optional)",
+    "total": "Total",
+    "balance": "Balance",
+    "kenAmount": "{{ken}} KEN",
+    "topUp": "Top up KEN",
+    "notEnoughKen": "Not enough KEN",
+    "toReceiver": "Gift to {{name}}",
+    "confirmTitle": "Confirm gift",
+    "confirmMessage": "Send {{quantity}} {{name}} to {{receiver}} for {{ken}} KEN?",
+    "sentToast": "Sent {{name}} ×{{quantity}}",
+    "empty": "No gifts yet",
+    "loadFailed": "Could not load gifts",
+    "disabledHint": "Gifting is temporarily disabled",
+    "messageOut": "You sent",
+    "messageIn": "Sent you",
+    "quantityTimes": "×{{count}}",
+    "notification": "sent you {{preview}}",
+    "wall": {
+      "title": "Gift wall",
+      "totalGifts": "{{value}} gifts",
+      "empty": "No gifts received yet",
+      "leaderboard": "Leaderboard",
+      "history": "Gift history"
+    },
+    "history": {
+      "received": "Received",
+      "sent": "Sent",
+      "empty": "No history yet",
+      "loadMore": "Load more",
+      "receivedLine": "{{name}} sent {{gift}} ×{{quantity}}",
+      "sentLine": "Sent {{name}} {{gift}} ×{{quantity}}"
+    },
+    "leaderboard": {
+      "title": "Gift leaderboard",
+      "sender": "Top givers",
+      "receiver": "Most loved",
+      "week": "This week",
+      "month": "This month",
+      "all": "All time",
+      "myRank": "Your rank",
+      "notRanked": "Not ranked",
+      "kenValue": "{{value}} KEN",
+      "charmValue": "{{value}} charm",
+      "empty": "No one on the leaderboard yet"
+    },
+    "errors": {
+      "disabled": "Gifting is temporarily disabled",
+      "notFound": "This gift is no longer available",
+      "self": "You cannot send a gift to yourself",
+      "blocked": "You cannot send a gift to this user",
+      "receiverUnavailable": "This user is no longer available",
+      "insufficientKen": "You don't have enough KEN for this gift",
+      "invalidQuantity": "Invalid gift quantity",
+      "noteTooLong": "The message is too long",
+      "rateLimited": "You're sending gifts too fast, try again in a few minutes",
+      "failed": "Could not send the gift, please try again"
+    }
   }
 }
