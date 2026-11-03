@@ -16,6 +16,7 @@ import iconRemoveAccount from '@/assets/icons/apps/delete-account.png';
 import iconSupport from '@/assets/icons/apps/support.png';
 import iconLogout from '@/assets/icons/apps/logout.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
+import iconGift from '@/assets/games/egg/ic_gift.png';
 import iconSocial from '@/assets/icons/social/social-menu-light.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
 import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
@@ -58,6 +59,7 @@ export const PERSONAL_ITEMS: AppItem[] = [
   },
   { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
   { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
+  { icon: iconGift, titleKey: 'home.apps.gifts', app: 'gifts' },
   { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
   { icon: iconSocial, titleKey: 'home.apps.social', action: 'social' },
   { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },

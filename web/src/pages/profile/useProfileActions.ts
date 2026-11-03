@@ -135,6 +135,11 @@ export function useProfileActions({
     void useChatStore.getState().startDirect(userId);
   }, [userId]);
 
+  const applyCharm = useCallback(
+    (charm: number) => setProfile((p) => (p ? { ...p, charm } : p)),
+    [setProfile]
+  );
+
   const actions = useMemo<ProfileActions>(
     () => ({
       kiss,
@@ -144,6 +149,7 @@ export function useProfileActions({
       message,
       changeCover,
       changeAvatar,
+      applyCharm,
     }),
     [
       kiss,
@@ -153,6 +159,7 @@ export function useProfileActions({
       message,
       changeCover,
       changeAvatar,
+      applyCharm,
     ]
   );
 

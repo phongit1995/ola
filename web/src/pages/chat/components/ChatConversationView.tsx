@@ -17,8 +17,9 @@ import {
   Spinner,
   type SmileyInputHandle,
   type ListOption,
+  GiftPickerDialog,
 } from '@components';
-import { MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
+import { GIFT_SOURCE, MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
 import {
   BUBBLE_WALLPAPER,
   chatFriendActionLabel,
@@ -56,6 +57,7 @@ import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
 import { TransferVipDaysDialog } from './TransferVipDaysDialog';
+import { useIncomingGiftAnimation } from '../useIncomingGiftAnimation';
 import { VoicePreviewBar } from '@components/chat/voice/VoicePreviewBar';
 import {
   VoiceRecorderControl,
@@ -145,6 +147,7 @@ export function ChatConversationView({
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
+  const [giftOpen, setGiftOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<{
     blob: Blob;
     duration: number;
@@ -220,6 +223,8 @@ export function ChatConversationView({
     () => messages.map((message) => toBubble(message, myId)),
     [messages, myId]
   );
+
+  useIncomingGiftAnimation(bubbles, name);
 
   const { scrollRef, handleScroll, pin, unpin, scrollToBottomIfPinned } =
     useStickyScroll({
@@ -853,6 +858,15 @@ export function ChatConversationView({
                     setTradingVipOpen(true);
                     return;
                   }
+                  if (payload.kind === 'gift') {
+                    setOpenTab(null);
+                    if (peerId === '') {
+                      toast.error(t('chat.actionError'));
+                      return;
+                    }
+                    setGiftOpen(true);
+                    return;
+                  }
                   if (payload.kind === 'vipDays') {
                     setOpenTab(null);
                     if (peerId === '') {
@@ -964,6 +978,20 @@ export function ChatConversationView({
             id: peerId,
             name,
             username,
+            avatar: peerProfile?.avatar ?? avatar,
+            color,
+          }}
+        />
+      )}
+
+      {peerId !== '' && (
+        <GiftPickerDialog
+          open={giftOpen}
+          source={GIFT_SOURCE.chat}
+          onClose={() => setGiftOpen(false)}
+          receiver={{
+            id: peerId,
+            name,
             avatar: peerProfile?.avatar ?? avatar,
             color,
           }}

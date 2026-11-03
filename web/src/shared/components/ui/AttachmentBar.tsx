@@ -44,7 +44,7 @@ export type AttachPanelTab = Exclude<AttachTab, 'voice'>;
 export type AttachBarVariant = 'full' | 'compact';
 
 export interface AttachSendPayload {
-  kind: 'location' | 'ken' | 'vip' | 'vipDays';
+  kind: 'location' | 'ken' | 'vip' | 'vipDays' | 'gift';
   address?: string;
   kenAmount?: number;
   vipDirection?: 'sent' | 'received';
@@ -194,6 +194,11 @@ function MorePanel({
       key: 'send-vip-days',
       label: t('chat.attachSendVipDays'),
       onClick: () => onSend({ kind: 'vipDays' }),
+    },
+    {
+      key: 'send-gift',
+      label: t('chat.attachSendGift'),
+      onClick: () => onSend({ kind: 'gift' }),
     },
   ];
   return (

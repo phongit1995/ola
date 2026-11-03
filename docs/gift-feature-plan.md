@@ -1,6 +1,6 @@
 # Plan: Tặng quà
 
-Ngày lập: 04/11/2026 · Trạng thái: đang làm (server + admin + web trước, mobile sau)
+Ngày lập: 04/11/2026 · Trạng thái: server + admin + web xong (04/11/2026), **mobile chưa làm**
 
 ## 1. Phạm vi bản đầu
 
@@ -166,6 +166,7 @@ Response: `{ transactionId, kenBalance, receiverCharm, messageId? }`.
 - **Chat 1-1**: thêm nút `send-gift` vào `MorePanel` (`AttachSendPayload.kind = 'gift'`) → mở dialog với người nhận = peer. Tin `gift` render `GiftMessageCard` (ảnh quà, "×5", lời nhắn, viền/nền theo token `ola-*`) trong `ChatMessageBubble`/`MessageRow`.
 - **Hiệu ứng** `GiftAnimationOverlay`: ảnh quà bay vào giữa, phóng to + lấp lánh ~2s rồi mờ. Chạy cho người tặng sau khi gửi thành công và cho người nhận khi `NEW_MESSAGE` loại `gift` tới (đang mở đúng hội thoại) hoặc khi nhận `APP_NOTIFICATION` `gift_received`. Hàng đợi để nhiều quà liên tiếp không chồng nhau; tôn trọng `prefers-reduced-motion`.
 - **Profile**: nút "Tặng quà" trong `RelationButtons` (chỉ profile người khác); charm cạnh số hôn trong `ProfileCard`; section/overlay **Tường quà** (lưới quà + số lượng, tổng charm); link sang BXH.
+- **Trang "Quà tặng"** (mục mới trong tab Cá nhân, `pages/gift/GiftHomePage.tsx`): sức hút của mình + tường quà + lối vào Bảng xếp hạng và Lịch sử quà. Cần vì "Trang cá nhân" trong tab Cá nhân là form sửa thông tin, người nhận không có chỗ khác xem quà của mình.
 - **BXH**: trang mới (route trong `ROUTES`), 2 tab Top tặng / Top nhận, chọn kỳ tuần / tháng / tất cả, top 3 nổi bật, dòng hạng của mình ghim dưới. Lối vào từ tường quà và danh sách Ứng dụng (`pages/apps`).
 - **Thông báo**: `NotificationsPage` render loại `gift_received`, bấm mở profile người tặng (hoặc hội thoại nếu từ chat).
 - **Lịch sử KEN**: tự hiện `GIFT_SENT` sau khi server mở `visibleKenTxTypes`.

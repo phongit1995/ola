@@ -6,6 +6,7 @@ export const DEFAULT_COVER_COLOR = '#33691e';
 
 export const PROFILE_POSTS_LIMIT = 30;
 export const FOLLOWING_FETCH_LIMIT = 12;
+export const GIFT_WALL_PREVIEW_COUNT = 10;
 
 export const INPUT_CLASS =
   'w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-ola-error';

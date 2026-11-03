@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
-import { KenBalanceBadge } from '@components';
+import { GiftAnimationOverlay, KenBalanceBadge } from '@components';
 import { useDevicePlatform } from '@hooks';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
@@ -142,6 +142,7 @@ export function HomePage() {
       <GameOverlay />
       <AppOverlay />
       <ClanOverlayHost />
+      <GiftAnimationOverlay />
 
       {guideOpen && (
         <Suspense fallback={null}>

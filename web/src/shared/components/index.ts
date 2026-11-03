@@ -43,3 +43,5 @@ export * from './HomeHeader';
 export * from './BottomTabBar';
 export * from './PanelRow';
 export * from './ui/FloatingBubble';
+export * from './gift/GiftPickerDialog';
+export * from './gift/GiftAnimationOverlay';

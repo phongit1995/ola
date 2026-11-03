@@ -17,6 +17,7 @@ import followingActiveIcon from '@/assets/icons/profile/ic_state_following.png';
 import editIcon from '@/assets/icons/profile/ic_edit_profile_gray.png';
 import postMeIcon from '@/assets/icons/profile/ic_post_me_gray.png';
 import moreIcon from '@/assets/icons/profile/ic_more_horizon_black_disable.png';
+import giftIcon from '@/assets/games/egg/ic_gift.png';
 
 interface RelationButtonsProps {
   userId: string;
@@ -28,26 +29,32 @@ interface RelationButtonsProps {
   onChangeAvatar: () => void;
   relationship: RelationshipInfo;
   actions: ProfileActions;
+  onSendGift?: () => void;
 }
 
 function RelationButton({
   icon,
   label,
   active,
+  accent,
   onClick,
 }: {
   icon: string;
   label: string;
   active?: boolean;
+  accent?: boolean;
   onClick: () => void;
 }) {
+  const tone = accent
+    ? 'font-medium text-ola-accent'
+    : active
+    ? 'text-ola-primary-ink'
+    : 'text-black/26';
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-1 flex-col items-center gap-1 py-1 text-xs ${
-        active ? 'text-ola-primary-ink' : 'text-black/26'
-      }`}
+      className={`flex flex-1 flex-col items-center gap-1 py-1 text-xs ${tone}`}
     >
       <img src={icon} alt="" className="h-5 w-5 object-contain" />
       <span className="text-center leading-tight">{label}</span>
@@ -65,6 +72,7 @@ export function RelationButtons({
   onChangeAvatar,
   relationship,
   actions,
+  onSendGift,
 }: RelationButtonsProps) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -163,6 +171,14 @@ export function RelationButtons({
               active={following}
               onClick={actions.toggleFollow}
             />
+            {onSendGift != null && (
+              <RelationButton
+                icon={giftIcon}
+                label={t('gift.title')}
+                accent
+                onClick={onSendGift}
+              />
+            )}
           </>
         )}
         <RelationButton

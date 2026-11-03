@@ -56,6 +56,10 @@
   --animate-ola-grow-x: ola-grow-x 0.7s ease-out 0.35s both;
   --animate-moment-react-in: moment-react-in 0.5s
     cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-gift-fly: gift-fly 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  --animate-gift-rays: gift-rays 2.4s linear forwards;
+  --animate-gift-caption: gift-caption 2.4s ease-out forwards;
+  --animate-gift-sparkle: gift-sparkle 1.4s ease-out both;
   --font-sans: Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;
   --font-game: 'Baloo 2', Roboto, ui-sans-serif, system-ui, sans-serif;
@@ -728,4 +732,84 @@ select {
   position: absolute;
   color: rgba(0, 0, 0, 0.38);
   pointer-events: none;
+}
+
+@keyframes gift-fly {
+  0% {
+    opacity: 0;
+    transform: translateY(45vh) scale(0.3) rotate(-12deg);
+  }
+  22% {
+    opacity: 1;
+    transform: translateY(0) scale(1.18) rotate(4deg);
+  }
+  32% {
+    transform: translateY(0) scale(0.96) rotate(0deg);
+  }
+  40%,
+  78% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18vh) scale(0.7);
+  }
+}
+
+@keyframes gift-rays {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  25%,
+  75% {
+    opacity: 0.9;
+    transform: scale(1) rotate(90deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2) rotate(140deg);
+  }
+}
+
+@keyframes gift-caption {
+  0%,
+  20% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  32%,
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes gift-sparkle {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.2);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--gift-spark-x), var(--gift-spark-y)) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-gift-fly,
+  .animate-gift-rays,
+  .animate-gift-caption,
+  .animate-gift-sparkle {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
 }

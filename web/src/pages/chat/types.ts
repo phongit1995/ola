@@ -1,4 +1,4 @@
-import type { ChatReplySnapshot } from '@app-types';
+import type { ChatReplySnapshot, GiftMessageMetadata } from '@app-types';
 import type { DeviceType } from '@constants';
 import type { MessageMetadata } from '@lib';
 
@@ -17,7 +17,8 @@ export type ChatMessageKind =
   | 'ken'
   | 'vip'
   | 'stranger'
-  | 'call';
+  | 'call'
+  | 'gift';
 
 export type ChatMessageStatus = 'sending' | 'sent' | 'seen' | 'failed';
 
@@ -82,6 +83,7 @@ export interface ChatMessage {
   kenAmount?: number;
   vipDirection?: 'sent' | 'received';
   call?: MessageMetadata;
+  gift?: GiftMessageMetadata;
   stranger?: StrangerCard;
   senderName?: string;
   senderColor?: string;

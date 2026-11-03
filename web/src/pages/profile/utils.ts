@@ -31,6 +31,7 @@ export function mapPublicProfile(
     vipTypeId: activeVipTypeId(data.vipUsed, data.vipEndTime),
     fans: data.followerCount,
     kisses: data.kisses,
+    charm: data.charm ?? 0,
     bio: data.bio ?? '',
     gender: data.gender,
     marriage: data.spouse

@@ -19,6 +19,7 @@ import { ChatPhoneIcon, ChatVideoIcon } from '../../call/icons';
 import type { ChatReplySnapshot } from '@app-types';
 import type { ChatMessage } from '../types';
 import { chatQuoteExcerpt } from '../utils';
+import { GiftMessageBubble } from './GiftMessageBubble';
 import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
 import { useUploadPreviewLease } from '@hooks';
 
@@ -270,6 +271,11 @@ export function ChatMessageBubble({
         </div>
       );
     }
+
+    case 'gift':
+      return message.gift != null ? (
+        <GiftMessageBubble gift={message.gift} isOut={isOut} corners={groupCorners} />
+      ) : null;
 
     case 'vip':
       return (

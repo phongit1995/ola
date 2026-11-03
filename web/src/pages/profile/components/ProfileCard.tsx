@@ -15,7 +15,7 @@ import {
   UserName,
   VipIcon,
 } from '@components';
-import { colorForName, validatedImageObjectUrl } from '@lib';
+import { colorForName, formatKen, validatedImageObjectUrl } from '@lib';
 import {
   AVATAR_ASPECT,
   COVER_ASPECT,
@@ -37,6 +37,7 @@ interface ProfileCardProps {
   onViewVipStore: () => void;
   onOpenUser?: (nick: string) => void;
   onOpenFollowers?: () => void;
+  onSendGift?: () => void;
 }
 
 function InfoRow({ icon, text }: { icon: string; text: React.ReactNode }) {
@@ -59,6 +60,7 @@ export function ProfileCard({
   onViewVipStore,
   onOpenUser,
   onOpenFollowers,
+  onSendGift,
 }: ProfileCardProps) {
   const { t } = useTranslation();
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -275,6 +277,7 @@ export function ProfileCard({
         onChangeAvatar={triggerAvatar}
         relationship={relationship}
         actions={actions}
+        onSendGift={onSendGift}
       />
 
       <div className="mx-4 h-px bg-black/12" />
@@ -302,6 +305,11 @@ export function ProfileCard({
             : t('profile.notKissed')}
         </span>
       </button>
+
+      <p className="mt-1 flex items-center justify-center gap-1 text-sm text-ola-accent-dark">
+        <span aria-hidden="true">✨</span>
+        <span>{t('gift.charmCount', { value: formatKen(profile.charm) })}</span>
+      </p>
 
       <p className="mt-3 line-clamp-5 px-4 text-center text-xs text-black/54">
         {profile.bio}

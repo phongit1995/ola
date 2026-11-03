@@ -24,11 +24,13 @@ import type { AppNotification } from '@app-types';
 import icAddSmall from '@/assets/icons/notify/ic_action_add_small.png';
 import icFriend from '@/assets/icons/notify/ic_notification_add_friend.png';
 import icHeart from '@/assets/icons/notify/ic_notification_heart.png';
+import icGift from '@/assets/games/egg/ic_gift.png';
 import olaLogo from '@/assets/images/ola-logo.png';
 
 const KIND_CONFIG: Record<string, { icon: string; messageKey: ParseKeys }> = {
   friend_request: { icon: icFriend, messageKey: 'notify.msg_friend' },
   marriage_proposal: { icon: icHeart, messageKey: 'notify.msg_proposal' },
+  gift_received: { icon: icGift, messageKey: 'notify.msg_gift' },
 };
 
 function SystemAvatar() {
