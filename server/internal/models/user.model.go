@@ -56,6 +56,7 @@ type User struct {
 	EmailVerified     bool       `gorm:"not null;default:false"`
 	EmailVerifiedAt   *time.Time
 	Kisses            int  `gorm:"not null;default:0"`
+	Charm             int  `gorm:"not null;default:0"`
 	IsActive          bool `gorm:"not null;default:true"`
 	LockedUntil       *time.Time
 	LockReason        string `gorm:"type:varchar(20);not null;default:''"`

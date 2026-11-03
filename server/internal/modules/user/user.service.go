@@ -479,6 +479,7 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		Gender:         user.Gender,
 		Verified:       user.Verified,
 		Kisses:         user.Kisses,
+		Charm:          user.Charm,
 		VipUsed:        user.VipUsed,
 		VipEndTime:     formatOptionalTime(user.VipEndTime),
 		FollowerCount:  user.FollowerCount,
@@ -766,6 +767,7 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 		Verified:       user.Verified,
 		EmailVerified:  user.EmailVerified,
 		Kisses:         user.Kisses,
+		Charm:          user.Charm,
 		CreatedAt:      user.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      user.UpdatedAt.Format(time.RFC3339),
 	}

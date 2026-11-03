@@ -719,6 +719,7 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 		models.AppNotificationClanBanned,
 		models.AppNotificationContentViolation,
 		models.AppNotificationReportResolved,
+		models.AppNotificationGiftReceived,
 	} {
 		c := buildAppNotifContent("n1", "Hoa", ntype, "", 0)
 		if c.Body == "" || c.Channel != PushChannelSystem {

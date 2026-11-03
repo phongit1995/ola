@@ -240,6 +240,10 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateStoryReadingValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyGift:
+		if err := setting.ValidateGiftValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
 	case setting.KeyMoment:
 		if err := setting.ValidateMomentValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())

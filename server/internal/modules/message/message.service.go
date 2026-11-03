@@ -1226,6 +1226,10 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		return nil, fmt.Errorf("cannot update deleted message")
 	}
 
+	if msg.MessageType == constants.MessageTypeGift {
+		return nil, fmt.Errorf("cannot update gift message")
+	}
+
 	// Validate content
 	if newContent == "" {
 		return nil, fmt.Errorf("content cannot be empty")

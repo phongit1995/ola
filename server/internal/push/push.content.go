@@ -146,6 +146,7 @@ var appNotifBodies = map[string]string{
 	models.AppNotificationClanBanned:       "Clan của bạn đã bị khoá",
 	models.AppNotificationContentViolation: "Vi phạm tiêu chuẩn cộng đồng",
 	models.AppNotificationReportResolved:   "Báo cáo đã được xử lý",
+	models.AppNotificationGiftReceived:     "Đã tặng bạn một món quà",
 }
 
 var appNotifSystemTypes = map[string]bool{
@@ -167,7 +168,7 @@ func buildAppNotifContent(id, actorName, ntype, preview string, unread int) Cont
 	if !appNotifSystemTypes[ntype] {
 		title = firstNonEmpty(actorName, fallbackTitle)
 	}
-	if known && preview != "" && appNotifSystemTypes[ntype] {
+	if known && preview != "" && (appNotifSystemTypes[ntype] || ntype == models.AppNotificationGiftReceived) {
 		body += ": " + excerpt(preview)
 	}
 	data := map[string]string{

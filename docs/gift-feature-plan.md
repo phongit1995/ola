@@ -95,7 +95,7 @@ Theo khuôn module: `gift.router.go`, `gift.controller.go`, `gift.service.go`, `
 |---|---|---|
 | GET | `/gifts` | Catalog đang bật, sắp theo `sort_order`. Cache Redis `GIFT:CATALOG`, xoá khi admin sửa |
 | POST | `/gifts/send` | Tặng quà (chi tiết 4.2) |
-| GET | `/users/:id/gift-wall` | `{ charm, totalGifts, items: [{ gift, quantity }] }` |
+| GET | `/gifts/users/:id/wall` | `{ userId, charm, totalGifts, items: [{ gift, quantity }] }` |
 | GET | `/gifts/received?cursor=` | Lịch sử mình nhận (ai tặng, quà gì, lời nhắn). Keyset `utils.EncodeTimeCursor` |
 | GET | `/gifts/sent?cursor=` | Lịch sử mình tặng |
 | GET | `/gifts/leaderboard?type=sender\|receiver&period=week\|month\|all&limit=50` | `{ items: [{ rank, user, value }], me: { rank, value } }` |
@@ -114,7 +114,7 @@ Response: `{ transactionId, kenBalance, receiverCharm, messageId? }`.
 1. Đọc setting `gift` → `enabled`, `quantityMax`, `noteMaxLength`. Tắt → `GIFT_DISABLED`.
 2. Validate: không tự tặng (`CANNOT_GIFT_SELF`), `quantity` trong `[1, quantityMax]`, `note` cắt khoảng trắng + giới hạn độ dài, `source ∈ {chat, profile}`.
 3. Quà tồn tại + `is_active` (`GIFT_NOT_FOUND`). Người nhận tồn tại, `is_active`, không bị khoá (`RECEIVER_UNAVAILABLE`). Hai bên không chặn nhau (`GIFT_BLOCKED`).
-4. Rate limit Redis `GIFT:RATE:{senderId}` (vd 20 lần / phút) chống bấm loạn.
+4. Rate limit 20 lần/phút mỗi user bằng middleware `PolicyGiftSend` (chỉ bật ở release mode như các policy khác).
 5. **Một transaction DB**:
    - Nếu đã có `(sender_id, client_request_id)` → trả lại kết quả cũ (idempotent, client retry không trừ 2 lần).
    - `SELECT ... FOR UPDATE` dòng người tặng, đủ KEN không (`INSUFFICIENT_KEN`, dùng lại mã lỗi KEN sẵn có).
@@ -123,7 +123,7 @@ Response: `{ transactionId, kenBalance, receiverCharm, messageId? }`.
 6. Sau commit:
    - `wsServer.EmitKenUpdate(sender, kenBalance)`; xoá cache profile người nhận (charm đổi).
    - `source = chat` → `msgService.SendDirectMessage(sender, receiver, MessageTypeGift, fallbackText, metadataJSON, clientRequestId)` rồi cập nhật `message_id` vào sổ quà. Lỗi ở bước này chỉ log (KEN đã trừ hợp lệ, quà vẫn vào tường).
-   - `notifSvc.Create(receiver, &sender, AppNotificationGiftReceived, &txID, "🎁 {tên} ×{số}")` → realtime `APP_NOTIFICATION` + push. Thêm câu push "Đã tặng bạn {quà}" ở `push.content.go`.
+   - `source = profile` → `notifSvc.Create(receiver, &sender, AppNotificationGiftReceived, &txID, "🎁 {tên} ×{số}")` → realtime `APP_NOTIFICATION` + push "Đã tặng bạn một món quà: 🎁 …". `source = chat` **không** tạo thông báo vì tin nhắn quà đã có push riêng (tránh báo 2 lần).
 
 ### 4.3 Tin nhắn loại `gift`
 
@@ -142,7 +142,7 @@ Response: `{ transactionId, kenBalance, receiverCharm, messageId? }`.
 ### 4.5 Admin
 
 - `internal/modules/admin/gift`: CRUD `/admin/gifts` (tên vi/en, ảnh qua admin upload, giá, charm, bật/tắt, thứ tự), xoá mềm; `GET /admin/gift-transactions` lọc theo user / khoảng ngày (`utils.ParseTimeRange`), dùng lại `admincommon.UserBriefOf`. Ghi audit log như các trang admin khác.
-- Setting `gift` trong `app_settings`: `{ enabled, quantityOptions: [1, 5, 10, 99], quantityMax: 99, noteMaxLength: 100, ratePerMinute: 20 }`, trả kèm trong `GET /gifts` để client không hardcode.
+- Setting `gift` trong `app_settings`: `{ enabled, quantityOptions: [1, 5, 10, 99], quantityMax: 99, noteMaxLength: 100, confirmOverKen: 1000 }`, trả kèm trong `GET /gifts` để client không hardcode.
 - Dashboard (tuỳ chọn): KEN thu từ quà hôm nay / tháng.
 
 ### 4.6 Test server
@@ -224,7 +224,7 @@ Port từ web bằng skill `port-web-to-mobile`, giữ logic ở shared:
 ## 12. Đã chốt (04/11/2026)
 
 - Tên hiển thị của `charm`: **Sức hút**.
-- Bước xác nhận khi tổng ≥ **1.000 KEN**; rate limit **20 lần/phút** mỗi người tặng (đều nằm trong setting `gift`, admin chỉnh được).
+- Bước xác nhận khi tổng ≥ **1.000 KEN** (`confirmOverKen` trong setting `gift`, admin chỉnh được); rate limit **20 lần/phút** mỗi người tặng (middleware, cố định trong code).
 - Tặng từ profile **không** tạo tin `gift` trong chat 1-1, chỉ thông báo + tường quà.
 - Tường quà công khai chỉ hiện **loại quà + số lượng + tổng sức hút**; danh sách ai tặng chỉ chủ profile xem (lịch sử quà nhận).
 - Bản đầu chưa có cài đặt ẩn sức hút, chưa hiện ở danh sách thành viên phòng.

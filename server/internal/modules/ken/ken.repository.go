@@ -42,6 +42,7 @@ type TransferResult struct {
 var visibleKenTxTypes = []models.KenTxType{
 	models.KenTxTypeTransferIn,
 	models.KenTxTypeTransferOut,
+	models.KenTxTypeGiftSent,
 	models.KenTxTypeAdminGrant,
 	models.KenTxTypeAdminDeduct,
 	models.KenTxTypeVipPackage,
