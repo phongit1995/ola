@@ -30,6 +30,7 @@ import { useAppNotificationRealtime } from './hooks/useAppNotificationRealtime';
 import { useKenRealtime } from './hooks/useKenRealtime';
 import { KenTreasureOverlay } from './screens/games/ken-treasure/KenTreasureOverlay';
 import { ArcadeOverlay } from './screens/apps/ArcadeOverlay';
+import { GiftAnimationOverlay } from './components/gift/GiftAnimationOverlay';
 import { WordChainBubble } from './screens/room/word-chain/WordChainBubble';
 import { CallOverlay } from './screens/call/CallOverlay';
 import { checkForOtaUpdate } from './services/otaUpdate';
@@ -177,6 +178,7 @@ export default function App() {
             <WordChainBubble onRestore={showWordChain} />
             <ArcadeOverlay />
             <CallOverlay />
+            <GiftAnimationOverlay />
             <ToastHost />
             <MediaViewer />
             <AppUpdateGate />

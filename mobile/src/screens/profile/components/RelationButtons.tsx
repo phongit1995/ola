@@ -6,6 +6,8 @@ import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { PublicProfile } from '@ola/shared/types';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { useThemeColors } from '@hooks/useThemeColors';
+import { GIFT_ACCENT } from '@components/gift/constants';
+import { GIFT_ASSETS } from '@components/gift/giftAssets';
 
 const addFriendIcon = require('@assets/icons/profile/ic_add_friend_black_disable.png');
 const friendsActiveIcon = require('@assets/icons/profile/ic_state_friends.png');
@@ -25,20 +27,24 @@ interface RelationButtonsProps {
   onUpdateInfo: () => void;
   onPostMe: () => void;
   onMore: () => void;
+  onSendGift?: () => void;
 }
 
 function RelationButton({
   icon,
   label,
   active,
+  accent,
   onPress,
 }: {
   icon: number;
   label: string;
   active?: boolean;
+  accent?: boolean;
   onPress: () => void;
 }) {
   const colors = useThemeColors();
+  const color = accent ? GIFT_ACCENT : active ? colors.primary : 'rgba(0,0,0,0.26)';
   return (
     <Pressable onPress={onPress} className="flex-1 items-center gap-1 py-1">
       <Image
@@ -48,8 +54,8 @@ function RelationButton({
       />
       <Text
         numberOfLines={2}
-        className="text-center text-xs leading-tight"
-        style={{ color: active ? colors.primary : 'rgba(0,0,0,0.26)' }}
+        className={`text-center text-xs leading-tight ${accent ? 'font-medium' : ''}`}
+        style={{ color }}
       >
         {label}
       </Text>
@@ -67,6 +73,7 @@ export function RelationButtons({
   onUpdateInfo,
   onPostMe,
   onMore,
+  onSendGift,
 }: RelationButtonsProps) {
   const { t } = useTranslation();
   const [unfriendOpen, setUnfriendOpen] = useState(false);
@@ -126,6 +133,14 @@ export function RelationButtons({
               active={following}
               onPress={onToggleFollow}
             />
+            {onSendGift != null && (
+              <RelationButton
+                icon={GIFT_ASSETS.icon}
+                label={t('gift.title')}
+                accent
+                onPress={onSendGift}
+              />
+            )}
           </>
         )}
         <RelationButton

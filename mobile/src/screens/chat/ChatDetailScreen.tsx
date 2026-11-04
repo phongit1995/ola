@@ -29,6 +29,7 @@ import {
   parseMessageMetadata,
 } from '@ola/shared/lib';
 import {
+  GIFT_SOURCE,
   MESSAGE_STATUS,
   MESSAGE_TYPE,
   RELATIONSHIP_STATUS,
@@ -54,10 +55,12 @@ import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDial
 import { RoomReactionsDialog } from '@screens/room/components/RoomReactionsDialog';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
 import { TransferKenDialog } from '@screens/ken/components/TransferKenDialog';
+import { GiftPickerDialog } from '@components/gift/GiftPickerDialog';
 import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 import { DIVIDER } from '@constants';
 import { useChatDetail } from './useChatDetail';
 import { usePeerCard } from './usePeerCard';
+import { useIncomingGiftAnimation } from './useIncomingGiftAnimation';
 import { chatMessageAbilities } from './utils';
 import { CHAT_BG } from './constants';
 import { ChatInputBar, type ChatInputBarHandle } from './components/ChatInputBar';
@@ -127,10 +130,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     handleUnblock,
   } = useChatDetail(conversationId);
 
+  useIncomingGiftAnimation(messages, myId, title);
+
   const [openTab, setOpenTab] = useState<AttachPanelTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
+  const [giftOpen, setGiftOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
   const pendingAudioRef = useRef<VoiceRecording | null>(null);
   const pendingAudioCleanupQueueRef = useRef<VoiceRecording[]>([]);
@@ -828,6 +834,15 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             }
             setTransferVipDaysOpen(true);
           }}
+          onSendGift={() => {
+            setOpenTab(null);
+            if (peerId === '') {
+              push('error', t('chat.actionError'));
+              return;
+            }
+            Keyboard.dismiss();
+            setGiftOpen(true);
+          }}
         />
       )}
       </>
@@ -848,6 +863,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         <TransferVipDaysDialog
           visible
           onClose={() => setTransferVipDaysOpen(false)}
+          receiver={transferReceiver}
+        />
+      )}
+
+      {giftOpen && peerId !== '' && (
+        <GiftPickerDialog
+          source={GIFT_SOURCE.chat}
+          onClose={() => setGiftOpen(false)}
           receiver={transferReceiver}
         />
       )}

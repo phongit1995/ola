@@ -10,6 +10,7 @@ import {
 import { useThemeColors } from '@hooks/useThemeColors';
 import { AppLockOverlaySlot, useBlockedByAppLock } from '@components/applock/appLockModal';
 import { KeyboardView } from '../KeyboardView';
+import { ToastHost } from './ToastHost';
 
 function noop() {}
 
@@ -25,6 +26,7 @@ interface DialogProps {
   avoidKeyboard?: boolean;
   bare?: boolean;
   maxWidth?: number;
+  showToasts?: boolean;
   children: ReactNode;
   footer?: ReactNode;
 }
@@ -41,6 +43,7 @@ export function Dialog({
   avoidKeyboard = true,
   bare = false,
   maxWidth = 384,
+  showToasts = false,
   children,
   footer,
 }: DialogProps) {
@@ -131,6 +134,7 @@ export function Dialog({
           </View>
         </View>
       </Body>
+      {showToasts && <ToastHost />}
       <AppLockOverlaySlot />
     </Modal>
   );

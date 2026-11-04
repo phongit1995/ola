@@ -1,7 +1,13 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, useWindowDimensions, View, type ViewInstance } from 'react-native';
-import { callMessageView, formatDuration, parseMessageMetadata, withAlpha } from '@ola/shared/lib';
+import {
+  callMessageView,
+  formatDuration,
+  parseGiftMessageMetadata,
+  parseMessageMetadata,
+  withAlpha,
+} from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
 import type { MessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
@@ -15,6 +21,7 @@ import { imageSizeForHeight } from '@lib/chatSmiley';
 import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
 import { ChatPhoneIcon, ChatVideoIcon } from '@screens/call/icons';
+import { GiftMessageBubble } from './GiftMessageBubble';
 import {
   BUBBLE_IN_BG,
   BUBBLE_IN_SHADOW,
@@ -287,6 +294,13 @@ export function ChatBubble({
         onLongPress={onLongPress}
       />
     );
+  }
+
+  if (message.type === MESSAGE_TYPE.gift) {
+    const gift = parseGiftMessageMetadata(message.metadata);
+    if (gift != null) {
+      return <GiftMessageBubble gift={gift} isOut={fromMe} cornerClass={cornerClass} />;
+    }
   }
 
   if (message.type === MESSAGE_TYPE.call) {

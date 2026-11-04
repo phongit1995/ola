@@ -129,6 +129,10 @@ export function PersonalScreen() {
       navigation.navigate(ROOT_ROUTES.KenStore);
       return;
     }
+    if (item.action === 'gifts') {
+      navigation.navigate(ROOT_ROUTES.GiftHome);
+      return;
+    }
     if (item.action === 'media') {
       navigation.navigate(ROOT_ROUTES.MediaStore);
       return;

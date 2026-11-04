@@ -6,6 +6,7 @@ import {
   colorForName,
   createDateFormatter,
   formatDateSlashDMY,
+  formatKen,
 } from '@ola/shared/lib';
 import type { PublicProfile } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
@@ -16,6 +17,7 @@ import { DIVIDER } from '@constants';
 import { CARD_SHADOW, DEFAULT_COVER_COLOR } from '../constants';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
 import { RelationButtons } from './RelationButtons';
+import { GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { GENDER } from '@ola/shared/constants';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
@@ -47,6 +49,7 @@ interface ProfileCardProps {
   onUpdateInfo: () => void;
   onPostMe: () => void;
   onMore: () => void;
+  onSendGift?: () => void;
   openViewer: OpenViewerHandler;
   onOpenProfile: OpenProfileHandler;
 }
@@ -103,6 +106,7 @@ export function ProfileCard({
   onUpdateInfo,
   onPostMe,
   onMore,
+  onSendGift,
   openViewer,
   onOpenProfile,
 }: ProfileCardProps) {
@@ -253,6 +257,7 @@ export function ProfileCard({
         onUpdateInfo={onUpdateInfo}
         onPostMe={onPostMe}
         onMore={onMore}
+        onSendGift={onSendGift}
       />
 
       <View className="mx-4" style={{ height: 1, backgroundColor: DIVIDER }} />
@@ -282,6 +287,10 @@ export function ProfileCard({
             : t('profile.notKissed')}
         </Text>
       </Pressable>
+
+      <Text className="mt-1 text-center text-sm" style={{ color: GIFT_ACCENT_DARK }}>
+        {`✨ ${t('gift.charmCount', { value: formatKen(profile.charm ?? 0) })}`}
+      </Text>
 
       {profile.bio != null && profile.bio !== '' && (
         <Text

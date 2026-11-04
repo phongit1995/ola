@@ -1,6 +1,6 @@
 # Plan: Tặng quà
 
-Ngày lập: 04/11/2026 · Trạng thái: server + admin + web xong (04/11/2026), **mobile chưa làm**
+Ngày lập: 04/11/2026 · Trạng thái: server + admin + web + mobile xong (04/11/2026), chưa deploy
 
 ## 1. Phạm vi bản đầu
 
@@ -173,13 +173,23 @@ Response: `{ transactionId, kenBalance, receiverCharm, messageId? }`.
 
 ## 7. Mobile (React Native)
 
-Port từ web bằng skill `port-web-to-mobile`, giữ logic ở shared:
+Port từ web bằng skill `port-web-to-mobile`. Logic chung nằm ở `@ola/shared/stores/gift/`, web và mobile chỉ còn phần giao diện:
 
-- `GiftPickerDialog` dùng `Dialog`/`DialogButton` chuẩn, bọc `OlaModal`, màu qua `useThemeColors`/token `ola-*`, import qua alias `@components`/`@screens`...
-- Nút trong mobile `AttachmentBar` panel Thêm; `ChatMessageRow` thêm nhánh `MESSAGE_TYPE.gift` → `GiftMessageCard`.
-- `GiftAnimationOverlay` bằng `Animated` (đã có sẵn, không thêm thư viện), đặt ở root để hiện trên mọi màn.
-- Profile: nút trong `RelationButtons`, charm trong `ProfileCard`, màn Tường quà, màn BXH dùng `ScreenHeader`; màn full-screen đệm `insets.bottom`.
-- Thông báo `gift_received` trong `NotificationsScreen` + mở đúng màn khi bấm push.
+- `useGiftPicker`: chọn quà/số lượng/lời nhắn, giữ `clientRequestId` (đổi khi đổi lựa chọn, giữ nguyên khi thử lại), bước xác nhận theo `confirmOverKen`, gửi, cập nhật số dư, chạy hiệu ứng, toast lỗi.
+- `useGiftHistory` (phân trang, cờ đang tải riêng từng tab), `useGiftLeaderboard` (đệm theo loại + kỳ, lỗi gắn với đúng tab/kỳ và tự xoá khi đổi lựa chọn), `useGiftWall`.
+- `useGiftAnimationStore` (hàng đợi hiệu ứng, chống chạy trùng theo id); web `@/store/giftAnimationStore` chỉ re-export.
+- Hằng số tab/nhãn kỳ/huy chương (`GIFT_LEADERBOARD_TYPE_TABS`, `GIFT_HISTORY_TABS`...) và `isRecentGift` (quà mới ≤ 15 giây) cũng ở shared.
+
+Phần riêng của mobile:
+
+- `components/gift/GiftPickerDialog.tsx`: `Dialog`/`DialogButton` chuẩn, bước xác nhận đổi nội dung ngay trong cùng dialog, bật `showToasts` để toast lỗi hiện trên dialog (prop mới của `Dialog`, toast ở gốc app nằm dưới cửa sổ Modal). Màu hồng quà ở `components/gift/constants.ts`, ảnh ở `components/gift/giftAssets.ts`.
+- `components/gift/GiftAnimationOverlay.tsx`: dựng lại keyframes web bằng `react-native-reanimated` + tia sáng `react-native-svg`, mount ở `App.tsx` cạnh `ToastHost`; tia/đốm sáng đặt trong khung cố định bằng số (dùng `left: '50%'` trong khung co theo nội dung thì bị lệch). Máy bật giảm chuyển động thì hiện tĩnh.
+- `LinearGradient` chỉ dùng làm nền phủ kín (`StyleSheet.absoluteFill`), nội dung đặt ở view bên trên: đặt padding thẳng lên gradient thì nội dung bị cắt.
+- Chat: mục "Tặng quà" trong panel Thêm của `AttachmentBar`; `ChatBubble` có nhánh `MESSAGE_TYPE.gift` → `GiftMessageBubble`; `useIncomingGiftAnimation` chạy hiệu ứng khi tin quà mới đến từ người kia; tin quà không trả lời/báo cáo được.
+- Profile: nút Tặng quà trong `RelationButtons`, dòng ✨ sức hút dưới số hôn trong `ProfileCard`, `GiftWallSection` dưới thẻ profile.
+- Màn trên root stack: `GiftHome` (mục "Quà tặng" ở tab Cá nhân), `GiftLeaderboard`, `GiftHistory`. Web mở các trang này dạng overlay.
+- Thông báo `gift_received` trong `NotificationsScreen`; push `app_notification` mở màn Thông báo như các loại khác.
+- Chặn: đang chặn/bị chặn thì chat thay ô nhập bằng thanh thông báo chặn, profile chỉ còn nút Bỏ chặn hoặc báo không tìm thấy, nên không có nút tặng. Bị chặn trong lúc đang mở chat thì server trả `GIFT_BLOCKED`, không trừ KEN, dialog báo "Không thể tặng quà cho người này".
 
 ## 8. Admin web
 

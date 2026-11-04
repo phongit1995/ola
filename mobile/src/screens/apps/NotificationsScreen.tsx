@@ -18,6 +18,7 @@ import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { APP_NOTIFICATION_TYPE, isSystemNotice } from '@ola/shared/constants';
+import { GIFT_ASSETS } from '@components/gift/giftAssets';
 
 const icFriend = require('@assets/icons/notify/ic_notification_add_friend.png');
 const icHeart = require('@assets/icons/notify/ic_notification_heart.png');
@@ -26,6 +27,7 @@ const olaLogo = require('@assets/ola-logo.png');
 const KIND_CONFIG: Record<string, { icon: number; messageKey: ParseKeys }> = {
   friend_request: { icon: icFriend, messageKey: 'notify.msg_friend' },
   marriage_proposal: { icon: icHeart, messageKey: 'notify.msg_proposal' },
+  gift_received: { icon: GIFT_ASSETS.icon, messageKey: 'notify.msg_gift' },
 };
 
 function SystemAvatar() {

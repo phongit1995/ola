@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -14,13 +14,15 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { colorForName } from '@ola/shared/lib';
-import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import { GIFT_SOURCE, RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import type { FollowUser } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { MediaViewerModal } from '@components/ui/MediaViewer';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
+import { GiftPickerDialog } from '@components/gift/GiftPickerDialog';
 import { POSTS_END_DISTANCE_PX } from './constants';
 import type { ProfileViewerState } from './types';
 import { useProfileActions } from './useProfileActions';
@@ -30,6 +32,7 @@ import { FollowingPreviewCard } from './components/FollowingPreviewCard';
 import { ProfilePostList } from './components/ProfilePostList';
 import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { PeerVipStoreDialog } from './components/PeerVipStoreDialog';
+import { GiftWallSection } from './components/GiftWallSection';
 
 const composeIcon = require('@assets/icons/chat/ic_action_compose_message.png');
 
@@ -40,6 +43,8 @@ interface UserProfileScreenProps {
   onOpenProfile: (nick: string, color: string) => void;
   onMessage?: (userId: string) => void;
   onEditProfile?: () => void;
+  onOpenGiftLeaderboard?: () => void;
+  onOpenGiftHistory?: () => void;
 }
 
 export function UserProfileScreen({
@@ -49,6 +54,8 @@ export function UserProfileScreen({
   onOpenProfile,
   onMessage,
   onEditProfile,
+  onOpenGiftLeaderboard,
+  onOpenGiftHistory,
 }: UserProfileScreenProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
@@ -78,7 +85,10 @@ export function UserProfileScreen({
     blockAction,
     changeCover,
     changeAvatar,
+    applyCharm,
   } = useProfileActions(username);
+  const giftsEnabled = useGiftCatalogStore(s => s.settings.enabled);
+  const loadGiftCatalog = useGiftCatalogStore(s => s.load);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -87,6 +97,12 @@ export function UserProfileScreen({
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
   const [viewer, setViewer] = useState<ProfileViewerState | null>(null);
+  const [giftOpen, setGiftOpen] = useState(false);
+  const [giftWallKey, setGiftWallKey] = useState(0);
+
+  useEffect(() => {
+    void loadGiftCatalog();
+  }, [loadGiftCatalog]);
 
   const openViewer = (images: string[], index = 0) =>
     setViewer({ images, index });
@@ -179,8 +195,17 @@ export function UserProfileScreen({
             onUpdateInfo={onEditProfile ?? comingSoon}
             onPostMe={() => setComposerOpen(true)}
             onMore={() => setMenuOpen(true)}
+            onSendGift={!isSelf && giftsEnabled ? () => setGiftOpen(true) : undefined}
             openViewer={openViewer}
             onOpenProfile={onOpenProfile}
+          />
+
+          <GiftWallSection
+            userId={profile.id}
+            isSelf={isSelf}
+            refreshKey={giftWallKey}
+            onOpenLeaderboard={onOpenGiftLeaderboard}
+            onOpenHistory={onOpenGiftHistory}
           />
 
           <FollowingPreviewCard
@@ -223,6 +248,18 @@ export function UserProfileScreen({
             resizeMode="contain"
           />
         </Pressable>
+      )}
+
+      {giftOpen && profile != null && !isSelf && (
+        <GiftPickerDialog
+          source={GIFT_SOURCE.profile}
+          onClose={() => setGiftOpen(false)}
+          receiver={{ id: profile.id, name: nick, avatar: profile.avatar }}
+          onSent={result => {
+            applyCharm(result.receiverCharm);
+            setGiftWallKey(key => key + 1);
+          }}
+        />
       )}
 
       {composerOpen && (

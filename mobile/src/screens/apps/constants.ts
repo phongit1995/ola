@@ -1,4 +1,5 @@
 import type { ParseKeys } from 'i18next';
+import { GIFT_ASSETS } from '@components/gift/giftAssets';
 
 export type AppItemAction =
   | 'notifications'
@@ -9,6 +10,7 @@ export type AppItemAction =
   | 'nickname'
   | 'vip'
   | 'ken'
+  | 'gifts'
   | 'media'
   | 'social'
   | 'settings'
@@ -67,6 +69,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
     icon: require('@assets/icons/apps/ken.png'),
     titleKey: 'home.apps.ken',
     action: 'ken',
+  },
+  {
+    icon: GIFT_ASSETS.icon,
+    titleKey: 'home.apps.gifts',
+    action: 'gifts',
   },
   {
     icon: require('@assets/icons/apps/media.png'),
