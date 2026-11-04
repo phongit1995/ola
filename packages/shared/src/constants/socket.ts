@@ -57,6 +57,11 @@ export const CALL_PEER_LEFT_GRACE_MS = 4_000;
 
 export const APP_NOTIFICATION_SOCKET_EVENT = 'APP_NOTIFICATION';
 
+export const MEGAPHONE_SOCKET_EVENTS = {
+  created: 'MEGAPHONE_NEW',
+  removed: 'MEGAPHONE_REMOVED',
+} as const;
+
 export const KEN_SOCKET_EVENTS = {
   updated: 'KEN_UPDATED',
   chestAvailable: 'KEN_CHEST_AVAILABLE',

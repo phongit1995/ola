@@ -1235,7 +1235,8 @@
     "sent": "Cảm ơn bạn đã gửi báo cáo đến Ola",
     "already": "Bạn đã báo cáo nội dung này, Ola đang xem xét",
     "notFound": "Nội dung này không còn tồn tại",
-    "error": "Gửi báo cáo thất bại, vui lòng thử lại"
+    "error": "Gửi báo cáo thất bại, vui lòng thử lại",
+    "megaphone": "Báo cáo loa"
   },
   "profileEdit": {
     "title": "Thông tin cá nhân",
@@ -1857,6 +1858,7 @@
         "CLAN_CREATE": "Tạo Clan",
         "WORD_CHAIN_HINT": "Gợi ý nối từ",
         "WORD_CHAIN_GUESS": "Mua lượt nối từ",
+        "MEGAPHONE": "Phát loa",
         "UNKNOWN": "Giao dịch KEN"
       }
     },
@@ -2507,6 +2509,53 @@
       "noteTooLong": "Lời nhắn quá dài",
       "rateLimited": "Bạn tặng quá nhanh, thử lại sau ít phút",
       "failed": "Tặng quà thất bại, thử lại sau"
+    }
+  },
+  "megaphone": {
+    "title": "Loa",
+    "open": "Mở loa",
+    "compose": "Phát loa",
+    "composeTitle": "Phát loa tới mọi người",
+    "heroHint": "Câu của bạn sẽ chạy trên đầu tab Chat và Phòng chat cho mọi người cùng thấy",
+    "placeholder": "Nhập lời muốn nói với cả Ola…",
+    "hint": "Mọi người đang mở tab Chat và Phòng chat sẽ thấy câu này chạy trên đầu màn hình trong {{seconds}} giây.",
+    "price": "Giá",
+    "balance": "Số dư",
+    "kenAmount": "{{ken}} KEN",
+    "free": "Miễn phí",
+    "remaining": "{{count}}/{{max}}",
+    "send": "Phát",
+    "sending": "Đang phát…",
+    "topUp": "Nạp KEN",
+    "notEnoughKen": "Không đủ KEN",
+    "queueWait": "Đang có loa xếp hàng, loa của bạn sẽ phát sau khoảng {{minutes}} phút",
+    "cooldown": "Chờ {{seconds}} giây nữa để phát tiếp",
+    "dailyLeft": "Hôm nay còn {{count}} lượt phát",
+    "dailyReached": "Bạn đã hết lượt phát loa hôm nay",
+    "rules": "Không chứa link, số điện thoại mời chào hay lời lẽ xúc phạm. Loa vi phạm sẽ bị gỡ và không hoàn KEN.",
+    "confirmTitle": "Xác nhận phát loa",
+    "confirmMessage": "Phát loa này tới mọi người với giá {{ken}} KEN?",
+    "sent": "Đã phát loa",
+    "sentQueued": "Đã xếp hàng, loa sẽ phát sau khoảng {{minutes}} phút",
+    "disabled": "Tính năng loa đang tạm tắt",
+    "loadFailed": "Không tải được thông tin loa",
+    "history": "Loa 24 giờ qua",
+    "historyEmpty": "Chưa có ai phát loa trong 24 giờ qua",
+    "loadMore": "Xem thêm",
+    "report": "Báo cáo loa",
+    "viewProfile": "Xem trang cá nhân",
+    "errors": {
+      "disabled": "Tính năng loa đang tạm tắt",
+      "empty": "Bạn chưa nhập nội dung",
+      "tooLong": "Nội dung quá dài",
+      "link": "Loa không được chứa link hoặc tên trang web",
+      "blocked": "Nội dung có từ ngữ không được phép",
+      "cooldown": "Bạn vừa phát loa, chờ một chút rồi phát tiếp nhé",
+      "dailyLimit": "Bạn đã hết lượt phát loa hôm nay",
+      "queueFull": "Hàng chờ loa đang đầy, thử lại sau ít phút",
+      "insufficientKen": "Bạn không đủ KEN để phát loa",
+      "rateLimited": "Bạn phát quá nhanh, thử lại sau ít phút",
+      "failed": "Phát loa thất bại, thử lại sau"
     }
   }
 }

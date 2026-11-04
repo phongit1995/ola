@@ -18,6 +18,7 @@ export const REPORT_TARGET_LABEL: Record<ReportTargetType, string> = {
   message: 'Tin nhắn 1-1',
   room_message: 'Tin nhắn phòng',
   moment: 'Khoảnh khắc',
+  megaphone: 'Loa',
 }
 
 export const REPORT_REASON_LABEL: Record<ReportReason, string> = {

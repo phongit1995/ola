@@ -40,6 +40,7 @@ export const KEN_TX_META = {
     icon: '🔁',
     labelKey: 'ken.historyScreen.types.WORD_CHAIN_GUESS',
   },
+  MEGAPHONE: { icon: '📢', labelKey: 'ken.historyScreen.types.MEGAPHONE' },
 } as const satisfies Record<KenTxType, { icon: string; labelKey: string }>;
 
 export const KEN_TX_META_FALLBACK = {

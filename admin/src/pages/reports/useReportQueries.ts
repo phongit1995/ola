@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminReportService } from '@/services/adminReport.service'
 import { AdminMeService } from '@/services/adminMe.service'
+import { AdminMegaphoneService } from '@/services/adminMegaphone.service'
 import { AdminMomentService } from '@/services/adminMoment.service'
 import { AdminStoryService } from '@/services/adminStory.service'
 import { AdminRoomService } from '@/services/adminRoom.service'
@@ -19,6 +20,7 @@ import type {
 
 const REPORTS_KEY = 'admin-reports'
 const HTTP_NOT_FOUND = 404
+const REPORT_REMOVE_REASON = 'Gỡ từ báo cáo'
 
 export interface ReportHandling {
   report: AdminReport
@@ -44,6 +46,8 @@ async function removeReportedContent(report: AdminReport): Promise<void> {
       await AdminMeService.setStatus(targetId, false)
     } else if (targetType === 'moment') {
       await AdminMomentService.setStatus(targetId, false)
+    } else if (targetType === 'megaphone') {
+      await AdminMegaphoneService.remove(targetId, { reason: REPORT_REMOVE_REASON })
     } else if (targetType === 'comment' && contextId) {
       await AdminMeService.removeComment(contextId, targetId)
     } else if (targetType === 'story_comment' && contextId) {

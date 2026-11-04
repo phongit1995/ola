@@ -1235,7 +1235,8 @@
     "sent": "Thank you for sending a report to Ola",
     "already": "You already reported this. Ola is reviewing it",
     "notFound": "This content no longer exists",
-    "error": "Could not send the report, please try again"
+    "error": "Could not send the report, please try again",
+    "megaphone": "Report megaphone"
   },
   "profileEdit": {
     "title": "Profile",
@@ -1857,6 +1858,7 @@
         "CLAN_CREATE": "Clan creation",
         "WORD_CHAIN_HINT": "Word chain hint",
         "WORD_CHAIN_GUESS": "Word chain guesses",
+        "MEGAPHONE": "Megaphone",
         "UNKNOWN": "KEN transaction"
       }
     },
@@ -2507,6 +2509,53 @@
       "noteTooLong": "The message is too long",
       "rateLimited": "You're sending gifts too fast, try again in a few minutes",
       "failed": "Could not send the gift, please try again"
+    }
+  },
+  "megaphone": {
+    "title": "Megaphone",
+    "open": "Open megaphone",
+    "compose": "Megaphone",
+    "composeTitle": "Broadcast to everyone",
+    "heroHint": "Your message scrolls across the Chat and Rooms tabs for everyone to see",
+    "placeholder": "Say something to all of Ola…",
+    "hint": "Everyone on the Chat and Rooms tabs will see this scroll across the top for {{seconds}} seconds.",
+    "price": "Price",
+    "balance": "Balance",
+    "kenAmount": "{{ken}} KEN",
+    "free": "Free",
+    "remaining": "{{count}}/{{max}}",
+    "send": "Broadcast",
+    "sending": "Broadcasting…",
+    "topUp": "Top up KEN",
+    "notEnoughKen": "Not enough KEN",
+    "queueWait": "Other messages are queued, yours will play in about {{minutes}} min",
+    "cooldown": "Wait {{seconds}}s before broadcasting again",
+    "dailyLeft": "{{count}} broadcasts left today",
+    "dailyReached": "You've used all your broadcasts for today",
+    "rules": "No links, promotional phone numbers or abusive language. Violating messages are removed without a KEN refund.",
+    "confirmTitle": "Confirm broadcast",
+    "confirmMessage": "Broadcast this message to everyone for {{ken}} KEN?",
+    "sent": "Broadcast sent",
+    "sentQueued": "Queued, it will play in about {{minutes}} min",
+    "disabled": "Megaphone is temporarily off",
+    "loadFailed": "Couldn't load megaphone info",
+    "history": "Last 24 hours",
+    "historyEmpty": "Nobody has broadcast in the last 24 hours",
+    "loadMore": "Load more",
+    "report": "Report message",
+    "viewProfile": "View profile",
+    "errors": {
+      "disabled": "Megaphone is temporarily off",
+      "empty": "Type a message first",
+      "tooLong": "Your message is too long",
+      "link": "Megaphone messages can't contain links or website names",
+      "blocked": "Your message contains words that aren't allowed",
+      "cooldown": "You just broadcast, wait a moment before the next one",
+      "dailyLimit": "You've used all your broadcasts for today",
+      "queueFull": "The queue is full, try again in a few minutes",
+      "insufficientKen": "You don't have enough KEN to broadcast",
+      "rateLimited": "Too fast, try again in a few minutes",
+      "failed": "Broadcast failed, try again later"
     }
   }
 }

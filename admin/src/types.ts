@@ -2566,7 +2566,7 @@ export interface MeStatusResult extends MeDetail {
   penalty?: PenaltyOutcome
 }
 
-export type ViolationSource = 'report' | 'me_hide'
+export type ViolationSource = 'report' | 'me_hide' | 'megaphone_remove'
 
 export interface UserViolation {
   id: string
@@ -2822,4 +2822,65 @@ export interface GiftSetting {
   quantityMax: number
   noteMaxLength: number
   confirmOverKen: number
+}
+
+export interface MegaphoneSetting {
+  enabled: boolean
+  kenPrice: number
+  maxLength: number
+  displaySeconds: number
+  cooldownSeconds: number
+  dailyLimit: number
+  maxQueueSeconds: number
+}
+
+export interface ContentFilterSetting {
+  bannedWords: string[]
+}
+
+export type MegaphoneStatus = 'active' | 'removed'
+
+export interface AdminMegaphone {
+  id: string
+  sender: AdminGiftUserBrief
+  content: string
+  kenPrice: number
+  showAt: string
+  displaySeconds: number
+  status: MegaphoneStatus
+  removedReason?: string
+  removedAt?: string
+  createdAt: string
+}
+
+export interface MegaphoneListParams {
+  senderId?: string
+  status?: MegaphoneStatus
+  q?: string
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export interface MegaphoneListResult extends ListResult<AdminMegaphone> {
+  totalKen: number
+}
+
+export interface RemoveMegaphoneRequest {
+  reason?: string
+  penalty?: MePenaltyRequest
+}
+
+export interface RemoveMegaphoneResult {
+  item: AdminMegaphone
+  penalty?: PenaltyOutcome
+}
+
+export type ContentCheckReason = 'link' | 'banned_word'
+
+export interface ContentCheckResult {
+  blocked: boolean
+  reason?: ContentCheckReason
+  word?: string
 }

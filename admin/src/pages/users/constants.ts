@@ -69,6 +69,7 @@ export const VIOLATION_LOCK_LABEL = 'Khoá do vi phạm'
 export const VIOLATION_SOURCE_LABEL: Record<ViolationSource, string> = {
   report: 'Báo cáo',
   me_hide: 'Admin ẩn bài',
+  megaphone_remove: 'Admin gỡ loa',
 }
 
 export const VIOLATION_STATE_TAG: Record<ViolationState, { label: string; color: string }> = {

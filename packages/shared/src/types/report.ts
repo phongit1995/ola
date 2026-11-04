@@ -5,7 +5,8 @@ export type ReportTargetType =
   | 'story_comment'
   | 'message'
   | 'room_message'
-  | 'moment';
+  | 'moment'
+  | 'megaphone';
 export type ReportReason = 'spam' | 'sensitive' | 'scam' | 'harassment' | 'other';
 
 export interface ReportTarget {

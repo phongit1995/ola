@@ -16,6 +16,8 @@ export const RESOURCE_LABELS: Record<string, string> = {
   me: 'Me',
   settings: 'Cài đặt',
   upload: 'Tải lên',
+  megaphones: 'Loa',
+  'content-filter': 'Từ cấm',
 }
 
 export const RESOURCE_OPTIONS = Object.entries(RESOURCE_LABELS).map(([value, label]) => ({ value, label }))
