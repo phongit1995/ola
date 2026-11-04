@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GiftService } from '@services';
+import { useGiftWall } from '@ola/shared/stores/gift/useGiftWall';
 import { formatKen, giftDisplayName } from '@lib';
-import type { GiftWall } from '@app-types';
 import { GIFT_WALL_PREVIEW_COUNT } from '../constants';
 
 interface GiftWallSectionProps {
@@ -21,23 +20,8 @@ export function GiftWallSection({
   onOpenHistory,
 }: GiftWallSectionProps) {
   const { t, i18n } = useTranslation();
-  const [wall, setWall] = useState<GiftWall | null>(null);
+  const wall = useGiftWall(userId, refreshKey);
   const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    if (userId === '') return;
-    let cancelled = false;
-    GiftService.wall(userId)
-      .then((result) => {
-        if (!cancelled) setWall(result);
-      })
-      .catch(() => {
-        if (!cancelled) setWall(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, refreshKey]);
 
   if (wall == null) return null;
 

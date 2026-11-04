@@ -1,4 +1,5 @@
 import type {
+  GiftHistoryDirection,
   GiftLeaderboardPeriod,
   GiftLeaderboardType,
   GiftSettings,
@@ -28,10 +29,34 @@ export const GIFT_LEADERBOARD_PERIODS: readonly GiftLeaderboardPeriod[] = [
   GIFT_LEADERBOARD_PERIOD.all,
 ];
 
+export const GIFT_HISTORY_DIRECTION = {
+  received: 'received',
+  sent: 'sent',
+} as const satisfies Record<string, GiftHistoryDirection>;
+
+export const GIFT_LEADERBOARD_TYPE_TABS = [
+  { value: GIFT_LEADERBOARD_TYPE.receiver, labelKey: 'gift.leaderboard.receiver' },
+  { value: GIFT_LEADERBOARD_TYPE.sender, labelKey: 'gift.leaderboard.sender' },
+] as const;
+
+export const GIFT_LEADERBOARD_PERIOD_LABEL = {
+  week: 'gift.leaderboard.week',
+  month: 'gift.leaderboard.month',
+  all: 'gift.leaderboard.all',
+} as const satisfies Record<GiftLeaderboardPeriod, string>;
+
+export const GIFT_HISTORY_TABS = [
+  { value: GIFT_HISTORY_DIRECTION.received, labelKey: 'gift.history.received' },
+  { value: GIFT_HISTORY_DIRECTION.sent, labelKey: 'gift.history.sent' },
+] as const;
+
+export const GIFT_PODIUM_MEDALS = ['🥇', '🥈', '🥉'] as const;
+
 export const GIFT_HISTORY_PAGE_SIZE = 20;
 export const GIFT_LEADERBOARD_LIMIT = 50;
 export const GIFT_LEADERBOARD_PODIUM_SIZE = 3;
 export const GIFT_ANIMATION_DURATION_MS = 2_400;
+export const GIFT_INCOMING_RECENT_MS = 15_000;
 
 export const DEFAULT_GIFT_SETTINGS: GiftSettings = {
   enabled: true,

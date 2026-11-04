@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { giftDisplayName } from '@lib';
+import { giftDisplayName, isRecentGift } from '@lib';
 import { useGiftAnimationStore } from '@/store/giftAnimationStore';
 import type { ChatMessage } from './types';
-
-const INCOMING_GIFT_RECENT_MS = 15_000;
 
 export function useIncomingGiftAnimation(bubbles: ChatMessage[], senderName: string) {
   const { t, i18n } = useTranslation();
@@ -13,8 +11,7 @@ export function useIncomingGiftAnimation(bubbles: ChatMessage[], senderName: str
 
   useEffect(() => {
     if (last == null || last.kind !== 'gift' || last.direction !== 'in' || last.gift == null) return;
-    const createdAt = last.createdAt != null ? Date.parse(last.createdAt) : NaN;
-    if (Number.isNaN(createdAt) || Date.now() - createdAt > INCOMING_GIFT_RECENT_MS) return;
+    if (!isRecentGift(last.createdAt, Date.now())) return;
     const name = giftDisplayName(
       { name: last.gift.giftName, nameEn: last.gift.giftNameEn },
       i18n.language

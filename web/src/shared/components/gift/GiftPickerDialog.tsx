@@ -1,21 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
-import { GiftService } from '@services';
-import {
-  canAffordGift,
-  cn,
-  formatKen,
-  giftDisplayName,
-  giftErrorText,
-  giftTotalKen,
-  randomUuid,
-  toApiError,
-  toast,
-} from '@lib';
-import type { Gift, GiftSource, SendGiftResult } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
-import { useGiftAnimationStore } from '@/store/giftAnimationStore';
+import { useGiftPicker } from '@ola/shared/stores/gift/useGiftPicker';
+import { cn, formatKen, giftDisplayName } from '@lib';
+import type { GiftSource, SendGiftResult } from '@app-types';
 import giftIcon from '@/assets/games/egg/ic_gift.png';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import { Dialog, DialogButton } from '../ui/Dialog';
@@ -37,8 +23,6 @@ interface GiftPickerDialogProps {
   onSent?: (result: SendGiftResult) => void;
 }
 
-type Step = 'pick' | 'confirm';
-
 export function GiftPickerDialog(props: GiftPickerDialogProps) {
   if (!props.open) return null;
   return <GiftPickerContent {...props} />;
@@ -51,79 +35,23 @@ function GiftPickerContent({
   onSent,
 }: GiftPickerDialogProps) {
   const { t, i18n } = useTranslation();
-  const gifts = useGiftCatalogStore((s) => s.items);
-  const settings = useGiftCatalogStore((s) => s.settings);
-  const loaded = useGiftCatalogStore((s) => s.loaded);
-  const loadError = useGiftCatalogStore((s) => s.error);
-  const loadCatalog = useGiftCatalogStore((s) => s.load);
-  const balance = useAuthStore((s) => s.user?.ken ?? 0);
-  const setUser = useAuthStore((s) => s.setUser);
-  const playAnimation = useGiftAnimationStore((s) => s.play);
-
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [note, setNote] = useState('');
-  const [step, setStep] = useState<Step>('pick');
-  const [submitting, setSubmitting] = useState(false);
-  const [requestId, setRequestId] = useState(randomUuid);
-
-  useEffect(() => {
-    void loadCatalog(true);
-  }, [loadCatalog]);
-
-  const selected = useMemo<Gift | null>(
-    () => gifts.find((gift) => gift.id === selectedId) ?? gifts[0] ?? null,
-    [gifts, selectedId]
-  );
-  const total = selected != null ? giftTotalKen(selected, quantity) : 0;
-  const affordable = selected != null && canAffordGift(balance, selected, quantity);
-  const selectedName = selected != null ? giftDisplayName(selected, i18n.language) : '';
-
-  function changeSelection(update: () => void) {
-    update();
-    setRequestId(randomUuid());
-  }
-
-  function requestSend() {
-    if (selected == null || !affordable || submitting) return;
-    if (total >= settings.confirmOverKen) {
-      setStep('confirm');
-      return;
-    }
-    void submit();
-  }
-
-  async function submit() {
-    if (selected == null) return;
-    setSubmitting(true);
-    try {
-      const result = await GiftService.send({
-        giftId: selected.id,
-        receiverId: receiver.id,
-        quantity,
-        note: note.trim() === '' ? undefined : note.trim(),
-        source,
-        clientRequestId: requestId,
-      });
-      const current = useAuthStore.getState().user;
-      if (current != null) setUser({ ...current, ken: result.kenBalance });
-      playAnimation({
-        id: result.transactionId,
-        imageUrl: result.gift.imageUrl,
-        name: selectedName,
-        quantity: result.quantity,
-        charmPoints: result.charmPoints,
-        caption: t('gift.sentToast', { name: selectedName, quantity: result.quantity }),
-      });
-      onSent?.(result);
-      onClose();
-    } catch (error) {
-      toast.error(giftErrorText(t, toApiError(error)));
-      setStep('pick');
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const picker = useGiftPicker({ receiverId: receiver.id, source, onClose, onSent });
+  const {
+    gifts,
+    settings,
+    loaded,
+    loadError,
+    ready,
+    balance,
+    selected,
+    selectedName,
+    quantity,
+    note,
+    total,
+    affordable,
+    step,
+    submitting,
+  } = picker;
 
   const title = step === 'confirm' ? t('gift.confirmTitle') : t('gift.title');
   const icon = <img src={giftIcon} alt="" className="h-7 w-7 object-contain" />;
@@ -137,12 +65,12 @@ function GiftPickerContent({
         icon={icon}
         footer={
           <>
-            <DialogButton onClick={() => setStep('pick')} disabled={submitting}>
+            <DialogButton onClick={picker.cancelConfirm} disabled={submitting}>
               {t('dialog.cancel')}
             </DialogButton>
             <DialogButton
               variant="green"
-              onClick={() => void submit()}
+              onClick={picker.confirmSend}
               disabled={submitting}
             >
               {submitting ? t('gift.sending') : t('gift.send')}
@@ -176,8 +104,8 @@ function GiftPickerContent({
         <DialogButton
           variant="green"
           className="flex-1"
-          onClick={requestSend}
-          disabled={selected == null || !affordable || submitting || !settings.enabled}
+          onClick={picker.requestSend}
+          disabled={!picker.canSend}
         >
           {submitting ? t('gift.sending') : t('gift.send')}
         </DialogButton>
@@ -212,7 +140,7 @@ function GiftPickerContent({
                   <button
                     type="button"
                     aria-pressed={active}
-                    onClick={() => changeSelection(() => setSelectedId(gift.id))}
+                    onClick={() => picker.selectGift(gift.id)}
                     className={cn(
                       'flex w-full flex-col items-center rounded-lg border px-1 pt-1.5 pb-1 transition-colors',
                       active
@@ -240,7 +168,7 @@ function GiftPickerContent({
           </ul>
         )}
 
-        {loaded && settings.enabled && gifts.length > 0 && (
+        {ready && (
           <>
             <div className="flex items-center gap-2">
               <span className="text-sm text-black/54">{t('gift.quantity')}</span>
@@ -250,7 +178,7 @@ function GiftPickerContent({
                     key={option}
                     type="button"
                     aria-pressed={option === quantity}
-                    onClick={() => changeSelection(() => setQuantity(option))}
+                    onClick={() => picker.selectQuantity(option)}
                     className={cn(
                       'min-w-10 rounded-full border px-2.5 py-0.5 text-sm font-medium',
                       option === quantity
@@ -269,7 +197,7 @@ function GiftPickerContent({
                 type="text"
                 value={note}
                 maxLength={settings.noteMaxLength}
-                onChange={(event) => changeSelection(() => setNote(event.target.value))}
+                onChange={(event) => picker.changeNote(event.target.value)}
                 placeholder={t('gift.notePlaceholder')}
                 className="w-full rounded border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-accent"
               />

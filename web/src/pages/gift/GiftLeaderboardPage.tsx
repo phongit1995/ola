@@ -1,54 +1,24 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, FullScreenOverlay, ScreenHeader, Spinner } from '@components';
 import {
-  GIFT_LEADERBOARD_LIMIT,
-  GIFT_LEADERBOARD_PERIOD,
+  GIFT_LEADERBOARD_PERIOD_LABEL,
   GIFT_LEADERBOARD_PERIODS,
   GIFT_LEADERBOARD_PODIUM_SIZE,
   GIFT_LEADERBOARD_TYPE,
+  GIFT_LEADERBOARD_TYPE_TABS,
+  GIFT_PODIUM_MEDALS,
 } from '@constants';
-import { GiftService } from '@services';
+import { useGiftLeaderboard } from '@ola/shared/stores/gift/useGiftLeaderboard';
 import { cn, colorForName, formatKen } from '@lib';
-import type {
-  GiftLeaderboardPeriod,
-  GiftLeaderboardResult,
-  GiftLeaderboardType,
-} from '@app-types';
-import { LEADERBOARD_PERIOD_LABEL, LEADERBOARD_TYPE_TABS, PODIUM_MEDALS } from './constants';
 
 interface GiftLeaderboardPageProps {
   onClose: () => void;
   z?: 40 | 50 | 60;
 }
 
-function boardKey(type: GiftLeaderboardType, period: GiftLeaderboardPeriod): string {
-  return `${type}:${period}`;
-}
-
 export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
   const { t } = useTranslation();
-  const [type, setType] = useState<GiftLeaderboardType>(GIFT_LEADERBOARD_TYPE.receiver);
-  const [period, setPeriod] = useState<GiftLeaderboardPeriod>(GIFT_LEADERBOARD_PERIOD.week);
-  const [boards, setBoards] = useState<Record<string, GiftLeaderboardResult>>({});
-  const [failed, setFailed] = useState(false);
-  const key = boardKey(type, period);
-  const board = boards[key];
-
-  useEffect(() => {
-    if (boards[key] != null) return;
-    let cancelled = false;
-    GiftService.leaderboard({ type, period, limit: GIFT_LEADERBOARD_LIMIT })
-      .then((result) => {
-        if (!cancelled) setBoards((prev) => ({ ...prev, [key]: result }));
-      })
-      .catch(() => {
-        if (!cancelled) setFailed(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [boards, key, type, period]);
+  const { type, period, selectType, selectPeriod, board, failed } = useGiftLeaderboard();
 
   function valueText(value: number): string {
     return type === GIFT_LEADERBOARD_TYPE.sender
@@ -62,11 +32,11 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
 
       <div className="bg-linear-to-b from-ola-accent to-ola-marriage px-3 pt-3 pb-4 text-white">
         <div className="flex rounded-full bg-white/20 p-1">
-          {LEADERBOARD_TYPE_TABS.map((tab) => (
+          {GIFT_LEADERBOARD_TYPE_TABS.map((tab) => (
             <button
               key={tab.value}
               type="button"
-              onClick={() => setType(tab.value)}
+              onClick={() => selectType(tab.value)}
               className={cn(
                 'flex-1 rounded-full py-1.5 text-sm font-semibold transition-colors',
                 tab.value === type ? 'bg-white text-ola-accent-dark shadow' : 'text-white/90'
@@ -81,13 +51,13 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
             <button
               key={value}
               type="button"
-              onClick={() => setPeriod(value)}
+              onClick={() => selectPeriod(value)}
               className={cn(
                 'rounded-full border px-3 py-0.5 text-xs font-medium',
                 value === period ? 'border-white bg-white/25' : 'border-white/50 text-white/85'
               )}
             >
-              {t(LEADERBOARD_PERIOD_LABEL[value])}
+              {t(GIFT_LEADERBOARD_PERIOD_LABEL[value])}
             </button>
           ))}
         </div>
@@ -117,7 +87,7 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
                       podium ? 'text-xl' : 'text-sm text-black/45'
                     )}
                   >
-                    {podium ? PODIUM_MEDALS[entry.rank - 1] : entry.rank}
+                    {podium ? GIFT_PODIUM_MEDALS[entry.rank - 1] : entry.rank}
                   </span>
                   <Avatar
                     name={name}

@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { GIFT_ERROR_KEYS } from '../constants/gift';
+import { GIFT_ERROR_KEYS, GIFT_INCOMING_RECENT_MS } from '../constants/gift';
 import type { Gift, GiftMessageMetadata } from '../types/api/gift.type';
 import { ApiError } from './apiError';
 
@@ -24,6 +24,11 @@ export function giftDisplayName(
     return gift.nameEn;
   }
   return gift.name;
+}
+
+export function isRecentGift(createdAt: string | undefined, now: number): boolean {
+  const time = createdAt != null ? Date.parse(createdAt) : NaN;
+  return !Number.isNaN(time) && now - time <= GIFT_INCOMING_RECENT_MS;
 }
 
 export function parseGiftMessageMetadata(metadata?: string | null): GiftMessageMetadata | null {
