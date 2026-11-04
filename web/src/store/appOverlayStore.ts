@@ -10,7 +10,8 @@ export type AppOverlayKind =
   | 'media'
   | 'nearby'
   | 'settings'
-  | 'gifts';
+  | 'gifts'
+  | 'megaphone';
 
 export type VipBuyMode = 'give' | 'buy' | 'extend';
 
