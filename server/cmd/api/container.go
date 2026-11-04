@@ -12,6 +12,7 @@ import (
 	"ola-chat-server/internal/modules/call"
 	chatbot "ola-chat-server/internal/modules/chat-bot"
 	"ola-chat-server/internal/modules/clan"
+	contentfilter "ola-chat-server/internal/modules/content-filter"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/modules/gift"
@@ -21,6 +22,7 @@ import (
 	"ola-chat-server/internal/modules/marriage"
 	marriagediary "ola-chat-server/internal/modules/marriage-diary"
 	"ola-chat-server/internal/modules/me"
+	"ola-chat-server/internal/modules/megaphone"
 	"ola-chat-server/internal/modules/message"
 	minigame "ola-chat-server/internal/modules/mini-game"
 	"ola-chat-server/internal/modules/moderation"
@@ -98,6 +100,8 @@ func NewContainer(opts ...dig.Option) (*dig.Container, error) {
 		wheel.Provider,
 		kenchest.Provider,
 		gift.Provider,
+		contentfilter.Provider,
+		megaphone.Provider,
 		marriage.Provider,
 		marriagediary.Provider,
 		pen.Provider,

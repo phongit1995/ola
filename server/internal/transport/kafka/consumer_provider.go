@@ -6,6 +6,7 @@ import (
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
+	megaphoneEvents "ola-chat-server/internal/domain/megaphone"
 	messageEvents "ola-chat-server/internal/domain/message"
 	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
 	roomEvents "ola-chat-server/internal/domain/room"
@@ -37,6 +38,7 @@ func ProvideConsumer(c *dig.Container) error {
 		appNotificationEvents.Provider,
 		userBanEvents.Provider,
 		pushBroadcastEvents.Provider,
+		megaphoneEvents.Provider,
 	}
 
 	for _, module := range modules {

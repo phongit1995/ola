@@ -8,6 +8,7 @@ const (
 	ReportTargetMessage      = "message"
 	ReportTargetRoomMessage  = "room_message"
 	ReportTargetMoment       = "moment"
+	ReportTargetMegaphone    = "megaphone"
 	ReportStatusPending      = "pending"
 	ReportStatusResolved     = "resolved"
 	ReportStatusDismissed    = "dismissed"

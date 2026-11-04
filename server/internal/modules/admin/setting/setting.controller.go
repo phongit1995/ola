@@ -244,6 +244,14 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateGiftValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyMegaphone:
+		if err := setting.ValidateMegaphoneValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+	case setting.KeyContentFilter:
+		if err := setting.ValidateContentFilterValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
 	case setting.KeyMoment:
 		if err := setting.ValidateMomentValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())

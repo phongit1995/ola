@@ -18,6 +18,7 @@ import (
 	"ola-chat-server/internal/modules/marriage"
 	marriagediary "ola-chat-server/internal/modules/marriage-diary"
 	"ola-chat-server/internal/modules/me"
+	"ola-chat-server/internal/modules/megaphone"
 	"ola-chat-server/internal/modules/message"
 	minigame "ola-chat-server/internal/modules/mini-game"
 	"ola-chat-server/internal/modules/moment"
@@ -74,6 +75,7 @@ func CreateServer(
 	wheelRouter *wheel.Router,
 	kenChestRouter *kenchest.Router,
 	giftRouter *gift.Router,
+	megaphoneRouter *megaphone.Router,
 	marriageRouter *marriage.Router,
 	marriageDiaryRouter *marriagediary.Router,
 	penRouter *pen.Router,
@@ -143,6 +145,7 @@ func CreateServer(
 		wheelRouter.Setup(api)
 		kenChestRouter.Setup(api)
 		giftRouter.Setup(api)
+		megaphoneRouter.Setup(api)
 		marriageRouter.Setup(api)
 		marriageDiaryRouter.Setup(api)
 		penRouter.Setup(api)

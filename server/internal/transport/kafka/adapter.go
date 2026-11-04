@@ -8,6 +8,7 @@ import (
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
+	megaphoneEvents "ola-chat-server/internal/domain/megaphone"
 	messageEvents "ola-chat-server/internal/domain/message"
 	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
 	roomEvents "ola-chat-server/internal/domain/room"
@@ -24,6 +25,7 @@ type KafkaEventAdapter struct {
 	appNotificationHandler *appNotificationEvents.EventHandler
 	userBanHandler         *userBanEvents.EventHandler
 	pushBroadcastHandler   *pushBroadcastEvents.EventHandler
+	megaphoneHandler       *megaphoneEvents.EventHandler
 }
 
 func NewKafkaEventAdapter(
@@ -36,6 +38,7 @@ func NewKafkaEventAdapter(
 	appNotificationHandler *appNotificationEvents.EventHandler,
 	userBanHandler *userBanEvents.EventHandler,
 	pushBroadcastHandler *pushBroadcastEvents.EventHandler,
+	megaphoneHandler *megaphoneEvents.EventHandler,
 ) *KafkaEventAdapter {
 	return &KafkaEventAdapter{
 		messageHandler:         messageHandler,
@@ -47,6 +50,7 @@ func NewKafkaEventAdapter(
 		appNotificationHandler: appNotificationHandler,
 		userBanHandler:         userBanHandler,
 		pushBroadcastHandler:   pushBroadcastHandler,
+		megaphoneHandler:       megaphoneHandler,
 	}
 }
 
@@ -138,6 +142,14 @@ func (a *KafkaEventAdapter) HandlePushBroadcast(ctx context.Context, message []b
 	return a.pushBroadcastHandler.OnRequested(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandleMegaphoneCreated(ctx context.Context, message []byte) error {
+	return a.megaphoneHandler.OnCreated(ctx, message)
+}
+
+func (a *KafkaEventAdapter) HandleMegaphoneRemoved(ctx context.Context, message []byte) error {
+	return a.megaphoneHandler.OnRemoved(ctx, message)
+}
+
 func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicMessageCreated, adapter.HandleMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicMessageDeleted, adapter.HandleMessageDeleted)
@@ -161,4 +173,6 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicAppNotification, adapter.HandleAppNotification)
 	consumer.RegisterHandler(constants.KafkaTopicUserBanned, adapter.HandleUserBanned)
 	consumer.RegisterHandler(constants.KafkaTopicPushBroadcast, adapter.HandlePushBroadcast)
+	consumer.RegisterHandler(constants.KafkaTopicMegaphoneCreated, adapter.HandleMegaphoneCreated)
+	consumer.RegisterHandler(constants.KafkaTopicMegaphoneRemoved, adapter.HandleMegaphoneRemoved)
 }

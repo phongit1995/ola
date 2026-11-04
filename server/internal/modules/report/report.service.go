@@ -40,6 +40,7 @@ var validTargetTypes = map[string]bool{
 	constants.ReportTargetMessage:      true,
 	constants.ReportTargetRoomMessage:  true,
 	constants.ReportTargetMoment:       true,
+	constants.ReportTargetMegaphone:    true,
 }
 
 var uuidTargetTypes = map[string]bool{
@@ -49,6 +50,7 @@ var uuidTargetTypes = map[string]bool{
 	constants.ReportTargetStoryComment: true,
 	constants.ReportTargetMessage:      true,
 	constants.ReportTargetMoment:       true,
+	constants.ReportTargetMegaphone:    true,
 }
 
 var validReasons = map[string]bool{
@@ -232,6 +234,18 @@ func (s *Service) resolve(ctx context.Context, reporterID uuid.UUID, targetType,
 			snapshot: compactSnapshot(models.JSONB{
 				"text":   comment.Content,
 				"sentAt": comment.CreatedAt.UTC().Format(time.RFC3339),
+			}),
+		}, nil
+	case constants.ReportTargetMegaphone:
+		item, err := s.repo.FindMegaphone(id)
+		if err != nil {
+			return nil, notFoundOr(err)
+		}
+		return &resolvedTarget{
+			reportedUserID: &item.SenderID,
+			snapshot: compactSnapshot(models.JSONB{
+				"text":   item.Content,
+				"sentAt": item.ShowAt.UTC().Format(time.RFC3339),
 			}),
 		}, nil
 	case constants.ReportTargetMoment:

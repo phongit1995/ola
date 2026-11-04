@@ -622,6 +622,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/content-filter/check": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Thử một câu với bộ lọc nội dung (admin)",
+                "parameters": [
+                    {
+                        "description": "Câu cần thử",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.CheckContentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.CheckContentSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/conversations": {
             "get": {
                 "security": [
@@ -3113,6 +3151,126 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/megaphones": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Danh sách loa đã phát (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Người phát",
+                        "name": "senderId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "active, removed",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tìm trong nội dung",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.ListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/megaphones/{id}/remove": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Loa biến mất trên mọi máy, không hoàn KEN. Có penalty thì tính điểm vi phạm cho người phát.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Gỡ một loa (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Megaphone ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Lý do + điểm vi phạm",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.RemoveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.RemoveSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/mini-games": {
             "get": {
                 "security": [
@@ -4245,7 +4403,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "account, post, comment, story_comment, message, room_message, moment",
+                        "description": "account, post, comment, story_comment, message, room_message, moment, megaphone",
                         "name": "targetType",
                         "in": "query"
                     },
@@ -12090,6 +12248,161 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/megaphones": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "megaphones"
+                ],
+                "summary": "Loa đã phát trong 24 giờ gần nhất",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Con trỏ trang sau",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số loa mỗi trang (mặc định 20, tối đa 50)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.HistorySuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Hàng chờ quá dài thì từ chối, không trừ KEN. clientRequestId chống trừ hai lần khi gửi lại.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "megaphones"
+                ],
+                "summary": "Phát loa tới mọi người",
+                "parameters": [
+                    {
+                        "description": "Megaphone",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.SendRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.SendSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/megaphones/active": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Sắp theo giờ phát tăng dần, kèm serverTime để client tính lịch phát theo giờ server.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "megaphones"
+                ],
+                "summary": "Loa đang phát và đang chờ phát",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.ActiveSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/megaphones/config": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Giá, số ký tự, thời gian hiện, số loa đã phát hôm nay, số giây còn phải chờ và thời gian chờ hàng loa hiện tại.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "megaphones"
+                ],
+                "summary": "Cấu hình phát loa + trạng thái của người gọi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.ConfigSuccessResponse"
                         }
                     }
                 }
@@ -20809,6 +21122,226 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_megaphone.CheckContentRequest": {
+            "type": "object",
+            "required": [
+                "text"
+            ],
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "ai cần nạp ken giá rẻ ib"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.CheckContentSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_content-filter.Result"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.ListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_megaphone.MegaphoneItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "totalKen": {
+                    "type": "integer",
+                    "example": 240000
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.ListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.ListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.MegaphoneItem": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Chúc cả nhà buổi tối vui vẻ"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-06T09:59:50Z"
+                },
+                "displaySeconds": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 2000
+                },
+                "removedAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:05:00Z"
+                },
+                "removedReason": {
+                    "type": "string",
+                    "example": "Quảng cáo"
+                },
+                "sender": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                },
+                "showAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:00:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "active"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.PenaltyRequest": {
+            "type": "object",
+            "required": [
+                "reason",
+                "severity"
+            ],
+            "properties": {
+                "note": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Rao bán KEN"
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": [
+                        "spam",
+                        "sensitive",
+                        "scam",
+                        "harassment",
+                        "other"
+                    ],
+                    "example": "scam"
+                },
+                "severity": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "violation",
+                        "deliberate"
+                    ],
+                    "example": "violation"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.RemoveRequest": {
+            "type": "object",
+            "properties": {
+                "penalty": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.PenaltyRequest"
+                },
+                "reason": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "example": "Rao bán KEN"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.RemoveResponse": {
+            "type": "object",
+            "properties": {
+                "item": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.MegaphoneItem"
+                },
+                "penalty": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moderation.PenaltyOutcome"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.RemoveSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.RemoveResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_admin_moment.AuthorResponse": {
             "type": "object",
             "properties": {
@@ -26446,6 +26979,215 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_megaphone.ActiveResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone"
+                    }
+                },
+                "serverTime": {
+                    "type": "string",
+                    "example": "2026-11-06T10:00:00.123Z"
+                }
+            }
+        },
+        "internal_modules_megaphone.ActiveSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_megaphone.ActiveResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_megaphone.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "cooldownRemaining": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "cooldownSeconds": {
+                    "type": "integer",
+                    "example": 60
+                },
+                "dailyLimit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "displaySeconds": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 2000
+                },
+                "maxLength": {
+                    "type": "integer",
+                    "example": 80
+                },
+                "queueWaitSeconds": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "todayCount": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "internal_modules_megaphone.ConfigSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_megaphone.ConfigResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_megaphone.HistoryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone"
+                    }
+                },
+                "nextCursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_megaphone.HistorySuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_megaphone.HistoryResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_megaphone.SendRequest": {
+            "type": "object",
+            "required": [
+                "clientRequestId",
+                "content"
+            ],
+            "properties": {
+                "clientRequestId": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10"
+                },
+                "content": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Chúc cả nhà buổi tối vui vẻ 🎉"
+                }
+            }
+        },
+        "internal_modules_megaphone.SendResponse": {
+            "type": "object",
+            "properties": {
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 8000
+                },
+                "megaphone": {
+                    "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone"
+                },
+                "waitSeconds": {
+                    "type": "integer",
+                    "example": 25
+                }
+            }
+        },
+        "internal_modules_megaphone.SendSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_megaphone.SendResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_message.MessageResponse": {
             "type": "object",
             "properties": {
@@ -31434,6 +32176,65 @@ const docTemplate = `{
                 "type": "string"
             }
         },
+        "ola-chat-server_internal_domain_megaphone.Megaphone": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Chúc cả nhà buổi tối vui vẻ 🎉"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-06T09:59:50Z"
+                },
+                "displaySeconds": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "sender": {
+                    "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Sender"
+                },
+                "showAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:00:00Z"
+                }
+            }
+        },
+        "ola-chat-server_internal_domain_megaphone.Sender": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/a.png"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "Minh"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "female"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "minh"
+                },
+                "vipEndTime": {
+                    "type": "string"
+                },
+                "vipUsed": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_models.Announcement": {
             "type": "object",
             "properties": {
@@ -31725,6 +32526,23 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 200,
                     "minLength": 1
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_content-filter.Result": {
+            "type": "object",
+            "properties": {
+                "blocked": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "banned_word"
+                },
+                "word": {
+                    "type": "string",
+                    "example": "lừa đảo"
                 }
             }
         },

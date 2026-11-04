@@ -2198,6 +2198,159 @@ definitions:
       visibility:
         type: string
     type: object
+  internal_modules_admin_megaphone.CheckContentRequest:
+    properties:
+      text:
+        example: ai cần nạp ken giá rẻ ib
+        maxLength: 1000
+        type: string
+    required:
+    - text
+    type: object
+  internal_modules_admin_megaphone.CheckContentSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_content-filter.Result'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_megaphone.ListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_megaphone.MegaphoneItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 120
+        type: integer
+      totalKen:
+        example: 240000
+        type: integer
+    type: object
+  internal_modules_admin_megaphone.ListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_megaphone.ListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_megaphone.MegaphoneItem:
+    properties:
+      content:
+        example: Chúc cả nhà buổi tối vui vẻ
+        type: string
+      createdAt:
+        example: "2026-11-06T09:59:50Z"
+        type: string
+      displaySeconds:
+        example: 10
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      kenPrice:
+        example: 2000
+        type: integer
+      removedAt:
+        example: "2026-11-06T10:05:00Z"
+        type: string
+      removedReason:
+        example: Quảng cáo
+        type: string
+      sender:
+        $ref: '#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief'
+      showAt:
+        example: "2026-11-06T10:00:00Z"
+        type: string
+      status:
+        example: active
+        type: string
+    type: object
+  internal_modules_admin_megaphone.PenaltyRequest:
+    properties:
+      note:
+        example: Rao bán KEN
+        maxLength: 1000
+        type: string
+      reason:
+        enum:
+        - spam
+        - sensitive
+        - scam
+        - harassment
+        - other
+        example: scam
+        type: string
+      severity:
+        enum:
+        - none
+        - violation
+        - deliberate
+        example: violation
+        type: string
+    required:
+    - reason
+    - severity
+    type: object
+  internal_modules_admin_megaphone.RemoveRequest:
+    properties:
+      penalty:
+        $ref: '#/definitions/internal_modules_admin_megaphone.PenaltyRequest'
+      reason:
+        example: Rao bán KEN
+        maxLength: 200
+        type: string
+    type: object
+  internal_modules_admin_megaphone.RemoveResponse:
+    properties:
+      item:
+        $ref: '#/definitions/internal_modules_admin_megaphone.MegaphoneItem'
+      penalty:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moderation.PenaltyOutcome'
+    type: object
+  internal_modules_admin_megaphone.RemoveSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_megaphone.RemoveResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_admin_moment.AuthorResponse:
     properties:
       avatar:
@@ -6007,6 +6160,148 @@ definitions:
       width:
         type: integer
     type: object
+  internal_modules_megaphone.ActiveResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone'
+        type: array
+      serverTime:
+        example: "2026-11-06T10:00:00.123Z"
+        type: string
+    type: object
+  internal_modules_megaphone.ActiveSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_megaphone.ActiveResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_megaphone.ConfigResponse:
+    properties:
+      cooldownRemaining:
+        example: 0
+        type: integer
+      cooldownSeconds:
+        example: 60
+        type: integer
+      dailyLimit:
+        example: 20
+        type: integer
+      displaySeconds:
+        example: 10
+        type: integer
+      enabled:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 2000
+        type: integer
+      maxLength:
+        example: 80
+        type: integer
+      queueWaitSeconds:
+        example: 25
+        type: integer
+      todayCount:
+        example: 2
+        type: integer
+    type: object
+  internal_modules_megaphone.ConfigSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_megaphone.ConfigResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_megaphone.HistoryResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone'
+        type: array
+      nextCursor:
+        type: string
+    type: object
+  internal_modules_megaphone.HistorySuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_megaphone.HistoryResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_megaphone.SendRequest:
+    properties:
+      clientRequestId:
+        example: 7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10
+        maxLength: 64
+        type: string
+      content:
+        example: "Chúc cả nhà buổi tối vui vẻ \U0001F389"
+        maxLength: 1000
+        type: string
+    required:
+    - clientRequestId
+    - content
+    type: object
+  internal_modules_megaphone.SendResponse:
+    properties:
+      kenBalance:
+        example: 8000
+        type: integer
+      megaphone:
+        $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone'
+      waitSeconds:
+        example: 25
+        type: integer
+    type: object
+  internal_modules_megaphone.SendSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_megaphone.SendResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_message.MessageResponse:
     properties:
       clientMsgId:
@@ -9395,6 +9690,48 @@ definitions:
     additionalProperties:
       type: string
     type: object
+  ola-chat-server_internal_domain_megaphone.Megaphone:
+    properties:
+      content:
+        example: "Chúc cả nhà buổi tối vui vẻ \U0001F389"
+        type: string
+      createdAt:
+        example: "2026-11-06T09:59:50Z"
+        type: string
+      displaySeconds:
+        example: 10
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      sender:
+        $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Sender'
+      showAt:
+        example: "2026-11-06T10:00:00Z"
+        type: string
+    type: object
+  ola-chat-server_internal_domain_megaphone.Sender:
+    properties:
+      avatar:
+        example: https://cdn.ola.vn/a.png
+        type: string
+      fullName:
+        example: Minh
+        type: string
+      gender:
+        example: female
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      username:
+        example: minh
+        type: string
+      vipEndTime:
+        type: string
+      vipUsed:
+        type: string
+    type: object
   ola-chat-server_internal_models.Announcement:
     properties:
       content:
@@ -9595,6 +9932,18 @@ definitions:
       title:
         maxLength: 200
         minLength: 1
+        type: string
+    type: object
+  ola-chat-server_internal_modules_content-filter.Result:
+    properties:
+      blocked:
+        example: true
+        type: boolean
+      reason:
+        example: banned_word
+        type: string
+      word:
+        example: lừa đảo
         type: string
     type: object
   ola-chat-server_internal_modules_egg.AdminDrawListResponse:
@@ -14632,6 +14981,29 @@ paths:
       summary: List clan members (admin)
       tags:
       - admin-clan
+  /admin/content-filter/check:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Câu cần thử
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_megaphone.CheckContentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.CheckContentSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thử một câu với bộ lọc nội dung (admin)
+      tags:
+      - admin-megaphones
   /admin/conversations:
     get:
       description: 'hidden=false: hội thoại đang hiển thị, sắp theo tin mới nhất.
@@ -16197,6 +16569,83 @@ paths:
       summary: Enable/disable a post (admin)
       tags:
       - admin-me
+  /admin/megaphones:
+    get:
+      parameters:
+      - description: Người phát
+        in: query
+        name: senderId
+        type: string
+      - description: active, removed
+        in: query
+        name: status
+        type: string
+      - description: Tìm trong nội dung
+        in: query
+        name: q
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.ListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách loa đã phát (admin)
+      tags:
+      - admin-megaphones
+  /admin/megaphones/{id}/remove:
+    post:
+      consumes:
+      - application/json
+      description: Loa biến mất trên mọi máy, không hoàn KEN. Có penalty thì tính
+        điểm vi phạm cho người phát.
+      parameters:
+      - description: Megaphone ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Lý do + điểm vi phạm
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_megaphone.RemoveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.RemoveSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Gỡ một loa (admin)
+      tags:
+      - admin-megaphones
   /admin/mini-games:
     get:
       produces:
@@ -16896,7 +17345,7 @@ paths:
         name: status
         type: string
       - description: account, post, comment, story_comment, message, room_message,
-          moment
+          moment, megaphone
         in: query
         name: targetType
         type: string
@@ -21843,6 +22292,106 @@ paths:
       summary: List a user's posts (visibility-aware)
       tags:
       - me
+  /megaphones:
+    get:
+      parameters:
+      - description: Con trỏ trang sau
+        in: query
+        name: cursor
+        type: string
+      - description: Số loa mỗi trang (mặc định 20, tối đa 50)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_megaphone.HistorySuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Loa đã phát trong 24 giờ gần nhất
+      tags:
+      - megaphones
+    post:
+      consumes:
+      - application/json
+      description: Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày
+        trước khi trừ KEN (MEGAPHONE). Hàng chờ quá dài thì từ chối, không trừ KEN.
+        clientRequestId chống trừ hai lần khi gửi lại.
+      parameters:
+      - description: Megaphone
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_megaphone.SendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_megaphone.SendSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Phát loa tới mọi người
+      tags:
+      - megaphones
+  /megaphones/active:
+    get:
+      description: Sắp theo giờ phát tăng dần, kèm serverTime để client tính lịch
+        phát theo giờ server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_megaphone.ActiveSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Loa đang phát và đang chờ phát
+      tags:
+      - megaphones
+  /megaphones/config:
+    get:
+      description: Giá, số ký tự, thời gian hiện, số loa đã phát hôm nay, số giây
+        còn phải chờ và thời gian chờ hàng loa hiện tại.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_megaphone.ConfigSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Cấu hình phát loa + trạng thái của người gọi
+      tags:
+      - megaphones
   /messages:
     post:
       consumes:
