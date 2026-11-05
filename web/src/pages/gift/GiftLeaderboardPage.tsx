@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
+  CharmIcon,
   FullScreenOverlay,
   ScreenHeader,
   Spinner,
@@ -120,7 +121,8 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
                       className="min-w-0 truncate text-sm font-medium text-black/87"
                     />
                   </span>
-                  <span className="text-sm font-semibold text-ola-accent-dark">
+                  <span className="flex items-center gap-1 text-sm font-semibold text-ola-accent-dark">
+                    {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
                     {valueText(entry.value)}
                   </span>
                 </li>
@@ -141,7 +143,8 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
               : t('gift.leaderboard.notRanked')}
           </span>
           <span className="flex-1" />
-          <span className="text-sm font-semibold text-ola-accent-dark">
+          <span className="flex items-center gap-1 text-sm font-semibold text-ola-accent-dark">
+            {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
             {valueText(board.me.value)}
           </span>
         </div>

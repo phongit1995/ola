@@ -37,6 +37,7 @@ import {
   type GiftEffect,
   type Viewport,
 } from './giftScenes';
+import { CharmIcon } from './CharmIcon';
 
 const GIFT_SIZE_MAX = 240;
 const GIFT_SIZE_VW = 62;
@@ -295,9 +296,12 @@ function GiftCaption({ item }: { item: GiftAnimationItem }) {
     <View className="rounded-full px-4 py-1.5" style={styles.caption}>
       <Text className="text-center text-sm font-semibold text-white">{item.caption ?? item.name}</Text>
       {item.charmPoints > 0 && (
-        <Text className="text-center text-xs" style={{ color: GIFT_SPARK }}>
-          {t('gift.charmGain', { value: formatKen(item.charmPoints) })}
-        </Text>
+        <View className="flex-row items-center justify-center" style={{ gap: 3 }}>
+          <CharmIcon size={14} />
+          <Text className="text-xs" style={{ color: GIFT_SPARK }}>
+            {t('gift.charmGain', { value: formatKen(item.charmPoints) })}
+          </Text>
+        </View>
       )}
     </View>
   );

@@ -10,6 +10,7 @@ import {
   GIFT_MARRIAGE_SOFT,
 } from '@components/gift/constants';
 import { TEXT_SECONDARY, WARNING } from '@constants';
+import { CharmIcon } from '@components/gift/CharmIcon';
 
 const GIFT_BUBBLE_WIDTH = 228;
 
@@ -59,9 +60,12 @@ export function GiftMessageBubble({ gift, isOut, cornerClass }: GiftMessageBubbl
               {name}
             </Text>
             {charmGain > 0 && (
-              <Text className="text-xs font-medium" style={{ color: WARNING }}>
-                {t('gift.charmGain', { value: formatKen(charmGain) })}
-              </Text>
+              <View className="flex-row items-center" style={{ gap: 3 }}>
+                <CharmIcon size={14} />
+                <Text className="text-xs font-medium" style={{ color: WARNING }}>
+                  {t('gift.charmGain', { value: formatKen(charmGain) })}
+                </Text>
+              </View>
             )}
           </View>
         </View>

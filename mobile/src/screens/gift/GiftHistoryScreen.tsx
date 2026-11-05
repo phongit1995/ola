@@ -15,8 +15,21 @@ import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { DIVIDER, TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { CharmIcon } from '@components/gift/CharmIcon';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftHistory'>;
+
+function CharmText({ value }: { value: number }) {
+  const { t } = useTranslation();
+  return (
+    <View className="flex-row items-center" style={{ gap: 2 }}>
+      <CharmIcon size={13} />
+      <Text className="text-xs" style={{ color: TEXT_FAINT }}>
+        {t('gift.charmGain', { value: formatKen(value) })}
+      </Text>
+    </View>
+  );
+}
 
 export function GiftHistoryScreen({ navigation }: Props) {
   const { t } = useTranslation();
@@ -42,15 +55,26 @@ export function GiftHistoryScreen({ navigation }: Props) {
               “{item.note}”
             </Text>
           )}
-          <Text className="mt-1 text-xs" style={{ color: TEXT_FAINT }}>
-            {`${formatDateDMY(item.createdAt)} ${formatClockHM(item.createdAt)} · `}
-            {received
-              ? t('gift.charmGain', { value: formatKen(item.charmPoints) })
-              : t('gift.kenAmount', { ken: formatKen(item.totalKen) })}
-            {!received && (item.senderCharmPoints ?? 0) > 0
-              ? ` · ${t('gift.charmGain', { value: formatKen(item.senderCharmPoints ?? 0) })}`
-              : ''}
-          </Text>
+          <View className="mt-1 flex-row flex-wrap items-center" style={{ gap: 4 }}>
+            <Text className="text-xs" style={{ color: TEXT_FAINT }}>
+              {`${formatDateDMY(item.createdAt)} ${formatClockHM(item.createdAt)} ·`}
+            </Text>
+            {received ? (
+              <CharmText value={item.charmPoints} />
+            ) : (
+              <Text className="text-xs" style={{ color: TEXT_FAINT }}>
+                {t('gift.kenAmount', { ken: formatKen(item.totalKen) })}
+              </Text>
+            )}
+            {!received && (item.senderCharmPoints ?? 0) > 0 && (
+              <>
+                <Text className="text-xs" style={{ color: TEXT_FAINT }}>
+                  ·
+                </Text>
+                <CharmText value={item.senderCharmPoints ?? 0} />
+              </>
+            )}
+          </View>
         </View>
         <CachedImage uri={item.giftImageUrl} style={{ width: 48, height: 48 }} resizeMode="contain" />
       </View>

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
+  CharmIcon,
   FullScreenOverlay,
   ScreenHeader,
   Spinner,
@@ -155,7 +156,8 @@ export function GiftHistoryPage({
                         {formatClockHM(item.createdAt)}
                       </span>
                       {received ? (
-                        <span className="rounded-full bg-ola-accent/10 px-2 py-0.5 text-xs font-semibold text-ola-accent-dark">
+                        <span className="flex items-center gap-1 rounded-full bg-ola-accent/10 py-0.5 pr-2 pl-1 text-xs font-semibold text-ola-accent-dark">
+                          <CharmIcon className="h-3.5 w-3.5" />
                           {t('gift.charmGain', {
                             value: formatKen(item.charmPoints),
                           })}
@@ -171,7 +173,8 @@ export function GiftHistoryPage({
                         </span>
                       )}
                       {!received && (item.senderCharmPoints ?? 0) > 0 && (
-                        <span className="rounded-full bg-ola-accent/10 px-2 py-0.5 text-xs font-semibold text-ola-accent-dark">
+                        <span className="flex items-center gap-1 rounded-full bg-ola-accent/10 py-0.5 pr-2 pl-1 text-xs font-semibold text-ola-accent-dark">
+                          <CharmIcon className="h-3.5 w-3.5" />
                           {t('gift.charmGain', {
                             value: formatKen(item.senderCharmPoints ?? 0),
                           })}

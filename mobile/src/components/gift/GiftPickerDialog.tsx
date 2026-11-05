@@ -15,6 +15,7 @@ import {
   GIFT_TILE_GAP,
 } from './constants';
 import { GIFT_ASSETS } from './giftAssets';
+import { CharmIcon } from './CharmIcon';
 
 export interface GiftReceiver {
   id: string;
@@ -119,16 +120,22 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
               ken: formatKen(total),
             })}
           </Text>
-          <Text className="text-center text-sm" style={{ color: TEXT_SECONDARY }}>
-            {t('gift.receiverCharmGain', {
-              name: receiver.name,
-              value: formatKen(selected.charmPoints * quantity),
-            })}
-          </Text>
-          {senderGain > 0 && (
-            <Text className="text-center text-sm" style={{ color: TEXT_SECONDARY }}>
-              {t('gift.senderCharmGain', { value: formatKen(senderGain) })}
+          <View className="flex-row items-center justify-center" style={{ gap: 4 }}>
+            <CharmIcon />
+            <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
+              {t('gift.receiverCharmGain', {
+                name: receiver.name,
+                value: formatKen(selected.charmPoints * quantity),
+              })}
             </Text>
+          </View>
+          {senderGain > 0 && (
+            <View className="flex-row items-center justify-center" style={{ gap: 4 }}>
+              <CharmIcon />
+              <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
+                {t('gift.senderCharmGain', { value: formatKen(senderGain) })}
+              </Text>
+            </View>
           )}
         </View>
       </Dialog>

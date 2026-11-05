@@ -10,6 +10,7 @@ import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import vipStoreIcon from '@/assets/icons/me/icon_vip.webp';
 import {
   Avatar,
+  CharmIcon,
   ImageCropEditor,
   ImageCropOverlay,
   UserName,
@@ -307,7 +308,7 @@ export function ProfileCard({
       </button>
 
       <p className="mt-1 flex items-center justify-center gap-1 text-sm text-ola-accent-dark">
-        <span aria-hidden="true">✨</span>
+        <CharmIcon className="h-5 w-5" />
         <span>{t('gift.charmCount', { value: formatKen(profile.charm) })}</span>
       </p>
 

@@ -13,6 +13,7 @@ import { GIFT_HEADER_GRADIENT } from '@components/gift/constants';
 import { DIVIDER, TEXT_PRIMARY } from '@constants';
 import { GiftWallSection } from '@screens/profile/components/GiftWallSection';
 import { CARD_SHADOW } from '@screens/profile/constants';
+import { CharmIcon } from '@components/gift/CharmIcon';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftHome'>;
 
@@ -53,7 +54,10 @@ export function GiftHomeScreen({ navigation }: Props) {
           <Text className="text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
             {t('gift.charm')}
           </Text>
-          <Text className="mt-1 text-3xl font-bold text-white">{`✨ ${formatKen(charm)}`}</Text>
+          <View className="mt-1 flex-row items-center justify-center" style={{ gap: 8 }}>
+            <CharmIcon size={34} />
+            <Text className="text-3xl font-bold text-white">{formatKen(charm)}</Text>
+          </View>
         </View>
 
         <View className="mb-2 bg-white" style={CARD_SHADOW}>

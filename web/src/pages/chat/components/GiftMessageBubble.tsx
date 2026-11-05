@@ -2,6 +2,7 @@ import type { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatKen, giftDisplayName, randomUuid } from '@lib';
 import type { GiftMessageMetadata } from '@app-types';
+import { CharmIcon } from '@components';
 import { useGiftAnimationStore } from '@/store/giftAnimationStore';
 
 interface GiftMessageBubbleProps {
@@ -62,7 +63,8 @@ export function GiftMessageBubble({
             )}
           </span>
           {charmGain > 0 && (
-            <span className="text-[11px] font-medium whitespace-nowrap text-ola-accent-dark">
+            <span className="flex items-center gap-0.5 text-[11px] font-medium whitespace-nowrap text-ola-accent-dark">
+              <CharmIcon className="h-3.5 w-3.5" />
               {t('gift.charmGain', { value: formatKen(charmGain) })}
             </span>
           )}

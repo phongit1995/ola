@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useGiftPicker } from '@ola/shared/stores/gift/useGiftPicker';
 import { cn, formatKen, giftDisplayName, senderCharmGain } from '@lib';
 import type { GiftSource, SendGiftResult } from '@app-types';
-import giftIcon from '@/assets/games/spin-wheel/gift-list/gift-box.webp';
+import giftIcon from '@/assets/icons/apps/gift.webp';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import { Avatar } from '../ui/Avatar';
+import { CharmIcon } from './CharmIcon';
 import { Dialog, DialogButton } from '../ui/Dialog';
 import { Spinner } from '../ui/Spinner';
 import { UserRow } from '../ui/UserRow';
@@ -130,14 +131,16 @@ function GiftPickerContent({
                     {t('gift.quantityTimes', { count: quantity })}
                   </span>
                 </p>
-                <span className="rounded-full bg-ola-accent/10 px-2 py-0.5 text-xs font-semibold text-ola-accent-dark">
+                <span className="flex items-center gap-1 rounded-full bg-ola-accent/10 py-0.5 pr-2 pl-1 text-xs font-semibold text-ola-accent-dark">
+                  <CharmIcon />
                   {t('gift.receiverCharmGain', {
                     name: receiver.name,
                     value: formatKen(selected.charmPoints * quantity),
                   })}
                 </span>
                 {senderGain > 0 && (
-                  <span className="rounded-full bg-ola-warning/12 px-2 py-0.5 text-xs font-semibold text-ola-warning">
+                  <span className="flex items-center gap-1 rounded-full bg-ola-warning/12 py-0.5 pr-2 pl-1 text-xs font-semibold text-ola-warning">
+                    <CharmIcon />
                     {t('gift.senderCharmGain', {
                       value: formatKen(senderGain),
                     })}

@@ -21,6 +21,7 @@ import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { GIFT_ACCENT, GIFT_ACCENT_DARK, GIFT_HEADER_GRADIENT } from '@components/gift/constants';
 import { DIVIDER, TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { CharmIcon } from '@components/gift/CharmIcon';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftLeaderboard'>;
 
@@ -55,9 +56,12 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
             @{item.user.username}
           </Text>
         </View>
-        <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
-          {valueText(item.value)}
-        </Text>
+        <View className="flex-row items-center" style={{ gap: 4 }}>
+          {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
+          <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
+            {valueText(item.value)}
+          </Text>
+        </View>
       </View>
     );
   }
@@ -165,9 +169,12 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
           <Text className="flex-1 text-base font-bold" style={{ color: TEXT_PRIMARY }}>
             {board.me.rank > 0 ? `#${board.me.rank}` : t('gift.leaderboard.notRanked')}
           </Text>
-          <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
-            {valueText(board.me.value)}
-          </Text>
+          <View className="flex-row items-center" style={{ gap: 4 }}>
+            {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
+            <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
+              {valueText(board.me.value)}
+            </Text>
+          </View>
         </View>
       )}
     </View>

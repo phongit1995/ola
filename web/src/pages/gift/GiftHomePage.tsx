@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FullScreenOverlay, ScreenHeader } from '@components';
+import { CharmIcon, FullScreenOverlay, ScreenHeader } from '@components';
 import { colorForName, formatKen } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { GiftWallSection } from '../profile/components/GiftWallSection';
@@ -60,8 +60,8 @@ export function GiftHomePage({ onClose }: GiftHomePageProps) {
       <div className="flex-1 overflow-y-auto pb-4">
         <div className="mx-2 mt-2 rounded-lg bg-linear-to-br from-ola-accent to-ola-marriage px-4 py-5 text-center text-white shadow-sm">
           <p className="text-sm text-white/85">{t('gift.charm')}</p>
-          <p className="mt-1 text-3xl font-bold">
-            <span aria-hidden="true">✨ </span>
+          <p className="mt-1 flex items-center justify-center gap-2 text-3xl font-bold">
+            <CharmIcon className="h-9 w-9" />
             {formatKen(charm)}
           </p>
         </div>

@@ -19,6 +19,7 @@ import type { OpenProfileHandler, OpenViewerHandler } from '../types';
 import { RelationButtons } from './RelationButtons';
 import { GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { GENDER } from '@ola/shared/constants';
+import { CharmIcon } from '@components/gift/CharmIcon';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
 const kissIcon = require('@assets/icons/profile/sticker_kiss.png');
@@ -288,9 +289,12 @@ export function ProfileCard({
         </Text>
       </Pressable>
 
-      <Text className="mt-1 text-center text-sm" style={{ color: GIFT_ACCENT_DARK }}>
-        {`✨ ${t('gift.charmCount', { value: formatKen(profile.charm ?? 0) })}`}
-      </Text>
+      <View className="mt-1 flex-row items-center justify-center" style={{ gap: 4 }}>
+        <CharmIcon size={18} />
+        <Text className="text-sm" style={{ color: GIFT_ACCENT_DARK }}>
+          {t('gift.charmCount', { value: formatKen(profile.charm ?? 0) })}
+        </Text>
+      </View>
 
       {profile.bio != null && profile.bio !== '' && (
         <Text
