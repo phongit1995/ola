@@ -252,8 +252,8 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                           {name}
                         </p>
                       )}
-                      <p className="mt-1 text-sm leading-snug text-black/87">
-                        {message}
+                      <p className="mt-1 flex items-center gap-1 text-sm leading-snug text-black/87">
+                        <span className="min-w-0">{message}</span>
                         {badge != null && (
                           <img
                             src={
@@ -266,8 +266,8 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                             alt=""
                             className={
                               badgeIsVipIcon
-                                ? 'ml-1 inline-block h-6 w-6 object-contain align-middle'
-                                : 'ml-1 inline-block h-4 w-4 object-contain align-middle'
+                                ? '-my-1 h-6 w-6 shrink-0 object-contain'
+                                : 'h-4 w-4 shrink-0 object-contain'
                             }
                           />
                         )}

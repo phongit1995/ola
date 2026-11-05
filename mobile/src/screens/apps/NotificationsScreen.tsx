@@ -206,7 +206,9 @@ export function NotificationsScreen() {
                     )}
                     {badge?.kind === 'vip' &&
                       (badge.vipTypeId != null ? (
-                        <VipIcon typeId={badge.vipTypeId} size={24} />
+                        <View style={{ marginVertical: -4 }}>
+                          <VipIcon typeId={badge.vipTypeId} size={24} />
+                        </View>
                       ) : (
                         <Image source={icVip} style={{ width: 16, height: 16 }} resizeMode="contain" />
                       ))}
