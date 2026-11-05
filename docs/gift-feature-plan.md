@@ -28,7 +28,7 @@ Ngoài phạm vi (để sau): tặng trong phòng chat, tặng dưới bài Me/k
 
 ## 3. Dữ liệu (PostgreSQL)
 
-Migration mới, version **lớn hơn mọi môi trường** (mới nhất hiện tại `20261101000002`) → dùng `2026110500000x_add_gifts`. Không sửa migration đã chạy.
+Migration mới, version **lớn hơn mọi môi trường** → gộp chung vào `20261105000001_add_moderation_gifts_megaphones` (cùng loa, điểm vi phạm, KEN game theo ghế). Không sửa migration đã chạy.
 
 ```sql
 CREATE TABLE gifts (

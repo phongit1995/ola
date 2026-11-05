@@ -1,3 +1,54 @@
+ALTER TABLE public.users
+    ADD COLUMN IF NOT EXISTS locked_until timestamp with time zone,
+    ADD COLUMN IF NOT EXISTS lock_reason character varying(20) DEFAULT ''::character varying NOT NULL;
+
+CREATE TABLE IF NOT EXISTS public.user_violations (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    source character varying(20) NOT NULL,
+    target_type character varying(20) NOT NULL,
+    target_id character varying(64) NOT NULL,
+    report_id uuid,
+    reason character varying(20) NOT NULL,
+    severity character varying(20) NOT NULL,
+    points smallint DEFAULT 0 NOT NULL,
+    content_removed boolean DEFAULT false NOT NULL,
+    note text DEFAULT ''::text NOT NULL,
+    admin_id uuid,
+    revoked_at timestamp with time zone,
+    revoked_by uuid,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT user_violations_pkey PRIMARY KEY (id),
+    CONSTRAINT user_violations_source_check CHECK (((source)::text = ANY ((ARRAY['report'::character varying, 'me_hide'::character varying, 'megaphone_remove'::character varying])::text[]))),
+    CONSTRAINT user_violations_severity_check CHECK (((severity)::text = ANY ((ARRAY['none'::character varying, 'violation'::character varying, 'deliberate'::character varying])::text[]))),
+    CONSTRAINT user_violations_points_check CHECK ((points >= 0)),
+    CONSTRAINT fk_user_violations_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_violations_report FOREIGN KEY (report_id) REFERENCES public.reports(id) ON DELETE SET NULL,
+    CONSTRAINT fk_user_violations_admin FOREIGN KEY (admin_id) REFERENCES public.admin_users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_user_violations_revoked_by FOREIGN KEY (revoked_by) REFERENCES public.admin_users(id) ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_user_violations_content ON public.user_violations USING btree (target_type, target_id) WHERE ((revoked_at IS NULL) AND (points > 0) AND ((target_type)::text <> 'account'::text));
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_user_violations_report ON public.user_violations USING btree (report_id) WHERE ((report_id IS NOT NULL) AND (revoked_at IS NULL) AND (points > 0));
+
+CREATE INDEX IF NOT EXISTS idx_user_violations_user_created ON public.user_violations USING btree (user_id, created_at DESC);
+
+ALTER TABLE public.me
+    ADD COLUMN IF NOT EXISTS hidden_by character varying(10),
+    ADD COLUMN IF NOT EXISTS hidden_at timestamp with time zone;
+
+ALTER TABLE public.me DROP CONSTRAINT IF EXISTS me_hidden_by_check;
+
+ALTER TABLE public.me
+    ADD CONSTRAINT me_hidden_by_check CHECK (((hidden_by IS NULL) OR ((hidden_by)::text = ANY ((ARRAY['owner'::character varying, 'admin'::character varying, 'clan'::character varying])::text[]))));
+
+ALTER TABLE public.game_matches DROP CONSTRAINT IF EXISTS game_matches_ken_delta_check;
+
+ALTER TABLE public.game_matches
+    ADD CONSTRAINT game_matches_ken_delta_check
+    CHECK (ken_delta >= 0 AND ken_delta::bigint <= bet::bigint * GREATEST(player_count - 1, 1));
+
 CREATE TABLE IF NOT EXISTS public.gifts (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name character varying(60) NOT NULL,
@@ -7,12 +58,15 @@ CREATE TABLE IF NOT EXISTS public.gifts (
     charm_points integer NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     sort_order integer DEFAULT 0 NOT NULL,
+    animation character varying(20) DEFAULT 'random'::character varying NOT NULL,
+    sender_charm_percent smallint DEFAULT 50 NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at timestamp with time zone,
     CONSTRAINT gifts_pkey PRIMARY KEY (id),
     CONSTRAINT gifts_ken_price_check CHECK ((ken_price > 0)),
-    CONSTRAINT gifts_charm_points_check CHECK ((charm_points >= 0))
+    CONSTRAINT gifts_charm_points_check CHECK ((charm_points >= 0)),
+    CONSTRAINT gifts_sender_charm_percent_range CHECK ((sender_charm_percent >= 0 AND sender_charm_percent <= 100))
 );
 
 CREATE INDEX IF NOT EXISTS idx_gifts_deleted_at ON public.gifts USING btree (deleted_at);
@@ -28,6 +82,7 @@ CREATE TABLE IF NOT EXISTS public.gift_transactions (
     unit_price integer NOT NULL,
     total_ken integer NOT NULL,
     charm_points integer NOT NULL,
+    sender_charm_points integer DEFAULT 0 NOT NULL,
     source character varying(20) NOT NULL,
     conversation_id uuid,
     message_id character varying(64) DEFAULT ''::character varying NOT NULL,
@@ -64,6 +119,9 @@ CREATE TABLE IF NOT EXISTS public.user_gift_wall (
 ALTER TABLE public.users
     ADD COLUMN IF NOT EXISTS charm integer DEFAULT 0 NOT NULL;
 
+ALTER TABLE public.user_settings
+    ADD COLUMN IF NOT EXISTS gift_wall_privacy smallint DEFAULT 0 NOT NULL;
+
 CREATE TABLE IF NOT EXISTS public.megaphones (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     sender_id uuid NOT NULL,
@@ -94,8 +152,3 @@ ALTER TABLE public.reports DROP CONSTRAINT IF EXISTS reports_target_type_check;
 
 ALTER TABLE public.reports
     ADD CONSTRAINT reports_target_type_check CHECK (((target_type)::text = ANY ((ARRAY['account'::character varying, 'post'::character varying, 'comment'::character varying, 'story_comment'::character varying, 'message'::character varying, 'room_message'::character varying, 'moment'::character varying, 'megaphone'::character varying])::text[])));
-
-ALTER TABLE public.user_violations DROP CONSTRAINT IF EXISTS user_violations_source_check;
-
-ALTER TABLE public.user_violations
-    ADD CONSTRAINT user_violations_source_check CHECK (((source)::text = ANY ((ARRAY['report'::character varying, 'me_hide'::character varying, 'megaphone_remove'::character varying])::text[])));

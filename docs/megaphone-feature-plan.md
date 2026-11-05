@@ -31,7 +31,7 @@ Ngoài phạm vi (để sau): loa trong game, loa có ảnh/sticker, loa "nổi 
 
 ## 3. Dữ liệu (PostgreSQL)
 
-Bảng loa nằm chung migration với quà: `20261105000001_add_gifts_and_megaphones` (gộp ngày 04/11 khi cả hai chưa chạy ở dev/prod). Không sửa migration đã chạy. Migration này còn mở rộng 2 CHECK cũ: `reports.target_type` thêm `megaphone`, `user_violations.source` thêm `megaphone_remove`.
+Bảng loa nằm chung migration với quà, khoá tài khoản theo điểm vi phạm và ràng buộc KEN game theo ghế: `20261105000001_add_moderation_gifts_megaphones` (gộp 05/11 khi chưa chạy ở prod; dev phải chạy file down của migration gộp + đặt `schema_migrations` về `20261030000002` trước khi deploy). Không sửa migration đã chạy. Migration này mở rộng CHECK cũ `reports.target_type` thêm `megaphone`; bảng `user_violations` tạo trong cùng file nên `source` có sẵn `megaphone_remove`.
 
 ```sql
 CREATE TABLE megaphones (
