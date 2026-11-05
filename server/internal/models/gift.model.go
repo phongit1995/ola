@@ -1,5 +1,7 @@
 package models
 
+const GiftAnimationRandom = "random"
+
 type Gift struct {
 	BaseModel
 	Name        string `gorm:"type:varchar(60);not null"`
@@ -9,6 +11,7 @@ type Gift struct {
 	CharmPoints int    `gorm:"not null"`
 	IsActive    bool   `gorm:"not null"`
 	SortOrder   int    `gorm:"not null;default:0"`
+	Animation   string `gorm:"type:varchar(20);not null;default:'random'"`
 }
 
 func (Gift) TableName() string {

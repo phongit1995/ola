@@ -14,6 +14,7 @@ type GiftItem struct {
 	CharmPoints int    `json:"charmPoints" example:"10"`
 	IsActive    bool   `json:"isActive" example:"true"`
 	SortOrder   int    `json:"sortOrder" example:"0"`
+	Animation   string `json:"animation" example:"random"`
 	CreatedAt   string `json:"createdAt" example:"2026-11-05T10:00:00Z"`
 	UpdatedAt   string `json:"updatedAt" example:"2026-11-05T10:00:00Z"`
 }
@@ -30,6 +31,7 @@ type CreateGiftRequest struct {
 	CharmPoints int    `json:"charmPoints" binding:"min=0,max=100000000" example:"10"`
 	IsActive    *bool  `json:"isActive" example:"true"`
 	SortOrder   int    `json:"sortOrder" example:"0"`
+	Animation   string `json:"animation" binding:"omitempty,oneof=random fly drop spin zoom float swing pop flip heartbeat jelly tornado slide" example:"random"`
 }
 
 type UpdateGiftRequest struct {
@@ -40,6 +42,7 @@ type UpdateGiftRequest struct {
 	CharmPoints *int    `json:"charmPoints" binding:"omitempty,min=0,max=100000000" example:"10"`
 	IsActive    *bool   `json:"isActive" example:"true"`
 	SortOrder   *int    `json:"sortOrder" example:"0"`
+	Animation   *string `json:"animation" binding:"omitempty,oneof=random fly drop spin zoom float swing pop flip heartbeat jelly tornado slide" example:"random"`
 }
 
 type TransactionItem struct {

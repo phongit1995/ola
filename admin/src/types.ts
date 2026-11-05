@@ -1,5 +1,6 @@
 import type {
   ChatBotType,
+  GiftAnimationSetting,
   MomentHiddenBy,
   MomentOverlay,
   MomentReactionCount,
@@ -2761,6 +2762,7 @@ export interface AdminGift {
   charmPoints: number
   isActive: boolean
   sortOrder: number
+  animation: GiftAnimationSetting
   createdAt: string
   updatedAt: string
 }
@@ -2773,6 +2775,7 @@ export interface CreateGiftRequest {
   charmPoints: number
   isActive?: boolean
   sortOrder?: number
+  animation?: GiftAnimationSetting
 }
 
 export type UpdateGiftRequest = Partial<CreateGiftRequest>

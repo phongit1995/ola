@@ -33,6 +33,7 @@ export function GiftWallSection({
     play({
       id: randomUuid(),
       imageUrl: item.gift.imageUrl,
+      animation: item.gift.animation,
       name: giftDisplayName(item.gift, i18n.language),
       quantity: item.quantity,
       charmPoints: item.gift.charmPoints * item.quantity,

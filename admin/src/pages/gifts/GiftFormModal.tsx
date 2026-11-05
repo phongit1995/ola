@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Switch, Upload } from 'antd'
+import { App, Button, Form, Image, Input, InputNumber, Modal, Select, Space, Switch, Upload } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import { useCreateGift, useUpdateGift } from './useGiftQueries'
-import { GIFT_KEN_PRICE_MAX } from './constants'
+import { GIFT_ANIMATION_OPTIONS, GIFT_KEN_PRICE_MAX } from './constants'
+import { GIFT_ANIMATION_RANDOM } from '@ola/shared/constants'
 import { AdminUploadService } from '@/services/adminUpload.service'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
@@ -38,6 +39,7 @@ export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
         charmPoints: gift?.charmPoints ?? 10,
         sortOrder: gift?.sortOrder ?? 0,
         isActive: gift?.isActive ?? true,
+        animation: gift?.animation ?? GIFT_ANIMATION_RANDOM,
       })
     }
   }, [open, gift, form])
@@ -185,6 +187,13 @@ export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
             <Switch />
           </Form.Item>
         </Space.Compact>
+        <Form.Item
+          name="animation"
+          label="Hiệu ứng khi tặng"
+          extra="Ngẫu nhiên: mỗi lần tặng chọn một kiểu bất kỳ trong 12 kiểu."
+        >
+          <Select options={GIFT_ANIMATION_OPTIONS} />
+        </Form.Item>
       </Form>
     </Modal>
   )

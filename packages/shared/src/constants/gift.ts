@@ -1,4 +1,6 @@
 import type {
+  GiftAnimationKey,
+  GiftAnimationSetting,
   GiftHistoryDirection,
   GiftLeaderboardPeriod,
   GiftLeaderboardType,
@@ -56,6 +58,23 @@ export const GIFT_HISTORY_PAGE_SIZE = 20;
 export const GIFT_LEADERBOARD_LIMIT = 50;
 export const GIFT_LEADERBOARD_PODIUM_SIZE = 3;
 export const GIFT_ANIMATION_DURATION_MS = 2_400;
+
+export const GIFT_ANIMATION_RANDOM = 'random' satisfies GiftAnimationSetting;
+
+export const GIFT_ANIMATION_KEYS: readonly GiftAnimationKey[] = [
+  'fly',
+  'drop',
+  'spin',
+  'zoom',
+  'float',
+  'swing',
+  'pop',
+  'flip',
+  'heartbeat',
+  'jelly',
+  'tornado',
+  'slide',
+];
 export const GIFT_INCOMING_RECENT_MS = 15_000;
 
 export const DEFAULT_GIFT_SETTINGS: GiftSettings = {

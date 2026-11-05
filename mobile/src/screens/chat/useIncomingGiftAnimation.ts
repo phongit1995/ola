@@ -19,6 +19,7 @@ export function useIncomingGiftAnimation(messages: Message[], myId: string, send
     play({
       id: gift.transactionId !== '' ? gift.transactionId : last.id,
       imageUrl: gift.imageUrl,
+      animation: gift.animation,
       name,
       quantity: gift.quantity,
       charmPoints: gift.charmPoints,

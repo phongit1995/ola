@@ -13,8 +13,11 @@ import {
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { GiftFormModal } from './GiftFormModal'
 import { useDeleteGift, useGifts, useUpdateGift } from './useGiftQueries'
+import { GIFT_ANIMATION_LABEL } from './constants'
+import { GIFT_ANIMATION_RANDOM } from '@ola/shared/constants'
 import { errorMessage } from '@/lib/apiError'
 import { formatCount } from '@/lib/format'
+import type { GiftAnimationSetting } from '@ola/shared/types'
 import type { AdminGift } from '@/types'
 
 const GIFT_THUMB_SIZE = 44
@@ -103,6 +106,12 @@ export function GiftsPage() {
       width: 120,
       align: 'right',
       render: (value: number) => formatCount(value),
+    },
+    {
+      title: 'Hiệu ứng',
+      dataIndex: 'animation',
+      width: 170,
+      render: (value: GiftAnimationSetting) => GIFT_ANIMATION_LABEL[value] ?? GIFT_ANIMATION_LABEL[GIFT_ANIMATION_RANDOM],
     },
     {
       title: 'Thứ tự',

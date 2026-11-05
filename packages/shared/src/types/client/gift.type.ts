@@ -1,5 +1,7 @@
 import type {
   Gift,
+  GiftAnimationKey,
+  GiftAnimationSetting,
   GiftHistoryDirection,
   GiftHistoryItem,
   GiftLeaderboardPeriod,
@@ -28,11 +30,13 @@ export interface GiftAnimationItem {
   charmPoints: number;
   caption?: string;
   seed?: number;
+  animation?: GiftAnimationSetting | GiftAnimationKey;
 }
 
 export interface GiftAnimationState {
   queue: GiftAnimationItem[];
   seen: Set<string>;
+  lastAnimation: GiftAnimationKey | null;
   play: (item: GiftAnimationItem) => void;
   next: () => void;
 }

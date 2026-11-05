@@ -77,6 +77,7 @@ func ToGiftItem(g *models.Gift) GiftItem {
 		ImageURL:    g.ImageURL,
 		KenPrice:    g.KenPrice,
 		CharmPoints: g.CharmPoints,
+		Animation:   g.Animation,
 	}
 }
 
@@ -214,7 +215,7 @@ func (s *Service) replay(existing *models.GiftTransaction, giftID, receiverID uu
 		return nil, err
 	}
 	if gift == nil {
-		gift = &models.Gift{BaseModel: models.BaseModel{ID: existing.GiftID}, Name: existing.GiftName, ImageURL: existing.GiftImageURL, KenPrice: existing.UnitPrice}
+		gift = &models.Gift{BaseModel: models.BaseModel{ID: existing.GiftID}, Name: existing.GiftName, ImageURL: existing.GiftImageURL, KenPrice: existing.UnitPrice, Animation: models.GiftAnimationRandom}
 	}
 	ken, charm, err := s.repo.Balances(existing.SenderID, existing.ReceiverID)
 	if err != nil {
@@ -272,6 +273,7 @@ func (s *Service) sendGiftMessage(gift *models.Gift, tx *models.GiftTransaction)
 		GiftName:      tx.GiftName,
 		GiftNameEn:    gift.NameEn,
 		ImageURL:      tx.GiftImageURL,
+		Animation:     gift.Animation,
 		Quantity:      tx.Quantity,
 		CharmPoints:   tx.CharmPoints,
 	})
@@ -351,6 +353,7 @@ func (s *Service) Wall(viewerID, userID uuid.UUID) (*GiftWallResponse, error) {
 				Name:        row.Name,
 				NameEn:      row.NameEn,
 				ImageURL:    row.ImageURL,
+				Animation:   row.Animation,
 				KenPrice:    row.KenPrice,
 				CharmPoints: row.CharmPoints,
 			},
@@ -386,6 +389,22 @@ func (s *Service) userBriefs(ids []uuid.UUID) map[uuid.UUID]GiftUserBrief {
 	return out
 }
 
+func (s *Service) giftAnimations(items []models.GiftTransaction) map[uuid.UUID]string {
+	ids := make([]uuid.UUID, 0, len(items))
+	seen := make(map[uuid.UUID]bool, len(items))
+	for i := range items {
+		if !seen[items[i].GiftID] {
+			seen[items[i].GiftID] = true
+			ids = append(ids, items[i].GiftID)
+		}
+	}
+	animations, err := s.repo.GiftAnimations(ids)
+	if err != nil {
+		s.logger.Warnw("Failed to load gift animations for history", "error", err.Error())
+	}
+	return animations
+}
+
 func (s *Service) History(userID uuid.UUID, direction, cursor string, limit int) (*GiftHistoryResponse, error) {
 	cursorAt, cursorID, err := utils.DecodeTimeCursor(cursor)
 	if err != nil {
@@ -404,21 +423,23 @@ func (s *Service) History(userID uuid.UUID, direction, cursor string, limit int)
 		ids = append(ids, counterpartyOf(&items[i], direction))
 	}
 	briefs := s.userBriefs(ids)
+	animations := s.giftAnimations(items)
 	out := make([]GiftHistoryItem, 0, len(items))
 	for i := range items {
 		t := &items[i]
 		out = append(out, GiftHistoryItem{
-			ID:           t.ID.String(),
-			Counterparty: briefs[counterpartyOf(t, direction)],
-			GiftID:       t.GiftID.String(),
-			GiftName:     t.GiftName,
-			GiftImageURL: t.GiftImageURL,
-			Quantity:     t.Quantity,
-			TotalKen:     t.TotalKen,
-			CharmPoints:  t.CharmPoints,
-			Note:         t.Note,
-			Source:       t.Source,
-			CreatedAt:    t.CreatedAt.UTC().Format(time.RFC3339),
+			ID:            t.ID.String(),
+			Counterparty:  briefs[counterpartyOf(t, direction)],
+			GiftID:        t.GiftID.String(),
+			GiftName:      t.GiftName,
+			GiftImageURL:  t.GiftImageURL,
+			GiftAnimation: animations[t.GiftID],
+			Quantity:      t.Quantity,
+			TotalKen:      t.TotalKen,
+			CharmPoints:   t.CharmPoints,
+			Note:          t.Note,
+			Source:        t.Source,
+			CreatedAt:     t.CreatedAt.UTC().Format(time.RFC3339),
 		})
 	}
 	resp := &GiftHistoryResponse{Items: out}

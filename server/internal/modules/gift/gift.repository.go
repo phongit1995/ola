@@ -47,6 +47,7 @@ type WallRow struct {
 	ImageURL    string
 	KenPrice    int
 	CharmPoints int
+	Animation   string
 	Quantity    int
 }
 
@@ -245,12 +246,27 @@ func (r *Repository) SetMessage(txID uuid.UUID, conversationID uuid.UUID, messag
 func (r *Repository) Wall(receiverID uuid.UUID) ([]WallRow, error) {
 	var rows []WallRow
 	err := r.db.Table("user_gift_wall AS w").
-		Select("w.gift_id, g.name, g.name_en, g.image_url, g.ken_price, g.charm_points, w.quantity").
+		Select("w.gift_id, g.name, g.name_en, g.image_url, g.ken_price, g.charm_points, g.animation, w.quantity").
 		Joins("JOIN gifts g ON g.id = w.gift_id").
 		Where("w.receiver_id = ? AND w.quantity > 0", receiverID).
 		Order("g.ken_price DESC, w.last_received_at DESC").
 		Scan(&rows).Error
 	return rows, err
+}
+
+func (r *Repository) GiftAnimations(ids []uuid.UUID) (map[uuid.UUID]string, error) {
+	out := make(map[uuid.UUID]string, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+	var gifts []models.Gift
+	if err := r.db.Unscoped().Select("id", "animation").Where("id IN ?", ids).Find(&gifts).Error; err != nil {
+		return out, err
+	}
+	for _, g := range gifts {
+		out[g.ID] = g.Animation
+	}
+	return out, nil
 }
 
 func (r *Repository) GiftWallPrivacy(userID uuid.UUID) (int16, error) {

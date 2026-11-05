@@ -252,14 +252,14 @@ export function GiftAnimationOverlay() {
 
   if (current == null) return null;
 
-  const variant = variantForAnimation(current.id, current.seed);
+  const { key, variant } = variantForAnimation(current.animation);
 
   return createPortal(
     <div
       key={current.id}
       aria-live="polite"
       aria-label={current.caption ?? current.name}
-      data-gift-animation={variant.key}
+      data-gift-animation={key}
       className="pointer-events-none fixed inset-0 z-[130] flex items-center justify-center overflow-hidden"
     >
       <div className="relative flex items-center justify-center">

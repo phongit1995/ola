@@ -65,6 +65,7 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
       playAnimation({
         id: result.transactionId,
         imageUrl: result.gift.imageUrl,
+        animation: result.gift.animation,
         name: selectedName,
         quantity: result.quantity,
         charmPoints: result.charmPoints,

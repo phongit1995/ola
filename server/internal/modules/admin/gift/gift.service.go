@@ -31,6 +31,7 @@ func toGiftItem(g *models.Gift) GiftItem {
 		CharmPoints: g.CharmPoints,
 		IsActive:    g.IsActive,
 		SortOrder:   g.SortOrder,
+		Animation:   g.Animation,
 		CreatedAt:   g.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:   g.UpdatedAt.UTC().Format(time.RFC3339),
 	}
@@ -53,6 +54,10 @@ func (s *Service) Create(req CreateGiftRequest) (*GiftItem, error) {
 	if req.IsActive != nil {
 		active = *req.IsActive
 	}
+	animation := req.Animation
+	if animation == "" {
+		animation = models.GiftAnimationRandom
+	}
 	g := &models.Gift{
 		Name:        strings.TrimSpace(req.Name),
 		NameEn:      strings.TrimSpace(req.NameEn),
@@ -61,6 +66,7 @@ func (s *Service) Create(req CreateGiftRequest) (*GiftItem, error) {
 		CharmPoints: req.CharmPoints,
 		IsActive:    active,
 		SortOrder:   req.SortOrder,
+		Animation:   animation,
 	}
 	if err := s.giftRepo.Create(g); err != nil {
 		return nil, err
@@ -95,6 +101,9 @@ func (s *Service) Update(id uuid.UUID, req UpdateGiftRequest) (*GiftItem, error)
 	}
 	if req.SortOrder != nil {
 		g.SortOrder = *req.SortOrder
+	}
+	if req.Animation != nil {
+		g.Animation = *req.Animation
 	}
 	if g.Name == "" {
 		return nil, ErrGiftNameRequired

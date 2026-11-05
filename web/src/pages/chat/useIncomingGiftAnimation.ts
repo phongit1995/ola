@@ -19,6 +19,7 @@ export function useIncomingGiftAnimation(bubbles: ChatMessage[], senderName: str
     play({
       id: last.gift.transactionId !== '' ? last.gift.transactionId : last.id,
       imageUrl: last.gift.imageUrl,
+      animation: last.gift.animation,
       name,
       quantity: last.gift.quantity,
       charmPoints: last.gift.charmPoints,

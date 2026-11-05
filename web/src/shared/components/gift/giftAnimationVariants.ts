@@ -1,3 +1,6 @@
+import { isGiftAnimationKey } from '@lib';
+import type { GiftAnimationKey } from '@app-types';
+
 export type GiftEffect =
   | 'rays'
   | 'sparks'
@@ -12,87 +15,31 @@ export type GiftEffect =
   | 'rainbow';
 
 export interface GiftAnimationVariant {
-  key: string;
   giftClass: string;
   effects: GiftEffect[];
 }
 
-const DEFAULT_VARIANT: GiftAnimationVariant = {
-  key: 'fly',
-  giftClass: 'animate-gift-fly',
-  effects: ['rays', 'sparks'],
+export const GIFT_ANIMATION_VARIANTS: Record<GiftAnimationKey, GiftAnimationVariant> = {
+  fly: { giftClass: 'animate-gift-fly', effects: ['rays', 'sparks'] },
+  drop: { giftClass: 'animate-gift-drop', effects: ['ring', 'confetti'] },
+  spin: { giftClass: 'animate-gift-spin', effects: ['rays', 'ring'] },
+  zoom: { giftClass: 'animate-gift-zoom', effects: ['glow', 'sparks'] },
+  float: { giftClass: 'animate-gift-float', effects: ['glow', 'hearts'] },
+  swing: { giftClass: 'animate-gift-swing', effects: ['glow', 'confetti'] },
+  pop: { giftClass: 'animate-gift-pop', effects: ['firework', 'stars'] },
+  flip: { giftClass: 'animate-gift-flip', effects: ['rainbow', 'sparks'] },
+  heartbeat: { giftClass: 'animate-gift-heartbeat', effects: ['ring', 'hearts'] },
+  jelly: { giftClass: 'animate-gift-jelly', effects: ['bubbles', 'stars'] },
+  tornado: { giftClass: 'animate-gift-tornado', effects: ['rays', 'petals'] },
+  slide: { giftClass: 'animate-gift-slide', effects: ['firework', 'confetti'] },
 };
 
-export const GIFT_ANIMATION_VARIANTS: GiftAnimationVariant[] = [
-  DEFAULT_VARIANT,
-  {
-    key: 'drop',
-    giftClass: 'animate-gift-drop',
-    effects: ['ring', 'confetti'],
-  },
-  { key: 'spin', giftClass: 'animate-gift-spin', effects: ['rays', 'ring'] },
-  { key: 'zoom', giftClass: 'animate-gift-zoom', effects: ['glow', 'sparks'] },
-  {
-    key: 'float',
-    giftClass: 'animate-gift-float',
-    effects: ['glow', 'hearts'],
-  },
-  {
-    key: 'swing',
-    giftClass: 'animate-gift-swing',
-    effects: ['glow', 'confetti'],
-  },
-  { key: 'pop', giftClass: 'animate-gift-pop', effects: ['firework', 'stars'] },
-  {
-    key: 'flip',
-    giftClass: 'animate-gift-flip',
-    effects: ['rainbow', 'sparks'],
-  },
-  {
-    key: 'heartbeat',
-    giftClass: 'animate-gift-heartbeat',
-    effects: ['ring', 'hearts'],
-  },
-  {
-    key: 'jelly',
-    giftClass: 'animate-gift-jelly',
-    effects: ['bubbles', 'stars'],
-  },
-  {
-    key: 'tornado',
-    giftClass: 'animate-gift-tornado',
-    effects: ['rays', 'petals'],
-  },
-  {
-    key: 'slide',
-    giftClass: 'animate-gift-slide',
-    effects: ['firework', 'confetti'],
-  },
-];
-
-const ASSIGNED_LIMIT = 50;
-const assignedVariants = new Map<string, GiftAnimationVariant>();
-let lastVariantKey = '';
-
-export function variantForAnimation(
-  id: string,
-  seed: number | undefined
-): GiftAnimationVariant {
-  const cached = assignedVariants.get(id);
-  if (cached != null) return cached;
-  const count = GIFT_ANIMATION_VARIANTS.length;
-  let index = Math.min(Math.floor((seed ?? 0) * count), count - 1);
-  if (GIFT_ANIMATION_VARIANTS[index]?.key === lastVariantKey) {
-    index = (index + 1) % count;
-  }
-  const variant = GIFT_ANIMATION_VARIANTS[index] ?? DEFAULT_VARIANT;
-  assignedVariants.set(id, variant);
-  lastVariantKey = variant.key;
-  if (assignedVariants.size > ASSIGNED_LIMIT) {
-    const oldest = assignedVariants.keys().next().value;
-    if (oldest != null) assignedVariants.delete(oldest);
-  }
-  return variant;
+export function variantForAnimation(animation: string | undefined): {
+  key: GiftAnimationKey;
+  variant: GiftAnimationVariant;
+} {
+  const key = isGiftAnimationKey(animation) ? animation : 'fly';
+  return { key, variant: GIFT_ANIMATION_VARIANTS[key] };
 }
 
 export const GIFT_SPARKS = [

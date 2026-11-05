@@ -6,6 +6,22 @@ export type GiftLeaderboardPeriod = 'week' | 'month' | 'all';
 
 export type GiftHistoryDirection = 'received' | 'sent';
 
+export type GiftAnimationKey =
+  | 'fly'
+  | 'drop'
+  | 'spin'
+  | 'zoom'
+  | 'float'
+  | 'swing'
+  | 'pop'
+  | 'flip'
+  | 'heartbeat'
+  | 'jelly'
+  | 'tornado'
+  | 'slide';
+
+export type GiftAnimationSetting = GiftAnimationKey | 'random';
+
 export interface Gift {
   id: string;
   name: string;
@@ -13,6 +29,7 @@ export interface Gift {
   imageUrl: string;
   kenPrice: number;
   charmPoints: number;
+  animation?: GiftAnimationSetting;
 }
 
 export interface GiftSettings {
@@ -58,6 +75,7 @@ export interface GiftMessageMetadata {
   giftName: string;
   giftNameEn?: string;
   imageUrl: string;
+  animation?: GiftAnimationSetting;
   quantity: number;
   charmPoints: number;
   note?: string;
@@ -91,6 +109,7 @@ export interface GiftHistoryItem {
   giftId: string;
   giftName: string;
   giftImageUrl: string;
+  giftAnimation?: GiftAnimationSetting;
   quantity: number;
   totalKen: number;
   charmPoints: number;

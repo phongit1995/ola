@@ -28,6 +28,7 @@ export function GiftMessageBubble({
     play({
       id: randomUuid(),
       imageUrl: gift.imageUrl,
+      animation: gift.animation,
       name,
       quantity: gift.quantity,
       charmPoints: gift.charmPoints,

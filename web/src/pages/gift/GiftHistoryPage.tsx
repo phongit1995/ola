@@ -41,6 +41,7 @@ export function GiftHistoryPage({
     play({
       id: randomUuid(),
       imageUrl: item.giftImageUrl,
+      animation: item.giftAnimation,
       name: item.giftName,
       quantity: item.quantity,
       charmPoints: item.charmPoints,
