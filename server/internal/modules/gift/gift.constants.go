@@ -32,6 +32,4 @@ const (
 	HistoryDirectionSent     = "sent"
 
 	KenRefTypeUser = "user"
-
-	MessageNoteSeparator = " — "
 )

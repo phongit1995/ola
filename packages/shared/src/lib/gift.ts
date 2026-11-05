@@ -31,7 +31,10 @@ export function isRecentGift(createdAt: string | undefined, now: number): boolea
   return !Number.isNaN(time) && now - time <= GIFT_INCOMING_RECENT_MS;
 }
 
-export function parseGiftMessageMetadata(metadata?: string | null): GiftMessageMetadata | null {
+export function parseGiftMessageMetadata(
+  metadata?: string | null,
+  content?: string | null
+): GiftMessageMetadata | null {
   if (metadata == null || metadata === '') return null;
   try {
     const parsed: unknown = JSON.parse(metadata);
@@ -47,11 +50,16 @@ export function parseGiftMessageMetadata(metadata?: string | null): GiftMessageM
       imageUrl: meta.imageUrl,
       quantity: meta.quantity,
       charmPoints: typeof meta.charmPoints === 'number' ? meta.charmPoints : 0,
-      note: typeof meta.note === 'string' && meta.note !== '' ? meta.note : undefined,
+      note: content?.trim() || undefined,
     };
   } catch {
     return null;
   }
+}
+
+export function giftMessagePreview(metadata?: string | null): string {
+  const gift = parseGiftMessageMetadata(metadata);
+  return gift != null ? `🎁 ${gift.giftName} ×${gift.quantity}` : '🎁';
 }
 
 export function giftErrorText(t: TFunction, error: unknown): string {

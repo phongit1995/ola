@@ -83,6 +83,11 @@ type CallMetadata struct {
 	DurationSeconds int    `json:"durationSeconds"`
 }
 
+type GiftPreviewMetadata struct {
+	GiftName string `json:"giftName"`
+	Quantity int    `json:"quantity"`
+}
+
 type AudioMetadata struct {
 	URL      string    `json:"url"`
 	MimeType string    `json:"mimeType"`

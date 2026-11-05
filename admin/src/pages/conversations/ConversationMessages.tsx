@@ -6,7 +6,7 @@ import { errorMessage } from '@/lib/apiError'
 import { reactionLabel } from '@/pages/rooms/utils'
 import type { AdminConversationMessage } from '@/types'
 import { useConversationMessages } from './useConversationQueries'
-import { callLabel, messageMeta } from './utils'
+import { callLabel, giftLabel, messageMeta } from './utils'
 
 interface ConversationMessagesProps {
   conversationId: string
@@ -41,6 +41,16 @@ function MessageBody({ message }: { message: AdminConversationMessage }) {
       )
     case 'call':
       return <span>{callLabel(meta)}</span>
+    case 'gift':
+      return (
+        <>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {meta.imageUrl && <img src={meta.imageUrl} alt="" style={{ width: 40, height: 40, objectFit: 'contain' }} />}
+            {giftLabel(meta)}
+          </span>
+          {message.content && <div style={{ padding: '6px 0 0' }}>{message.content}</div>}
+        </>
+      )
     default:
       return <>{message.content}</>
   }

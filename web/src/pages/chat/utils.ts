@@ -113,7 +113,7 @@ export function toBubble(message: Message, myId: string): ChatMessage {
   const isCall = message.type === MESSAGE_TYPE.call;
   const gift =
     message.type === MESSAGE_TYPE.gift
-      ? parseGiftMessageMetadata(message.metadata)
+      ? parseGiftMessageMetadata(message.metadata, message.content)
       : null;
   const meta =
     isImage || isAudio || isCall ? parseMessageMetadata(message.metadata) : {};

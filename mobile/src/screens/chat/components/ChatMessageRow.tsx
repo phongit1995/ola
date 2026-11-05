@@ -297,7 +297,7 @@ export function ChatBubble({
   }
 
   if (message.type === MESSAGE_TYPE.gift) {
-    const gift = parseGiftMessageMetadata(message.metadata);
+    const gift = parseGiftMessageMetadata(message.metadata, message.content);
     if (gift != null) {
       return <GiftMessageBubble gift={gift} isOut={fromMe} cornerClass={cornerClass} />;
     }

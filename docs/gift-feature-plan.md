@@ -128,9 +128,9 @@ Response: `{ transactionId, kenBalance, receiverCharm, messageId? }`.
 ### 4.3 Tin nhắn loại `gift`
 
 - `constants.MessageTypeGift = "gift"` ở [internal/constants/message.go](../server/internal/constants/message.go). **Không** thêm vào `oneof` của DTO client.
-- `GiftMetadata { transactionId, giftId, giftName, imageUrl, quantity, charmPoints, note }`.
-- `content` = câu dự phòng, vd `🎁 Đã tặng Hoa hồng ×5 — chúc mừng sinh nhật`. **Bắt buộc có**: app bản cũ gặp type lạ sẽ rơi xuống nhánh render text (mobile `ChatMessageRow` chỉ tách `call`), nên vẫn đọc được thay vì bong bóng rỗng.
-- `previewForType` + `validateMessageContent` thêm nhánh `gift`; [admin conversation.service.go](../server/internal/modules/admin/conversation/conversation.service.go) thêm nhánh hiển thị.
+- `GiftMetadata { transactionId, giftId, giftName, giftNameEn, imageUrl, quantity, charmPoints }`: chỉ thông tin giao dịch.
+- `content` = lời nhắn của người tặng (rỗng nếu không nhắn). Client đọc lời nhắn từ `content` (`parseGiftMessageMetadata(metadata, content)`). App bản cũ không biết type `gift` sẽ chỉ hiện lời nhắn, hoặc bong bóng rỗng khi không có lời nhắn.
+- `previewForType` thêm nhánh `gift` → `🎁 {tên} ×{số}` từ metadata (dùng cho tin cuối + push); client `previewOf` cũng tạo từ metadata qua `giftMessagePreview`; [admin conversation.service.go](../server/internal/modules/admin/conversation/conversation.service.go) thêm nhánh hiển thị.
 - Không cho sửa tin `gift` (như `call`). Cho xoá phía mình như tin thường; xoá tin không hoàn KEN.
 
 ### 4.4 Bảng xếp hạng

@@ -9,15 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestGiftMessageContent(t *testing.T) {
-	if got := GiftMessageContent("Hoa hồng", 5, ""); got != "🎁 Đã tặng Hoa hồng ×5" {
-		t.Fatalf("unexpected content without note: %q", got)
-	}
-	if got := GiftMessageContent("Hoa hồng", 1, "chúc mừng"); got != "🎁 Đã tặng Hoa hồng ×1 — chúc mừng" {
-		t.Fatalf("unexpected content with note: %q", got)
-	}
-}
-
 func TestSameRequestComparesGiftReceiverAndQuantity(t *testing.T) {
 	giftID, receiverID := uuid.New(), uuid.New()
 	existing := &models.GiftTransaction{GiftID: giftID, ReceiverID: receiverID, Quantity: 3}

@@ -56,7 +56,6 @@ type GiftMessageMetadata struct {
 	ImageURL      string `json:"imageUrl"`
 	Quantity      int    `json:"quantity"`
 	CharmPoints   int    `json:"charmPoints"`
-	Note          string `json:"note,omitempty"`
 }
 
 type GiftUserBrief struct {

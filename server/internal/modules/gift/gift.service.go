@@ -123,14 +123,6 @@ func (s *Service) Catalog() (*GiftCatalogResponse, error) {
 	return &GiftCatalogResponse{Items: items, Settings: toSettingsView(s.giftConfig())}, nil
 }
 
-func GiftMessageContent(giftName string, quantity int, note string) string {
-	content := fmt.Sprintf("🎁 Đã tặng %s ×%d", giftName, quantity)
-	if note != "" {
-		content += MessageNoteSeparator + note
-	}
-	return content
-}
-
 func giftPreview(giftName string, quantity int) string {
 	return fmt.Sprintf("🎁 %s ×%d", giftName, quantity)
 }
@@ -282,7 +274,6 @@ func (s *Service) sendGiftMessage(gift *models.Gift, tx *models.GiftTransaction)
 		ImageURL:      tx.GiftImageURL,
 		Quantity:      tx.Quantity,
 		CharmPoints:   tx.CharmPoints,
-		Note:          tx.Note,
 	})
 	if err != nil {
 		s.logger.Errorw("Failed to marshal gift message metadata", "transaction_id", tx.ID, "error", err.Error())
@@ -292,7 +283,7 @@ func (s *Service) sendGiftMessage(gift *models.Gift, tx *models.GiftTransaction)
 		tx.SenderID,
 		tx.ReceiverID,
 		constants.MessageTypeGift,
-		GiftMessageContent(tx.GiftName, tx.Quantity, tx.Note),
+		tx.Note,
 		string(meta),
 		"gift:"+tx.ClientRequestID,
 	)
