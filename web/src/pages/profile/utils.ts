@@ -44,6 +44,7 @@ export function mapPublicProfile(
     joinDate: `${deps.joinedLabel} ${deps.formatDate(data.createdAt)}`,
     isSelf: data.relationship?.status === 'self',
     canViewVipStore: data.canViewVipStore !== false,
+    canViewGiftWall: data.canViewGiftWall !== false,
   };
 }
 

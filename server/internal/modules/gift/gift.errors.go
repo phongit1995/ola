@@ -16,4 +16,5 @@ var (
 	ErrGiftInvalidQuantity     = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "invalid gift quantity", ErrorCodeGiftInvalidQuantity)
 	ErrGiftNoteTooLong         = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "gift note is too long", ErrorCodeGiftNoteTooLong)
 	ErrGiftRequestConflict     = utils.NewHTTPErrorWithCode(http.StatusConflict, "gift request id was used for another gift", ErrorCodeGiftRequestConflict)
+	ErrGiftWallPrivate         = utils.NewHTTPErrorWithCode(http.StatusForbidden, "gift wall is private", ErrorCodeGiftWallPrivate)
 )

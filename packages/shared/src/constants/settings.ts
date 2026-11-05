@@ -12,4 +12,5 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   soundKen: true,
   fontSize: 'medium',
   wallpaperUrl: '',
+  giftWallPrivacy: 0,
 };

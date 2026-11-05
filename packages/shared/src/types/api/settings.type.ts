@@ -4,6 +4,7 @@ export type MessagePrivacy = 'all' | 'friends';
 export type MeVisibility = 'all' | 'friends';
 export type CommentPrivacy = 'all' | 'friends';
 export type FontSize = 'small' | 'medium' | 'large';
+export type GiftWallPrivacy = 0 | 1 | 2;
 
 export interface UserSettings {
   messagePrivacy: MessagePrivacy;
@@ -17,6 +18,7 @@ export interface UserSettings {
   soundKen: boolean;
   fontSize: FontSize;
   wallpaperUrl: string;
+  giftWallPrivacy: GiftWallPrivacy;
 }
 
 export type UpdateSettingsRequest = Partial<UserSettings>;

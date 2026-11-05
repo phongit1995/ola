@@ -18,6 +18,7 @@ const (
 	ErrorCodeGiftInvalidQuantity     = "GIFT_INVALID_QUANTITY"
 	ErrorCodeGiftNoteTooLong         = "GIFT_NOTE_TOO_LONG"
 	ErrorCodeGiftRequestConflict     = "GIFT_REQUEST_CONFLICT"
+	ErrorCodeGiftWallPrivate         = "GIFT_WALL_PRIVATE"
 
 	LeaderboardTypeSender   = "sender"
 	LeaderboardTypeReceiver = "receiver"

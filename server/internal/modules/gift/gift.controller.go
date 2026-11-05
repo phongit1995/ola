@@ -68,14 +68,19 @@ func (ctrl *Controller) Send(c *gin.Context) (interface{}, error) {
 // @Security     BearerAuth
 // @Param        id path string true "User ID"
 // @Success      200  {object}  GiftWallSuccessResponse
+// @Failure      403  {object}  utils.APIError
 // @Failure      404  {object}  utils.APIError
 // @Router       /gifts/users/{id}/wall [get]
 func (ctrl *Controller) Wall(c *gin.Context) (interface{}, error) {
+	viewerID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
 	id, err := utils.ParseUUIDParam(c, "id", "invalid user id")
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.Wall(id)
+	resp, err := ctrl.service.Wall(viewerID, id)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

@@ -64,6 +64,7 @@ func toUserSettingsResponse(setting *models.UserSetting) *UserSettingsResponse {
 		FontSize:        setting.FontSize,
 		WallpaperURL:    setting.WallpaperURL,
 		VipStorePrivacy: setting.VipStorePrivacy,
+		GiftWallPrivacy: setting.GiftWallPrivacy,
 	}
 }
 
@@ -139,6 +140,9 @@ func (s *Service) UpdateSettings(userID uuid.UUID, req *UpdateSettingsRequest) (
 	}
 	if req.WallpaperURL != nil {
 		setting.WallpaperURL = *req.WallpaperURL
+	}
+	if req.GiftWallPrivacy != nil {
+		setting.GiftWallPrivacy = *req.GiftWallPrivacy
 	}
 
 	if err := s.repo.UpsertSettings(setting); err != nil {

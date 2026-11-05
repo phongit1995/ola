@@ -36,6 +36,7 @@ export interface PublicProfile {
   followingCount: number;
   canViewInterested: boolean;
   canViewVipStore: boolean;
+  canViewGiftWall?: boolean;
   antiCount: number;
   isOnline: boolean;
   lastActiveAt?: string;

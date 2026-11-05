@@ -303,12 +303,38 @@ func (s *Service) sendGiftMessage(gift *models.Gift, tx *models.GiftTransaction)
 	tx.MessageID = msg.ID
 }
 
-func (s *Service) Wall(userID uuid.UUID) (*GiftWallResponse, error) {
+func (s *Service) ensureCanViewWall(viewerID, ownerID uuid.UUID) error {
+	if viewerID == ownerID {
+		return nil
+	}
+	privacy, err := s.repo.GiftWallPrivacy(ownerID)
+	if err != nil {
+		return err
+	}
+	switch privacy {
+	case models.SettingGiftWallPrivacyOnlyMe:
+		return ErrGiftWallPrivate
+	case models.SettingGiftWallPrivacyFriends:
+		friends, err := s.relRepo.AreFriends(viewerID, ownerID)
+		if err != nil {
+			return err
+		}
+		if !friends {
+			return ErrGiftWallPrivate
+		}
+	}
+	return nil
+}
+
+func (s *Service) Wall(viewerID, userID uuid.UUID) (*GiftWallResponse, error) {
 	charm, err := s.repo.UserCharm(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
+		return nil, err
+	}
+	if err := s.ensureCanViewWall(viewerID, userID); err != nil {
 		return nil, err
 	}
 	rows, err := s.repo.Wall(userID)

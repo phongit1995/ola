@@ -200,13 +200,15 @@ export function UserProfileScreen({
             onOpenProfile={onOpenProfile}
           />
 
-          <GiftWallSection
-            userId={profile.id}
-            isSelf={isSelf}
-            refreshKey={giftWallKey}
-            onOpenLeaderboard={onOpenGiftLeaderboard}
-            onOpenHistory={onOpenGiftHistory}
-          />
+          {profile.canViewGiftWall !== false && (
+            <GiftWallSection
+              userId={profile.id}
+              isSelf={isSelf}
+              refreshKey={giftWallKey}
+              onOpenLeaderboard={onOpenGiftLeaderboard}
+              onOpenHistory={onOpenGiftHistory}
+            />
+          )}
 
           <FollowingPreviewCard
             users={followingUsers}

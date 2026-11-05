@@ -51,6 +51,7 @@ export interface UserProfile {
   joinDate: string;
   isSelf: boolean;
   canViewVipStore: boolean;
+  canViewGiftWall: boolean;
 }
 
 export interface ProfileSecondary {

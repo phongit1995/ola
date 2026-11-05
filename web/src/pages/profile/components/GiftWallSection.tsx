@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGiftWall } from '@ola/shared/stores/gift/useGiftWall';
-import { formatKen, giftDisplayName } from '@lib';
+import { formatKen, giftDisplayName, randomUuid } from '@lib';
+import type { GiftWallItem } from '@app-types';
+import { useGiftAnimationStore } from '@/store/giftAnimationStore';
 import { GIFT_WALL_PREVIEW_COUNT } from '../constants';
 
 interface GiftWallSectionProps {
   userId: string;
   isSelf: boolean;
   refreshKey: number;
-  onOpenLeaderboard?: () => void;
   onOpenHistory?: () => void;
 }
 
@@ -16,17 +17,27 @@ export function GiftWallSection({
   userId,
   isSelf,
   refreshKey,
-  onOpenLeaderboard,
   onOpenHistory,
 }: GiftWallSectionProps) {
   const { t, i18n } = useTranslation();
   const wall = useGiftWall(userId, refreshKey);
   const [expanded, setExpanded] = useState(false);
+  const play = useGiftAnimationStore((s) => s.play);
 
   if (wall == null) return null;
 
   const items = expanded ? wall.items : wall.items.slice(0, GIFT_WALL_PREVIEW_COUNT);
   const hiddenCount = wall.items.length - items.length;
+
+  function replay(item: GiftWallItem) {
+    play({
+      id: randomUuid(),
+      imageUrl: item.gift.imageUrl,
+      name: giftDisplayName(item.gift, i18n.language),
+      quantity: item.quantity,
+      charmPoints: item.gift.charmPoints * item.quantity,
+    });
+  }
 
   return (
     <section className="mx-2 mt-2 rounded-lg bg-white px-3 py-3 shadow-sm">
@@ -45,13 +56,13 @@ export function GiftWallSection({
             {t('gift.wall.history')}
           </button>
         )}
-        {onOpenLeaderboard != null && (
+        {hiddenCount > 0 && (
           <button
             type="button"
-            onClick={onOpenLeaderboard}
+            onClick={() => setExpanded(true)}
             className="text-xs font-medium text-ola-accent-dark active:opacity-70"
           >
-            {t('gift.wall.leaderboard')}
+            {t('profile.viewAll')}
           </button>
         )}
       </div>
@@ -61,34 +72,30 @@ export function GiftWallSection({
       ) : (
         <ul className="mt-2 grid grid-cols-5 gap-x-1 gap-y-2">
           {items.map((item) => (
-            <li key={item.gift.id} className="flex flex-col items-center">
-              <span className="relative">
-                <img
-                  src={item.gift.imageUrl}
-                  alt={giftDisplayName(item.gift, i18n.language)}
-                  loading="lazy"
-                  className="h-11 w-11 object-contain"
-                />
-                <span className="absolute -right-2 -bottom-1 rounded-full bg-ola-accent px-1 text-[10px] leading-4 font-bold text-white">
-                  {t('gift.quantityTimes', { count: item.quantity })}
+            <li key={item.gift.id}>
+              <button
+                type="button"
+                onClick={() => replay(item)}
+                className="flex w-full flex-col items-center rounded-lg transition-transform active:scale-90"
+              >
+                <span className="relative">
+                  <img
+                    src={item.gift.imageUrl}
+                    alt={giftDisplayName(item.gift, i18n.language)}
+                    loading="lazy"
+                    className="h-11 w-11 object-contain"
+                  />
+                  <span className="absolute -right-2 -bottom-1 rounded-full bg-ola-accent px-1 text-[10px] leading-4 font-bold text-white">
+                    {t('gift.quantityTimes', { count: item.quantity })}
+                  </span>
                 </span>
-              </span>
-              <span className="mt-1 w-full truncate text-center text-[11px] text-black/54">
-                {giftDisplayName(item.gift, i18n.language)}
-              </span>
+                <span className="mt-1 w-full truncate text-center text-[11px] text-black/54">
+                  {giftDisplayName(item.gift, i18n.language)}
+                </span>
+              </button>
             </li>
           ))}
         </ul>
-      )}
-
-      {hiddenCount > 0 && (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="mt-2 w-full text-center text-xs font-medium text-ola-primary-darker active:opacity-70"
-        >
-          {t('profile.viewAll')}
-        </button>
       )}
     </section>
   );

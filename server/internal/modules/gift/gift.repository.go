@@ -253,6 +253,15 @@ func (r *Repository) Wall(receiverID uuid.UUID) ([]WallRow, error) {
 	return rows, err
 }
 
+func (r *Repository) GiftWallPrivacy(userID uuid.UUID) (int16, error) {
+	var setting models.UserSetting
+	err := r.db.Select("gift_wall_privacy").First(&setting, "user_id = ?", userID).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return models.SettingGiftWallPrivacyAll, nil
+	}
+	return setting.GiftWallPrivacy, err
+}
+
 func (r *Repository) UserCharm(userID uuid.UUID) (int, error) {
 	var u models.User
 	if err := r.db.Select("charm").First(&u, "id = ?", userID).Error; err != nil {

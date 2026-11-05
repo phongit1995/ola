@@ -25,7 +25,6 @@ import { ProfileFollowing } from './components/ProfileFollowing';
 import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { PeerVipStoreDialog } from './components/PeerVipStoreDialog';
 import { GiftWallSection } from './components/GiftWallSection';
-import { GiftLeaderboardPage } from '../gift/GiftLeaderboardPage';
 import { GiftHistoryPage } from '../gift/GiftHistoryPage';
 import { EditProfileMePage } from './EditProfileMePage';
 import type {
@@ -72,7 +71,6 @@ export function ProfilePage({
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftWallKey, setGiftWallKey] = useState(0);
-  const [giftLeaderboardOpen, setGiftLeaderboardOpen] = useState(false);
   const [giftHistoryOpen, setGiftHistoryOpen] = useState(false);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
   const loadGiftCatalog = useGiftCatalogStore((s) => s.load);
@@ -139,13 +137,14 @@ export function ProfilePage({
               : undefined
           }
         />
-        <GiftWallSection
-          userId={userId}
-          isSelf={profile.isSelf}
-          refreshKey={giftWallKey}
-          onOpenLeaderboard={() => setGiftLeaderboardOpen(true)}
-          onOpenHistory={() => setGiftHistoryOpen(true)}
-        />
+        {profile.canViewGiftWall && (
+          <GiftWallSection
+            userId={userId}
+            isSelf={profile.isSelf}
+            refreshKey={giftWallKey}
+            onOpenHistory={() => setGiftHistoryOpen(true)}
+          />
+        )}
         {secondary.media.length > 0 && (
           <ProfileMediaStore media={secondary.media} />
         )}
@@ -238,13 +237,6 @@ export function ProfilePage({
             actions.applyCharm(result.receiverCharm);
             setGiftWallKey((key) => key + 1);
           }}
-        />
-      )}
-
-      {giftLeaderboardOpen && (
-        <GiftLeaderboardPage
-          z={60}
-          onClose={() => setGiftLeaderboardOpen(false)}
         />
       )}
 
