@@ -47,6 +47,9 @@ export function GiftHistoryScreen({ navigation }: Props) {
             {received
               ? t('gift.charmGain', { value: formatKen(item.charmPoints) })
               : t('gift.kenAmount', { ken: formatKen(item.totalKen) })}
+            {!received && (item.senderCharmPoints ?? 0) > 0
+              ? ` · ${t('gift.charmGain', { value: formatKen(item.senderCharmPoints ?? 0) })}`
+              : ''}
           </Text>
         </View>
         <CachedImage uri={item.giftImageUrl} style={{ width: 48, height: 48 }} resizeMode="contain" />

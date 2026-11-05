@@ -2521,7 +2521,8 @@
     "giftLabel": "Quà tặng",
     "edit": "Chỉnh sửa",
     "sendWithTotal": "Tặng · {{ken}} KEN",
-    "receiverCharmGain": "{{name}} được +{{value}} sức hút"
+    "receiverCharmGain": "{{name}} được +{{value}} sức hút",
+    "senderCharmGain": "Bạn được +{{value}} sức hút"
   },
   "megaphone": {
     "title": "Loa",

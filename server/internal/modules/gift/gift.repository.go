@@ -127,6 +127,7 @@ func (r *Repository) Balances(senderID, receiverID uuid.UUID) (int, int, error) 
 func (r *Repository) Send(p SendParams) (*SendResult, error) {
 	total := p.Gift.KenPrice * p.Quantity
 	charm := p.Gift.CharmPoints * p.Quantity
+	senderCharm := charm * p.Gift.SenderCharmPercent / 100
 	result := &SendResult{}
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
@@ -161,28 +162,33 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 
 		now := time.Now().UTC()
 		record := models.GiftTransaction{
-			ID:              uuid.New(),
-			SenderID:        p.SenderID,
-			ReceiverID:      p.ReceiverID,
-			GiftID:          p.Gift.ID,
-			GiftName:        p.Gift.Name,
-			GiftImageURL:    p.Gift.ImageURL,
-			Quantity:        p.Quantity,
-			UnitPrice:       p.Gift.KenPrice,
-			TotalKen:        total,
-			CharmPoints:     charm,
-			Source:          p.Source,
-			ConversationID:  p.ConversationID,
-			Note:            p.Note,
-			ClientRequestID: p.ClientRequestID,
-			CreatedAt:       now,
+			ID:                uuid.New(),
+			SenderID:          p.SenderID,
+			ReceiverID:        p.ReceiverID,
+			GiftID:            p.Gift.ID,
+			GiftName:          p.Gift.Name,
+			GiftImageURL:      p.Gift.ImageURL,
+			Quantity:          p.Quantity,
+			UnitPrice:         p.Gift.KenPrice,
+			TotalKen:          total,
+			CharmPoints:       charm,
+			SenderCharmPoints: senderCharm,
+			Source:            p.Source,
+			ConversationID:    p.ConversationID,
+			Note:              p.Note,
+			ClientRequestID:   p.ClientRequestID,
+			CreatedAt:         now,
 		}
 		if err := tx.Create(&record).Error; err != nil {
 			return err
 		}
 
 		senderAfter := sender.Ken - total
-		if err := tx.Model(&models.User{}).Where("id = ?", p.SenderID).Update("ken", senderAfter).Error; err != nil {
+		senderUpdates := map[string]interface{}{"ken": senderAfter}
+		if senderCharm > 0 {
+			senderUpdates["charm"] = sender.Charm + senderCharm
+		}
+		if err := tx.Model(&models.User{}).Where("id = ?", p.SenderID).Updates(senderUpdates).Error; err != nil {
 			return err
 		}
 		receiverCharm := receiver.Charm + charm
@@ -307,7 +313,23 @@ func leaderboardColumns(boardType string) (string, string) {
 	return "receiver_id", "charm_points"
 }
 
+func (r *Repository) charmEntries(from *time.Time) *gorm.DB {
+	received := r.db.Table("gift_transactions").Select("receiver_id AS user_id, charm_points AS value")
+	sent := r.db.Table("gift_transactions").Select("sender_id AS user_id, sender_charm_points AS value").Where("sender_charm_points > 0")
+	if from != nil {
+		received = received.Where("created_at >= ?", *from)
+		sent = sent.Where("created_at >= ?", *from)
+	}
+	return r.db.Raw("? UNION ALL ?", received, sent)
+}
+
 func (r *Repository) aggregateQuery(boardType string, from *time.Time) *gorm.DB {
+	if boardType == LeaderboardTypeReceiver {
+		return r.db.Table("(?) AS t", r.charmEntries(from)).
+			Select("t.user_id AS user_id, SUM(t.value) AS value").
+			Joins("JOIN users u ON u.id = t.user_id AND u.is_active = true AND u.deleted_at IS NULL").
+			Group("t.user_id")
+	}
 	userCol, valueCol := leaderboardColumns(boardType)
 	q := r.db.Table("gift_transactions AS t").
 		Select(fmt.Sprintf("t.%s AS user_id, SUM(t.%s) AS value", userCol, valueCol)).
@@ -352,11 +374,16 @@ func (r *Repository) Rank(boardType string, from *time.Time, userID uuid.UUID) (
 		return int(ahead) + 1, int64(u.Charm), nil
 	}
 
-	userCol, valueCol := leaderboardColumns(boardType)
 	var mine struct{ Value int64 }
-	q := r.db.Table("gift_transactions").Select(fmt.Sprintf("COALESCE(SUM(%s), 0) AS value", valueCol)).Where(userCol+" = ?", userID)
-	if from != nil {
-		q = q.Where("created_at >= ?", *from)
+	var q *gorm.DB
+	if boardType == LeaderboardTypeReceiver {
+		q = r.db.Table("(?) AS t", r.charmEntries(from)).Select("COALESCE(SUM(t.value), 0) AS value").Where("t.user_id = ?", userID)
+	} else {
+		userCol, valueCol := leaderboardColumns(boardType)
+		q = r.db.Table("gift_transactions").Select(fmt.Sprintf("COALESCE(SUM(%s), 0) AS value", valueCol)).Where(userCol+" = ?", userID)
+		if from != nil {
+			q = q.Where("created_at >= ?", *from)
+		}
 	}
 	if err := q.Scan(&mine).Error; err != nil {
 		return 0, 0, err

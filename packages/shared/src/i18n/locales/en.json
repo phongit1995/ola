@@ -2521,7 +2521,8 @@
     "giftLabel": "Gift",
     "edit": "Edit",
     "sendWithTotal": "Send · {{ken}} KEN",
-    "receiverCharmGain": "{{name}} gets +{{value}} charm"
+    "receiverCharmGain": "{{name}} gets +{{value}} charm",
+    "senderCharmGain": "You get +{{value}} charm"
   },
   "megaphone": {
     "title": "Megaphone",

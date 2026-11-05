@@ -6,17 +6,18 @@ import (
 )
 
 type GiftItem struct {
-	ID          string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Name        string `json:"name" example:"Hoa hồng"`
-	NameEn      string `json:"nameEn" example:"Rose"`
-	ImageURL    string `json:"imageUrl" example:"https://cdn.ola.vn/gifts/rose.png"`
-	KenPrice    int    `json:"kenPrice" example:"10"`
-	CharmPoints int    `json:"charmPoints" example:"10"`
-	IsActive    bool   `json:"isActive" example:"true"`
-	SortOrder   int    `json:"sortOrder" example:"0"`
-	Animation   string `json:"animation" example:"random"`
-	CreatedAt   string `json:"createdAt" example:"2026-11-05T10:00:00Z"`
-	UpdatedAt   string `json:"updatedAt" example:"2026-11-05T10:00:00Z"`
+	ID                 string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Name               string `json:"name" example:"Hoa hồng"`
+	NameEn             string `json:"nameEn" example:"Rose"`
+	ImageURL           string `json:"imageUrl" example:"https://cdn.ola.vn/gifts/rose.png"`
+	KenPrice           int    `json:"kenPrice" example:"10"`
+	CharmPoints        int    `json:"charmPoints" example:"10"`
+	IsActive           bool   `json:"isActive" example:"true"`
+	SortOrder          int    `json:"sortOrder" example:"0"`
+	Animation          string `json:"animation" example:"random"`
+	SenderCharmPercent int    `json:"senderCharmPercent" example:"50"`
+	CreatedAt          string `json:"createdAt" example:"2026-11-05T10:00:00Z"`
+	UpdatedAt          string `json:"updatedAt" example:"2026-11-05T10:00:00Z"`
 }
 
 type GiftListResponse struct {
@@ -24,41 +25,44 @@ type GiftListResponse struct {
 }
 
 type CreateGiftRequest struct {
-	Name        string `json:"name" binding:"required,max=60" example:"Hoa hồng"`
-	NameEn      string `json:"nameEn" binding:"max=60" example:"Rose"`
-	ImageURL    string `json:"imageUrl" binding:"required,url,max=500" example:"https://cdn.ola.vn/gifts/rose.png"`
-	KenPrice    int    `json:"kenPrice" binding:"required,min=1,max=10000000" example:"10"`
-	CharmPoints int    `json:"charmPoints" binding:"min=0,max=100000000" example:"10"`
-	IsActive    *bool  `json:"isActive" example:"true"`
-	SortOrder   int    `json:"sortOrder" example:"0"`
-	Animation   string `json:"animation" binding:"omitempty,oneof=random fly drop spin zoom float swing pop flip heartbeat jelly tornado slide" example:"random"`
+	Name               string `json:"name" binding:"required,max=60" example:"Hoa hồng"`
+	NameEn             string `json:"nameEn" binding:"max=60" example:"Rose"`
+	ImageURL           string `json:"imageUrl" binding:"required,url,max=500" example:"https://cdn.ola.vn/gifts/rose.png"`
+	KenPrice           int    `json:"kenPrice" binding:"required,min=1,max=10000000" example:"10"`
+	CharmPoints        int    `json:"charmPoints" binding:"min=0,max=100000000" example:"10"`
+	IsActive           *bool  `json:"isActive" example:"true"`
+	SortOrder          int    `json:"sortOrder" example:"0"`
+	Animation          string `json:"animation" binding:"omitempty,oneof=random fly drop spin zoom float swing pop flip heartbeat jelly tornado slide" example:"random"`
+	SenderCharmPercent *int   `json:"senderCharmPercent" binding:"omitempty,min=0,max=100" example:"50"`
 }
 
 type UpdateGiftRequest struct {
-	Name        *string `json:"name" binding:"omitempty,max=60" example:"Hoa hồng"`
-	NameEn      *string `json:"nameEn" binding:"omitempty,max=60" example:"Rose"`
-	ImageURL    *string `json:"imageUrl" binding:"omitempty,url,max=500" example:"https://cdn.ola.vn/gifts/rose.png"`
-	KenPrice    *int    `json:"kenPrice" binding:"omitempty,min=1,max=10000000" example:"10"`
-	CharmPoints *int    `json:"charmPoints" binding:"omitempty,min=0,max=100000000" example:"10"`
-	IsActive    *bool   `json:"isActive" example:"true"`
-	SortOrder   *int    `json:"sortOrder" example:"0"`
-	Animation   *string `json:"animation" binding:"omitempty,oneof=random fly drop spin zoom float swing pop flip heartbeat jelly tornado slide" example:"random"`
+	Name               *string `json:"name" binding:"omitempty,max=60" example:"Hoa hồng"`
+	NameEn             *string `json:"nameEn" binding:"omitempty,max=60" example:"Rose"`
+	ImageURL           *string `json:"imageUrl" binding:"omitempty,url,max=500" example:"https://cdn.ola.vn/gifts/rose.png"`
+	KenPrice           *int    `json:"kenPrice" binding:"omitempty,min=1,max=10000000" example:"10"`
+	CharmPoints        *int    `json:"charmPoints" binding:"omitempty,min=0,max=100000000" example:"10"`
+	IsActive           *bool   `json:"isActive" example:"true"`
+	SortOrder          *int    `json:"sortOrder" example:"0"`
+	Animation          *string `json:"animation" binding:"omitempty,oneof=random fly drop spin zoom float swing pop flip heartbeat jelly tornado slide" example:"random"`
+	SenderCharmPercent *int    `json:"senderCharmPercent" binding:"omitempty,min=0,max=100" example:"50"`
 }
 
 type TransactionItem struct {
-	ID           string                `json:"id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Sender       admincommon.UserBrief `json:"sender"`
-	Receiver     admincommon.UserBrief `json:"receiver"`
-	GiftID       string                `json:"giftId" example:"550e8400-e29b-41d4-a716-446655440000"`
-	GiftName     string                `json:"giftName" example:"Hoa hồng"`
-	GiftImageURL string                `json:"giftImageUrl" example:"https://cdn.ola.vn/gifts/rose.png"`
-	Quantity     int                   `json:"quantity" example:"5"`
-	UnitPrice    int                   `json:"unitPrice" example:"10"`
-	TotalKen     int                   `json:"totalKen" example:"50"`
-	CharmPoints  int                   `json:"charmPoints" example:"50"`
-	Source       string                `json:"source" example:"chat"`
-	Note         string                `json:"note,omitempty" example:"Chúc mừng sinh nhật"`
-	CreatedAt    string                `json:"createdAt" example:"2026-11-05T10:00:00Z"`
+	ID                string                `json:"id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Sender            admincommon.UserBrief `json:"sender"`
+	Receiver          admincommon.UserBrief `json:"receiver"`
+	GiftID            string                `json:"giftId" example:"550e8400-e29b-41d4-a716-446655440000"`
+	GiftName          string                `json:"giftName" example:"Hoa hồng"`
+	GiftImageURL      string                `json:"giftImageUrl" example:"https://cdn.ola.vn/gifts/rose.png"`
+	Quantity          int                   `json:"quantity" example:"5"`
+	UnitPrice         int                   `json:"unitPrice" example:"10"`
+	TotalKen          int                   `json:"totalKen" example:"50"`
+	CharmPoints       int                   `json:"charmPoints" example:"50"`
+	SenderCharmPoints int                   `json:"senderCharmPoints" example:"25"`
+	Source            string                `json:"source" example:"chat"`
+	Note              string                `json:"note,omitempty" example:"Chúc mừng sinh nhật"`
+	CreatedAt         string                `json:"createdAt" example:"2026-11-05T10:00:00Z"`
 }
 
 type TransactionListResponse struct {

@@ -70,6 +70,13 @@ const columns: ColumnsType<AdminGiftTransaction> = [
     render: (value: number) => formatCount(value),
   },
   {
+    title: 'Sức hút người tặng',
+    dataIndex: 'senderCharmPoints',
+    width: 150,
+    align: 'right',
+    render: (value: number) => formatCount(value),
+  },
+  {
     title: 'Nơi tặng',
     dataIndex: 'source',
     width: 120,

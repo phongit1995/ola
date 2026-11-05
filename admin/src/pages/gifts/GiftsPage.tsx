@@ -73,6 +73,7 @@ export function GiftsPage() {
     {
       title: 'Quà',
       key: 'gift',
+      width: 190,
       render: (_, gift) => (
         <Space>
           <Image
@@ -96,33 +97,40 @@ export function GiftsPage() {
     {
       title: 'Giá (KEN)',
       dataIndex: 'kenPrice',
-      width: 130,
+      width: 100,
       align: 'right',
       render: (value: number) => formatCount(value),
     },
     {
       title: 'Sức hút',
       dataIndex: 'charmPoints',
-      width: 120,
+      width: 90,
       align: 'right',
       render: (value: number) => formatCount(value),
     },
     {
+      title: 'Người tặng được',
+      dataIndex: 'senderCharmPercent',
+      width: 110,
+      align: 'right',
+      render: (value: number) => (value > 0 ? `${value}%` : 'Tắt'),
+    },
+    {
       title: 'Hiệu ứng',
       dataIndex: 'animation',
-      width: 170,
+      width: 150,
       render: (value: GiftAnimationSetting) => GIFT_ANIMATION_LABEL[value] ?? GIFT_ANIMATION_LABEL[GIFT_ANIMATION_RANDOM],
     },
     {
       title: 'Thứ tự',
       dataIndex: 'sortOrder',
-      width: 90,
+      width: 75,
       align: 'right',
     },
     {
       title: 'Đang bán',
       dataIndex: 'isActive',
-      width: 110,
+      width: 95,
       render: (isActive: boolean, gift) => (
         <Switch
           checked={isActive}
@@ -134,7 +142,7 @@ export function GiftsPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 150,
+      width: 140,
       render: (_, gift) => (
         <Space>
           <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(gift)}>
@@ -162,7 +170,7 @@ export function GiftsPage() {
         columns={columns}
         dataSource={gifts}
         loading={isFetching}
-        scroll={{ x: 760 }}
+        scroll={{ x: 950 }}
         pagination={{ pageSize: 50, showTotal: (total) => `${total} món quà` }}
         locale={{ emptyText: 'Chưa có quà nào, bấm "Thêm quà" để tạo' }}
       />

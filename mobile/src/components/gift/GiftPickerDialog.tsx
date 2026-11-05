@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { formatKen, giftDisplayName, withAlpha } from '@ola/shared/lib';
+import { formatKen, giftDisplayName, senderCharmGain, withAlpha } from '@ola/shared/lib';
 import { useGiftPicker } from '@ola/shared/stores/gift/useGiftPicker';
 import type { Gift, GiftSource, SendGiftResult } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
@@ -89,6 +89,7 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
   } = picker;
 
   if (step === 'confirm' && selected != null) {
+    const senderGain = senderCharmGain(selected, quantity);
     return (
       <Dialog
         visible
@@ -118,6 +119,17 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
               ken: formatKen(total),
             })}
           </Text>
+          <Text className="text-center text-sm" style={{ color: TEXT_SECONDARY }}>
+            {t('gift.receiverCharmGain', {
+              name: receiver.name,
+              value: formatKen(selected.charmPoints * quantity),
+            })}
+          </Text>
+          {senderGain > 0 && (
+            <Text className="text-center text-sm" style={{ color: TEXT_SECONDARY }}>
+              {t('gift.senderCharmGain', { value: formatKen(senderGain) })}
+            </Text>
+          )}
         </View>
       </Dialog>
     );

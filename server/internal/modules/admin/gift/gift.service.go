@@ -23,17 +23,18 @@ func NewService(repo *Repository, giftRepo *giftModule.Repository, giftSvc *gift
 
 func toGiftItem(g *models.Gift) GiftItem {
 	return GiftItem{
-		ID:          g.ID.String(),
-		Name:        g.Name,
-		NameEn:      g.NameEn,
-		ImageURL:    g.ImageURL,
-		KenPrice:    g.KenPrice,
-		CharmPoints: g.CharmPoints,
-		IsActive:    g.IsActive,
-		SortOrder:   g.SortOrder,
-		Animation:   g.Animation,
-		CreatedAt:   g.CreatedAt.UTC().Format(time.RFC3339),
-		UpdatedAt:   g.UpdatedAt.UTC().Format(time.RFC3339),
+		ID:                 g.ID.String(),
+		Name:               g.Name,
+		NameEn:             g.NameEn,
+		ImageURL:           g.ImageURL,
+		KenPrice:           g.KenPrice,
+		CharmPoints:        g.CharmPoints,
+		IsActive:           g.IsActive,
+		SortOrder:          g.SortOrder,
+		Animation:          g.Animation,
+		SenderCharmPercent: g.SenderCharmPercent,
+		CreatedAt:          g.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt:          g.UpdatedAt.UTC().Format(time.RFC3339),
 	}
 }
 
@@ -58,15 +59,20 @@ func (s *Service) Create(req CreateGiftRequest) (*GiftItem, error) {
 	if animation == "" {
 		animation = models.GiftAnimationRandom
 	}
+	senderCharmPercent := models.GiftSenderCharmPercentDefault
+	if req.SenderCharmPercent != nil {
+		senderCharmPercent = *req.SenderCharmPercent
+	}
 	g := &models.Gift{
-		Name:        strings.TrimSpace(req.Name),
-		NameEn:      strings.TrimSpace(req.NameEn),
-		ImageURL:    strings.TrimSpace(req.ImageURL),
-		KenPrice:    req.KenPrice,
-		CharmPoints: req.CharmPoints,
-		IsActive:    active,
-		SortOrder:   req.SortOrder,
-		Animation:   animation,
+		Name:               strings.TrimSpace(req.Name),
+		NameEn:             strings.TrimSpace(req.NameEn),
+		ImageURL:           strings.TrimSpace(req.ImageURL),
+		KenPrice:           req.KenPrice,
+		CharmPoints:        req.CharmPoints,
+		IsActive:           active,
+		SortOrder:          req.SortOrder,
+		Animation:          animation,
+		SenderCharmPercent: senderCharmPercent,
 	}
 	if err := s.giftRepo.Create(g); err != nil {
 		return nil, err
@@ -104,6 +110,9 @@ func (s *Service) Update(id uuid.UUID, req UpdateGiftRequest) (*GiftItem, error)
 	}
 	if req.Animation != nil {
 		g.Animation = *req.Animation
+	}
+	if req.SenderCharmPercent != nil {
+		g.SenderCharmPercent = *req.SenderCharmPercent
 	}
 	if g.Name == "" {
 		return nil, ErrGiftNameRequired
@@ -145,19 +154,20 @@ func (s *Service) ListTransactions(f TransactionFilter, limit, offset int) (*Tra
 	for i := range items {
 		t := &items[i]
 		out = append(out, TransactionItem{
-			ID:           t.ID.String(),
-			Sender:       brief(t.SenderID),
-			Receiver:     brief(t.ReceiverID),
-			GiftID:       t.GiftID.String(),
-			GiftName:     t.GiftName,
-			GiftImageURL: t.GiftImageURL,
-			Quantity:     t.Quantity,
-			UnitPrice:    t.UnitPrice,
-			TotalKen:     t.TotalKen,
-			CharmPoints:  t.CharmPoints,
-			Source:       t.Source,
-			Note:         t.Note,
-			CreatedAt:    t.CreatedAt.UTC().Format(time.RFC3339),
+			ID:                t.ID.String(),
+			Sender:            brief(t.SenderID),
+			Receiver:          brief(t.ReceiverID),
+			GiftID:            t.GiftID.String(),
+			GiftName:          t.GiftName,
+			GiftImageURL:      t.GiftImageURL,
+			Quantity:          t.Quantity,
+			UnitPrice:         t.UnitPrice,
+			TotalKen:          t.TotalKen,
+			CharmPoints:       t.CharmPoints,
+			SenderCharmPoints: t.SenderCharmPoints,
+			Source:            t.Source,
+			Note:              t.Note,
+			CreatedAt:         t.CreatedAt.UTC().Format(time.RFC3339),
 		})
 	}
 	return &TransactionListResponse{

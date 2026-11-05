@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { App, Button, Form, Image, Input, InputNumber, Modal, Select, Space, Switch, Upload } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import { useCreateGift, useUpdateGift } from './useGiftQueries'
-import { GIFT_ANIMATION_OPTIONS, GIFT_KEN_PRICE_MAX } from './constants'
+import { GIFT_ANIMATION_OPTIONS, GIFT_KEN_PRICE_MAX, GIFT_SENDER_CHARM_PERCENT_DEFAULT } from './constants'
 import { GIFT_ANIMATION_RANDOM } from '@ola/shared/constants'
 import { AdminUploadService } from '@/services/adminUpload.service'
 import { errorMessage } from '@/lib/apiError'
@@ -40,6 +40,7 @@ export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
         sortOrder: gift?.sortOrder ?? 0,
         isActive: gift?.isActive ?? true,
         animation: gift?.animation ?? GIFT_ANIMATION_RANDOM,
+        senderCharmPercent: gift?.senderCharmPercent ?? GIFT_SENDER_CHARM_PERCENT_DEFAULT,
       })
     }
   }, [open, gift, form])
@@ -175,6 +176,14 @@ export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
             <InputNumber min={0} precision={0} style={{ width: '100%' }} {...kenNumberInputProps} />
           </Form.Item>
         </Space.Compact>
+        <Form.Item
+          name="senderCharmPercent"
+          label="Sức hút người tặng được (% so với người nhận)"
+          rules={[{ required: true, message: 'Vui lòng nhập %' }]}
+          extra="Ví dụ 50%: người nhận được 30 sức hút thì người tặng được 15 (làm tròn xuống). Đặt 0 để tắt."
+        >
+          <InputNumber min={0} max={100} precision={0} addonAfter="%" style={{ width: '100%' }} />
+        </Form.Item>
         <Space.Compact block>
           <Form.Item
             name="sortOrder"

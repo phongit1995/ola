@@ -170,6 +170,13 @@ export function GiftHistoryPage({
                           −{formatKen(item.totalKen)}
                         </span>
                       )}
+                      {!received && (item.senderCharmPoints ?? 0) > 0 && (
+                        <span className="rounded-full bg-ola-accent/10 px-2 py-0.5 text-xs font-semibold text-ola-accent-dark">
+                          {t('gift.charmGain', {
+                            value: formatKen(item.senderCharmPoints ?? 0),
+                          })}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <button

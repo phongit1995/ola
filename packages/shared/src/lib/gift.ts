@@ -17,6 +17,13 @@ export function giftTotalKen(gift: Pick<Gift, 'kenPrice'>, quantity: number): nu
   return gift.kenPrice * quantity;
 }
 
+export function senderCharmGain(
+  gift: Pick<Gift, 'charmPoints' | 'senderCharmPercent'>,
+  quantity: number
+): number {
+  return Math.floor((gift.charmPoints * quantity * (gift.senderCharmPercent ?? 0)) / 100);
+}
+
 export function canAffordGift(balance: number, gift: Pick<Gift, 'kenPrice'>, quantity: number): boolean {
   return balance >= giftTotalKen(gift, quantity);
 }
@@ -81,6 +88,7 @@ export function parseGiftMessageMetadata(
       animation: toGiftAnimationSetting(meta.animation),
       quantity: meta.quantity,
       charmPoints: typeof meta.charmPoints === 'number' ? meta.charmPoints : 0,
+      senderCharmPoints: typeof meta.senderCharmPoints === 'number' ? meta.senderCharmPoints : undefined,
       note: content?.trim() || undefined,
     };
   } catch {

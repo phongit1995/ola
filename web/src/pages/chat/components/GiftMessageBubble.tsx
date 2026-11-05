@@ -22,6 +22,7 @@ export function GiftMessageBubble({
     i18n.language
   );
   const quantityLabel = t('gift.quantityTimes', { count: gift.quantity });
+  const charmGain = isOut ? (gift.senderCharmPoints ?? 0) : gift.charmPoints;
 
   function replay(event: MouseEvent<HTMLButtonElement>) {
     event.stopPropagation();
@@ -60,9 +61,9 @@ export function GiftMessageBubble({
               <span className="ml-1 text-ola-accent">{quantityLabel}</span>
             )}
           </span>
-          {!isOut && gift.charmPoints > 0 && (
+          {charmGain > 0 && (
             <span className="text-[11px] font-medium whitespace-nowrap text-ola-accent-dark">
-              {t('gift.charmGain', { value: formatKen(gift.charmPoints) })}
+              {t('gift.charmGain', { value: formatKen(charmGain) })}
             </span>
           )}
         </span>

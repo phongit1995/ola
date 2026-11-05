@@ -22,6 +22,7 @@ interface GiftMessageBubbleProps {
 export function GiftMessageBubble({ gift, isOut, cornerClass }: GiftMessageBubbleProps) {
   const { t, i18n } = useTranslation();
   const name = giftDisplayName({ name: gift.giftName, nameEn: gift.giftNameEn }, i18n.language);
+  const charmGain = isOut ? (gift.senderCharmPoints ?? 0) : gift.charmPoints;
   return (
     <View
       className={`overflow-hidden rounded-2xl ${cornerClass}`}
@@ -57,9 +58,9 @@ export function GiftMessageBubble({ gift, isOut, cornerClass }: GiftMessageBubbl
             <Text numberOfLines={1} className="text-base font-bold" style={{ color: GIFT_ACCENT_DARK }}>
               {name}
             </Text>
-            {gift.charmPoints > 0 && (
+            {charmGain > 0 && (
               <Text className="text-xs font-medium" style={{ color: WARNING }}>
-                {t('gift.charmGain', { value: formatKen(gift.charmPoints) })}
+                {t('gift.charmGain', { value: formatKen(charmGain) })}
               </Text>
             )}
           </View>

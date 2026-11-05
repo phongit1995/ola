@@ -3,13 +3,14 @@ package gift
 import "ola-chat-server/internal/utils"
 
 type GiftItem struct {
-	ID          string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Name        string `json:"name" example:"Hoa hồng"`
-	NameEn      string `json:"nameEn,omitempty" example:"Rose"`
-	ImageURL    string `json:"imageUrl" example:"https://cdn.ola.vn/gifts/rose.png"`
-	KenPrice    int    `json:"kenPrice" example:"10"`
-	CharmPoints int    `json:"charmPoints" example:"10"`
-	Animation   string `json:"animation" example:"random"`
+	ID                 string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Name               string `json:"name" example:"Hoa hồng"`
+	NameEn             string `json:"nameEn,omitempty" example:"Rose"`
+	ImageURL           string `json:"imageUrl" example:"https://cdn.ola.vn/gifts/rose.png"`
+	KenPrice           int    `json:"kenPrice" example:"10"`
+	CharmPoints        int    `json:"charmPoints" example:"10"`
+	Animation          string `json:"animation" example:"random"`
+	SenderCharmPercent int    `json:"senderCharmPercent" example:"50"`
 }
 
 type GiftSettingsView struct {
@@ -35,29 +36,31 @@ type SendGiftRequest struct {
 }
 
 type SendGiftResponse struct {
-	TransactionID  string   `json:"transactionId" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Gift           GiftItem `json:"gift"`
-	ReceiverID     string   `json:"receiverId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Quantity       int      `json:"quantity" example:"5"`
-	TotalKen       int      `json:"totalKen" example:"50"`
-	CharmPoints    int      `json:"charmPoints" example:"50"`
-	Note           string   `json:"note,omitempty" example:"Chúc mừng sinh nhật"`
-	KenBalance     int      `json:"kenBalance" example:"950"`
-	ReceiverCharm  int      `json:"receiverCharm" example:"1200"`
-	ConversationID string   `json:"conversationId,omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
-	MessageID      string   `json:"messageId,omitempty" example:"a1b2c3d4-0000-11ef-8000-000000000000"`
-	CreatedAt      string   `json:"createdAt" example:"2026-11-05T10:00:00Z"`
+	TransactionID     string   `json:"transactionId" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Gift              GiftItem `json:"gift"`
+	ReceiverID        string   `json:"receiverId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Quantity          int      `json:"quantity" example:"5"`
+	TotalKen          int      `json:"totalKen" example:"50"`
+	CharmPoints       int      `json:"charmPoints" example:"50"`
+	SenderCharmPoints int      `json:"senderCharmPoints" example:"25"`
+	Note              string   `json:"note,omitempty" example:"Chúc mừng sinh nhật"`
+	KenBalance        int      `json:"kenBalance" example:"950"`
+	ReceiverCharm     int      `json:"receiverCharm" example:"1200"`
+	ConversationID    string   `json:"conversationId,omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
+	MessageID         string   `json:"messageId,omitempty" example:"a1b2c3d4-0000-11ef-8000-000000000000"`
+	CreatedAt         string   `json:"createdAt" example:"2026-11-05T10:00:00Z"`
 }
 
 type GiftMessageMetadata struct {
-	TransactionID string `json:"transactionId"`
-	GiftID        string `json:"giftId"`
-	GiftName      string `json:"giftName"`
-	GiftNameEn    string `json:"giftNameEn,omitempty"`
-	ImageURL      string `json:"imageUrl"`
-	Animation     string `json:"animation,omitempty"`
-	Quantity      int    `json:"quantity"`
-	CharmPoints   int    `json:"charmPoints"`
+	TransactionID     string `json:"transactionId"`
+	GiftID            string `json:"giftId"`
+	GiftName          string `json:"giftName"`
+	GiftNameEn        string `json:"giftNameEn,omitempty"`
+	ImageURL          string `json:"imageUrl"`
+	Animation         string `json:"animation,omitempty"`
+	Quantity          int    `json:"quantity"`
+	CharmPoints       int    `json:"charmPoints"`
+	SenderCharmPoints int    `json:"senderCharmPoints,omitempty"`
 }
 
 type GiftUserBrief struct {
@@ -83,18 +86,19 @@ type GiftWallResponse struct {
 }
 
 type GiftHistoryItem struct {
-	ID            string        `json:"id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Counterparty  GiftUserBrief `json:"counterparty"`
-	GiftID        string        `json:"giftId" example:"550e8400-e29b-41d4-a716-446655440000"`
-	GiftName      string        `json:"giftName" example:"Hoa hồng"`
-	GiftImageURL  string        `json:"giftImageUrl" example:"https://cdn.ola.vn/gifts/rose.png"`
-	GiftAnimation string        `json:"giftAnimation" example:"random"`
-	Quantity      int           `json:"quantity" example:"5"`
-	TotalKen      int           `json:"totalKen" example:"50"`
-	CharmPoints   int           `json:"charmPoints" example:"50"`
-	Note          string        `json:"note,omitempty" example:"Chúc mừng sinh nhật"`
-	Source        string        `json:"source" example:"chat"`
-	CreatedAt     string        `json:"createdAt" example:"2026-11-05T10:00:00Z"`
+	ID                string        `json:"id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Counterparty      GiftUserBrief `json:"counterparty"`
+	GiftID            string        `json:"giftId" example:"550e8400-e29b-41d4-a716-446655440000"`
+	GiftName          string        `json:"giftName" example:"Hoa hồng"`
+	GiftImageURL      string        `json:"giftImageUrl" example:"https://cdn.ola.vn/gifts/rose.png"`
+	GiftAnimation     string        `json:"giftAnimation" example:"random"`
+	Quantity          int           `json:"quantity" example:"5"`
+	TotalKen          int           `json:"totalKen" example:"50"`
+	CharmPoints       int           `json:"charmPoints" example:"50"`
+	SenderCharmPoints int           `json:"senderCharmPoints" example:"25"`
+	Note              string        `json:"note,omitempty" example:"Chúc mừng sinh nhật"`
+	Source            string        `json:"source" example:"chat"`
+	CreatedAt         string        `json:"createdAt" example:"2026-11-05T10:00:00Z"`
 }
 
 type GiftHistoryResponse struct {

@@ -2763,6 +2763,7 @@ export interface AdminGift {
   isActive: boolean
   sortOrder: number
   animation: GiftAnimationSetting
+  senderCharmPercent: number
   createdAt: string
   updatedAt: string
 }
@@ -2776,6 +2777,7 @@ export interface CreateGiftRequest {
   isActive?: boolean
   sortOrder?: number
   animation?: GiftAnimationSetting
+  senderCharmPercent?: number
 }
 
 export type UpdateGiftRequest = Partial<CreateGiftRequest>
@@ -2798,6 +2800,7 @@ export interface AdminGiftTransaction {
   unitPrice: number
   totalKen: number
   charmPoints: number
+  senderCharmPoints: number
   source: 'chat' | 'profile'
   note?: string
   createdAt: string

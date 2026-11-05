@@ -30,6 +30,7 @@ export interface Gift {
   kenPrice: number;
   charmPoints: number;
   animation?: GiftAnimationSetting;
+  senderCharmPercent?: number;
 }
 
 export interface GiftSettings {
@@ -61,6 +62,7 @@ export interface SendGiftResult {
   quantity: number;
   totalKen: number;
   charmPoints: number;
+  senderCharmPoints?: number;
   note?: string;
   kenBalance: number;
   receiverCharm: number;
@@ -78,6 +80,7 @@ export interface GiftMessageMetadata {
   animation?: GiftAnimationSetting;
   quantity: number;
   charmPoints: number;
+  senderCharmPoints?: number;
   note?: string;
 }
 
@@ -113,6 +116,7 @@ export interface GiftHistoryItem {
   quantity: number;
   totalKen: number;
   charmPoints: number;
+  senderCharmPoints?: number;
   note?: string;
   source: GiftSource;
   createdAt: string;

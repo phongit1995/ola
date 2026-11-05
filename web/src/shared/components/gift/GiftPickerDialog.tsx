@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGiftPicker } from '@ola/shared/stores/gift/useGiftPicker';
-import { cn, formatKen, giftDisplayName } from '@lib';
+import { cn, formatKen, giftDisplayName, senderCharmGain } from '@lib';
 import type { GiftSource, SendGiftResult } from '@app-types';
 import giftIcon from '@/assets/games/spin-wheel/gift-list/gift-box.webp';
 import kenIcon from '@/assets/icons/apps/ken.png';
@@ -86,6 +86,7 @@ function GiftPickerContent({
 
   if (step === 'confirm' && selected != null) {
     const trimmedNote = note.trim();
+    const senderGain = senderCharmGain(selected, quantity);
     return (
       <Dialog
         open
@@ -134,6 +135,11 @@ function GiftPickerContent({
                   value: formatKen(selected.charmPoints * quantity),
                 })}
               </p>
+              {senderGain > 0 && (
+                <p className="text-sm text-black/54">
+                  {t('gift.senderCharmGain', { value: formatKen(senderGain) })}
+                </p>
+              )}
             </div>
           </div>
           {trimmedNote !== '' && (

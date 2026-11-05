@@ -16,6 +16,7 @@ export const GIFT_QUANTITY_MAX_LIMIT = 999
 export const GIFT_NOTE_MAX_LENGTH_LIMIT = 100
 export const GIFT_QUANTITY_OPTIONS_MAX = 6
 export const GIFT_KEN_PRICE_MAX = 10_000_000
+export const GIFT_SENDER_CHARM_PERCENT_DEFAULT = 50
 
 export const GIFT_ANIMATION_LABEL: Record<GiftAnimationSetting, string> = {
   [GIFT_ANIMATION_RANDOM]: 'Ngẫu nhiên',

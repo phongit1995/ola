@@ -71,13 +71,14 @@ func (s *Service) giftConfig() setting.GiftConfig {
 
 func ToGiftItem(g *models.Gift) GiftItem {
 	return GiftItem{
-		ID:          g.ID.String(),
-		Name:        g.Name,
-		NameEn:      g.NameEn,
-		ImageURL:    g.ImageURL,
-		KenPrice:    g.KenPrice,
-		CharmPoints: g.CharmPoints,
-		Animation:   g.Animation,
+		ID:                 g.ID.String(),
+		Name:               g.Name,
+		NameEn:             g.NameEn,
+		ImageURL:           g.ImageURL,
+		KenPrice:           g.KenPrice,
+		CharmPoints:        g.CharmPoints,
+		Animation:          g.Animation,
+		SenderCharmPercent: g.SenderCharmPercent,
 	}
 }
 
@@ -230,17 +231,18 @@ func (s *Service) buildSendResponse(gift *models.Gift, tx *models.GiftTransactio
 	item.ImageURL = tx.GiftImageURL
 	item.KenPrice = tx.UnitPrice
 	resp := &SendGiftResponse{
-		TransactionID: tx.ID.String(),
-		Gift:          item,
-		ReceiverID:    tx.ReceiverID.String(),
-		Quantity:      tx.Quantity,
-		TotalKen:      tx.TotalKen,
-		CharmPoints:   tx.CharmPoints,
-		Note:          tx.Note,
-		KenBalance:    kenBalance,
-		ReceiverCharm: receiverCharm,
-		MessageID:     tx.MessageID,
-		CreatedAt:     tx.CreatedAt.UTC().Format(time.RFC3339),
+		TransactionID:     tx.ID.String(),
+		Gift:              item,
+		ReceiverID:        tx.ReceiverID.String(),
+		Quantity:          tx.Quantity,
+		TotalKen:          tx.TotalKen,
+		CharmPoints:       tx.CharmPoints,
+		SenderCharmPoints: tx.SenderCharmPoints,
+		Note:              tx.Note,
+		KenBalance:        kenBalance,
+		ReceiverCharm:     receiverCharm,
+		MessageID:         tx.MessageID,
+		CreatedAt:         tx.CreatedAt.UTC().Format(time.RFC3339),
 	}
 	if tx.ConversationID != nil {
 		resp.ConversationID = tx.ConversationID.String()
@@ -268,14 +270,15 @@ func (s *Service) afterSend(gift *models.Gift, result *SendResult) {
 
 func (s *Service) sendGiftMessage(gift *models.Gift, tx *models.GiftTransaction) {
 	meta, err := json.Marshal(GiftMessageMetadata{
-		TransactionID: tx.ID.String(),
-		GiftID:        tx.GiftID.String(),
-		GiftName:      tx.GiftName,
-		GiftNameEn:    gift.NameEn,
-		ImageURL:      tx.GiftImageURL,
-		Animation:     gift.Animation,
-		Quantity:      tx.Quantity,
-		CharmPoints:   tx.CharmPoints,
+		TransactionID:     tx.ID.String(),
+		GiftID:            tx.GiftID.String(),
+		GiftName:          tx.GiftName,
+		GiftNameEn:        gift.NameEn,
+		ImageURL:          tx.GiftImageURL,
+		Animation:         gift.Animation,
+		Quantity:          tx.Quantity,
+		CharmPoints:       tx.CharmPoints,
+		SenderCharmPoints: tx.SenderCharmPoints,
 	})
 	if err != nil {
 		s.logger.Errorw("Failed to marshal gift message metadata", "transaction_id", tx.ID, "error", err.Error())
@@ -428,18 +431,19 @@ func (s *Service) History(userID uuid.UUID, direction, cursor string, limit int)
 	for i := range items {
 		t := &items[i]
 		out = append(out, GiftHistoryItem{
-			ID:            t.ID.String(),
-			Counterparty:  briefs[counterpartyOf(t, direction)],
-			GiftID:        t.GiftID.String(),
-			GiftName:      t.GiftName,
-			GiftImageURL:  t.GiftImageURL,
-			GiftAnimation: animations[t.GiftID],
-			Quantity:      t.Quantity,
-			TotalKen:      t.TotalKen,
-			CharmPoints:   t.CharmPoints,
-			Note:          t.Note,
-			Source:        t.Source,
-			CreatedAt:     t.CreatedAt.UTC().Format(time.RFC3339),
+			ID:                t.ID.String(),
+			Counterparty:      briefs[counterpartyOf(t, direction)],
+			GiftID:            t.GiftID.String(),
+			GiftName:          t.GiftName,
+			GiftImageURL:      t.GiftImageURL,
+			GiftAnimation:     animations[t.GiftID],
+			Quantity:          t.Quantity,
+			TotalKen:          t.TotalKen,
+			CharmPoints:       t.CharmPoints,
+			SenderCharmPoints: t.SenderCharmPoints,
+			Note:              t.Note,
+			Source:            t.Source,
+			CreatedAt:         t.CreatedAt.UTC().Format(time.RFC3339),
 		})
 	}
 	resp := &GiftHistoryResponse{Items: out}
