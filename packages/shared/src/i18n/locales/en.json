@@ -2509,7 +2509,12 @@
       "noteTooLong": "The message is too long",
       "rateLimited": "You're sending gifts too fast, try again in a few minutes",
       "failed": "Could not send the gift, please try again"
-    }
+    },
+    "receiverLabel": "Receiver",
+    "giftLabel": "Gift",
+    "edit": "Edit",
+    "sendWithTotal": "Send · {{ken}} KEN",
+    "receiverCharmGain": "{{name}} gets +{{value}} charm"
   },
   "megaphone": {
     "title": "Megaphone",

@@ -27,6 +27,7 @@ export interface GiftAnimationItem {
   quantity: number;
   charmPoints: number;
   caption?: string;
+  seed?: number;
 }
 
 export interface GiftAnimationState {

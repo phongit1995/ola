@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader } from '@components';
-import { formatKen } from '@lib';
+import { colorForName, formatKen } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { GiftWallSection } from '../profile/components/GiftWallSection';
 import { GiftLeaderboardPage } from './GiftLeaderboardPage';
 import { GiftHistoryPage } from './GiftHistoryPage';
+import { UserProfileView } from '../profile/UserProfileView';
+import type { ProfileFriend } from '../profile/types';
 
 interface GiftHomePageProps {
   onClose: () => void;
 }
 
-function HomeRow({ label, emoji, onClick }: { label: string; emoji: string; onClick: () => void }) {
+function HomeRow({
+  label,
+  emoji,
+  onClick,
+}: {
+  label: string;
+  emoji: string;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -36,6 +46,9 @@ export function GiftHomePage({ onClose }: GiftHomePageProps) {
   const refreshUser = useAuthStore((s) => s.refreshUser);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [profileTarget, setProfileTarget] = useState<ProfileFriend | null>(
+    null
+  );
 
   useEffect(() => {
     void refreshUser();
@@ -54,21 +67,46 @@ export function GiftHomePage({ onClose }: GiftHomePageProps) {
         </div>
 
         <div className="mx-2 mt-2 divide-y divide-black/6 overflow-hidden rounded-lg bg-white shadow-sm">
-          <HomeRow emoji="🏆" label={t('gift.wall.leaderboard')} onClick={() => setLeaderboardOpen(true)} />
-          <HomeRow emoji="🎁" label={t('gift.wall.history')} onClick={() => setHistoryOpen(true)} />
+          <HomeRow
+            emoji="🏆"
+            label={t('gift.wall.leaderboard')}
+            onClick={() => setLeaderboardOpen(true)}
+          />
+          <HomeRow
+            emoji="🎁"
+            label={t('gift.wall.history')}
+            onClick={() => setHistoryOpen(true)}
+          />
         </div>
 
-        <GiftWallSection
-          userId={userId}
-          isSelf
-          refreshKey={0}
-        />
+        <GiftWallSection userId={userId} isSelf refreshKey={0} />
       </div>
 
       {leaderboardOpen && (
         <GiftLeaderboardPage z={50} onClose={() => setLeaderboardOpen(false)} />
       )}
-      {historyOpen && <GiftHistoryPage z={50} onClose={() => setHistoryOpen(false)} />}
+      {historyOpen && (
+        <GiftHistoryPage
+          z={50}
+          onClose={() => setHistoryOpen(false)}
+          onOpenUser={(user) =>
+            setProfileTarget({
+              name: user.username,
+              color: colorForName(user.username),
+            })
+          }
+        />
+      )}
+      {profileTarget != null && (
+        <UserProfileView
+          key={profileTarget.name}
+          username={profileTarget.name}
+          color={profileTarget.color}
+          z={60}
+          onClose={() => setProfileTarget(null)}
+          onOpenFriend={setProfileTarget}
+        />
+      )}
     </FullScreenOverlay>
   );
 }

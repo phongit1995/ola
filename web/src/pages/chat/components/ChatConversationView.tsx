@@ -992,6 +992,7 @@ export function ChatConversationView({
           receiver={{
             id: peerId,
             name,
+            username,
             avatar: peerProfile?.avatar ?? avatar,
             color,
           }}

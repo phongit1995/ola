@@ -7,7 +7,7 @@ export const useGiftAnimationStore = create<GiftAnimationState>((set, get) => ({
   play: (item) => {
     if (get().seen.has(item.id)) return;
     set((state) => ({
-      queue: [...state.queue, item],
+      queue: [...state.queue, { ...item, seed: item.seed ?? Math.random() }],
       seen: new Set(state.seen).add(item.id),
     }));
   },

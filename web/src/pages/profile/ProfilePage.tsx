@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScreenHeader, FullScreenOverlay, GiftPickerDialog, Spinner } from '@components';
+import {
+  ScreenHeader,
+  FullScreenOverlay,
+  GiftPickerDialog,
+  Spinner,
+} from '@components';
 import { GIFT_SOURCE } from '@constants';
 import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import { colorForName } from '@lib';
@@ -129,7 +134,9 @@ export function ProfilePage({
           }
           onOpenFollowers={() => setFollowersOpen(true)}
           onSendGift={
-            !profile.isSelf && giftsEnabled ? () => setGiftOpen(true) : undefined
+            !profile.isSelf && giftsEnabled
+              ? () => setGiftOpen(true)
+              : undefined
           }
         />
         <GiftWallSection
@@ -223,6 +230,7 @@ export function ProfilePage({
           receiver={{
             id: userId,
             name: profile.nick,
+            username: profile.username,
             avatar: profile.avatar,
             color: profile.color,
           }}
@@ -234,11 +242,23 @@ export function ProfilePage({
       )}
 
       {giftLeaderboardOpen && (
-        <GiftLeaderboardPage z={60} onClose={() => setGiftLeaderboardOpen(false)} />
+        <GiftLeaderboardPage
+          z={60}
+          onClose={() => setGiftLeaderboardOpen(false)}
+        />
       )}
 
       {giftHistoryOpen && (
-        <GiftHistoryPage z={60} onClose={() => setGiftHistoryOpen(false)} />
+        <GiftHistoryPage
+          z={60}
+          onClose={() => setGiftHistoryOpen(false)}
+          onOpenUser={(user) =>
+            onOpenFriend({
+              name: user.username,
+              color: colorForName(user.username),
+            })
+          }
+        />
       )}
 
       {followersOpen && (

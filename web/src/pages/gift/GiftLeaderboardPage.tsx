@@ -1,5 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { Avatar, FullScreenOverlay, ScreenHeader, Spinner } from '@components';
+import {
+  Avatar,
+  FullScreenOverlay,
+  ScreenHeader,
+  Spinner,
+  UserName,
+} from '@components';
 import {
   GIFT_LEADERBOARD_PERIOD_LABEL,
   GIFT_LEADERBOARD_PERIODS,
@@ -18,7 +24,8 @@ interface GiftLeaderboardPageProps {
 
 export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
   const { t } = useTranslation();
-  const { type, period, selectType, selectPeriod, board, failed } = useGiftLeaderboard();
+  const { type, period, selectType, selectPeriod, board, failed } =
+    useGiftLeaderboard();
 
   function valueText(value: number): string {
     return type === GIFT_LEADERBOARD_TYPE.sender
@@ -39,7 +46,9 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
               onClick={() => selectType(tab.value)}
               className={cn(
                 'flex-1 rounded-full py-1.5 text-sm font-semibold transition-colors',
-                tab.value === type ? 'bg-white text-ola-accent-dark shadow' : 'text-white/90'
+                tab.value === type
+                  ? 'bg-white text-ola-accent-dark shadow'
+                  : 'text-white/90'
               )}
             >
               {t(tab.labelKey)}
@@ -54,7 +63,9 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
               onClick={() => selectPeriod(value)}
               className={cn(
                 'rounded-full border px-3 py-0.5 text-xs font-medium',
-                value === period ? 'border-white bg-white/25' : 'border-white/50 text-white/85'
+                value === period
+                  ? 'border-white bg-white/25'
+                  : 'border-white/50 text-white/85'
               )}
             >
               {t(GIFT_LEADERBOARD_PERIOD_LABEL[value])}
@@ -67,20 +78,27 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
         {board == null ? (
           <div className="flex justify-center py-10">
             {failed ? (
-              <span className="text-sm text-black/54">{t('gift.loadFailed')}</span>
+              <span className="text-sm text-black/54">
+                {t('gift.loadFailed')}
+              </span>
             ) : (
               <Spinner size={24} />
             )}
           </div>
         ) : board.items.length === 0 ? (
-          <p className="py-16 text-center text-sm text-black/54">{t('gift.leaderboard.empty')}</p>
+          <p className="py-16 text-center text-sm text-black/54">
+            {t('gift.leaderboard.empty')}
+          </p>
         ) : (
           <ol className="divide-y divide-black/6 bg-white">
             {board.items.map((entry) => {
               const name = entry.user.fullName || entry.user.username;
               const podium = entry.rank <= GIFT_LEADERBOARD_PODIUM_SIZE;
               return (
-                <li key={entry.user.id} className="flex items-center gap-3 px-4 py-2.5">
+                <li
+                  key={entry.user.id}
+                  className="flex items-center gap-3 px-4 py-2.5"
+                >
                   <span
                     className={cn(
                       'w-7 text-center font-bold',
@@ -95,9 +113,12 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
                     color={colorForName(name)}
                     size={podium ? 44 : 36}
                   />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-black/87">{name}</span>
-                    <span className="block truncate text-xs text-black/45">@{entry.user.username}</span>
+                  <span className="flex min-w-0 flex-1">
+                    <UserName
+                      name={entry.user.username}
+                      fullName={entry.user.fullName}
+                      className="min-w-0 truncate text-sm font-medium text-black/87"
+                    />
                   </span>
                   <span className="text-sm font-semibold text-ola-accent-dark">
                     {valueText(entry.value)}
@@ -111,12 +132,18 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
 
       {board != null && (
         <div className="flex items-center gap-3 border-t border-black/10 bg-white px-4 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
-          <span className="text-sm text-black/54">{t('gift.leaderboard.myRank')}</span>
+          <span className="text-sm text-black/54">
+            {t('gift.leaderboard.myRank')}
+          </span>
           <span className="text-base font-bold text-black/87">
-            {board.me.rank > 0 ? `#${board.me.rank}` : t('gift.leaderboard.notRanked')}
+            {board.me.rank > 0
+              ? `#${board.me.rank}`
+              : t('gift.leaderboard.notRanked')}
           </span>
           <span className="flex-1" />
-          <span className="text-sm font-semibold text-ola-accent-dark">{valueText(board.me.value)}</span>
+          <span className="text-sm font-semibold text-ola-accent-dark">
+            {valueText(board.me.value)}
+          </span>
         </div>
       )}
     </FullScreenOverlay>

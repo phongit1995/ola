@@ -2509,7 +2509,12 @@
       "noteTooLong": "Lời nhắn quá dài",
       "rateLimited": "Bạn tặng quá nhanh, thử lại sau ít phút",
       "failed": "Tặng quà thất bại, thử lại sau"
-    }
+    },
+    "receiverLabel": "Người nhận",
+    "giftLabel": "Quà tặng",
+    "edit": "Chỉnh sửa",
+    "sendWithTotal": "Tặng · {{ken}} KEN",
+    "receiverCharmGain": "{{name}} được +{{value}} sức hút"
   },
   "megaphone": {
     "title": "Loa",
