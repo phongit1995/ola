@@ -33,7 +33,7 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
   function valueText(value: number): string {
     return type === GIFT_LEADERBOARD_TYPE.sender
       ? t('gift.leaderboard.kenValue', { value: formatKen(value) })
-      : t('gift.leaderboard.charmValue', { value: formatKen(value) });
+      : formatKen(value);
   }
 
   function renderEntry({ item }: { item: GiftLeaderboardEntry }) {
@@ -57,10 +57,10 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
           </Text>
         </View>
         <View className="flex-row items-center" style={{ gap: 4 }}>
-          {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
           <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
             {valueText(item.value)}
           </Text>
+          {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
         </View>
       </View>
     );
@@ -170,10 +170,10 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
             {board.me.rank > 0 ? `#${board.me.rank}` : t('gift.leaderboard.notRanked')}
           </Text>
           <View className="flex-row items-center" style={{ gap: 4 }}>
-            {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
             <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
               {valueText(board.me.value)}
             </Text>
+            {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
           </View>
         </View>
       )}

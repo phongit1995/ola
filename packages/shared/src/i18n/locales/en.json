@@ -2458,7 +2458,6 @@
     "sending": "Sending…",
     "charm": "Charm",
     "charmCount": "{{value}} charm",
-    "charmGain": "+{{value}} charm",
     "quantity": "Quantity",
     "notePlaceholder": "Add a message (optional)",
     "total": "Total",
@@ -2502,7 +2501,6 @@
       "myRank": "Your rank",
       "notRanked": "Not ranked",
       "kenValue": "{{value}} KEN",
-      "charmValue": "{{value}} charm",
       "empty": "No one on the leaderboard yet"
     },
     "errors": {

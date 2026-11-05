@@ -2458,7 +2458,6 @@
     "sending": "Đang tặng…",
     "charm": "Sức hút",
     "charmCount": "{{value}} sức hút",
-    "charmGain": "+{{value}} sức hút",
     "quantity": "Số lượng",
     "notePlaceholder": "Gửi kèm lời nhắn (không bắt buộc)",
     "total": "Tổng",
@@ -2502,7 +2501,6 @@
       "myRank": "Hạng của bạn",
       "notRanked": "Chưa có hạng",
       "kenValue": "{{value}} KEN",
-      "charmValue": "{{value}} sức hút",
       "empty": "Chưa có ai trên bảng xếp hạng"
     },
     "errors": {

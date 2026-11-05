@@ -27,6 +27,15 @@ interface GiftHistoryPageProps {
   z?: 40 | 50 | 60;
 }
 
+function CharmPill({ value }: { value: number }) {
+  return (
+    <span className="flex items-center gap-1 rounded-full bg-ola-accent/10 py-0.5 pr-1.5 pl-2 text-xs font-semibold text-ola-accent-dark">
+      +{formatKen(value)}
+      <CharmIcon className="h-3.5 w-3.5" />
+    </span>
+  );
+}
+
 export function GiftHistoryPage({
   onClose,
   onOpenUser,
@@ -118,19 +127,25 @@ export function GiftHistoryPage({
                     </span>
                   </button>
                   <div className="min-w-0 flex-1">
-                    <button
-                      type="button"
-                      onClick={() => onOpenUser?.(item.counterparty)}
-                      disabled={onOpenUser == null}
-                      className="flex max-w-full min-w-0 text-left active:opacity-70"
-                    >
-                      <UserName
-                        name={username}
-                        fullName={fullName}
-                        className="min-w-0 truncate text-sm font-semibold text-black/87"
-                        fullNameClassName="font-normal text-black/45"
-                      />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onOpenUser?.(item.counterparty)}
+                        disabled={onOpenUser == null}
+                        className="flex min-w-0 flex-1 text-left active:opacity-70"
+                      >
+                        <UserName
+                          name={username}
+                          fullName={fullName}
+                          className="min-w-0 truncate text-sm font-semibold text-black/87"
+                          fullNameClassName="font-normal text-black/45"
+                        />
+                      </button>
+                      <span className="shrink-0 text-xs text-black/45">
+                        {formatDateDMY(item.createdAt)}{' '}
+                        {formatClockHM(item.createdAt)}
+                      </span>
+                    </div>
                     <p className="mt-0.5 text-sm text-black/60">
                       {received ? t('gift.messageIn') : t('gift.messageOut')}{' '}
                       <span className="font-semibold text-black/87">
@@ -151,17 +166,8 @@ export function GiftHistoryPage({
                       </p>
                     )}
                     <div className="mt-1.5 flex items-center gap-2">
-                      <span className="text-xs text-black/45">
-                        {formatDateDMY(item.createdAt)}{' '}
-                        {formatClockHM(item.createdAt)}
-                      </span>
                       {received ? (
-                        <span className="flex items-center gap-1 rounded-full bg-ola-accent/10 py-0.5 pr-2 pl-1 text-xs font-semibold text-ola-accent-dark">
-                          <CharmIcon className="h-3.5 w-3.5" />
-                          {t('gift.charmGain', {
-                            value: formatKen(item.charmPoints),
-                          })}
-                        </span>
+                        <CharmPill value={item.charmPoints} />
                       ) : (
                         <span className="flex items-center gap-1 rounded-full bg-ola-warning/12 px-2 py-0.5 text-xs font-semibold text-ola-warning">
                           <img
@@ -173,12 +179,7 @@ export function GiftHistoryPage({
                         </span>
                       )}
                       {!received && (item.senderCharmPoints ?? 0) > 0 && (
-                        <span className="flex items-center gap-1 rounded-full bg-ola-accent/10 py-0.5 pr-2 pl-1 text-xs font-semibold text-ola-accent-dark">
-                          <CharmIcon className="h-3.5 w-3.5" />
-                          {t('gift.charmGain', {
-                            value: formatKen(item.senderCharmPoints ?? 0),
-                          })}
-                        </span>
+                        <CharmPill value={item.senderCharmPoints ?? 0} />
                       )}
                     </div>
                   </div>

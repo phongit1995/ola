@@ -31,7 +31,7 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
   function valueText(value: number): string {
     return type === GIFT_LEADERBOARD_TYPE.sender
       ? t('gift.leaderboard.kenValue', { value: formatKen(value) })
-      : t('gift.leaderboard.charmValue', { value: formatKen(value) });
+      : formatKen(value);
   }
 
   return (
@@ -122,8 +122,8 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
                     />
                   </span>
                   <span className="flex items-center gap-1 text-sm font-semibold text-ola-accent-dark">
-                    {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
                     {valueText(entry.value)}
+                    {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
                   </span>
                 </li>
               );
@@ -144,8 +144,8 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
           </span>
           <span className="flex-1" />
           <span className="flex items-center gap-1 text-sm font-semibold text-ola-accent-dark">
-            {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
             {valueText(board.me.value)}
+            {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
           </span>
         </div>
       )}

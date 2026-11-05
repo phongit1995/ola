@@ -20,13 +20,12 @@ import { CharmIcon } from '@components/gift/CharmIcon';
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftHistory'>;
 
 function CharmText({ value }: { value: number }) {
-  const { t } = useTranslation();
   return (
     <View className="flex-row items-center" style={{ gap: 2 }}>
-      <CharmIcon size={13} />
-      <Text className="text-xs" style={{ color: TEXT_FAINT }}>
-        {t('gift.charmGain', { value: formatKen(value) })}
+      <Text className="text-xs font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
+        {`+${formatKen(value)}`}
       </Text>
+      <CharmIcon size={13} />
     </View>
   );
 }
@@ -47,18 +46,20 @@ export function GiftHistoryScreen({ navigation }: Props) {
       <View className="flex-row items-start gap-3 bg-white px-4 py-3">
         <Avatar name={name} uri={item.counterparty.avatar} color={colorForName(name)} size={40} />
         <View className="min-w-0 flex-1">
-          <Text className="text-sm" style={{ color: TEXT_PRIMARY }}>
-            {line}
-          </Text>
+          <View className="flex-row items-start" style={{ gap: 8 }}>
+            <Text className="flex-1 text-sm" style={{ color: TEXT_PRIMARY }}>
+              {line}
+            </Text>
+            <Text className="text-xs" style={{ color: TEXT_FAINT }}>
+              {`${formatDateDMY(item.createdAt)} ${formatClockHM(item.createdAt)}`}
+            </Text>
+          </View>
           {item.note != null && item.note !== '' && (
             <Text className="mt-0.5 text-sm italic" style={{ color: 'rgba(0,0,0,0.6)' }}>
               “{item.note}”
             </Text>
           )}
           <View className="mt-1 flex-row flex-wrap items-center" style={{ gap: 4 }}>
-            <Text className="text-xs" style={{ color: TEXT_FAINT }}>
-              {`${formatDateDMY(item.createdAt)} ${formatClockHM(item.createdAt)} ·`}
-            </Text>
             {received ? (
               <CharmText value={item.charmPoints} />
             ) : (

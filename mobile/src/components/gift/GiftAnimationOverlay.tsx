@@ -291,16 +291,15 @@ function GiftImage({ item, size }: { item: GiftAnimationItem; size: number }) {
 }
 
 function GiftCaption({ item }: { item: GiftAnimationItem }) {
-  const { t } = useTranslation();
   return (
     <View className="rounded-full px-4 py-1.5" style={styles.caption}>
       <Text className="text-center text-sm font-semibold text-white">{item.caption ?? item.name}</Text>
       {item.charmPoints > 0 && (
         <View className="flex-row items-center justify-center" style={{ gap: 3 }}>
-          <CharmIcon size={14} />
           <Text className="text-xs" style={{ color: GIFT_SPARK }}>
-            {t('gift.charmGain', { value: formatKen(item.charmPoints) })}
+            {`+${formatKen(item.charmPoints)}`}
           </Text>
+          <CharmIcon size={14} />
         </View>
       )}
     </View>

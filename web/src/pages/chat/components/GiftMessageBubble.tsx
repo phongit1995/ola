@@ -64,8 +64,8 @@ export function GiftMessageBubble({
           </span>
           {charmGain > 0 && (
             <span className="flex items-center gap-0.5 text-[11px] font-medium whitespace-nowrap text-ola-accent-dark">
+              +{formatKen(charmGain)}
               <CharmIcon className="h-3.5 w-3.5" />
-              {t('gift.charmGain', { value: formatKen(charmGain) })}
             </span>
           )}
         </span>

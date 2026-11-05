@@ -131,19 +131,19 @@ function GiftPickerContent({
                     {t('gift.quantityTimes', { count: quantity })}
                   </span>
                 </p>
-                <span className="flex items-center gap-1 rounded-full bg-ola-accent/10 py-0.5 pr-2 pl-1 text-xs font-semibold text-ola-accent-dark">
-                  <CharmIcon />
+                <span className="flex items-center gap-1 rounded-full bg-ola-accent/10 py-0.5 pr-1.5 pl-2 text-xs font-semibold text-ola-accent-dark">
                   {t('gift.receiverCharmGain', {
                     name: receiver.name,
                     value: formatKen(selected.charmPoints * quantity),
                   })}
+                  <CharmIcon />
                 </span>
                 {senderGain > 0 && (
-                  <span className="flex items-center gap-1 rounded-full bg-ola-warning/12 py-0.5 pr-2 pl-1 text-xs font-semibold text-ola-warning">
-                    <CharmIcon />
+                  <span className="flex items-center gap-1 rounded-full bg-ola-warning/12 py-0.5 pr-1.5 pl-2 text-xs font-semibold text-ola-warning">
                     {t('gift.senderCharmGain', {
                       value: formatKen(senderGain),
                     })}
+                    <CharmIcon />
                   </span>
                 )}
               </div>

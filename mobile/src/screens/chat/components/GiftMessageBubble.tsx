@@ -61,10 +61,10 @@ export function GiftMessageBubble({ gift, isOut, cornerClass }: GiftMessageBubbl
             </Text>
             {charmGain > 0 && (
               <View className="flex-row items-center" style={{ gap: 3 }}>
-                <CharmIcon size={14} />
-                <Text className="text-xs font-medium" style={{ color: WARNING }}>
-                  {t('gift.charmGain', { value: formatKen(charmGain) })}
+                <Text className="text-xs font-semibold" style={{ color: WARNING }}>
+                  {`+${formatKen(charmGain)}`}
                 </Text>
+                <CharmIcon size={14} />
               </View>
             )}
           </View>

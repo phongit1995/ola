@@ -121,20 +121,20 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
             })}
           </Text>
           <View className="flex-row items-center justify-center" style={{ gap: 4 }}>
-            <CharmIcon />
             <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
               {t('gift.receiverCharmGain', {
                 name: receiver.name,
                 value: formatKen(selected.charmPoints * quantity),
               })}
             </Text>
+            <CharmIcon />
           </View>
           {senderGain > 0 && (
             <View className="flex-row items-center justify-center" style={{ gap: 4 }}>
-              <CharmIcon />
               <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
                 {t('gift.senderCharmGain', { value: formatKen(senderGain) })}
               </Text>
+              <CharmIcon />
             </View>
           )}
         </View>
