@@ -16,7 +16,7 @@ import iconRemoveAccount from '@/assets/icons/apps/delete-account.png';
 import iconSupport from '@/assets/icons/apps/support.png';
 import iconLogout from '@/assets/icons/apps/logout.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
-import iconGift from '@/assets/games/egg/ic_gift.png';
+import iconGift from '@/assets/icons/apps/gift.webp';
 import iconSocial from '@/assets/icons/social/social-menu-light.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
 import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
