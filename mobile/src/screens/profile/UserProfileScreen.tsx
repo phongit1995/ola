@@ -43,7 +43,6 @@ interface UserProfileScreenProps {
   onOpenProfile: (nick: string, color: string) => void;
   onMessage?: (userId: string) => void;
   onEditProfile?: () => void;
-  onOpenGiftLeaderboard?: () => void;
   onOpenGiftHistory?: () => void;
 }
 
@@ -54,7 +53,6 @@ export function UserProfileScreen({
   onOpenProfile,
   onMessage,
   onEditProfile,
-  onOpenGiftLeaderboard,
   onOpenGiftHistory,
 }: UserProfileScreenProps) {
   const { t } = useTranslation();
@@ -205,7 +203,6 @@ export function UserProfileScreen({
               userId={profile.id}
               isSelf={isSelf}
               refreshKey={giftWallKey}
-              onOpenLeaderboard={onOpenGiftLeaderboard}
               onOpenHistory={onOpenGiftHistory}
             />
           )}

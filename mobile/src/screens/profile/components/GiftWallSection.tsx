@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
-import { formatKen, giftDisplayName } from '@ola/shared/lib';
+import { formatKen, giftDisplayName, randomUuid } from '@ola/shared/lib';
+import { useGiftAnimationStore } from '@ola/shared/stores/gift/giftAnimationStore';
 import { useGiftWall } from '@ola/shared/stores/gift/useGiftWall';
+import type { GiftWallItem } from '@ola/shared/types';
 import { CachedImage } from '@components/ui/CachedImage';
 import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { useThemeColors } from '@hooks/useThemeColors';
@@ -13,7 +15,6 @@ interface GiftWallSectionProps {
   userId: string;
   isSelf: boolean;
   refreshKey: number;
-  onOpenLeaderboard?: () => void;
   onOpenHistory?: () => void;
 }
 
@@ -21,18 +22,28 @@ export function GiftWallSection({
   userId,
   isSelf,
   refreshKey,
-  onOpenLeaderboard,
   onOpenHistory,
 }: GiftWallSectionProps) {
   const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const wall = useGiftWall(userId, refreshKey);
   const [expanded, setExpanded] = useState(false);
+  const play = useGiftAnimationStore((s) => s.play);
 
   if (wall == null) return null;
 
   const items = expanded ? wall.items : wall.items.slice(0, GIFT_WALL_PREVIEW_COUNT);
   const hiddenCount = wall.items.length - items.length;
+
+  function replay(item: GiftWallItem) {
+    play({
+      id: randomUuid(),
+      imageUrl: item.gift.imageUrl,
+      name: giftDisplayName(item.gift, i18n.language),
+      quantity: item.quantity,
+      charmPoints: item.gift.charmPoints * item.quantity,
+    });
+  }
 
   return (
     <View className="mb-2 bg-white px-3 py-3" style={CARD_SHADOW}>
@@ -50,10 +61,10 @@ export function GiftWallSection({
             </Text>
           </Pressable>
         )}
-        {onOpenLeaderboard != null && (
-          <Pressable onPress={onOpenLeaderboard} hitSlop={8} className="active:opacity-70">
+        {hiddenCount > 0 && (
+          <Pressable onPress={() => setExpanded(true)} hitSlop={8} className="active:opacity-70">
             <Text className="text-xs font-medium" style={{ color: GIFT_ACCENT_DARK }}>
-              {t('gift.wall.leaderboard')}
+              {t('profile.viewAll')}
             </Text>
           </Pressable>
         )}
@@ -68,11 +79,16 @@ export function GiftWallSection({
           {items.map((item) => {
             const name = giftDisplayName(item.gift, i18n.language);
             return (
-              <View
+              <Pressable
                 key={item.gift.id}
+                accessibilityRole="button"
                 accessibilityLabel={name}
+                onPress={() => replay(item)}
                 className="items-center px-0.5 py-1"
-                style={{ width: `${100 / GIFT_WALL_COLUMNS}%` }}
+                style={({ pressed }) => ({
+                  width: `${100 / GIFT_WALL_COLUMNS}%`,
+                  transform: [{ scale: pressed ? 0.9 : 1 }],
+                })}
               >
                 <View>
                   <CachedImage uri={item.gift.imageUrl} style={{ width: 44, height: 44 }} resizeMode="contain" />
@@ -88,18 +104,10 @@ export function GiftWallSection({
                 <Text numberOfLines={1} className="mt-1 text-[11px]" style={{ color: TEXT_SECONDARY }}>
                   {name}
                 </Text>
-              </View>
+              </Pressable>
             );
           })}
         </View>
-      )}
-
-      {hiddenCount > 0 && (
-        <Pressable onPress={() => setExpanded(true)} className="mt-2 items-center active:opacity-70">
-          <Text className="text-xs font-medium" style={{ color: colors.primaryDarker }}>
-            {t('profile.viewAll')}
-          </Text>
-        </Pressable>
       )}
     </View>
   );
