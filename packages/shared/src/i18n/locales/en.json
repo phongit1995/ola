@@ -682,6 +682,7 @@
     "tradingVipErrPassword": "Enter password",
     "tradingVipErrWrongPassword": "Wrong password",
     "tradingVipErrNotAllowed": "This VIP cannot be transferred (in use or locked)",
+    "tradingVipErrBlocked": "Cannot transfer VIP to this user",
     "tradingVipError": "Transfer failed. Please try again",
     "tradingVipSuccess": "VIP sent to {{name}}",
     "transferVipDaysTitle": "Gift VIP days",
@@ -1817,7 +1818,12 @@
     "actionError": "Action failed, please try again",
     "systemSender": "System",
     "hide": "Hide notification",
-    "msg_gift": "Sent you a gift"
+    "msg_gift": "Sent you a gift",
+    "msg_ken": "Sent you Ken",
+    "msg_ken_amount": "Sent you {{amount}}",
+    "msg_vip": "Gave you VIP",
+    "msg_vip_icon": "Gave you the VIP {{name}}",
+    "msg_vip_days": "Gave you {{days}} days of VIP"
   },
   "ken": {
     "title": "KEN",

@@ -1,6 +1,7 @@
 package push
 
 import (
+	"fmt"
 	"strconv"
 
 	"ola-chat-server/internal/constants"
@@ -147,6 +148,8 @@ var appNotifBodies = map[string]string{
 	models.AppNotificationContentViolation: "Vi phạm tiêu chuẩn cộng đồng",
 	models.AppNotificationReportResolved:   "Báo cáo đã được xử lý",
 	models.AppNotificationGiftReceived:     "Đã tặng bạn một món quà",
+	models.AppNotificationKenReceived:      "Đã chuyển Ken cho bạn",
+	models.AppNotificationVipReceived:      "Đã tặng bạn VIP",
 }
 
 var appNotifSystemTypes = map[string]bool{
@@ -157,6 +160,28 @@ var appNotifSystemTypes = map[string]bool{
 	models.AppNotificationClanBanned:       true,
 	models.AppNotificationContentViolation: true,
 	models.AppNotificationReportResolved:   true,
+}
+
+func appNotifTransferBody(ntype, preview string) (string, bool) {
+	transfer, ok := models.ParseAppNotificationTransfer(preview)
+	if !ok {
+		return "", false
+	}
+	switch {
+	case ntype == models.AppNotificationKenReceived && transfer.Amount > 0:
+		return "Đã chuyển cho bạn " + groupThousands(transfer.Amount) + " Ken", true
+	case ntype == models.AppNotificationVipReceived && transfer.Days > 0:
+		return fmt.Sprintf("Đã tặng bạn %d ngày VIP", transfer.Days), true
+	}
+	return "", false
+}
+
+func groupThousands(n int) string {
+	digits := strconv.Itoa(n)
+	for i := len(digits) - 3; i > 0; i -= 3 {
+		digits = digits[:i] + "," + digits[i:]
+	}
+	return digits
 }
 
 func buildAppNotifContent(id, actorName, ntype, preview string, unread int) Content {
@@ -170,6 +195,9 @@ func buildAppNotifContent(id, actorName, ntype, preview string, unread int) Cont
 	}
 	if known && preview != "" && (appNotifSystemTypes[ntype] || ntype == models.AppNotificationGiftReceived) {
 		body += ": " + excerpt(preview)
+	}
+	if transferBody, ok := appNotifTransferBody(ntype, preview); ok {
+		body = transferBody
 	}
 	data := map[string]string{
 		"type": PushDataTypeAppNotif,

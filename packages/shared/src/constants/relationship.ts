@@ -9,3 +9,5 @@ export const RELATIONSHIP_STATUS = {
   blockedByMe: 'blocked_by_me',
   blockedByThem: 'blocked_by_them',
 } as const satisfies Record<string, RelationshipStatus>;
+
+export const VIP_TRANSFER_BLOCKED_ERROR = 'cannot transfer vip to a blocked user';

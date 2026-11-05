@@ -29,6 +29,7 @@ export * from './vipPurchase';
 export * from './presence';
 export * from './messageGroups';
 export * from './gift';
+export * from './appNotification';
 export * from './megaphone';
 export * from './wordChain';
 export * from './chatBotView';

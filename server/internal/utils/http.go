@@ -235,6 +235,7 @@ var (
 		"diary entry does not belong to you":            true,
 		"cannot propose to a blocked user":              true,
 		"cannot transfer ken to a blocked user":         true,
+		"cannot transfer vip to a blocked user":         true,
 		"you are not a member of this clan":             true,
 		"you are banned from this clan":                 true,
 		"clan is closed for joining":                    true,

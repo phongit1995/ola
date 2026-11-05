@@ -682,6 +682,7 @@
     "tradingVipErrPassword": "Nhập mật khẩu",
     "tradingVipErrWrongPassword": "Sai mật khẩu",
     "tradingVipErrNotAllowed": "VIP này không thể chuyển (đang dùng hoặc đã khoá)",
+    "tradingVipErrBlocked": "Không thể chuyển VIP cho người này",
     "tradingVipError": "Chuyển VIP thất bại. Vui lòng thử lại",
     "tradingVipSuccess": "Đã gửi VIP cho {{name}}",
     "transferVipDaysTitle": "Tặng ngày VIP",
@@ -1817,7 +1818,12 @@
     "actionError": "Thao tác thất bại, vui lòng thử lại",
     "systemSender": "Hệ thống",
     "hide": "Ẩn thông báo",
-    "msg_gift": "Đã tặng bạn một món quà"
+    "msg_gift": "Đã tặng bạn một món quà",
+    "msg_ken": "Đã chuyển Ken cho bạn",
+    "msg_ken_amount": "Đã chuyển cho bạn {{amount}}",
+    "msg_vip": "Đã tặng bạn VIP",
+    "msg_vip_icon": "Đã tặng bạn VIP {{name}}",
+    "msg_vip_days": "Đã tặng bạn {{days}} ngày VIP"
   },
   "ken": {
     "title": "KEN",

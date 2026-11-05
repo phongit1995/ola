@@ -1,6 +1,10 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"encoding/json"
+
+	"github.com/google/uuid"
+)
 
 const (
 	AppNotificationFriendRequest    = "friend_request"
@@ -13,6 +17,8 @@ const (
 	AppNotificationContentViolation = "content_violation"
 	AppNotificationReportResolved   = "report_resolved"
 	AppNotificationGiftReceived     = "gift_received"
+	AppNotificationKenReceived      = "ken_received"
+	AppNotificationVipReceived      = "vip_received"
 )
 
 type AppNotification struct {
@@ -28,4 +34,26 @@ type AppNotification struct {
 
 func (AppNotification) TableName() string {
 	return "app_notifications"
+}
+
+type AppNotificationTransfer struct {
+	Amount    int   `json:"amount,omitempty"`
+	VipTypeID int16 `json:"vipTypeId,omitempty"`
+	Days      int   `json:"days,omitempty"`
+}
+
+func (t AppNotificationTransfer) Preview() string {
+	raw, err := json.Marshal(t)
+	if err != nil {
+		return ""
+	}
+	return string(raw)
+}
+
+func ParseAppNotificationTransfer(preview string) (AppNotificationTransfer, bool) {
+	var t AppNotificationTransfer
+	if preview == "" || json.Unmarshal([]byte(preview), &t) != nil {
+		return AppNotificationTransfer{}, false
+	}
+	return t, true
 }

@@ -11,6 +11,7 @@ import (
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
@@ -39,6 +40,7 @@ var (
 	ErrShopItemNotFound   = errors.New("vip shop item not found")
 	ErrShopTypeExists     = errors.New("vip already in shop")
 	ErrBlockedGift        = errors.New("cannot gift to blocked user")
+	ErrBlockedTransfer    = errors.New("cannot transfer vip to a blocked user")
 )
 
 type Service struct {
@@ -47,10 +49,11 @@ type Service struct {
 	userCache *user.CacheService
 	cache     *services.CacheService
 	wsServer  *websocket.Server
+	notifSvc  *notification.Service
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, notifSvc *notification.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		relRepo:   relRepo,
@@ -326,6 +329,13 @@ func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID, password stri
 	if bcrypt.CompareHashAndPassword([]byte(sender.Password), []byte(password)) != nil {
 		return ErrWrongPassword
 	}
+	blocked, err := s.relRepo.IsBlockedEither(userID, toUserID)
+	if err != nil {
+		return err
+	}
+	if blocked {
+		return ErrBlockedTransfer
+	}
 
 	item, err := s.ownedInstance(userID, instanceID)
 	if err != nil {
@@ -337,12 +347,16 @@ func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID, password stri
 	if sender.VipUsedInstanceID != nil && *sender.VipUsedInstanceID == instanceID {
 		return ErrVipInUse
 	}
-	return s.repo.Transfer(TransferParams{
+	if err := s.repo.Transfer(TransferParams{
 		InstanceID: instanceID,
 		FromUserID: userID,
 		ToUserID:   toUserID,
 		VipIconID:  item.VipIconID,
-	})
+	}); err != nil {
+		return err
+	}
+	s.notifSvc.Create(toUserID, &userID, models.AppNotificationVipReceived, nil, models.AppNotificationTransfer{VipTypeID: item.VipIconID}.Preview())
+	return nil
 }
 
 func (s *Service) clearActiveIfGone(userID, instanceID uuid.UUID, typeID int16) error {
@@ -647,6 +661,7 @@ func (s *Service) GiftPackage(fromID, packageID uuid.UUID, toUsername, password 
 	s.invalidate(fromID)
 	s.invalidate(receiver.ID)
 	s.wsServer.EmitKenUpdate(fromID, giver.Ken)
+	s.notifSvc.Create(receiver.ID, &fromID, models.AppNotificationVipReceived, nil, models.AppNotificationTransfer{Days: pkg.Days}.Preview())
 
 	return &GiftPackageResponse{
 		ReceiverUsername: receiver.Username,
@@ -700,6 +715,7 @@ func (s *Service) GiftIcon(fromID, shopItemID uuid.UUID, toUsername, password st
 	s.invalidate(fromID)
 	s.invalidate(receiver.ID)
 	s.wsServer.EmitKenUpdate(fromID, giver.Ken)
+	s.notifSvc.Create(receiver.ID, &fromID, models.AppNotificationVipReceived, nil, models.AppNotificationTransfer{VipTypeID: item.VipTypeID}.Preview())
 
 	return &GiftIconResponse{
 		ReceiverUsername: receiver.Username,
