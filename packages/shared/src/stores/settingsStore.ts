@@ -36,6 +36,10 @@ export const useSettingsStore = create<SettingsState>()(
       name: 'ola.settings',
       storage: sharedPersistStorage<Pick<SettingsState, 'settings'>>(),
       partialize: (state) => ({ settings: state.settings }),
+      merge: (persisted, current) => {
+        const saved = (persisted as Partial<Pick<SettingsState, 'settings'>> | undefined)?.settings;
+        return { ...current, settings: { ...DEFAULT_USER_SETTINGS, ...saved } };
+      },
     }
   )
 );

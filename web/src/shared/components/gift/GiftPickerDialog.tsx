@@ -108,51 +108,56 @@ function GiftPickerContent({
           </>
         }
       >
-        <div className="flex flex-col gap-1 px-1 py-1">
-          <span className="text-base text-black/54">
-            {t('gift.receiverLabel')}
-          </span>
-          <ReceiverRow receiver={receiver} />
-          <span className="mt-4 text-base text-black/54">
-            {t('gift.giftLabel')}
-          </span>
-          <div className="mt-1 flex items-center gap-3">
-            <img
-              src={selected.imageUrl}
-              alt=""
-              className="h-16 w-16 shrink-0 object-contain"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-lg font-bold text-black/87">
-                {selectedName}{' '}
-                <span className="text-ola-accent">
-                  {t('gift.quantityTimes', { count: quantity })}
-                </span>
-              </p>
-              <p className="text-sm text-black/54">
-                {t('gift.receiverCharmGain', {
-                  name: receiver.name,
-                  value: formatKen(selected.charmPoints * quantity),
-                })}
-              </p>
-              {senderGain > 0 && (
-                <p className="text-sm text-black/54">
-                  {t('gift.senderCharmGain', { value: formatKen(senderGain) })}
+        <div className="flex flex-col divide-y divide-black/8 px-1">
+          <section className="flex flex-col gap-1.5 pb-3">
+            <span className="text-sm text-black/54">
+              {t('gift.receiverLabel')}
+            </span>
+            <ReceiverRow receiver={receiver} />
+          </section>
+          <section className="flex flex-col gap-1.5 py-3">
+            <span className="text-sm text-black/54">{t('gift.giftLabel')}</span>
+            <div className="flex items-center gap-3">
+              <img
+                src={selected.imageUrl}
+                alt=""
+                className="h-16 w-16 shrink-0 object-contain drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)]"
+              />
+              <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+                <p className="max-w-full truncate text-lg font-bold text-black/87">
+                  {selectedName}{' '}
+                  <span className="text-ola-accent">
+                    {t('gift.quantityTimes', { count: quantity })}
+                  </span>
                 </p>
-              )}
+                <span className="rounded-full bg-ola-accent/10 px-2 py-0.5 text-xs font-semibold text-ola-accent-dark">
+                  {t('gift.receiverCharmGain', {
+                    name: receiver.name,
+                    value: formatKen(selected.charmPoints * quantity),
+                  })}
+                </span>
+                {senderGain > 0 && (
+                  <span className="rounded-full bg-ola-warning/12 px-2 py-0.5 text-xs font-semibold text-ola-warning">
+                    {t('gift.senderCharmGain', {
+                      value: formatKen(senderGain),
+                    })}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-          {trimmedNote !== '' && (
-            <p className="mt-2 rounded border border-black/12 px-3 py-2 text-sm italic text-black/70">
-              “{trimmedNote}”
-            </p>
-          )}
-          <span className="mt-4 text-base text-black/54">
-            {t('gift.total')}
-          </span>
-          <p className="mt-1 text-lg font-bold text-black/87">
-            {formatKen(total)} {t('chat.transferKenUnit')}
-          </p>
+            {trimmedNote !== '' && (
+              <p className="mt-1 rounded-lg bg-black/4 px-3 py-2 text-sm break-words text-black/70 italic">
+                “{trimmedNote}”
+              </p>
+            )}
+          </section>
+          <section className="flex items-center justify-between pt-3">
+            <span className="text-sm text-black/54">{t('gift.total')}</span>
+            <span className="flex items-center gap-1 text-lg font-bold text-ola-warning">
+              <img src={kenIcon} alt="" className="h-5 w-5 object-contain" />
+              {formatKen(total)} {t('chat.transferKenUnit')}
+            </span>
+          </section>
         </div>
       </Dialog>
     );

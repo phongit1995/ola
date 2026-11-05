@@ -312,6 +312,13 @@ func (s *Service) ensureCanViewWall(viewerID, ownerID uuid.UUID) error {
 	if viewerID == ownerID {
 		return nil
 	}
+	blocked, err := s.relRepo.IsBlocked(ownerID, viewerID)
+	if err != nil {
+		return err
+	}
+	if blocked {
+		return apperr.ErrUserNotFound
+	}
 	privacy, err := s.repo.GiftWallPrivacy(ownerID)
 	if err != nil {
 		return err

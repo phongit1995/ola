@@ -60,6 +60,7 @@ func NewService(repo *Repository, relRepo *relationships.Repository, userCache *
 		userCache: userCache,
 		cache:     cache,
 		wsServer:  wsServer,
+		notifSvc:  notifSvc,
 		logger:    logger.Named("[vip_service]"),
 	}
 }

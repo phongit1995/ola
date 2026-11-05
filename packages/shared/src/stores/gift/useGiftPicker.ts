@@ -68,7 +68,7 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
         animation: result.gift.animation,
         name: selectedName,
         quantity: result.quantity,
-        charmPoints: result.charmPoints,
+        charmPoints: result.senderCharmPoints ?? 0,
         caption: i18n.t('gift.sentToast', { name: selectedName, quantity: result.quantity }),
       });
       onSent?.(result);

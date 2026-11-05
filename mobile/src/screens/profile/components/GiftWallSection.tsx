@@ -11,6 +11,8 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { CARD_SHADOW, GIFT_WALL_COLUMNS, GIFT_WALL_PREVIEW_COUNT } from '../constants';
 
+const GIFT_TILE_STYLE = { width: `${100 / GIFT_WALL_COLUMNS}%` } as const;
+
 interface GiftWallSectionProps {
   userId: string;
   isSelf: boolean;
@@ -85,17 +87,14 @@ export function GiftWallSection({
                 accessibilityRole="button"
                 accessibilityLabel={name}
                 onPress={() => replay(item)}
-                className="items-center px-0.5 py-1"
-                style={({ pressed }) => ({
-                  width: `${100 / GIFT_WALL_COLUMNS}%`,
-                  transform: [{ scale: pressed ? 0.9 : 1 }],
-                })}
+                className="items-center px-0.5 py-1 active:opacity-60"
+                style={GIFT_TILE_STYLE}
               >
                 <View>
                   <CachedImage uri={item.gift.imageUrl} style={{ width: 44, height: 44 }} resizeMode="contain" />
                   <View
-                    className="absolute rounded-full px-1"
-                    style={{ right: -8, bottom: -4, backgroundColor: GIFT_ACCENT }}
+                    className="rounded-full px-1"
+                    style={{ position: 'absolute', right: -8, bottom: -4, backgroundColor: GIFT_ACCENT }}
                   >
                     <Text className="text-[10px] font-bold leading-4 text-white">
                       {t('gift.quantityTimes', { count: item.quantity })}
