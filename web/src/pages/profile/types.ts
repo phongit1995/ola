@@ -39,6 +39,7 @@ export interface UserProfile {
   avatar?: string;
   coverPhoto?: string;
   verified: boolean;
+  emailVerified: boolean;
   vipTypeId: number | null;
   fans: number;
   kisses: number;

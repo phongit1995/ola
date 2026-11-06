@@ -22,6 +22,7 @@ import { GENDER } from '@ola/shared/constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
+const emailVerifiedIcon = require('@assets/icons/profile/ic_email_verified.webp');
 const kissIcon = require('@assets/icons/profile/sticker_kiss.png');
 const maleIcon = require('@assets/icons/profile/ic_indicate_male.png');
 const femaleIcon = require('@assets/icons/profile/ic_indicate_female.png');
@@ -240,6 +241,13 @@ export function ProfileCard({
         {profile.verified && (
           <Image
             source={checkedIcon}
+            style={{ width: 20, height: 20 }}
+            resizeMode="contain"
+          />
+        )}
+        {profile.emailVerified && (
+          <Image
+            source={emailVerifiedIcon}
             style={{ width: 20, height: 20 }}
             resizeMode="contain"
           />

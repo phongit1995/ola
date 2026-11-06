@@ -28,6 +28,7 @@ export function mapPublicProfile(
     avatar: data.avatar,
     coverPhoto: data.coverPhoto,
     verified: data.verified,
+    emailVerified: data.emailVerified === true,
     vipTypeId: activeVipTypeId(data.vipUsed, data.vipEndTime),
     fans: data.followerCount,
     kisses: data.kisses,

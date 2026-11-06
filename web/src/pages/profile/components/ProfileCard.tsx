@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
+import emailVerifiedIcon from '@/assets/icons/profile/ic_email_verified.webp';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import kissIcon from '@/assets/icons/profile/sticker_kiss.png';
 import maleIcon from '@/assets/icons/profile/ic_indicate_male.png';
@@ -263,6 +264,13 @@ export function ProfileCard({
         />
         {profile.verified && (
           <img src={checkedIcon} alt="" className="h-5 w-5 object-contain" />
+        )}
+        {profile.emailVerified && (
+          <img
+            src={emailVerifiedIcon}
+            alt=""
+            className="h-5 w-5 shrink-0 object-contain"
+          />
         )}
       </div>
 
