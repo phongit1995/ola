@@ -21,6 +21,7 @@ import {
   Avatar,
   Spinner,
   ConfirmDialog,
+  UserName,
 } from '@components';
 import { APP_NOTIFICATION_TYPE, isSystemNotice } from '@constants';
 import { MarriageService, RelationshipService } from '@services';
@@ -219,9 +220,11 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
             {items.map((item) => {
               const config = KIND_CONFIG[item.type];
               const system = isSystemNotice(item.type);
+              const actor = system ? undefined : item.actor;
               const name = system
                 ? t('notify.systemSender')
-                : item.actor?.fullName || item.actor?.username || '';
+                : actor?.fullName || actor?.username || '';
+              const handle = actor != null ? `@${actor.username}` : name;
               const transfer = transferNotificationContent(t, item);
               const message =
                 transfer?.text ??
@@ -247,11 +250,26 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                       />
                     )}
                     <div className="ml-4 min-w-0 flex-1">
-                      {name !== '' && (
-                        <p className="truncate text-base font-bold text-black/87">
-                          {name}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <UserName
+                          name={handle}
+                          fullName={actor?.fullName}
+                          className="min-w-0 flex-1 truncate text-base font-bold text-black/87"
+                          fullNameClassName="font-normal text-black/54"
+                        />
+                        <div className="flex shrink-0 items-center gap-1">
+                          {config != null && (
+                            <img
+                              src={config.icon}
+                              alt=""
+                              className="h-[18px] w-[18px] shrink-0 object-contain"
+                            />
+                          )}
+                          <span className="text-xs text-black/54">
+                            {formatTime(item.createdAt)}
+                          </span>
+                        </div>
+                      </div>
                       <p className="mt-1 flex items-center gap-1 text-sm leading-snug text-black/87">
                         <span className="min-w-0">{message}</span>
                         {badge != null && (
@@ -279,19 +297,6 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                       )}
 
                       {renderActions(item)}
-
-                      <div className="mt-1 flex items-center gap-1">
-                        {config != null && (
-                          <img
-                            src={config.icon}
-                            alt=""
-                            className="h-[18px] w-[18px] shrink-0 object-contain"
-                          />
-                        )}
-                        <span className="text-xs text-black/54">
-                          {formatTime(item.createdAt)}
-                        </span>
-                      </div>
                     </div>
                     {busyId === item.id && <Spinner size={16} />}
                     {system && (

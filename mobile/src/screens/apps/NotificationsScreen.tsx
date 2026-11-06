@@ -180,7 +180,9 @@ export function NotificationsScreen() {
           renderItem={({ item }) => {
             const config = KIND_CONFIG[item.type];
             const system = isSystemNotice(item.type);
-            const name = system ? t('notify.systemSender') : item.actor?.fullName || item.actor?.username || '';
+            const actor = system ? undefined : item.actor;
+            const name = system ? t('notify.systemSender') : actor?.fullName || actor?.username || '';
+            const handle = actor != null ? `@${actor.username}` : name;
             const transfer = transferNotificationContent(t, item);
             const message = transfer?.text ?? (config != null ? t(config.messageKey) : item.preview ?? '');
             const badge = transfer?.badge;
@@ -194,11 +196,22 @@ export function NotificationsScreen() {
                   <Avatar name={name} uri={item.actor?.avatar ?? undefined} size={40} />
                 )}
                 <View className="ml-4 min-w-0 flex-1">
-                  {name !== '' && (
-                    <Text numberOfLines={1} className="text-base font-bold text-ola-ink">
-                      {name}
+                  <View className="flex-row items-center gap-2">
+                    <Text numberOfLines={1} className="min-w-0 flex-1 text-base font-bold text-ola-ink">
+                      {handle}
+                      {actor?.fullName != null && actor.fullName !== '' && (
+                        <Text className="font-normal text-ola-ink-soft">{` · ${actor.fullName}`}</Text>
+                      )}
                     </Text>
-                  )}
+                    <View className="flex-row items-center gap-1">
+                      {config != null && (
+                        <Image source={config.icon} style={{ width: 18, height: 18 }} resizeMode="contain" />
+                      )}
+                      <Text className="text-xs text-ola-ink-soft">
+                        {formatTime(item.createdAt)}
+                      </Text>
+                    </View>
+                  </View>
                   <View className="mt-1 flex-row items-center gap-1">
                     <Text className="shrink text-sm leading-snug text-ola-ink">{message}</Text>
                     {badge?.kind === 'ken' && (
@@ -220,15 +233,6 @@ export function NotificationsScreen() {
                   )}
 
                   {renderActions(item)}
-
-                  <View className="mt-1 flex-row items-center gap-1">
-                    {config != null && (
-                      <Image source={config.icon} style={{ width: 18, height: 18 }} resizeMode="contain" />
-                    )}
-                    <Text className="text-xs text-ola-ink-soft">
-                      {formatTime(item.createdAt)}
-                    </Text>
-                  </View>
                 </View>
                 {busyId === item.id && <ActivityIndicator color={colors.primary} />}
                 {system && (
