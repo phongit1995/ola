@@ -20,6 +20,7 @@ import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { APP_NOTIFICATION_TYPE, isSystemNotice } from '@ola/shared/constants';
 import { GIFT_ASSETS } from '@components/gift/giftAssets';
+import { UserName } from '@components/ui/UserName';
 
 const icFriend = require('@assets/icons/notify/ic_notification_add_friend.png');
 const icHeart = require('@assets/icons/notify/ic_notification_heart.png');
@@ -197,12 +198,12 @@ export function NotificationsScreen() {
                 )}
                 <View className="ml-4 min-w-0 flex-1">
                   <View className="flex-row items-center gap-2">
-                    <Text numberOfLines={1} className="min-w-0 flex-1 text-base font-bold text-ola-ink">
-                      {handle}
-                      {actor?.fullName != null && actor.fullName !== '' && (
-                        <Text className="font-normal text-ola-ink-soft">{` · ${actor.fullName}`}</Text>
-                      )}
-                    </Text>
+                    <UserName
+                      name={handle}
+                      fullName={actor?.fullName}
+                      className="min-w-0 flex-1 text-base font-bold text-ola-ink"
+                      fullNameClassName="font-normal text-ola-ink-soft"
+                    />
                     <View className="flex-row items-center gap-1">
                       {config != null && (
                         <Image source={config.icon} style={{ width: 18, height: 18 }} resizeMode="contain" />

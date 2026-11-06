@@ -21,6 +21,7 @@ import { DIVIDER } from '@constants';
 import { WordChainListStatus, WordChainUserRow } from './WordChainList';
 import { WordChainTabs } from './WordChainTabs';
 import { WordChainWinHistory } from './WordChainWinHistory';
+import { UserName } from '@components/ui/UserName';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 const PANEL_HEIGHT_RATIO = 0.64;
@@ -66,12 +67,13 @@ function LeaderboardRow({
         </Text>
       }
     >
-      <Text numberOfLines={1} className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
-        {entry.username}
-        {entry.fullName != null && entry.fullName !== '' && (
-          <Text style={{ color: 'rgba(0,0,0,0.45)' }}> · {entry.fullName}</Text>
-        )}
-      </Text>
+      <UserName
+        name={entry.username}
+        fullName={entry.fullName}
+        className="text-sm"
+        style={{ color: 'rgba(0,0,0,0.87)' }}
+        fullNameStyle={{ color: 'rgba(0,0,0,0.45)' }}
+      />
       <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.45)' }}>
         {byWins ? points : wins}
       </Text>

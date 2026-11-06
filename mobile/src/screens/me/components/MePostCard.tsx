@@ -21,6 +21,7 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
+import { UserName } from '@components/ui/UserName';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -233,7 +234,6 @@ function MePostCardComponent({
 
   const author = post.author?.username ?? '';
   const fullName = post.author?.fullName ?? '';
-  const showFullName = fullName !== '' && fullName !== author;
   const liked = post.myReaction === 'like';
   const disliked = post.myReaction === 'dislike';
   const comments = post.commentCount;
@@ -310,12 +310,11 @@ function MePostCardComponent({
           <Avatar name={author} uri={post.author?.avatar ?? undefined} size={40} />
           <View className="min-w-0 flex-1">
             <View className="flex-row items-center gap-1">
-              <Text numberOfLines={1} className="min-w-0 shrink text-base text-ola-ink">
-                {author}
-                {showFullName && (
-                  <Text className="text-ola-ink-soft"> · {fullName}</Text>
-                )}
-              </Text>
+              <UserName
+                name={author}
+                fullName={fullName !== author ? fullName : undefined}
+                className="min-w-0 shrink text-base text-ola-ink"
+              />
               {showPinned && post.isPinned && (
                 <Image source={pinIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
               )}

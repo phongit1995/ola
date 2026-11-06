@@ -20,6 +20,7 @@ import { GiftPill } from '@components/gift/GiftPill';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { DIVIDER, TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY, WARNING } from '@constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
+import { UserName } from '@components/ui/UserName';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftHistory'>;
 
@@ -80,14 +81,14 @@ export function GiftHistoryScreen({ navigation }: Props) {
         <View className="min-w-0 flex-1">
           <View className="flex-row items-center gap-2">
             <Pressable onPress={openUser} className="min-w-0 flex-1 active:opacity-70">
-              <Text numberOfLines={1} className="text-sm font-semibold" style={{ color: TEXT_PRIMARY }}>
-                {username}
-                {fullName != null && fullName !== '' && (
-                  <Text className="font-normal" style={{ color: TEXT_FAINT }}>
-                    {` · ${fullName}`}
-                  </Text>
-                )}
-              </Text>
+              <UserName
+                name={username}
+                fullName={fullName}
+                className="text-sm font-semibold"
+                fullNameClassName="font-normal"
+                style={{ color: TEXT_PRIMARY }}
+                fullNameStyle={{ color: TEXT_FAINT }}
+              />
             </Pressable>
             <Text className="text-xs" style={{ color: TEXT_FAINT }}>
               {`${formatDateDMY(item.createdAt)} ${formatClockHM(item.createdAt)}`}

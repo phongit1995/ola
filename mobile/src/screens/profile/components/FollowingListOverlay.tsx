@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  Text,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +14,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { FOLLOW_PAGE_SIZE } from '../constants';
+import { UserName } from '@components/ui/UserName';
 
 type FollowListKind = 'following' | 'followers';
 
@@ -127,18 +127,11 @@ function FollowingListBody({
                 size={40}
                 rounded={false}
               />
-              <Text
-                numberOfLines={1}
+              <UserName
+                name={`@${item.username}`}
+                fullName={item.fullName}
                 className="min-w-0 flex-1 text-base text-ola-ink"
-              >
-                @{item.username}
-                {item.fullName != null && item.fullName !== '' && (
-                  <Text className="text-ola-ink-soft">
-                    {' '}
-                    · {item.fullName}
-                  </Text>
-                )}
-              </Text>
+              />
             </Pressable>
           )}
         />

@@ -22,6 +22,7 @@ import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { GIFT_ASSETS } from '@components/gift/giftAssets';
 import { DIVIDER, TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
+import { UserName } from '@components/ui/UserName';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftLeaderboard'>;
 
@@ -82,17 +83,6 @@ const PODIUM_SLOTS: PodiumSlotStyle[] = [
     badgeHeight: 44,
   },
 ];
-
-function HandleName({ username, fullName, className }: { username: string; fullName?: string; className: string }) {
-  return (
-    <Text numberOfLines={1} className={className} style={{ color: TEXT_PRIMARY }}>
-      {`@${username}`}
-      {fullName != null && fullName !== '' && (
-        <Text className="font-normal" style={{ color: TEXT_SECONDARY }}>{` · ${fullName}`}</Text>
-      )}
-    </Text>
-  );
-}
 
 function BoardValue({ type, value }: { type: GiftLeaderboardType; value: number }) {
   return (
@@ -280,10 +270,13 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
                   </Text>
                   <Avatar name={name} uri={entry.user.avatar} color={colorForName(name)} size={36} />
                   <View className="min-w-0 flex-1">
-                    <HandleName
-                      username={entry.user.username}
+                    <UserName
+                      name={`@${entry.user.username}`}
                       fullName={entry.user.fullName}
                       className="text-sm font-medium"
+                      fullNameClassName="font-normal"
+                      style={{ color: TEXT_PRIMARY }}
+                      fullNameStyle={{ color: TEXT_SECONDARY }}
                     />
                   </View>
                   <BoardValue type={type} value={entry.value} />
@@ -324,7 +317,14 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
           )}
           <Avatar name={myName} uri={me?.avatar} color={colorForName(myName)} size={36} />
           <View className="min-w-0 flex-1">
-            <HandleName username={me?.username ?? ''} fullName={me?.fullName} className="text-sm font-semibold" />
+            <UserName
+              name={`@${me?.username ?? ''}`}
+              fullName={me?.fullName}
+              className="text-sm font-semibold"
+              fullNameClassName="font-normal"
+              style={{ color: TEXT_PRIMARY }}
+              fullNameStyle={{ color: TEXT_SECONDARY }}
+            />
             <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
               {board.me.rank > 0 ? t('gift.leaderboard.myRank') : t('gift.leaderboard.notRanked')}
             </Text>

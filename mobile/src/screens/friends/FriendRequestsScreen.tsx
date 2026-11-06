@@ -18,6 +18,7 @@ import type { Relationship } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { UserName } from '@components/ui/UserName';
 
 export function FriendRequestsScreen() {
   const { t, i18n } = useTranslation();
@@ -117,19 +118,12 @@ export function FriendRequestsScreen() {
                     {vipTypeId != null && (
                       <VipAvatar typeId={vipTypeId} size={20} />
                     )}
-                    <Text
-                      numberOfLines={1}
+                    <UserName
+                      name={`@${requester?.username ?? ''}`}
+                      fullName={requester?.fullName}
                       className="min-w-0 shrink text-base text-ola-ink"
-                    >
-                      @{requester?.username ?? ''}
-                      {requester?.fullName != null &&
-                        requester.fullName !== '' && (
-                          <Text style={{ color: 'rgba(0,0,0,0.45)' }}>
-                            {' '}
-                            · {requester.fullName}
-                          </Text>
-                        )}
-                    </Text>
+                      fullNameStyle={{ color: 'rgba(0,0,0,0.45)' }}
+                    />
                   </View>
                   <Text
                     numberOfLines={1}

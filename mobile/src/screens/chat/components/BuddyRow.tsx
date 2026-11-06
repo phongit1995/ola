@@ -6,6 +6,7 @@ import { CachedImage } from '@components/ui/CachedImage';
 import type { Contact } from '../types';
 import { DEVICE_ICONS } from '@lib/deviceIcons';
 import { DIVIDER } from '@constants';
+import { UserName } from '@components/ui/UserName';
 
 const birthdayIcon = require('@assets/icons/chat/ic_buddy_birthday.png');
 function SquareAvatar({ name, color, uri, size = 40 }: { name: string; color: string; uri?: string; size?: number }) {
@@ -86,12 +87,12 @@ export function BuddyRow({ contact, highlight, onSelect, onLongPress, onOpenProf
           onPress={onOpenProfile ?? onSelect}
         >
           {showVip && <VipAvatar typeId={contact.vipTypeId} size={20} />}
-          <Text className="shrink text-base text-ola-ink" numberOfLines={1}>
-            {contact.name}
-            {contact.fullName != null && contact.fullName !== '' && (
-              <Text style={{ color: 'rgba(0,0,0,0.45)' }}> · {contact.fullName}</Text>
-            )}
-          </Text>
+          <UserName
+            name={contact.name}
+            fullName={contact.fullName}
+            className="shrink text-base text-ola-ink"
+            fullNameStyle={{ color: 'rgba(0,0,0,0.45)' }}
+          />
         </Pressable>
         {contact.status != null && contact.status !== '' && (
           <Text className="text-xs text-ola-ink-soft" numberOfLines={1}>

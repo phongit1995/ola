@@ -19,6 +19,7 @@ import type { OpenProfileHandler, OpenViewerHandler } from '../types';
 import { RelationButtons } from './RelationButtons';
 import { GENDER } from '@ola/shared/constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
+import { UserName } from '@components/ui/UserName';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
 const emailVerifiedIcon = require('@assets/icons/profile/ic_email_verified.webp');
@@ -228,15 +229,11 @@ export function ProfileCard({
       </View>
 
       <View className="flex-row items-center justify-center gap-1 p-2">
-        <Text
-          numberOfLines={1}
+        <UserName
+          name={`@${profile.username}`}
+          fullName={profile.fullName}
           className="min-w-0 shrink text-lg text-ola-ink"
-        >
-          @{profile.username}
-          {profile.fullName != null && profile.fullName !== '' && (
-            <Text className="text-ola-ink-soft"> · {profile.fullName}</Text>
-          )}
-        </Text>
+        />
         {profile.verified && (
           <Image
             source={checkedIcon}
