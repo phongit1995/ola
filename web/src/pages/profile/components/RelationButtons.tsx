@@ -17,7 +17,7 @@ import followingActiveIcon from '@/assets/icons/profile/ic_state_following.png';
 import editIcon from '@/assets/icons/profile/ic_edit_profile_gray.png';
 import postMeIcon from '@/assets/icons/profile/ic_post_me_gray.png';
 import moreIcon from '@/assets/icons/profile/ic_more_horizon_black_disable.png';
-import giftIcon from '@/assets/games/egg/ic_gift.png';
+import giftIcon from '@/assets/icons/gift/gift-profile-send.webp';
 
 interface RelationButtonsProps {
   userId: string;

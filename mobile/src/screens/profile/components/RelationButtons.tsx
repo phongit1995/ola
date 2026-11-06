@@ -132,7 +132,7 @@ export function RelationButtons({
             />
             {onSendGift != null && (
               <RelationButton
-                icon={GIFT_ASSETS.icon}
+                icon={GIFT_ASSETS.profileSend}
                 label={t('gift.title')}
                 onPress={onSendGift}
               />

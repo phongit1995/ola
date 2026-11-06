@@ -5,4 +5,5 @@ export const GIFT_ASSETS = {
   leaderboard: require('@assets/icons/gift/gift-leaderboard.webp'),
   history: require('@assets/icons/gift/gift-history.webp'),
   sendNow: require('@assets/icons/gift/gift-send-now.webp'),
+  profileSend: require('@assets/icons/gift/gift-profile-send.webp'),
 };
