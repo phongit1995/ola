@@ -11,6 +11,8 @@ import type { AdminMegaphone, MegaphoneStatus } from '@/types'
 import { MegaphoneRemoveModal } from './MegaphoneRemoveModal'
 import { MEGAPHONE_STATUS_OPTIONS, MEGAPHONE_STATUS_TAG } from './constants'
 import { useMegaphones } from './useMegaphoneQueries'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { MEGAPHONE_SECTION_LINKS } from '@/pages/shop/sections'
 
 export function MegaphonesPage() {
   const [senderId, setSenderId] = useState('')
@@ -98,7 +100,7 @@ export function MegaphonesPage() {
 
   return (
     <Space orientation="vertical" size={16} style={{ width: '100%' }}>
-      <Card>
+      <Card title={<ShopSectionNav links={MEGAPHONE_SECTION_LINKS} />}>
         <Space wrap>
           <Input.Search
             allowClear

@@ -27,7 +27,7 @@ import {
   ShoppingCartOutlined,
   SmileOutlined,
   SoundOutlined,
-  StopOutlined,
+  ShopOutlined,
   SwapOutlined,
   PictureOutlined,
   ReadOutlined,
@@ -87,23 +87,12 @@ const MENU_ITEMS = [
     ],
   },
   {
-    key: 'gifts',
-    icon: <GiftOutlined />,
-    label: 'Quà tặng',
+    key: 'shop',
+    icon: <ShopOutlined />,
+    label: 'Cửa hàng',
     children: [
-      { key: '/gifts', icon: <UnorderedListOutlined />, label: 'Danh sách quà' },
-      { key: '/gifts/transactions', icon: <TransactionOutlined />, label: 'Sổ quà' },
-      { key: '/gifts/settings', icon: <SettingOutlined />, label: 'Cài đặt' },
-    ],
-  },
-  {
-    key: 'megaphones',
-    icon: <SoundOutlined />,
-    label: 'Loa',
-    children: [
-      { key: '/megaphones', icon: <UnorderedListOutlined />, label: 'Danh sách loa' },
-      { key: '/megaphones/banned-words', icon: <StopOutlined />, label: 'Từ cấm' },
-      { key: '/megaphones/settings', icon: <SettingOutlined />, label: 'Cài đặt' },
+      { key: '/gifts', icon: <GiftOutlined />, label: 'Quà tặng' },
+      { key: '/megaphones', icon: <SoundOutlined />, label: 'Loa' },
     ],
   },
   {
@@ -152,6 +141,7 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
 })
 
 const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-purchases', '/vip-transfers']
+const SHOP_KEYS = ['/gifts', '/megaphones']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
   '/games/matches': '/games/mini-game',
@@ -239,7 +229,7 @@ export function AdminLayout() {
     ...(selectedKey.startsWith('/users') ? ['users'] : []),
     ...(selectedKey.startsWith('/rooms') ? ['rooms'] : []),
     ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
-    ...(selectedKey.startsWith('/gifts') ? ['gifts'] : []),
+    ...(SHOP_KEYS.includes(selectedKey) ? ['shop'] : []),
     ...(selectedKey.startsWith('/games') ? ['games'] : []),
     ...(selectedKey.startsWith('/stories') ? ['stories'] : []),
     ...(selectedKey.startsWith('/settings') ? ['settings'] : []),

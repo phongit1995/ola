@@ -14,6 +14,8 @@ import {
 } from './constants'
 import { parseBannedWords } from './utils'
 import { useCheckContent } from './useMegaphoneQueries'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { MEGAPHONE_SECTION_LINKS } from '@/pages/shop/sections'
 
 function BannedWordsEditor({ initialWords }: { initialWords: string[] }) {
   const { message } = App.useApp()
@@ -46,7 +48,7 @@ function BannedWordsEditor({ initialWords }: { initialWords: string[] }) {
 
   return (
     <Space orientation="vertical" size={16} style={{ width: '100%', maxWidth: 680 }}>
-      <Card title="Từ cấm">
+      <Card title={<ShopSectionNav links={MEGAPHONE_SECTION_LINKS} />}>
         <Typography.Paragraph type="secondary">
           Mỗi dòng một từ hoặc cụm từ. Đang áp dụng cho loa: dính từ cấm thì không phát được và không bị trừ KEN.
           So khớp không phân biệt hoa thường, có dấu hay không dấu, và bắt cả kiểu viết tách “đ.ị.t”, “d i t”. Một
@@ -112,15 +114,17 @@ export function BannedWordsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 64 }}>
-        <Spin />
-      </div>
+      <Card title={<ShopSectionNav links={MEGAPHONE_SECTION_LINKS} />} style={{ maxWidth: 680 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+          <Spin />
+        </div>
+      </Card>
     )
   }
 
   if (isError) {
     return (
-      <Card title="Từ cấm" style={{ maxWidth: 680 }}>
+      <Card title={<ShopSectionNav links={MEGAPHONE_SECTION_LINKS} />} style={{ maxWidth: 680 }}>
         <Typography.Text type="danger">
           Không tải được danh sách hiện tại. Tải lại trang trước khi chỉnh sửa để tránh ghi đè nhầm.
         </Typography.Text>

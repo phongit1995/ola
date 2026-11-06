@@ -10,6 +10,8 @@ import { PAGE_SIZE } from '@/lib/constants'
 import { toIsoRange } from '@/lib/dateRange'
 import { formatCount, formatDateTime } from '@/lib/format'
 import type { AdminGiftTransaction } from '@/types'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { GIFT_SECTION_LINKS } from '@/pages/shop/sections'
 
 const GIFT_ROW_THUMB_SIZE = 32
 
@@ -124,7 +126,7 @@ export function GiftTransactionsPage() {
 
   return (
     <Space orientation="vertical" size={16} style={{ width: '100%' }}>
-      <Card>
+      <Card title={<ShopSectionNav links={GIFT_SECTION_LINKS} />}>
         <Space wrap>
           <Input.Search
             allowClear

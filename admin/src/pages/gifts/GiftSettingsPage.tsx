@@ -13,6 +13,8 @@ import { errorMessage } from '@/lib/apiError'
 import { settingValue } from '@/lib/appSetting'
 import { kenNumberInputProps } from '@/lib/format'
 import type { GiftSetting } from '@/types'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { GIFT_SECTION_LINKS } from '@/pages/shop/sections'
 
 export function GiftSettingsPage() {
   const { message } = App.useApp()
@@ -21,15 +23,17 @@ export function GiftSettingsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 64 }}>
-        <Spin />
-      </div>
+      <Card title={<ShopSectionNav links={GIFT_SECTION_LINKS} />} style={{ maxWidth: 680 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+          <Spin />
+        </div>
+      </Card>
     )
   }
 
   if (isError) {
     return (
-      <Card title="Cài đặt tặng quà" style={{ maxWidth: 680 }}>
+      <Card title={<ShopSectionNav links={GIFT_SECTION_LINKS} />} style={{ maxWidth: 680 }}>
         <Typography.Text type="danger">
           Không tải được cấu hình hiện tại. Tải lại trang trước khi chỉnh sửa để tránh ghi đè nhầm.
         </Typography.Text>
@@ -61,7 +65,7 @@ export function GiftSettingsPage() {
   }
 
   return (
-    <Card title="Cài đặt tặng quà" style={{ maxWidth: 680 }}>
+    <Card title={<ShopSectionNav links={GIFT_SECTION_LINKS} />} style={{ maxWidth: 680 }}>
       <Typography.Paragraph type="secondary">
         Áp dụng cho chat 1-1 và trang cá nhân. Chưa lưu lần nào thì hệ thống dùng đúng giá trị mặc
         định đang hiển thị. Mỗi người tặng tối đa 20 lần/phút (cố định ở server).

@@ -18,6 +18,8 @@ import { GiftAnimationPreview, type GiftPreview } from './GiftAnimationPreview'
 import { GIFT_ANIMATION_OPTIONS } from './constants'
 import { GIFT_ANIMATION_RANDOM } from '@ola/shared/constants'
 import { pickGiftAnimation, toGiftAnimationSetting } from '@ola/shared/lib'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { GIFT_SECTION_LINKS } from '@/pages/shop/sections'
 import { errorMessage } from '@/lib/apiError'
 import { formatCount } from '@/lib/format'
 import type { GiftAnimationSetting } from '@ola/shared/types'
@@ -209,16 +211,18 @@ export function GiftsPage() {
   ]
 
   return (
-    <Card>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-        <Typography.Text type="secondary">
-          Quà người dùng tặng nhau trong chat 1-1 và trang cá nhân. Người tặng trả KEN, người nhận
-          được sức hút và quà hiện trên tường quà (không nhận KEN).
-        </Typography.Text>
+    <Card
+      title={<ShopSectionNav links={GIFT_SECTION_LINKS} />}
+      extra={
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
           Thêm quà
         </Button>
-      </div>
+      }
+    >
+      <Typography.Paragraph type="secondary">
+        Quà người dùng tặng nhau trong chat 1-1 và trang cá nhân. Người tặng trả KEN, người nhận
+        được sức hút và quà hiện trên tường quà (không nhận KEN).
+      </Typography.Paragraph>
       <Table<AdminGift>
         rowKey="id"
         columns={columns}
