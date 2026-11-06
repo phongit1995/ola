@@ -1,14 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, PanelRow } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { ROUTES } from '@constants';
-import { authTokens, formatKen, toast } from '@lib';
+import { formatKen, toast } from '@lib';
 import { AuthService, SocketService } from '@services';
-import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
-import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useAuthStore } from '@/store/authStore';
 import { useLobbyWallpaperStyle } from '@hooks';
@@ -16,7 +14,7 @@ import kenIcon from '@/assets/icons/apps/ken.png';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
 import { SupportDialog } from '../apps/SupportDialog';
-import { ChangeNicknameDialog } from './ChangeNicknameDialog';
+import { removeSavedAccountOfCurrentUser } from './utils';
 
 export function PersonalPanel() {
   const wallpaperStyle = useLobbyWallpaperStyle();
@@ -29,24 +27,6 @@ export function PersonalPanel() {
   const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  const [nicknameOpen, setNicknameOpen] = useState(false);
-  const [nicknameEnabled, setNicknameEnabled] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    requireAppConfig('usernameChange')
-      .then((config) => {
-        if (!cancelled) setNicknameEnabled(config.enabled);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const visibleItems = nicknameEnabled
-    ? PERSONAL_ITEMS
-    : PERSONAL_ITEMS.filter((item) => item.action !== 'nickname');
 
   function handleOpen(item: AppItem): (() => void) | undefined {
     if (item.action === 'logout') return () => setLogoutOpen(true);
@@ -55,7 +35,6 @@ export function PersonalPanel() {
     }
     if (item.action === 'social') return () => setSocialOpen(true);
     if (item.action === 'support') return () => setSupportOpen(true);
-    if (item.action === 'nickname') return () => setNicknameOpen(true);
     if (item.app) return () => openApp(item.app!);
     return undefined;
   }
@@ -75,30 +54,6 @@ export function PersonalPanel() {
   async function confirmLogout() {
     setLogoutOpen(false);
     await signOut();
-  }
-
-  function handleNicknameChanged() {
-    setNicknameOpen(false);
-    removeSavedAccountOfCurrentUser();
-    authTokens.clear();
-    SocketService.disconnect();
-    useAuthStore.getState().clearUser();
-    navigate(ROUTES.login);
-  }
-
-  function removeSavedAccountOfCurrentUser() {
-    const currentUsername = useAuthStore.getState().user?.username;
-    if (currentUsername == null) return;
-    const normalizedUsername = currentUsername.trim().toLowerCase();
-    const savedAccount = useSavedAccountsStore
-      .getState()
-      .accounts.find(
-        (account) =>
-          account.username.trim().toLowerCase() === normalizedUsername
-      );
-    if (savedAccount != null) {
-      useSavedAccountsStore.getState().removeAccount(savedAccount.username);
-    }
   }
 
   async function confirmRemoveAccount() {
@@ -136,7 +91,7 @@ export function PersonalPanel() {
         style={wallpaperStyle}
       >
         <ul className="min-h-full">
-          {visibleItems.map((item) => (
+          {PERSONAL_ITEMS.map((item) => (
             <PanelRow
               key={item.titleKey}
               icon={item.icon}
@@ -178,11 +133,6 @@ export function PersonalPanel() {
       <SupportDialog
         open={supportOpen}
         onClose={() => setSupportOpen(false)}
-      />
-      <ChangeNicknameDialog
-        open={nicknameOpen}
-        onClose={() => setNicknameOpen(false)}
-        onSuccess={handleNicknameChanged}
       />
     </>
   );

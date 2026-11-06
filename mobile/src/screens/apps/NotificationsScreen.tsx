@@ -10,22 +10,30 @@ import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { MarriageService, RelationshipService } from '@ola/shared/services';
-import { createTimeFormatter } from '@ola/shared/lib';
+import { createTimeFormatter, isTransferNotification, transferNotificationContent } from '@ola/shared/lib';
 import type { AppNotification } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
+import { VipIcon } from '@components/ui/VipIcon';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { APP_NOTIFICATION_TYPE, isSystemNotice } from '@ola/shared/constants';
+import { GIFT_ASSETS } from '@components/gift/giftAssets';
+import { UserName } from '@components/ui/UserName';
 
 const icFriend = require('@assets/icons/notify/ic_notification_add_friend.png');
 const icHeart = require('@assets/icons/notify/ic_notification_heart.png');
+const icKen = require('@assets/icons/apps/ken.png');
+const icVip = require('@assets/icons/apps/vip-crown.webp');
 const olaLogo = require('@assets/ola-logo.png');
 
 const KIND_CONFIG: Record<string, { icon: number; messageKey: ParseKeys }> = {
   friend_request: { icon: icFriend, messageKey: 'notify.msg_friend' },
   marriage_proposal: { icon: icHeart, messageKey: 'notify.msg_proposal' },
+  gift_received: { icon: GIFT_ASSETS.icon, messageKey: 'notify.msg_gift' },
+  ken_received: { icon: icKen, messageKey: 'notify.msg_ken' },
+  vip_received: { icon: icVip, messageKey: 'notify.msg_vip' },
 };
 
 function SystemAvatar() {
@@ -173,8 +181,14 @@ export function NotificationsScreen() {
           renderItem={({ item }) => {
             const config = KIND_CONFIG[item.type];
             const system = isSystemNotice(item.type);
-            const name = system ? t('notify.systemSender') : item.actor?.fullName || item.actor?.username || '';
-            const message = config != null ? t(config.messageKey) : item.preview ?? '';
+            const actor = system ? undefined : item.actor;
+            const name = system ? t('notify.systemSender') : actor?.fullName || actor?.username || '';
+            const handle = actor != null ? `@${actor.username}` : name;
+            const transfer = transferNotificationContent(t, item);
+            const message = transfer?.text ?? (config != null ? t(config.messageKey) : item.preview ?? '');
+            const badge = transfer?.badge;
+            const showPreview =
+              config != null && !isTransferNotification(item.type) && item.preview != null && item.preview !== '';
             return (
               <View className="min-h-[72px] flex-row items-start bg-white/80 p-4">
                 {system ? (
@@ -183,30 +197,43 @@ export function NotificationsScreen() {
                   <Avatar name={name} uri={item.actor?.avatar ?? undefined} size={40} />
                 )}
                 <View className="ml-4 min-w-0 flex-1">
-                  {name !== '' && (
-                    <Text numberOfLines={1} className="text-base font-bold text-ola-ink">
-                      {name}
-                    </Text>
-                  )}
-                  <Text className="mt-1 text-sm leading-snug text-ola-ink">
-                    {message}
-                  </Text>
-                  {config != null && item.preview != null && item.preview !== '' && (
+                  <View className="flex-row items-center gap-2">
+                    <UserName
+                      name={handle}
+                      fullName={actor?.fullName}
+                      className="min-w-0 flex-1 text-base font-bold text-ola-ink"
+                      fullNameClassName="font-normal text-ola-ink-soft"
+                    />
+                    <View className="flex-row items-center gap-1">
+                      {config != null && (
+                        <Image source={config.icon} style={{ width: 18, height: 18 }} resizeMode="contain" />
+                      )}
+                      <Text className="text-xs text-ola-ink-soft">
+                        {formatTime(item.createdAt)}
+                      </Text>
+                    </View>
+                  </View>
+                  <View className="mt-1 flex-row items-center gap-1">
+                    <Text className="shrink text-sm leading-snug text-ola-ink">{message}</Text>
+                    {badge?.kind === 'ken' && (
+                      <Image source={icKen} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                    )}
+                    {badge?.kind === 'vip' &&
+                      (badge.vipTypeId != null ? (
+                        <View style={{ marginVertical: -4 }}>
+                          <VipIcon typeId={badge.vipTypeId} size={24} />
+                        </View>
+                      ) : (
+                        <Image source={icVip} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                      ))}
+                  </View>
+                  {showPreview && (
                     <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
                       {item.preview}
                     </Text>
                   )}
 
                   {renderActions(item)}
-
-                  <View className="mt-1 flex-row items-center gap-1">
-                    {config != null && (
-                      <Image source={config.icon} style={{ width: 18, height: 18 }} resizeMode="contain" />
-                    )}
-                    <Text className="text-xs text-ola-ink-soft">
-                      {formatTime(item.createdAt)}
-                    </Text>
-                  </View>
                 </View>
                 {busyId === item.id && <ActivityIndicator color={colors.primary} />}
                 {system && (

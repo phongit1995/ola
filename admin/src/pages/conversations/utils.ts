@@ -6,6 +6,9 @@ interface MessageMeta {
   callType?: string
   callStatus?: string
   durationSeconds?: number
+  imageUrl?: string
+  giftName?: string
+  quantity?: number
 }
 
 function stringField(value: unknown) {
@@ -43,6 +46,9 @@ export function messageMeta(message: AdminConversationMessage): MessageMeta {
       typeof raw.durationSeconds === 'number' && Number.isFinite(raw.durationSeconds) && raw.durationSeconds > 0
         ? Math.floor(raw.durationSeconds)
         : undefined,
+    imageUrl: httpUrl(raw.imageUrl),
+    giftName: stringField(raw.giftName),
+    quantity: typeof raw.quantity === 'number' && raw.quantity > 0 ? Math.floor(raw.quantity) : undefined,
   }
 }
 
@@ -64,6 +70,10 @@ export function callLabel(meta: MessageMeta) {
   const kind = meta.callType === 'video' ? '📹 Cuộc gọi video' : '📞 Cuộc gọi thoại'
   if (meta.durationSeconds && meta.durationSeconds > 0) return `${kind} · ${formatDuration(meta.durationSeconds)}`
   return meta.callStatus ? `${kind} · ${CALL_STATUS_LABEL[meta.callStatus] ?? meta.callStatus}` : kind
+}
+
+export function giftLabel(meta: MessageMeta) {
+  return `🎁 ${meta.giftName ?? 'Quà tặng'} ×${meta.quantity ?? 1}`
 }
 
 export function userLabel(user?: ConversationUserBrief) {

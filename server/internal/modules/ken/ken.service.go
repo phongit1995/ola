@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/transport/websocket"
@@ -18,15 +19,17 @@ type Service struct {
 	relRepo   *relationships.Repository
 	userCache *user.CacheService
 	wsServer  *websocket.Server
+	notifSvc  *notification.Service
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, wsServer *websocket.Server, notifSvc *notification.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		relRepo:   relRepo,
 		userCache: userCache,
 		wsServer:  wsServer,
+		notifSvc:  notifSvc,
 		logger:    logger.Named("[ken_service]"),
 	}
 }
@@ -121,6 +124,7 @@ func (s *Service) Transfer(fromID uuid.UUID, req TransferRequest) (*TransferResp
 	s.invalidate(toID)
 	s.wsServer.EmitKenUpdate(fromID, result.SenderBalance)
 	s.wsServer.EmitKenUpdate(toID, result.ReceiverBalance)
+	s.notifSvc.Create(toID, &fromID, models.AppNotificationKenReceived, nil, models.AppNotificationTransfer{Amount: req.Amount}.Preview())
 
 	s.logger.Infow("User transferred ken",
 		"from_id", fromID,

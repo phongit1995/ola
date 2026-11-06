@@ -12,6 +12,12 @@ import { VipPackagesPage } from '@/pages/vip/VipPackagesPage'
 import { VipShopPage } from '@/pages/vip/VipShopPage'
 import { VipPurchasesPage } from '@/pages/vip/VipPurchasesPage'
 import { VipTransfersPage } from '@/pages/vip/VipTransfersPage'
+import { GiftsPage } from '@/pages/gifts/GiftsPage'
+import { GiftTransactionsPage } from '@/pages/gifts/GiftTransactionsPage'
+import { GiftSettingsPage } from '@/pages/gifts/GiftSettingsPage'
+import { MegaphonesPage } from '@/pages/megaphones/MegaphonesPage'
+import { MegaphoneSettingsPage } from '@/pages/megaphones/MegaphoneSettingsPage'
+import { BannedWordsPage } from '@/pages/megaphones/BannedWordsPage'
 import { EggRewardsPage } from '@/pages/games/egg/EggRewardsPage'
 import { EggStatsPage } from '@/pages/games/egg/EggStatsPage'
 import { WheelRewardsPage } from '@/pages/games/wheel/WheelRewardsPage'
@@ -68,6 +74,12 @@ export const router = createBrowserRouter([
       { path: 'vip-shop', element: <VipShopPage /> },
       { path: 'vip-purchases', element: <VipPurchasesPage /> },
       { path: 'vip-transfers', element: <VipTransfersPage /> },
+      { path: 'gifts', element: <GiftsPage /> },
+      { path: 'gifts/transactions', element: <GiftTransactionsPage /> },
+      { path: 'gifts/settings', element: <GiftSettingsPage /> },
+      { path: 'megaphones', element: <MegaphonesPage /> },
+      { path: 'megaphones/settings', element: <MegaphoneSettingsPage /> },
+      { path: 'megaphones/banned-words', element: <BannedWordsPage /> },
       { path: 'games/egg', element: <EggRewardsPage /> },
       { path: 'games/egg/stats', element: <EggStatsPage /> },
       { path: 'games/wheel', element: <WheelRewardsPage /> },

@@ -25,9 +25,10 @@ export const REPORT_CONTENT_ACTION_LABEL: Record<ReportTargetType, string | null
   message: null,
   room_message: 'Xoá tin nhắn',
   moment: 'Ẩn khoảnh khắc',
+  megaphone: 'Gỡ loa',
 }
 
-export const REPORT_TARGETS_WITHOUT_CONTEXT: readonly ReportTargetType[] = ['post', 'moment']
+export const REPORT_TARGETS_WITHOUT_CONTEXT: readonly ReportTargetType[] = ['post', 'moment', 'megaphone']
 
 export const REPORT_EXCERPT_MAX = 80
 

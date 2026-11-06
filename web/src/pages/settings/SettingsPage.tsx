@@ -4,7 +4,7 @@ import { FullScreenOverlay, ImageCropOverlay, ScreenHeader } from '@components';
 import { MIN_IMAGE_SOURCE, THEME_OPTIONS, WALLPAPER_ASPECT } from '@constants';
 import { compressImageForUpload, imageUploadErrorText, toast, validatedImageObjectUrl } from '@lib';
 import { UserService, VipService } from '@services';
-import type { ThemeId, UserSettings } from '@app-types';
+import type { GiftWallPrivacy, ThemeId, UserSettings } from '@app-types';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useThemeStore } from '@/store/themeStore';
 import { useDownloadGuideStore } from '@/store/downloadGuideStore';
@@ -22,6 +22,12 @@ const VIP_PRIVACY_DISPLAY = [
   'privacyFriends',
   'privacyPublic',
 ] as const;
+
+const GIFT_WALL_PRIVACY_OPTIONS = [
+  { value: 2, labelKey: 'settings.vipPrivacyMine' },
+  { value: 1, labelKey: 'settings.optFriends' },
+  { value: 0, labelKey: 'settings.optAll' },
+] as const satisfies readonly { value: GiftWallPrivacy; labelKey: string }[];
 
 function SectionIcon({ src }: { src: string }) {
   return <img src={src} alt="" className="h-5 w-auto object-contain" />;
@@ -382,6 +388,16 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
                     : key === 'privacyPublic'
                     ? t('settings.optAll')
                     : t(`vip.${key}`),
+              }))}
+            />
+          </SettingRow>
+          <SettingRow label={t('settings.whoCanViewGiftWall')}>
+            <Segmented
+              value={String(draft.giftWallPrivacy)}
+              onChange={(v) => setField('giftWallPrivacy', Number(v) as GiftWallPrivacy)}
+              options={GIFT_WALL_PRIVACY_OPTIONS.map((option) => ({
+                value: String(option.value),
+                label: t(option.labelKey),
               }))}
             />
           </SettingRow>

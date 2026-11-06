@@ -47,7 +47,7 @@ func (r *Repository) UpsertSettings(settings *models.UserSetting) error {
 			"message_privacy", "me_visibility", "comment_privacy",
 			"show_birthday", "show_interested",
 			"notif_message", "notif_sound", "sound_game", "sound_ken",
-			"font_size", "wallpaper_url", "updated_at",
+			"font_size", "wallpaper_url", "gift_wall_privacy", "updated_at",
 		}),
 	}).Create(settings).Error
 }

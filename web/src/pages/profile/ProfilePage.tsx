@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
+import {
+  ScreenHeader,
+  FullScreenOverlay,
+  GiftPickerDialog,
+  Spinner,
+} from '@components';
+import { GIFT_SOURCE } from '@constants';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import { colorForName } from '@lib';
 import composeIcon from '@/assets/icons/chat/ic_action_compose_message.png';
 import { useAuthStore } from '@/store/authStore';
@@ -17,6 +24,8 @@ import { ProfileMediaStore } from './components/ProfileMediaStore';
 import { ProfileFollowing } from './components/ProfileFollowing';
 import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { PeerVipStoreDialog } from './components/PeerVipStoreDialog';
+import { GiftWallSection } from './components/GiftWallSection';
+import { GiftHistoryPage } from '../gift/GiftHistoryPage';
 import { EditProfileMePage } from './EditProfileMePage';
 import type {
   ProfileActions,
@@ -60,6 +69,11 @@ export function ProfilePage({
   const [composerOpen, setComposerOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState(false);
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
+  const [giftOpen, setGiftOpen] = useState(false);
+  const [giftWallKey, setGiftWallKey] = useState(0);
+  const [giftHistoryOpen, setGiftHistoryOpen] = useState(false);
+  const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
+  const loadGiftCatalog = useGiftCatalogStore((s) => s.load);
   const scrollRef = useRef<HTMLDivElement>(null);
   const postsEndRef = useRef<HTMLDivElement>(null);
   const { hasMorePosts, loadingMorePosts } = secondary;
@@ -79,6 +93,10 @@ export function ProfilePage({
     observer.observe(end);
     return () => observer.disconnect();
   }, [hasMorePosts, loadMorePosts, loadedPostCount]);
+
+  useEffect(() => {
+    void loadGiftCatalog();
+  }, [loadGiftCatalog]);
 
   const posts = secondary.posts.filter(
     (post) => !hiddenPostIds.includes(post.id)
@@ -113,7 +131,20 @@ export function ProfilePage({
             onOpenFriend({ name: nick, color: colorForName(nick) })
           }
           onOpenFollowers={() => setFollowersOpen(true)}
+          onSendGift={
+            !profile.isSelf && giftsEnabled
+              ? () => setGiftOpen(true)
+              : undefined
+          }
         />
+        {profile.canViewGiftWall && (
+          <GiftWallSection
+            userId={userId}
+            isSelf={profile.isSelf}
+            refreshKey={giftWallKey}
+            onOpenHistory={() => setGiftHistoryOpen(true)}
+          />
+        )}
         {secondary.media.length > 0 && (
           <ProfileMediaStore media={secondary.media} />
         )}
@@ -187,6 +218,38 @@ export function ProfilePage({
           userId={userId}
           name={profile.username}
           onClose={() => setVipStoreOpen(false)}
+        />
+      )}
+
+      {!profile.isSelf && (
+        <GiftPickerDialog
+          open={giftOpen}
+          source={GIFT_SOURCE.profile}
+          onClose={() => setGiftOpen(false)}
+          receiver={{
+            id: userId,
+            name: profile.nick,
+            username: profile.username,
+            avatar: profile.avatar,
+            color: profile.color,
+          }}
+          onSent={(result) => {
+            actions.applyCharm(result.receiverCharm);
+            setGiftWallKey((key) => key + 1);
+          }}
+        />
+      )}
+
+      {giftHistoryOpen && (
+        <GiftHistoryPage
+          z={60}
+          onClose={() => setGiftHistoryOpen(false)}
+          onOpenUser={(user) =>
+            onOpenFriend({
+              name: user.username,
+              color: colorForName(user.username),
+            })
+          }
         />
       )}
 

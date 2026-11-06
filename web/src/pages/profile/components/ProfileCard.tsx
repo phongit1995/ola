@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
+import emailVerifiedIcon from '@/assets/icons/profile/ic_email_verified.webp';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import kissIcon from '@/assets/icons/profile/sticker_kiss.png';
 import maleIcon from '@/assets/icons/profile/ic_indicate_male.png';
@@ -10,12 +11,13 @@ import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import vipStoreIcon from '@/assets/icons/me/icon_vip.webp';
 import {
   Avatar,
+  CharmIcon,
   ImageCropEditor,
   ImageCropOverlay,
   UserName,
   VipIcon,
 } from '@components';
-import { colorForName, validatedImageObjectUrl } from '@lib';
+import { colorForName, formatKen, validatedImageObjectUrl } from '@lib';
 import {
   AVATAR_ASPECT,
   COVER_ASPECT,
@@ -37,6 +39,7 @@ interface ProfileCardProps {
   onViewVipStore: () => void;
   onOpenUser?: (nick: string) => void;
   onOpenFollowers?: () => void;
+  onSendGift?: () => void;
 }
 
 function InfoRow({ icon, text }: { icon: string; text: React.ReactNode }) {
@@ -59,6 +62,7 @@ export function ProfileCard({
   onViewVipStore,
   onOpenUser,
   onOpenFollowers,
+  onSendGift,
 }: ProfileCardProps) {
   const { t } = useTranslation();
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -261,6 +265,13 @@ export function ProfileCard({
         {profile.verified && (
           <img src={checkedIcon} alt="" className="h-5 w-5 object-contain" />
         )}
+        {profile.emailVerified && (
+          <img
+            src={emailVerifiedIcon}
+            alt=""
+            className="h-5 w-5 shrink-0 object-contain"
+          />
+        )}
       </div>
 
       <div className="mx-4 h-px bg-black/12" />
@@ -275,6 +286,7 @@ export function ProfileCard({
         onChangeAvatar={triggerAvatar}
         relationship={relationship}
         actions={actions}
+        onSendGift={onSendGift}
       />
 
       <div className="mx-4 h-px bg-black/12" />
@@ -302,6 +314,12 @@ export function ProfileCard({
             : t('profile.notKissed')}
         </span>
       </button>
+
+      <p className="mt-1 flex items-center justify-center gap-1 text-sm text-black">
+        <CharmIcon className="h-[18px] w-[18px]" />
+        <span className="font-semibold">{formatKen(profile.charm)}</span>
+        <span>{t('gift.charmUnit')}</span>
+      </p>
 
       <p className="mt-3 line-clamp-5 px-4 text-center text-xs text-black/54">
         {profile.bio}

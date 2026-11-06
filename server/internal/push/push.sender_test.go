@@ -719,6 +719,9 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 		models.AppNotificationClanBanned,
 		models.AppNotificationContentViolation,
 		models.AppNotificationReportResolved,
+		models.AppNotificationGiftReceived,
+		models.AppNotificationKenReceived,
+		models.AppNotificationVipReceived,
 	} {
 		c := buildAppNotifContent("n1", "Hoa", ntype, "", 0)
 		if c.Body == "" || c.Channel != PushChannelSystem {
@@ -734,6 +737,15 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 	}
 	if c := buildAppNotifContent("n1", "", models.AppNotificationContentViolation, "Bài viết của bạn đã bị ẩn", 0); c.Title != fallbackTitle || c.Body != "Vi phạm tiêu chuẩn cộng đồng: Bài viết của bạn đã bị ẩn" {
 		t.Fatalf("unexpected violation push: %+v", c)
+	}
+	if c := buildAppNotifContent("n1", "Hoa", models.AppNotificationKenReceived, models.AppNotificationTransfer{Amount: 1250000}.Preview(), 0); c.Title != "Hoa" || c.Body != "Đã chuyển cho bạn 1,250,000 Ken" {
+		t.Fatalf("unexpected ken push: %+v", c)
+	}
+	if c := buildAppNotifContent("n1", "Hoa", models.AppNotificationVipReceived, models.AppNotificationTransfer{Days: 30}.Preview(), 0); c.Body != "Đã tặng bạn 30 ngày VIP" {
+		t.Fatalf("unexpected vip days push: %+v", c)
+	}
+	if c := buildAppNotifContent("n1", "Hoa", models.AppNotificationVipReceived, models.AppNotificationTransfer{VipTypeID: 4}.Preview(), 0); c.Body != "Đã tặng bạn VIP" {
+		t.Fatalf("unexpected vip icon push: %+v", c)
 	}
 	if c := buildAppNotifContent("n1", "", "unknown", "", 0); c.Body != "Bạn có thông báo mới" {
 		t.Fatalf("unexpected unknown-type body: %q", c.Body)

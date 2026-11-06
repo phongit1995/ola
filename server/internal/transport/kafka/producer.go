@@ -11,6 +11,7 @@ import (
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
+	megaphoneEvents "ola-chat-server/internal/domain/megaphone"
 	messageEvents "ola-chat-server/internal/domain/message"
 	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
 	roomEvents "ola-chat-server/internal/domain/room"
@@ -133,6 +134,14 @@ func (p *Producer) PublishUserBanned(ctx context.Context, event *userBanEvents.E
 
 func (p *Producer) PublishPushBroadcast(ctx context.Context, event *pushBroadcastEvents.Event) error {
 	return p.publishKeyed(ctx, constants.KafkaTopicPushBroadcast, event.CampaignID, event)
+}
+
+func (p *Producer) PublishMegaphonePlay(ctx context.Context, event *megaphoneEvents.PlayEvent) error {
+	return p.publishKeyed(ctx, constants.KafkaTopicMegaphonePlay, event.Megaphone.ID, event)
+}
+
+func (p *Producer) PublishMegaphoneRemoved(ctx context.Context, event *megaphoneEvents.RemovedEvent) error {
+	return p.publishKeyed(ctx, constants.KafkaTopicMegaphoneRemoved, event.ID, event)
 }
 
 func (p *Producer) PublishToDLQ(ctx context.Context, originalTopic string, key string, payload []byte, reason string) error {

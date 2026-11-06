@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '../../packages/shared/src/styles/giftAnimation.css';
 
 @theme {
   --color-ola-primary: #7cb342;
@@ -24,6 +25,10 @@
   --color-ola-marriage: #ff4d7d;
   --color-ola-marriage-deep: #c2185b;
   --color-ola-marriage-soft: #ffd0de;
+  --color-ola-megaphone-soft: #fff4e0;
+  --color-ola-megaphone-line: #ffd59a;
+  --color-ola-megaphone-ink: #e65100;
+  --color-ola-megaphone-name: #eb7433;
   --animate-blink: blink 1s steps(1, end) infinite;
   --animate-ola-pop: ola-pop 0.4s ease;
   --animate-ola-pop-out: ola-pop-out 0.4s ease;
@@ -54,6 +59,8 @@
   --animate-ola-screen-in: ola-screen-in 0.22s ease-out;
   --animate-ola-rise-in: ola-rise-in 0.22s ease-out both;
   --animate-ola-grow-x: ola-grow-x 0.7s ease-out 0.35s both;
+  --animate-gift-rank-rise: gift-rank-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-gift-rank-pop: gift-rank-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   --animate-moment-react-in: moment-react-in 0.5s
     cubic-bezier(0.34, 1.56, 0.64, 1) both;
   --font-sans: Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
@@ -440,6 +447,34 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes gift-rank-rise {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes gift-rank-pop {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-gift-rank-rise,
+  .animate-gift-rank-pop {
+    animation-duration: 0.01ms;
+    animation-delay: 0s !important;
   }
 }
 

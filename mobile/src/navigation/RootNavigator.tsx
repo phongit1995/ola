@@ -53,6 +53,10 @@ import { BuyVipScreen } from '@screens/vip/BuyVipScreen';
 import { KenStoreScreen } from '@screens/ken/KenStoreScreen';
 import { BuyKenScreen } from '@screens/ken/BuyKenScreen';
 import { MediaStoreScreen } from '@screens/media/MediaStoreScreen';
+import { GiftHomeScreen } from '@screens/gift/GiftHomeScreen';
+import { GiftLeaderboardScreen } from '@screens/gift/GiftLeaderboardScreen';
+import { GiftHistoryScreen } from '@screens/gift/GiftHistoryScreen';
+import { MegaphoneScreen } from '@screens/megaphone/MegaphoneScreen';
 import { NotificationsScreen } from '@screens/apps/NotificationsScreen';
 import { SettingsScreen } from '@screens/settings/SettingsScreen';
 import { AppLockScreen } from '@screens/settings/AppLockScreen';
@@ -319,6 +323,10 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.KenStore} component={KenStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.BuyKen} component={BuyKenScreen} />
       <RootStack.Screen name={ROOT_ROUTES.MediaStore} component={MediaStoreScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.GiftHome} component={GiftHomeScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.GiftLeaderboard} component={GiftLeaderboardScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.GiftHistory} component={GiftHistoryScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.Megaphone} component={MegaphoneScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Notifications} component={NotificationsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Settings} component={SettingsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.AppLock} component={AppLockScreen} />

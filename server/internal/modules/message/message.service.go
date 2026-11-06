@@ -529,6 +529,14 @@ func callPreviewText(metadata string) string {
 	return "📞 Voice call"
 }
 
+func giftPreviewText(metadata string) string {
+	var meta GiftPreviewMetadata
+	if err := json.Unmarshal([]byte(metadata), &meta); err != nil || meta.GiftName == "" {
+		return "🎁 Gift"
+	}
+	return fmt.Sprintf("🎁 %s ×%d", meta.GiftName, meta.Quantity)
+}
+
 func (s *Service) validateMessageContent(messageType, content, metadata string) error {
 	isManagedURL := func(rawURL string) bool {
 		return s.s3 != nil && s.s3.IsManagedURL(rawURL)
@@ -554,6 +562,8 @@ func previewForType(messageType, content, metadata string) string {
 		return audioPreviewText()
 	case constants.MessageTypeCall:
 		return callPreviewText(metadata)
+	case constants.MessageTypeGift:
+		return giftPreviewText(metadata)
 	default:
 		return truncatePreview(content, 100)
 	}
@@ -1224,6 +1234,10 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 	// Validate message is not deleted
 	if msg.DeletedAt != nil {
 		return nil, fmt.Errorf("cannot update deleted message")
+	}
+
+	if msg.MessageType == constants.MessageTypeGift {
+		return nil, fmt.Errorf("cannot update gift message")
 	}
 
 	// Validate content

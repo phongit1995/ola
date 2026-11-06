@@ -1,5 +1,6 @@
 import type {
   ChatBotType,
+  GiftAnimationSetting,
   MomentHiddenBy,
   MomentOverlay,
   MomentReactionCount,
@@ -2566,7 +2567,7 @@ export interface MeStatusResult extends MeDetail {
   penalty?: PenaltyOutcome
 }
 
-export type ViolationSource = 'report' | 'me_hide'
+export type ViolationSource = 'report' | 'me_hide' | 'megaphone_remove'
 
 export interface UserViolation {
   id: string
@@ -2750,4 +2751,158 @@ export interface WordChainPurchaseParams {
   to?: string
   limit?: number
   offset?: number
+}
+
+export interface AdminGift {
+  id: string
+  name: string
+  nameEn: string
+  imageUrl: string
+  kenPrice: number
+  charmPoints: number
+  isActive: boolean
+  sortOrder: number
+  animation: GiftAnimationSetting
+  senderCharmPercent: number
+  announceEnabled: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateGiftRequest {
+  name: string
+  nameEn?: string
+  imageUrl: string
+  kenPrice: number
+  charmPoints: number
+  isActive?: boolean
+  sortOrder?: number
+  animation?: GiftAnimationSetting
+  senderCharmPercent?: number
+  announceEnabled?: boolean
+}
+
+export type UpdateGiftRequest = Partial<CreateGiftRequest>
+
+export interface AdminGiftUserBrief {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+}
+
+export interface AdminGiftTransaction {
+  id: string
+  sender: AdminGiftUserBrief
+  receiver: AdminGiftUserBrief
+  giftId: string
+  giftName: string
+  giftImageUrl: string
+  quantity: number
+  unitPrice: number
+  totalKen: number
+  charmPoints: number
+  senderCharmPoints: number
+  source: 'chat' | 'profile'
+  note?: string
+  createdAt: string
+}
+
+export interface GiftTransactionListParams {
+  userId?: string
+  senderId?: string
+  receiverId?: string
+  giftId?: string
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export interface GiftTransactionListResult extends ListResult<AdminGiftTransaction> {
+  totalKen: number
+  totalCharm: number
+}
+
+export interface GiftSetting {
+  enabled: boolean
+  quantityOptions: number[]
+  quantityMax: number
+  noteMaxLength: number
+  confirmOverKen: number
+}
+
+export interface MegaphoneSetting {
+  enabled: boolean
+  kenPrice: number
+  maxLength: number
+  displaySeconds: number
+  cooldownSeconds: number
+  dailyLimit: number
+  liveMinutes: number
+  gapSeconds: number
+  repeatBaseSeconds: number
+  messageWeight: number
+  giftTiers: MegaphoneGiftTier[]
+}
+
+export interface MegaphoneGiftTier {
+  minKen: number
+  weight: number
+}
+
+export interface ContentFilterSetting {
+  bannedWords: string[]
+}
+
+export type MegaphoneStatus = 'active' | 'removed'
+
+export type MegaphoneType = 'message' | 'gift'
+
+export interface AdminMegaphone {
+  id: string
+  type: MegaphoneType
+  sender: AdminGiftUserBrief
+  content: string
+  kenPrice: number
+  showAt: string
+  displaySeconds: number
+  expiresAt: string
+  status: MegaphoneStatus
+  removedReason?: string
+  removedAt?: string
+  createdAt: string
+}
+
+export interface MegaphoneListParams {
+  senderId?: string
+  status?: MegaphoneStatus
+  type?: MegaphoneType
+  q?: string
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export interface MegaphoneListResult extends ListResult<AdminMegaphone> {
+  totalKen: number
+}
+
+export interface RemoveMegaphoneRequest {
+  reason?: string
+  penalty?: MePenaltyRequest
+}
+
+export interface RemoveMegaphoneResult {
+  item: AdminMegaphone
+  penalty?: PenaltyOutcome
+}
+
+export type ContentCheckReason = 'link' | 'banned_word'
+
+export interface ContentCheckResult {
+  blocked: boolean
+  reason?: ContentCheckReason
+  word?: string
 }

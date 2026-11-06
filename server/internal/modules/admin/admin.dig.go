@@ -10,10 +10,12 @@ import (
 	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	admingamematch "ola-chat-server/internal/modules/admin/game-match"
+	admingift "ola-chat-server/internal/modules/admin/gift"
 	adminken "ola-chat-server/internal/modules/admin/ken"
 	adminkenchest "ola-chat-server/internal/modules/admin/kenchest"
 	adminmarriage "ola-chat-server/internal/modules/admin/marriage"
 	adminme "ola-chat-server/internal/modules/admin/me"
+	adminmegaphone "ola-chat-server/internal/modules/admin/megaphone"
 	adminminigame "ola-chat-server/internal/modules/admin/mini-game"
 	adminmoment "ola-chat-server/internal/modules/admin/moment"
 	adminpen "ola-chat-server/internal/modules/admin/pen"
@@ -50,6 +52,8 @@ func Provider(c *dig.Container) error {
 		adminwheel.Provider,
 		adminken.Provider,
 		adminkenchest.Provider,
+		admingift.Provider,
+		adminmegaphone.Provider,
 		adminpen.Provider,
 		admingamematch.Provider,
 		adminmarriage.Provider,

@@ -464,6 +464,24 @@ func (s *Service) canSeeVipStore(callerID, ownerID uuid.UUID, rel *RelationshipI
 	}
 }
 
+func (s *Service) canSeeGiftWall(callerID, ownerID uuid.UUID, rel *RelationshipInfo) bool {
+	if callerID == ownerID {
+		return true
+	}
+	settings, err := s.userSettingSvc.GetSettings(ownerID)
+	if err != nil {
+		return true
+	}
+	switch settings.GiftWallPrivacy {
+	case models.SettingGiftWallPrivacyOnlyMe:
+		return false
+	case models.SettingGiftWallPrivacyFriends:
+		return rel != nil && rel.Status == RelationshipStatusFriend
+	default:
+		return true
+	}
+}
+
 func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *UserPublicProfileResponse {
 	idStr := user.ID.String()
 	presence := s.presence.GetPresence(idStr)
@@ -478,7 +496,9 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		Bio:            user.Bio,
 		Gender:         user.Gender,
 		Verified:       user.Verified,
+		EmailVerified:  user.EmailVerified,
 		Kisses:         user.Kisses,
+		Charm:          user.Charm,
 		VipUsed:        user.VipUsed,
 		VipEndTime:     formatOptionalTime(user.VipEndTime),
 		FollowerCount:  user.FollowerCount,
@@ -505,6 +525,7 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 	}
 
 	response.CanViewVipStore = s.canSeeVipStore(callerID, user.ID, response.Relationship)
+	response.CanViewGiftWall = s.canSeeGiftWall(callerID, user.ID, response.Relationship)
 
 	return response
 }
@@ -766,6 +787,7 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 		Verified:       user.Verified,
 		EmailVerified:  user.EmailVerified,
 		Kisses:         user.Kisses,
+		Charm:          user.Charm,
 		CreatedAt:      user.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      user.UpdatedAt.Format(time.RFC3339),
 	}

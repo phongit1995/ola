@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	SourceReport = "report"
-	SourceMeHide = "me_hide"
+	SourceReport          = "report"
+	SourceMeHide          = "me_hide"
+	SourceMegaphoneRemove = "megaphone_remove"
 
 	SeverityNone       = "none"
 	SeverityViolation  = "violation"
@@ -46,6 +47,7 @@ var contentLabels = map[string]string{
 	constants.ReportTargetMessage:      "Tin nhắn",
 	constants.ReportTargetRoomMessage:  "Tin nhắn trong phòng",
 	constants.ReportTargetMoment:       "Khoảnh khắc",
+	constants.ReportTargetMegaphone:    "Loa",
 }
 
 var hiddenTargets = map[string]bool{

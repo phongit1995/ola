@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { authTokens, formatKen } from '@ola/shared/lib';
-import { SocketService } from '@ola/shared/services';
-import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
+import { formatKen } from '@ola/shared/lib';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
@@ -18,7 +16,6 @@ import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
 import { SupportDialog } from '../apps/SupportDialog';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
-import { ChangeNicknameDialog } from './ChangeNicknameDialog';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
 
@@ -79,26 +76,6 @@ export function PersonalScreen() {
   const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  const [nicknameOpen, setNicknameOpen] = useState(false);
-  const [nicknameEnabled, setNicknameEnabled] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    requireAppConfig('usernameChange')
-      .then(config => {
-        if (!cancelled) {
-          setNicknameEnabled(config.enabled && config.enabledMobile === true);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const visibleItems = nicknameEnabled
-    ? PERSONAL_ITEMS
-    : PERSONAL_ITEMS.filter(item => item.action !== 'nickname');
 
   function handleOpen(item: AppItem) {
     if (item.action === 'logout') {
@@ -117,16 +94,20 @@ export function PersonalScreen() {
       navigation.navigate(ROOT_ROUTES.EditProfile);
       return;
     }
-    if (item.action === 'nickname') {
-      setNicknameOpen(true);
-      return;
-    }
     if (item.action === 'vip') {
       navigation.navigate(ROOT_ROUTES.VipStore);
       return;
     }
     if (item.action === 'ken') {
       navigation.navigate(ROOT_ROUTES.KenStore);
+      return;
+    }
+    if (item.action === 'gifts') {
+      navigation.navigate(ROOT_ROUTES.GiftHome);
+      return;
+    }
+    if (item.action === 'megaphone') {
+      navigation.navigate(ROOT_ROUTES.Megaphone);
       return;
     }
     if (item.action === 'media') {
@@ -168,14 +149,6 @@ export function PersonalScreen() {
     await signOutWithNotice();
   }
 
-  function handleNicknameChanged() {
-    setNicknameOpen(false);
-    removeSavedAccountOfCurrentUser();
-    authTokens.clear();
-    SocketService.disconnect();
-    useAuthStore.getState().clearUser();
-  }
-
   return (
     <View className="flex-1" style={{ backgroundColor: '#d5d5d5' }}>
       <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
@@ -210,7 +183,7 @@ export function PersonalScreen() {
       <View className="flex-1">
         <LobbyWallpaper />
         <ScrollView className="flex-1">
-          {visibleItems.map(item => (
+          {PERSONAL_ITEMS.map(item => (
             <PanelRow
               key={item.titleKey}
               icon={item.icon}
@@ -254,11 +227,6 @@ export function PersonalScreen() {
       <SupportDialog
         visible={supportOpen}
         onClose={() => setSupportOpen(false)}
-      />
-      <ChangeNicknameDialog
-        visible={nicknameOpen}
-        onClose={() => setNicknameOpen(false)}
-        onSuccess={handleNicknameChanged}
       />
     </View>
   );

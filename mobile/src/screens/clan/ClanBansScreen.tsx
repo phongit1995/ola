@@ -10,6 +10,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { BANS_PAGE_SIZE } from './constants';
+import { UserName } from '@components/ui/UserName';
 
 interface ClanBansScreenProps {
   clanId: string;
@@ -86,15 +87,11 @@ export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
                   color={colorForName(username)}
                   size={40}
                 />
-                <Text
-                  numberOfLines={1}
+                <UserName
+                  name={username}
+                  fullName={fullName !== username ? fullName : undefined}
                   className="min-w-0 flex-1 text-sm text-ola-ink"
-                >
-                  {username}
-                  {fullName !== '' && fullName !== username && (
-                    <Text className="text-ola-ink-soft"> · {fullName}</Text>
-                  )}
-                </Text>
+                />
                 <Pressable
                   onPress={() => void unban(item)}
                   className="shrink-0 rounded-sm bg-white px-3 py-1.5 active:bg-black/5"

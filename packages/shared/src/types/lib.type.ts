@@ -40,6 +40,31 @@ export type BuyErrorKey =
   | 'vip.buy.errBlocked'
   | 'vip.buy.errWrongPassword';
 
+export type GiftErrorKey =
+  | 'gift.errors.disabled'
+  | 'gift.errors.notFound'
+  | 'gift.errors.self'
+  | 'gift.errors.blocked'
+  | 'gift.errors.receiverUnavailable'
+  | 'gift.errors.insufficientKen'
+  | 'gift.errors.invalidQuantity'
+  | 'gift.errors.noteTooLong'
+  | 'gift.errors.rateLimited'
+  | 'gift.errors.failed';
+
+export type MegaphoneErrorKey =
+  | 'megaphone.errors.disabled'
+  | 'megaphone.errors.empty'
+  | 'megaphone.errors.tooLong'
+  | 'megaphone.errors.link'
+  | 'megaphone.errors.blocked'
+  | 'megaphone.errors.cooldown'
+  | 'megaphone.errors.dailyLimit'
+  | 'megaphone.errors.queueFull'
+  | 'megaphone.errors.insufficientKen'
+  | 'megaphone.errors.rateLimited'
+  | 'megaphone.errors.failed';
+
 export type CallMessageStatus = 'ended' | 'missed' | 'declined';
 
 export interface MessageMetadata {

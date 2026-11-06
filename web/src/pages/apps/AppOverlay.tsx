@@ -30,6 +30,12 @@ const EditProfileMePage = lazy(() =>
 const VipStorePage = lazy(() =>
   import('../vip/VipStorePage').then((m) => ({ default: m.VipStorePage }))
 );
+const GiftHomePage = lazy(() =>
+  import('../gift/GiftHomePage').then((m) => ({ default: m.GiftHomePage }))
+);
+const MegaphonePage = lazy(() =>
+  import('../megaphone/MegaphonePage').then((m) => ({ default: m.MegaphonePage }))
+);
 const BuyVipPage = lazy(() =>
   import('../vip/BuyVipPage').then((m) => ({ default: m.BuyVipPage }))
 );
@@ -54,6 +60,10 @@ function renderEntry(entry: AppOverlayEntry, onClose: () => void) {
       return <NearbyPlacesPage onClose={onClose} />;
     case 'settings':
       return <SettingsPage onClose={onClose} />;
+    case 'gifts':
+      return <GiftHomePage onClose={onClose} />;
+    case 'megaphone':
+      return <MegaphonePage onClose={onClose} />;
     default:
       return null;
   }

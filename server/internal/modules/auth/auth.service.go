@@ -566,6 +566,9 @@ func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string,
 	if !isAllowedEmailDomain(email) {
 		return "", errors.New("email domain not allowed")
 	}
+	if !isAllowedEmailLocal(email) {
+		return "", errEmailFormatNotAllowed
+	}
 	if !s.mailService.Available() {
 		return "", errEmailUnavailable
 	}

@@ -28,9 +28,11 @@ export function mapPublicProfile(
     avatar: data.avatar,
     coverPhoto: data.coverPhoto,
     verified: data.verified,
+    emailVerified: data.emailVerified === true,
     vipTypeId: activeVipTypeId(data.vipUsed, data.vipEndTime),
     fans: data.followerCount,
     kisses: data.kisses,
+    charm: data.charm ?? 0,
     bio: data.bio ?? '',
     gender: data.gender,
     marriage: data.spouse
@@ -43,6 +45,7 @@ export function mapPublicProfile(
     joinDate: `${deps.joinedLabel} ${deps.formatDate(data.createdAt)}`,
     isSelf: data.relationship?.status === 'self',
     canViewVipStore: data.canViewVipStore !== false,
+    canViewGiftWall: data.canViewGiftWall !== false,
   };
 }
 

@@ -6,6 +6,7 @@ import {
   colorForName,
   createDateFormatter,
   formatDateSlashDMY,
+  formatKen,
 } from '@ola/shared/lib';
 import type { PublicProfile } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
@@ -17,8 +18,11 @@ import { CARD_SHADOW, DEFAULT_COVER_COLOR } from '../constants';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
 import { RelationButtons } from './RelationButtons';
 import { GENDER } from '@ola/shared/constants';
+import { CharmIcon } from '@components/gift/CharmIcon';
+import { UserName } from '@components/ui/UserName';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
+const emailVerifiedIcon = require('@assets/icons/profile/ic_email_verified.webp');
 const kissIcon = require('@assets/icons/profile/sticker_kiss.png');
 const maleIcon = require('@assets/icons/profile/ic_indicate_male.png');
 const femaleIcon = require('@assets/icons/profile/ic_indicate_female.png');
@@ -47,6 +51,7 @@ interface ProfileCardProps {
   onUpdateInfo: () => void;
   onPostMe: () => void;
   onMore: () => void;
+  onSendGift?: () => void;
   openViewer: OpenViewerHandler;
   onOpenProfile: OpenProfileHandler;
 }
@@ -103,6 +108,7 @@ export function ProfileCard({
   onUpdateInfo,
   onPostMe,
   onMore,
+  onSendGift,
   openViewer,
   onOpenProfile,
 }: ProfileCardProps) {
@@ -223,18 +229,21 @@ export function ProfileCard({
       </View>
 
       <View className="flex-row items-center justify-center gap-1 p-2">
-        <Text
-          numberOfLines={1}
+        <UserName
+          name={`@${profile.username}`}
+          fullName={profile.fullName}
           className="min-w-0 shrink text-lg text-ola-ink"
-        >
-          @{profile.username}
-          {profile.fullName != null && profile.fullName !== '' && (
-            <Text className="text-ola-ink-soft"> · {profile.fullName}</Text>
-          )}
-        </Text>
+        />
         {profile.verified && (
           <Image
             source={checkedIcon}
+            style={{ width: 20, height: 20 }}
+            resizeMode="contain"
+          />
+        )}
+        {profile.emailVerified && (
+          <Image
+            source={emailVerifiedIcon}
             style={{ width: 20, height: 20 }}
             resizeMode="contain"
           />
@@ -253,6 +262,7 @@ export function ProfileCard({
         onUpdateInfo={onUpdateInfo}
         onPostMe={onPostMe}
         onMore={onMore}
+        onSendGift={onSendGift}
       />
 
       <View className="mx-4" style={{ height: 1, backgroundColor: DIVIDER }} />
@@ -282,6 +292,16 @@ export function ProfileCard({
             : t('profile.notKissed')}
         </Text>
       </Pressable>
+
+      <View className="mt-1 flex-row items-center justify-center" style={{ gap: 4 }}>
+        <CharmIcon size={18} />
+        <Text className="text-sm font-semibold" style={{ color: '#000' }}>
+          {formatKen(profile.charm ?? 0)}
+        </Text>
+        <Text className="text-sm" style={{ color: '#000' }}>
+          {t('gift.charmUnit')}
+        </Text>
+      </View>
 
       {profile.bio != null && profile.bio !== '' && (
         <Text

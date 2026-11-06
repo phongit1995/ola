@@ -71,6 +71,14 @@ func (r *Repository) FindMoment(id uuid.UUID) (*models.Moment, error) {
 	return &moment, nil
 }
 
+func (r *Repository) FindMegaphone(id uuid.UUID) (*models.Megaphone, error) {
+	var item models.Megaphone
+	if err := r.db.First(&item, "id = ? AND status = ?", id, models.MegaphoneStatusActive).Error; err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
 func (r *Repository) CreateWhileMomentKept(report *models.Report, momentID uuid.UUID) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		var kept []uuid.UUID

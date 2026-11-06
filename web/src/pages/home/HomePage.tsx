@@ -1,7 +1,8 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
-import { KenBalanceBadge } from '@components';
+import { GiftAnimationOverlay, KenBalanceBadge } from '@components';
+import { MegaphoneBar } from '@components/megaphone/MegaphoneBar';
 import { useDevicePlatform } from '@hooks';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
@@ -111,6 +112,7 @@ export function HomePage() {
     <div className="flex h-dvh flex-col bg-white font-sans">
       <div className="relative flex min-h-0 flex-1 flex-col">
         <AnnouncementBanner />
+        <MegaphoneBar />
         {!hideKenBadge && <KenBalanceBadge ken={ken} />}
         <Suspense fallback={<div className="flex-1" />}>
           {ActivePanel ? <ActivePanel /> : <div className="flex-1" />}
@@ -142,6 +144,7 @@ export function HomePage() {
       <GameOverlay />
       <AppOverlay />
       <ClanOverlayHost />
+      <GiftAnimationOverlay />
 
       {guideOpen && (
         <Suspense fallback={null}>

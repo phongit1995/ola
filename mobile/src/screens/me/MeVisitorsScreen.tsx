@@ -15,6 +15,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { VISITORS_PAGE_SIZE } from './constants';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import { UserName } from '@components/ui/UserName';
 
 export function MeVisitorsScreen() {
   const { t, i18n } = useTranslation();
@@ -107,12 +108,12 @@ export function MeVisitorsScreen() {
                     <Pressable onPress={openProfile}>
                       <View className="flex-row items-center gap-1">
                         <VipBadge typeId={activeVipTypeId(item.vipUsed, item.vipEndTime)} size={16} />
-                        <Text numberOfLines={1} className="min-w-0 shrink text-base font-medium text-ola-ink">
-                          @{item.username}
-                          {item.fullName != null && item.fullName !== '' && (
-                            <Text style={{ color: 'rgba(0,0,0,0.45)' }}> · {item.fullName}</Text>
-                          )}
-                        </Text>
+                        <UserName
+                          name={`@${item.username}`}
+                          fullName={item.fullName}
+                          className="min-w-0 shrink text-base font-medium text-ola-ink"
+                          fullNameStyle={{ color: 'rgba(0,0,0,0.45)' }}
+                        />
                       </View>
                       <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.45)' }}>
                         {formatTime(item.viewedAt)}

@@ -622,6 +622,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/content-filter/check": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Thử một câu với bộ lọc nội dung (admin)",
+                "parameters": [
+                    {
+                        "description": "Câu cần thử",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.CheckContentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.CheckContentSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/conversations": {
             "get": {
                 "security": [
@@ -1527,6 +1565,237 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_admin_game-match.SuspectsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gifts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gifts"
+                ],
+                "summary": "Danh sách quà (admin, gồm cả quà tắt)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift.GiftListSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gifts"
+                ],
+                "summary": "Thêm quà (admin)",
+                "parameters": [
+                    {
+                        "description": "Gift",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift.CreateGiftRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift.GiftItemSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gifts/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gifts"
+                ],
+                "summary": "Sổ quà đã tặng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Người tặng hoặc người nhận",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Người tặng",
+                        "name": "senderId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Người nhận",
+                        "name": "receiverId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Loại quà",
+                        "name": "giftId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift.TransactionListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gifts/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gifts"
+                ],
+                "summary": "Xoá quà (admin, xoá mềm — tường quà và lịch sử vẫn giữ)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Gift ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gifts"
+                ],
+                "summary": "Sửa quà (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Gift ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Gift",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift.UpdateGiftRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift.GiftItemSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -2876,7 +3145,133 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_UpdateStatusResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/megaphones": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Danh sách loa đã phát (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Người phát",
+                        "name": "senderId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "active, removed",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Loại tin: message, gift",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tìm trong nội dung",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.ListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/megaphones/{id}/remove": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Loa biến mất trên mọi máy, không hoàn KEN. Có penalty thì tính điểm vi phạm cho người phát.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Gỡ một loa (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Megaphone ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Lý do + điểm vi phạm",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.RemoveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.RemoveSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -4014,7 +4409,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "account, post, comment, story_comment, message, room_message, moment",
+                        "description": "account, post, comment, story_comment, message, room_message, moment, megaphone",
                         "name": "targetType",
                         "in": "query"
                     },
@@ -6107,6 +6502,149 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/violations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Violation history and active points of a user (admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-user"
+                ],
+                "summary": "List user violations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ViolationSummary"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Revoke every violation still counting points; does not unlock the account (admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-user"
+                ],
+                "summary": "Clear user violation points",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ViolationSummary"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/violations/{violationId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Stop counting a violation; does not unlock the account (admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-user"
+                ],
+                "summary": "Revoke a user violation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Violation ID",
+                        "name": "violationId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ViolationSummary"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -9926,6 +10464,259 @@ const docTemplate = `{
                 }
             }
         },
+        "/gifts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gifts"
+                ],
+                "summary": "Danh sách quà đang bán + cấu hình tặng quà",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_gift.GiftCatalogSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gifts/leaderboard": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "type=sender: tổng KEN đã tặng; type=receiver: tổng sức hút nhận được. period theo giờ Việt Nam.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gifts"
+                ],
+                "summary": "Bảng xếp hạng quà",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "sender | receiver (mặc định receiver)",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "week | month | all (mặc định week)",
+                        "name": "period",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số dòng (mặc định 50, tối đa 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_gift.LeaderboardSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gifts/received": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gifts"
+                ],
+                "summary": "Lịch sử quà mình đã nhận",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Con trỏ trang tiếp",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số bản ghi (mặc định 20, tối đa 50)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_gift.GiftHistorySuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gifts/send": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Trừ KEN người tặng (GIFT_SENT), cộng sức hút + tường quà cho người nhận. source=chat tạo thêm tin nhắn loại gift, source=profile tạo thông báo. clientRequestId chống trừ KEN hai lần khi gửi lại.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gifts"
+                ],
+                "summary": "Tặng quà cho user khác",
+                "parameters": [
+                    {
+                        "description": "Gift",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_gift.SendGiftRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_gift.SendGiftSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/gifts/sent": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gifts"
+                ],
+                "summary": "Lịch sử quà mình đã tặng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Con trỏ trang tiếp",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số bản ghi (mặc định 20, tối đa 50)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_gift.GiftHistorySuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gifts/users/{id}/wall": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gifts"
+                ],
+                "summary": "Tường quà + sức hút của một user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_gift.GiftWallSuccessResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Check the health status of the API and database",
@@ -11474,6 +12265,136 @@ const docTemplate = `{
                 }
             }
         },
+        "/megaphones": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "megaphones"
+                ],
+                "summary": "Loa thường đã phát trong 24 giờ gần nhất",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Con trỏ trang sau",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số loa mỗi trang (mặc định 20, tối đa 50)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.HistorySuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "megaphones"
+                ],
+                "summary": "Phát loa tới mọi người",
+                "parameters": [
+                    {
+                        "description": "Megaphone",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.SendRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.SendSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/megaphones/config": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Giá, số ký tự, thời gian hiện, số loa đã phát hôm nay, số giây còn phải chờ và thời gian chờ hàng loa hiện tại.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "megaphones"
+                ],
+                "summary": "Cấu hình phát loa + trạng thái của người gọi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.ConfigSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/messages": {
             "post": {
                 "security": [
@@ -12708,6 +13629,42 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-map_string_int64"
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Hide one of my app notifications",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Notification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -18290,6 +19247,22 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_game-match.MatchPlayer": {
+            "type": "object",
+            "properties": {
+                "place": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "seat": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                }
+            }
+        },
         "internal_modules_admin_game-match.MatchStatsResponse": {
             "type": "object",
             "properties": {
@@ -18392,6 +19365,16 @@ const docTemplate = `{
                 },
                 "player1": {
                     "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                },
+                "playerCount": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.MatchPlayer"
+                    }
                 },
                 "reason": {
                     "type": "string",
@@ -18624,6 +19607,385 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_gift.CreateGiftRequest": {
+            "type": "object",
+            "required": [
+                "imageUrl",
+                "kenPrice",
+                "name"
+            ],
+            "properties": {
+                "animation": {
+                    "type": "string",
+                    "enum": [
+                        "random",
+                        "fly",
+                        "drop",
+                        "spin",
+                        "zoom",
+                        "float",
+                        "swing",
+                        "pop",
+                        "flip",
+                        "heartbeat",
+                        "jelly",
+                        "tornado",
+                        "slide"
+                    ],
+                    "example": "random"
+                },
+                "announceEnabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "charmPoints": {
+                    "type": "integer",
+                    "maximum": 100000000,
+                    "minimum": 0,
+                    "example": 10
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "https://cdn.ola.vn/gifts/rose.png"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "maximum": 10000000,
+                    "minimum": 1,
+                    "example": 10
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "example": "Hoa hồng"
+                },
+                "nameEn": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "example": "Rose"
+                },
+                "senderCharmPercent": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "example": 50
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "internal_modules_admin_gift.GiftItem": {
+            "type": "object",
+            "properties": {
+                "animation": {
+                    "type": "string",
+                    "example": "random"
+                },
+                "announceEnabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "charmPoints": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-05T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/gifts/rose.png"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Hoa hồng"
+                },
+                "nameEn": {
+                    "type": "string",
+                    "example": "Rose"
+                },
+                "senderCharmPercent": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2026-11-05T10:00:00Z"
+                }
+            }
+        },
+        "internal_modules_admin_gift.GiftItemSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift.GiftItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_gift.GiftListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift.GiftItem"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_gift.GiftListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift.GiftListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_gift.TransactionItem": {
+            "type": "object",
+            "properties": {
+                "charmPoints": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-05T10:00:00Z"
+                },
+                "giftId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "giftImageUrl": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/gifts/rose.png"
+                },
+                "giftName": {
+                    "type": "string",
+                    "example": "Hoa hồng"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "note": {
+                    "type": "string",
+                    "example": "Chúc mừng sinh nhật"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "receiver": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                },
+                "sender": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                },
+                "senderCharmPoints": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "source": {
+                    "type": "string",
+                    "example": "chat"
+                },
+                "totalKen": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "unitPrice": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
+        "internal_modules_admin_gift.TransactionListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift.TransactionItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "totalCharm": {
+                    "type": "integer",
+                    "example": 25000
+                },
+                "totalKen": {
+                    "type": "integer",
+                    "example": 25000
+                }
+            }
+        },
+        "internal_modules_admin_gift.TransactionListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift.TransactionListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_gift.UpdateGiftRequest": {
+            "type": "object",
+            "properties": {
+                "animation": {
+                    "type": "string",
+                    "enum": [
+                        "random",
+                        "fly",
+                        "drop",
+                        "spin",
+                        "zoom",
+                        "float",
+                        "swing",
+                        "pop",
+                        "flip",
+                        "heartbeat",
+                        "jelly",
+                        "tornado",
+                        "slide"
+                    ],
+                    "example": "random"
+                },
+                "announceEnabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "charmPoints": {
+                    "type": "integer",
+                    "maximum": 100000000,
+                    "minimum": 0,
+                    "example": 10
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "https://cdn.ola.vn/gifts/rose.png"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "maximum": 10000000,
+                    "minimum": 1,
+                    "example": 10
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "example": "Hoa hồng"
+                },
+                "nameEn": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "example": "Rose"
+                },
+                "senderCharmPercent": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "example": 50
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
                 }
             }
         },
@@ -19588,6 +20950,12 @@ const docTemplate = `{
                 "enabled": {
                     "type": "boolean"
                 },
+                "hiddenAt": {
+                    "type": "string"
+                },
+                "hiddenBy": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -19658,6 +21026,12 @@ const docTemplate = `{
                 "enabled": {
                     "type": "boolean"
                 },
+                "hiddenAt": {
+                    "type": "string"
+                },
+                "hiddenBy": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -19698,6 +21072,40 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_me.PenaltyRequest": {
+            "type": "object",
+            "required": [
+                "reason",
+                "severity"
+            ],
+            "properties": {
+                "note": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Ảnh khoả thân"
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": [
+                        "spam",
+                        "sensitive",
+                        "scam",
+                        "harassment",
+                        "other"
+                    ],
+                    "example": "sensitive"
+                },
+                "severity": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "violation",
+                        "deliberate"
+                    ],
+                    "example": "violation"
+                }
+            }
+        },
         "internal_modules_admin_me.UpdateStatusRequest": {
             "type": "object",
             "required": [
@@ -19707,6 +21115,299 @@ const docTemplate = `{
                 "enabled": {
                     "type": "boolean",
                     "example": false
+                },
+                "penalty": {
+                    "$ref": "#/definitions/internal_modules_admin_me.PenaltyRequest"
+                }
+            }
+        },
+        "internal_modules_admin_me.UpdateStatusResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_admin_me.AuthorResponse"
+                },
+                "checkIn": {
+                    "$ref": "#/definitions/internal_modules_admin_me.CheckInResponse"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dislikeCount": {
+                    "type": "integer"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "hiddenAt": {
+                    "type": "string"
+                },
+                "hiddenBy": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_me.MeImageResponse"
+                    }
+                },
+                "likeCount": {
+                    "type": "integer"
+                },
+                "mentions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "penalty": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moderation.PenaltyOutcome"
+                },
+                "sticker": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.CheckContentRequest": {
+            "type": "object",
+            "required": [
+                "text"
+            ],
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "ai cần nạp ken giá rẻ ib"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.CheckContentSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_content-filter.Result"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.ListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_megaphone.MegaphoneItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "totalKen": {
+                    "type": "integer",
+                    "example": 240000
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.ListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.ListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.MegaphoneItem": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Chúc cả nhà buổi tối vui vẻ"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-06T09:59:50Z"
+                },
+                "displaySeconds": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:30:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 2000
+                },
+                "removedAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:05:00Z"
+                },
+                "removedReason": {
+                    "type": "string",
+                    "example": "Quảng cáo"
+                },
+                "sender": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                },
+                "showAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:00:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "active"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "message"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.PenaltyRequest": {
+            "type": "object",
+            "required": [
+                "reason",
+                "severity"
+            ],
+            "properties": {
+                "note": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Rao bán KEN"
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": [
+                        "spam",
+                        "sensitive",
+                        "scam",
+                        "harassment",
+                        "other"
+                    ],
+                    "example": "scam"
+                },
+                "severity": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "violation",
+                        "deliberate"
+                    ],
+                    "example": "violation"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.RemoveRequest": {
+            "type": "object",
+            "properties": {
+                "penalty": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.PenaltyRequest"
+                },
+                "reason": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "example": "Rao bán KEN"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.RemoveResponse": {
+            "type": "object",
+            "properties": {
+                "item": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.MegaphoneItem"
+                },
+                "penalty": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moderation.PenaltyOutcome"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.RemoveSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.RemoveResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
@@ -20643,6 +22344,27 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_report.PenaltyRequest": {
+            "type": "object",
+            "required": [
+                "severity"
+            ],
+            "properties": {
+                "contentRemoved": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "severity": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "violation",
+                        "deliberate"
+                    ],
+                    "example": "violation"
+                }
+            }
+        },
         "internal_modules_admin_report.ReportItem": {
             "type": "object",
             "properties": {
@@ -20783,6 +22505,9 @@ const docTemplate = `{
                     "maxLength": 1000,
                     "example": "Đã xoá tin nhắn và khoá tài khoản"
                 },
+                "penalty": {
+                    "$ref": "#/definitions/internal_modules_admin_report.PenaltyRequest"
+                },
                 "status": {
                     "type": "string",
                     "enum": [
@@ -20798,6 +22523,9 @@ const docTemplate = `{
             "properties": {
                 "affected": {
                     "type": "integer"
+                },
+                "penalty": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moderation.PenaltyOutcome"
                 },
                 "report": {
                     "$ref": "#/definitions/internal_modules_admin_report.ReportItem"
@@ -21418,6 +23146,12 @@ const docTemplate = `{
                 "lastLoginIp": {
                     "type": "string"
                 },
+                "lockReason": {
+                    "type": "string"
+                },
+                "lockedUntil": {
+                    "type": "string"
+                },
                 "phone": {
                     "type": "string"
                 },
@@ -21472,6 +23206,12 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "lastLoginAt": {
+                    "type": "string"
+                },
+                "lockReason": {
+                    "type": "string"
+                },
+                "lockedUntil": {
                     "type": "string"
                 },
                 "username": {
@@ -21548,6 +23288,32 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_user.ViolationSummary": {
+            "type": "object",
+            "properties": {
+                "expireHours": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_moderation.ViolationItem"
+                    }
+                },
+                "lockSteps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_setting.ModerationLockStep"
+                    }
+                },
+                "threshold": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -23499,6 +25265,512 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_gift.GiftCatalogResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_gift.GiftItem"
+                    }
+                },
+                "settings": {
+                    "$ref": "#/definitions/internal_modules_gift.GiftSettingsView"
+                }
+            }
+        },
+        "internal_modules_gift.GiftCatalogSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_gift.GiftCatalogResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_gift.GiftHistoryItem": {
+            "type": "object",
+            "properties": {
+                "charmPoints": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "counterparty": {
+                    "$ref": "#/definitions/internal_modules_gift.GiftUserBrief"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-05T10:00:00Z"
+                },
+                "giftAnimation": {
+                    "type": "string",
+                    "example": "random"
+                },
+                "giftId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "giftImageUrl": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/gifts/rose.png"
+                },
+                "giftName": {
+                    "type": "string",
+                    "example": "Hoa hồng"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "note": {
+                    "type": "string",
+                    "example": "Chúc mừng sinh nhật"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "senderCharmPoints": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "source": {
+                    "type": "string",
+                    "example": "chat"
+                },
+                "totalKen": {
+                    "type": "integer",
+                    "example": 50
+                }
+            }
+        },
+        "internal_modules_gift.GiftHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_gift.GiftHistoryItem"
+                    }
+                },
+                "nextCursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_gift.GiftHistorySuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_gift.GiftHistoryResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_gift.GiftItem": {
+            "type": "object",
+            "properties": {
+                "animation": {
+                    "type": "string",
+                    "example": "random"
+                },
+                "announceEnabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "charmPoints": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/gifts/rose.png"
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Hoa hồng"
+                },
+                "nameEn": {
+                    "type": "string",
+                    "example": "Rose"
+                },
+                "senderCharmPercent": {
+                    "type": "integer",
+                    "example": 50
+                }
+            }
+        },
+        "internal_modules_gift.GiftSettingsView": {
+            "type": "object",
+            "properties": {
+                "confirmOverKen": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "noteMaxLength": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "quantityMax": {
+                    "type": "integer",
+                    "example": 99
+                },
+                "quantityOptions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "internal_modules_gift.GiftUserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/a.png"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "Minh"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "female"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "minh"
+                },
+                "vipEndTime": {
+                    "type": "string"
+                },
+                "vipUsed": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_gift.GiftWallItem": {
+            "type": "object",
+            "properties": {
+                "gift": {
+                    "$ref": "#/definitions/internal_modules_gift.GiftItem"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 12
+                }
+            }
+        },
+        "internal_modules_gift.GiftWallResponse": {
+            "type": "object",
+            "properties": {
+                "charm": {
+                    "type": "integer",
+                    "example": 1200
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_gift.GiftWallItem"
+                    }
+                },
+                "totalGifts": {
+                    "type": "integer",
+                    "example": 34
+                },
+                "userId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                }
+            }
+        },
+        "internal_modules_gift.GiftWallSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_gift.GiftWallResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_gift.LeaderboardEntry": {
+            "type": "object",
+            "properties": {
+                "rank": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_gift.GiftUserBrief"
+                },
+                "value": {
+                    "type": "integer",
+                    "example": 25000
+                }
+            }
+        },
+        "internal_modules_gift.LeaderboardMe": {
+            "type": "object",
+            "properties": {
+                "rank": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "value": {
+                    "type": "integer",
+                    "example": 300
+                }
+            }
+        },
+        "internal_modules_gift.LeaderboardResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_gift.LeaderboardEntry"
+                    }
+                },
+                "me": {
+                    "$ref": "#/definitions/internal_modules_gift.LeaderboardMe"
+                },
+                "period": {
+                    "type": "string",
+                    "example": "week"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "receiver"
+                }
+            }
+        },
+        "internal_modules_gift.LeaderboardSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_gift.LeaderboardResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_gift.SendGiftRequest": {
+            "type": "object",
+            "required": [
+                "clientRequestId",
+                "giftId",
+                "quantity",
+                "receiverId",
+                "source"
+            ],
+            "properties": {
+                "announce": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "clientRequestId": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10"
+                },
+                "giftId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 400,
+                    "example": "Chúc mừng sinh nhật"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 5
+                },
+                "receiverId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "source": {
+                    "type": "string",
+                    "enum": [
+                        "chat",
+                        "profile"
+                    ],
+                    "example": "chat"
+                }
+            }
+        },
+        "internal_modules_gift.SendGiftResponse": {
+            "type": "object",
+            "properties": {
+                "announced": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "charmPoints": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "conversationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-05T10:00:00Z"
+                },
+                "gift": {
+                    "$ref": "#/definitions/internal_modules_gift.GiftItem"
+                },
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 950
+                },
+                "messageId": {
+                    "type": "string",
+                    "example": "a1b2c3d4-0000-11ef-8000-000000000000"
+                },
+                "note": {
+                    "type": "string",
+                    "example": "Chúc mừng sinh nhật"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "receiverCharm": {
+                    "type": "integer",
+                    "example": 1200
+                },
+                "receiverId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "senderCharmPoints": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "totalKen": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "transactionId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                }
+            }
+        },
+        "internal_modules_gift.SendGiftSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_gift.SendGiftResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_health.HealthResponse": {
             "type": "object",
             "properties": {
@@ -24805,6 +27077,178 @@ const docTemplate = `{
                 },
                 "width": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_megaphone.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "cooldownRemaining": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "cooldownSeconds": {
+                    "type": "integer",
+                    "example": 60
+                },
+                "dailyLimit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "displaySeconds": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "liveMinutes": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "maxLength": {
+                    "type": "integer",
+                    "example": 80
+                },
+                "queueWaitSeconds": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "todayCount": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "internal_modules_megaphone.ConfigSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_megaphone.ConfigResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_megaphone.HistoryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone"
+                    }
+                },
+                "nextCursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_megaphone.HistorySuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_megaphone.HistoryResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_megaphone.SendRequest": {
+            "type": "object",
+            "required": [
+                "clientRequestId",
+                "content"
+            ],
+            "properties": {
+                "clientRequestId": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10"
+                },
+                "content": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Chúc cả nhà buổi tối vui vẻ 🎉"
+                }
+            }
+        },
+        "internal_modules_megaphone.SendResponse": {
+            "type": "object",
+            "properties": {
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 8000
+                },
+                "megaphone": {
+                    "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone"
+                },
+                "waitSeconds": {
+                    "type": "integer",
+                    "example": 25
+                }
+            }
+        },
+        "internal_modules_megaphone.SendSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_megaphone.SendResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
@@ -28027,6 +30471,15 @@ const docTemplate = `{
                     ],
                     "example": "medium"
                 },
+                "giftWallPrivacy": {
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ],
+                    "example": 0
+                },
                 "meVisibility": {
                     "type": "string",
                     "enum": [
@@ -28084,6 +30537,10 @@ const docTemplate = `{
                 "fontSize": {
                     "type": "string",
                     "example": "medium"
+                },
+                "giftWallPrivacy": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "meVisibility": {
                     "type": "string",
@@ -28711,6 +31168,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "https://example.com/bio.jpg"
                 },
+                "canViewGiftWall": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "canViewInterested": {
                     "type": "boolean",
                     "example": true
@@ -28718,6 +31179,10 @@ const docTemplate = `{
                 "canViewVipStore": {
                     "type": "boolean",
                     "example": true
+                },
+                "charm": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "coverPhoto": {
                     "type": "string",
@@ -28730,6 +31195,10 @@ const docTemplate = `{
                 "dateOfBirth": {
                     "type": "string",
                     "example": "1990-01-01"
+                },
+                "emailVerified": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "followerCount": {
                     "type": "integer",
@@ -29792,6 +32261,104 @@ const docTemplate = `{
                 "type": "string"
             }
         },
+        "ola-chat-server_internal_domain_megaphone.GiftInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/gifts/rose.png"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Hoa hồng"
+                },
+                "nameEn": {
+                    "type": "string",
+                    "example": "Rose"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 5
+                }
+            }
+        },
+        "ola-chat-server_internal_domain_megaphone.Megaphone": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Chúc cả nhà buổi tối vui vẻ 🎉"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-06T09:59:50Z"
+                },
+                "displaySeconds": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:30:00Z"
+                },
+                "gift": {
+                    "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.GiftInfo"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "receiver": {
+                    "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Sender"
+                },
+                "sender": {
+                    "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Sender"
+                },
+                "showAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:00:00Z"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "message"
+                }
+            }
+        },
+        "ola-chat-server_internal_domain_megaphone.Sender": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/a.png"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "Minh"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "female"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "minh"
+                },
+                "vipEndTime": {
+                    "type": "string"
+                },
+                "vipUsed": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_models.Announcement": {
             "type": "object",
             "properties": {
@@ -29961,6 +32528,27 @@ const docTemplate = `{
                 "WheelSegmentVipRandom"
             ]
         },
+        "ola-chat-server_internal_modules_admin_common.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
         "ola-chat-server_internal_modules_announcement.AnnouncementListResponse": {
             "type": "object",
             "properties": {
@@ -30062,6 +32650,23 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 200,
                     "minLength": 1
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_content-filter.Result": {
+            "type": "object",
+            "properties": {
+                "blocked": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "banned_word"
+                },
+                "word": {
+                    "type": "string",
+                    "example": "lừa đảo"
                 }
             }
         },
@@ -31314,6 +33919,87 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_modules_moderation.AdminBrief": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moderation.PenaltyOutcome": {
+            "type": "object",
+            "properties": {
+                "counted": {
+                    "type": "boolean"
+                },
+                "locked": {
+                    "type": "boolean"
+                },
+                "lockedUntil": {
+                    "type": "string"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "threshold": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_moderation.ViolationItem": {
+            "type": "object",
+            "properties": {
+                "admin": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moderation.AdminBrief"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "reportId": {
+                    "type": "string"
+                },
+                "revokedAt": {
+                    "type": "string"
+                },
+                "revokedBy": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_moderation.AdminBrief"
+                },
+                "severity": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "targetId": {
+                    "type": "string"
+                },
+                "targetType": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_modules_moment.MediaPurgeLog": {
             "type": "object",
             "properties": {
@@ -32306,6 +34992,17 @@ const docTemplate = `{
                 },
                 "nextBefore": {
                     "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_setting.ModerationLockStep": {
+            "type": "object",
+            "properties": {
+                "hours": {
+                    "type": "integer"
+                },
+                "points": {
+                    "type": "integer"
                 }
             }
         },
@@ -34312,6 +37009,32 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_UpdateStatusResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_me.UpdateStatusResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeLogsResponse": {
             "type": "object",
             "properties": {
@@ -34707,6 +37430,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_user.UsernameChangeListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ViolationSummary": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_user.ViolationSummary"
                 },
                 "error": {
                     "type": "string"

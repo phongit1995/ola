@@ -2,7 +2,10 @@ export type AppNotificationType =
   | 'friend_request'
   | 'marriage_proposal'
   | 'content_violation'
-  | 'report_resolved';
+  | 'report_resolved'
+  | 'gift_received'
+  | 'ken_received'
+  | 'vip_received';
 
 export interface AppNotificationActor {
   id: string;
@@ -19,6 +22,12 @@ export interface AppNotification {
   preview?: string;
   isRead: boolean;
   createdAt: string;
+}
+
+export interface AppNotificationTransfer {
+  amount?: number;
+  vipTypeId?: number;
+  days?: number;
 }
 
 export interface AppNotificationListResult {

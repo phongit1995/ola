@@ -247,6 +247,10 @@ export function useProfileActions(username: string) {
     }
   }
 
+  function applyCharm(charm: number) {
+    setProfile(p => (p != null ? { ...p, charm } : p));
+  }
+
   return {
     profile,
     loading,
@@ -270,5 +274,6 @@ export function useProfileActions(username: string) {
     blockAction,
     changeCover,
     changeAvatar,
+    applyCharm,
   };
 }

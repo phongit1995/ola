@@ -47,6 +47,7 @@ import {
 //   stopCallForegroundService,
 // } from './lib/callForegroundService';
 import { CALL_MODE, CALL_TYPE } from '@ola/shared/constants';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 
 const CONTROLS_HEIGHT = 64;
 const CONTROLS_GAP = 24;
@@ -377,6 +378,10 @@ export function CallOverlay() {
 
   const incoming = mode === CALL_MODE.incoming;
   const inCall = !incoming && mode !== 'idle' && callType != null;
+  useOverlayBreadcrumb(
+    'CallOverlay',
+    incoming ? 'incoming' : inCall ? (expanded ? 'call-expanded' : 'call') : null,
+  );
 
   useEffect(() => {
     if (!incoming && !(inCall && expanded)) return;

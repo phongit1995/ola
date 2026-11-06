@@ -11,4 +11,5 @@ const (
 	MessageTypeVideo = "video"
 	MessageTypeAudio = "audio"
 	MessageTypeCall  = "call"
+	MessageTypeGift  = "gift"
 )

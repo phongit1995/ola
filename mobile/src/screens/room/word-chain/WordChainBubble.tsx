@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { FloatingBubble } from '@components/ui/FloatingBubble';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { WordChainImage } from './WordChainIcons';
@@ -27,7 +28,9 @@ export function WordChainBubble({ onRestore }: { onRestore: () => void }) {
     (store) => store.active != null && !store.minimized
   );
 
-  if (!opened || !minimized || arcadeCovers) return null;
+  const visible = opened && minimized && !arcadeCovers;
+  useOverlayBreadcrumb('WordChainBubble', visible ? 'shown' : null);
+  if (!visible) return null;
 
   return (
     <FloatingBubble

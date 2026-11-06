@@ -212,6 +212,7 @@ export function StoryReaderPage({
 
   return (
     <div
+      data-megaphone-cover=""
       className="fixed inset-0 z-40 flex flex-col"
       style={{ backgroundColor: palette.background, color: palette.text }}
     >

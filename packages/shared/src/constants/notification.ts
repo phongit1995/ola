@@ -6,6 +6,9 @@ export const APP_NOTIFICATION_TYPE = {
   marriageProposal: 'marriage_proposal',
   contentViolation: 'content_violation',
   reportResolved: 'report_resolved',
+  giftReceived: 'gift_received',
+  kenReceived: 'ken_received',
+  vipReceived: 'vip_received',
 } as const satisfies Record<string, AppNotificationType>;
 
 const SYSTEM_NOTICE_TYPES: ReadonlySet<string> = new Set([

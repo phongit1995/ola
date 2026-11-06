@@ -21,6 +21,9 @@ module.exports = {
         'ola-ink-hint': 'rgba(0,0,0,0.26)',
         'ola-divider': 'rgba(0,0,0,0.12)',
         'ola-warning': '#ff9800',
+        'ola-megaphone-soft': '#fff4e0',
+        'ola-megaphone-ink': '#e65100',
+        'ola-megaphone-name': '#eb7433',
       },
       fontSize: {
         xs: ['var(--ola-font-xs, 10.5px)', { lineHeight: 'var(--ola-leading-xs, 14px)' }],

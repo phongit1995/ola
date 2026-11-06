@@ -18,6 +18,7 @@ export function ProfileViewScreen({ navigation, route }: Props) {
       onClose={() => navigation.goBack()}
       onOpenProfile={(nick, color) => navigation.push(ROOT_ROUTES.ProfileView, { userId: nick, color })}
       onEditProfile={() => navigation.navigate(ROOT_ROUTES.EditProfile)}
+      onOpenGiftHistory={() => navigation.navigate(ROOT_ROUTES.GiftHistory)}
       onMessage={async (uid) => {
         const conversation = await useChatStore.getState().startDirect(uid);
         if (conversation != null && conversation.id !== '') {

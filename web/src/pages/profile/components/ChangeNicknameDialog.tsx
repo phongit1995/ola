@@ -1,24 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Image, Text, TextInput, View } from 'react-native';
 import {
   ApiError,
   formatKen,
+  toast,
   USERNAME_MAX,
   USERNAME_PATTERN,
-} from '@ola/shared/lib';
-import { UserService } from '@ola/shared/services';
+} from '@lib';
+import { UserService } from '@services';
 import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
-import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { Dialog, DialogButton } from '@components';
+import { useAuthStore } from '@/store/authStore';
 import type {
   CheckUsernameResult,
   UsernameChangeTier,
 } from '@ola/shared/types';
-import { Dialog, DialogButton } from '@components/ui/Dialog';
-
-const kenIcon = require('@assets/icons/apps/ken.png');
+import kenIcon from '@/assets/icons/apps/ken.png';
+import nicknameIcon from '@/assets/icons/apps/nickname.png';
 
 const USERNAME_MIN = 2;
 const CHECK_DEBOUNCE_MS = 400;
@@ -42,7 +41,7 @@ function isDisabledError(err: unknown): boolean {
 function tierLabel(
   tier: UsernameChangeTier,
   next: UsernameChangeTier | undefined,
-  t: TFunction,
+  t: TFunction
 ): string {
   if (!next) return t('changeNickname.tierLabelPlus', { n: tier.minLength });
   const upper = next.minLength - 1;
@@ -53,17 +52,16 @@ function tierLabel(
 }
 
 export function ChangeNicknameDialog({
-  visible,
+  open,
   onClose,
   onSuccess,
 }: {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }) {
   const { t } = useTranslation();
-  const push = useToastStore(s => s.push);
-  const user = useAuthStore(s => s.user);
+  const user = useAuthStore((s) => s.user);
   const [tiers, setTiers] = useState<UsernameChangeTier[]>([]);
   const [featureDisabled, setFeatureDisabled] = useState(false);
   const [value, setValue] = useState('');
@@ -96,34 +94,34 @@ export function ChangeNicknameDialog({
     ken >= cost;
 
   useEffect(() => {
-    if (!visible) return;
+    if (!open) return;
     let cancelled = false;
     requireAppConfig('usernameChange')
-      .then(config => {
+      .then((config) => {
         if (cancelled) return;
-        setFeatureDisabled(!(config.enabled && config.enabledMobile === true));
+        setFeatureDisabled(!config.enabled);
         setTiers([...config.tiers].sort((a, b) => a.minLength - b.minLength));
       })
       .catch(() => {
-        if (!cancelled) push('error', t('changeNickname.checkError'));
+        if (!cancelled) toast.error(t('changeNickname.checkError'));
       });
     return () => {
       cancelled = true;
     };
-  }, [visible, push, t]);
+  }, [open, t]);
 
   useEffect(() => {
-    if (!visible || !needsCheck || featureDisabled || checked != null) return;
+    if (!open || !needsCheck || featureDisabled || checked != null) return;
     let cancelled = false;
     const timer = setTimeout(() => {
-      setCheckFailedFor(prev => (prev === nickname ? null : prev));
+      setCheckFailedFor((prev) => (prev === nickname ? null : prev));
       UserService.checkUsername(nickname)
-        .then(result => {
+        .then((result) => {
           if (cancelled) return;
           setLastCheck(result);
           setCheckFailedFor(null);
         })
-        .catch(err => {
+        .catch((err) => {
           if (cancelled) return;
           if (isDisabledError(err)) {
             setFeatureDisabled(true);
@@ -136,7 +134,7 @@ export function ChangeNicknameDialog({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [visible, needsCheck, nickname, featureDisabled, checked]);
+  }, [open, needsCheck, nickname, featureDisabled, checked]);
 
   function close() {
     if (submitting) return;
@@ -149,46 +147,40 @@ export function ChangeNicknameDialog({
   function statusLine() {
     if (localError != null) {
       return (
-        <Text className="text-xs text-ola-error">
+        <p className="text-xs text-ola-error">
           {localError === 'same'
             ? t('changeNickname.same')
             : t('changeNickname.invalid')}
-        </Text>
+        </p>
       );
     }
     if (checkFailed) {
       return (
-        <Text className="text-xs text-ola-error">
-          {t('changeNickname.checkError')}
-        </Text>
+        <p className="text-xs text-ola-error">{t('changeNickname.checkError')}</p>
       );
     }
     if (needsCheck && checked == null) {
       return (
-        <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.5)' }}>
-          {t('changeNickname.checking')}
-        </Text>
+        <p className="text-xs text-black/50">{t('changeNickname.checking')}</p>
       );
     }
     if (checked != null) {
       if (!checked.available) {
         return (
-          <Text className="text-xs text-ola-error">
-            {t('changeNickname.taken')}
-          </Text>
+          <p className="text-xs text-ola-error">{t('changeNickname.taken')}</p>
         );
       }
       if (cost != null && ken < cost) {
         return (
-          <Text className="text-xs text-ola-error">
+          <p className="text-xs text-ola-error">
             {t('changeNickname.insufficient')}
-          </Text>
+          </p>
         );
       }
       return (
-        <Text className="text-xs text-ola-primary-dark">
+        <p className="text-xs text-ola-primary-dark">
           {t('changeNickname.available')}
-        </Text>
+        </p>
       );
     }
     return null;
@@ -199,12 +191,12 @@ export function ChangeNicknameDialog({
     setSubmitting(true);
     try {
       await UserService.changeUsername(checked.username, cost);
-      push('success', t('changeNickname.success'));
+      toast.success(t('changeNickname.success'));
       onSuccess();
       setSubmitting(false);
     } catch (err) {
       if (err instanceof ApiError && /failed to revoke/i.test(err.message)) {
-        push('success', t('changeNickname.success'));
+        toast.success(t('changeNickname.success'));
         onSuccess();
         setSubmitting(false);
         return;
@@ -223,27 +215,29 @@ export function ChangeNicknameDialog({
           message = t('changeNickname.insufficient');
         }
       }
-      push('error', message);
+      toast.error(message);
       setSubmitting(false);
     }
   }
 
   return (
     <Dialog
-      visible={visible}
+      open={open}
       onClose={close}
       title={t('changeNickname.title')}
+      icon={<img src={nicknameIcon} alt="" className="h-7 w-7 object-contain" />}
       dismissOnBackdrop={!submitting}
       footer={
         <>
-          <DialogButton onPress={close} disabled={submitting}>
+          <DialogButton type="button" onClick={close} disabled={submitting}>
             {t('changeNickname.cancel')}
           </DialogButton>
           {!featureDisabled && (
             <DialogButton
+              type="button"
               variant="green"
               disabled={!canSubmit}
-              onPress={() => void submit()}
+              onClick={() => void submit()}
             >
               {cost != null
                 ? t('changeNickname.confirm', { ken: formatKen(cost) })
@@ -254,85 +248,53 @@ export function ChangeNicknameDialog({
       }
     >
       {featureDisabled ? (
-        <Text className="py-2 text-sm" style={{ color: 'rgba(0,0,0,0.6)' }}>
+        <p className="py-2 text-sm text-black/60">
           {t('changeNickname.disabledNotice')}
-        </Text>
+        </p>
       ) : (
-        <View className="gap-3">
-          <View
-            className="rounded"
-            style={{
-              borderWidth: 1,
-              borderColor: 'rgba(0,0,0,0.1)',
-              backgroundColor: 'rgba(0,0,0,0.04)',
-            }}
-          >
-            <Text
-              className="px-3 py-2 text-xs font-semibold"
-              style={{
-                color: 'rgba(0,0,0,0.6)',
-                borderBottomWidth: 1,
-                borderBottomColor: 'rgba(0,0,0,0.1)',
-              }}
-            >
+        <div className="flex flex-col gap-3">
+          <div className="rounded border border-black/10 bg-black/4">
+            <p className="border-b border-black/10 px-3 py-2 text-xs font-semibold text-black/60">
               {t('changeNickname.priceTitle')}
-            </Text>
-            {tiers.map((tier, index) => (
-              <View
-                key={tier.minLength}
-                className="flex-row items-center justify-between px-3 py-1.5"
-              >
-                <Text numberOfLines={1} className="flex-1 text-sm text-black/80">
-                  {tierLabel(tier, tiers[index + 1], t)}
-                </Text>
-                <View className="shrink-0 flex-row items-center gap-1">
-                  <Text className="text-sm font-semibold text-black/80">
+            </p>
+            <ul>
+              {tiers.map((tier, index) => (
+                <li
+                  key={tier.minLength}
+                  className="flex items-center justify-between px-3 py-1.5 text-sm text-black/80"
+                >
+                  <span>{tierLabel(tier, tiers[index + 1], t)}</span>
+                  <span className="flex items-center gap-1 font-semibold">
                     {formatKen(tier.cost)}
-                  </Text>
-                  <Image
-                    source={kenIcon}
-                    style={{ width: 16, height: 16 }}
-                    resizeMode="contain"
-                  />
-                </View>
-              </View>
-            ))}
-          </View>
-          <View className="flex-row items-center gap-1">
-            <Image
-              source={kenIcon}
-              style={{ width: 14, height: 14 }}
-              resizeMode="contain"
-            />
-            <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.6)' }}>
-              {t('changeNickname.balance', { ken: formatKen(ken) })}
-            </Text>
-          </View>
-          <View>
-            <TextInput
+                    <img
+                      src={kenIcon}
+                      alt=""
+                      className="h-4 w-4 object-contain"
+                    />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p className="flex items-center gap-1 text-xs text-black/60">
+            <img src={kenIcon} alt="" className="h-3.5 w-3.5 object-contain" />
+            {t('changeNickname.balance', { ken: formatKen(ken) })}
+          </p>
+          <div>
+            <input
+              type="text"
               autoComplete="off"
               autoCapitalize="none"
-              autoCorrect={false}
               placeholder={t('changeNickname.inputPlaceholder')}
-              placeholderTextColor="rgba(0,0,0,0.4)"
               value={value}
-              onChangeText={setValue}
-              editable={!submitting}
-              className="w-full rounded bg-white px-3 py-2 text-sm"
-              style={{
-                color: 'rgba(0,0,0,0.87)',
-                borderWidth: 1,
-                borderColor: 'rgba(0,0,0,0.15)',
-              }}
+              onChange={(e) => setValue(e.target.value)}
+              disabled={submitting}
+              className="w-full rounded border border-black/15 bg-white px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary"
             />
-            <View className="mt-1" style={{ minHeight: 16 }}>
-              {statusLine()}
-            </View>
-          </View>
-          <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.5)' }}>
-            {t('changeNickname.note')}
-          </Text>
-        </View>
+            <div className="mt-1 min-h-4">{statusLine()}</div>
+          </div>
+          <p className="text-xs text-black/50">{t('changeNickname.note')}</p>
+        </div>
       )}
     </Dialog>
   );

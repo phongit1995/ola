@@ -11,11 +11,12 @@ import iconMedia from '@/assets/icons/apps/media.png';
 // import iconMall from '@/assets/icons/apps/mall.png';
 // import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
-import iconNickname from '@/assets/icons/apps/nickname.png';
 import iconRemoveAccount from '@/assets/icons/apps/delete-account.png';
 import iconSupport from '@/assets/icons/apps/support.png';
 import iconLogout from '@/assets/icons/apps/logout.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
+import iconGift from '@/assets/icons/apps/gift.webp';
+import iconMegaphone from '@/assets/images/member-megaphone.webp';
 import iconSocial from '@/assets/icons/social/social-menu-light.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
 import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
@@ -26,7 +27,7 @@ export interface AppItem {
   titleKey: ParseKeys;
   app?: AppOverlayKind;
   overlay?: 'pen' | 'egg' | 'wheel';
-  action?: 'logout' | 'social' | 'remove-account' | 'nickname' | 'support';
+  action?: 'logout' | 'social' | 'remove-account' | 'support';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -51,13 +52,10 @@ export const PERSONAL_ITEMS: AppItem[] = [
     app: 'notifications',
   },
   { icon: iconPersonal, titleKey: 'home.apps.profile', app: 'profile' },
-  {
-    icon: iconNickname,
-    titleKey: 'home.apps.changeNickname',
-    action: 'nickname',
-  },
   { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
   { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
+  { icon: iconGift, titleKey: 'home.apps.gifts', app: 'gifts' },
+  { icon: iconMegaphone, titleKey: 'megaphone.menuTitle', app: 'megaphone' },
   { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
   { icon: iconSocial, titleKey: 'home.apps.social', action: 'social' },
   { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },

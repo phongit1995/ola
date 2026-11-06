@@ -28,6 +28,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { CachedImage, CachedImageBackground } from '@components/ui/CachedImage';
 import { AVATAR_OUTPUT, COVER_OUTPUT, pickCroppedImage, pickValidatedCroppedImage } from '@lib/imagePicker';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
+import { NicknameField } from './components/NicknameField';
 import { VerifyEmailDialog } from './components/VerifyEmailDialog';
 import { CoverPreviewOverlay } from './components/CoverPreviewOverlay';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
@@ -260,7 +261,11 @@ export function EditProfileScreen({ navigation }: Props) {
               )}
             </View>
 
-            <Field label={t('profileEdit.fullnameLabel')} first>
+            <Field label={t('profileEdit.nicknameLabel')} first>
+              <NicknameField username={user.username} />
+            </Field>
+
+            <Field label={t('profileEdit.fullnameLabel')}>
               <TextInput
                 value={fullName}
                 onChangeText={setFullName}

@@ -24,6 +24,7 @@ type UserProfileResponse struct {
 	Verified       bool                   `json:"verified" example:"false"`
 	EmailVerified  bool                   `json:"emailVerified" example:"false"`
 	Kisses         int                    `json:"kisses" example:"0"`
+	Charm          int                    `json:"charm" example:"0"`
 	CreatedAt      string                 `json:"createdAt" example:"2024-01-01T00:00:00Z"`
 	UpdatedAt      string                 `json:"updatedAt" example:"2024-01-01T00:00:00Z"`
 }
@@ -91,13 +92,16 @@ type UserPublicProfileResponse struct {
 	DateOfBirth       string            `json:"dateOfBirth,omitempty" example:"1990-01-01"`
 	Spouse            *SpouseInfo       `json:"spouse,omitempty"`
 	Verified          bool              `json:"verified" example:"false"`
+	EmailVerified     bool              `json:"emailVerified" example:"false"`
 	Kisses            int               `json:"kisses" example:"0"`
+	Charm             int               `json:"charm" example:"0"`
 	VipUsed           *string           `json:"vipUsed" example:"gold"`
 	VipEndTime        *string           `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
 	FollowerCount     int               `json:"followerCount" example:"0"`
 	FollowingCount    int               `json:"followingCount" example:"0"`
 	CanViewInterested bool              `json:"canViewInterested" example:"true"`
 	CanViewVipStore   bool              `json:"canViewVipStore" example:"true"`
+	CanViewGiftWall   bool              `json:"canViewGiftWall" example:"true"`
 	AntiCount         int               `json:"antiCount" example:"0"`
 	IsOnline          bool              `json:"isOnline" example:"true"`
 	LastActiveAt      string            `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`

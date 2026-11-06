@@ -42,6 +42,7 @@ type TransferResult struct {
 var visibleKenTxTypes = []models.KenTxType{
 	models.KenTxTypeTransferIn,
 	models.KenTxTypeTransferOut,
+	models.KenTxTypeGiftSent,
 	models.KenTxTypeAdminGrant,
 	models.KenTxTypeAdminDeduct,
 	models.KenTxTypeVipPackage,
@@ -50,6 +51,7 @@ var visibleKenTxTypes = []models.KenTxType{
 	models.KenTxTypeTopup,
 	models.KenTxTypeWordChainHint,
 	models.KenTxTypeWordChainGuess,
+	models.KenTxTypeMegaphone,
 }
 
 func (r *Repository) ListTransactions(userID uuid.UUID, direction string, limit, offset int) ([]models.KenTransaction, int64, error) {

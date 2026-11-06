@@ -3,12 +3,11 @@ package wordchain
 import (
 	"context"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
 )
-
-var gmt7 = time.FixedZone("GMT+7", 7*60*60)
 
 type TimeRange struct {
 	From time.Time
@@ -31,18 +30,11 @@ func normalizeLeaderboardPeriod(period string) string {
 }
 
 func periodRange(now time.Time, period string) *TimeRange {
-	if period == WordChainLeaderboardPeriodAll {
+	start, ok := utils.VietnamPeriodStart(now, period)
+	if !ok {
 		return nil
 	}
-	local := now.In(gmt7)
-	start := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, gmt7)
-	switch period {
-	case WordChainLeaderboardPeriodWeek:
-		start = start.AddDate(0, 0, -((int(local.Weekday()) + 6) % 7))
-	case WordChainLeaderboardPeriodMonth:
-		start = time.Date(local.Year(), local.Month(), 1, 0, 0, 0, 0, gmt7)
-	}
-	return &TimeRange{From: start.UTC(), To: now.UTC()}
+	return &TimeRange{From: start, To: now.UTC()}
 }
 
 func (s *Service) recordScore(ctx context.Context, score *models.WordChainScore) {

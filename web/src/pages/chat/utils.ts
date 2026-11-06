@@ -17,6 +17,7 @@ import {
   isVipActive,
   isWithinMessageDeleteWindow,
   kulImageForText,
+  parseGiftMessageMetadata,
   parseMessageMetadata,
 } from '@lib';
 import type {
@@ -98,11 +99,11 @@ export function chatMessageAbilities(
 ): ChatMessageAbilities {
   const isOwn = message.direction === 'out';
   return {
-    canReply: !isOwn && !blocked && message.kind !== 'call',
+    canReply: !isOwn && !blocked && message.kind !== 'call' && message.kind !== 'gift',
     canCopy: isCopyableText(message),
     canEdit: isOwn && message.kind === 'text',
     canDelete: isOwn && isWithinMessageDeleteWindow(message.createdAt),
-    canReport: !isOwn && message.kind !== 'call',
+    canReport: !isOwn && message.kind !== 'call' && message.kind !== 'gift',
   };
 }
 
@@ -110,15 +111,28 @@ export function toBubble(message: Message, myId: string): ChatMessage {
   const isImage = message.type === MESSAGE_TYPE.image;
   const isAudio = message.type === MESSAGE_TYPE.audio;
   const isCall = message.type === MESSAGE_TYPE.call;
+  const gift =
+    message.type === MESSAGE_TYPE.gift
+      ? parseGiftMessageMetadata(message.metadata, message.content)
+      : null;
   const meta =
     isImage || isAudio || isCall ? parseMessageMetadata(message.metadata) : {};
   return {
     id: message.id,
     key: message.clientMsgId ?? message.id,
     direction: message.senderId === myId ? 'out' : 'in',
-    kind: isImage ? 'image' : isAudio ? 'voice' : isCall ? 'call' : 'text',
-    text: isImage || isAudio || isCall ? undefined : message.content,
+    kind: isImage
+      ? 'image'
+      : isAudio
+      ? 'voice'
+      : isCall
+      ? 'call'
+      : gift != null
+      ? 'gift'
+      : 'text',
+    text: isImage || isAudio || isCall || gift != null ? undefined : message.content,
     call: isCall ? meta : undefined,
+    gift: gift ?? undefined,
     image: isImage ? meta.url : undefined,
     audioUrl: isAudio ? meta.url : undefined,
     audioDuration: isAudio ? meta.duration : undefined,

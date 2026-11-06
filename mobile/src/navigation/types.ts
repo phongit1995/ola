@@ -35,6 +35,10 @@ export type RootStackParamList = {
   [ROOT_ROUTES.KenStore]: undefined;
   [ROOT_ROUTES.BuyKen]: undefined;
   [ROOT_ROUTES.MediaStore]: undefined;
+  [ROOT_ROUTES.GiftHome]: undefined;
+  [ROOT_ROUTES.GiftLeaderboard]: undefined;
+  [ROOT_ROUTES.GiftHistory]: undefined;
+  [ROOT_ROUTES.Megaphone]: undefined;
   [ROOT_ROUTES.Notifications]: undefined;
   [ROOT_ROUTES.Settings]: undefined;
   [ROOT_ROUTES.AppLock]: undefined;

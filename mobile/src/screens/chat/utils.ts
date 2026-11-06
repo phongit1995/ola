@@ -38,12 +38,13 @@ export function chatMessageAbilities(
   blocked: boolean
 ): ChatMessageAbilities {
   const isOwn = message.senderId === myId;
+  const isSystemCard = message.type === MESSAGE_TYPE.call || message.type === MESSAGE_TYPE.gift;
   return {
-    canReply: !isOwn && !blocked && message.type !== 'call',
+    canReply: !isOwn && !blocked && !isSystemCard,
     canCopy: isCopyableMessageText(message),
     canEdit: isOwn && message.type === MESSAGE_TYPE.text,
     canDelete: isOwn && isWithinMessageDeleteWindow(message.createdAt),
-    canReport: !isOwn && message.type !== 'call',
+    canReport: !isOwn && !isSystemCard,
   };
 }
 

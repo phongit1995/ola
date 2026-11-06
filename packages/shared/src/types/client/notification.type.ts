@@ -24,6 +24,13 @@ export interface AppNotificationState extends NotificationStateBase<AppNotificat
   hide: (id: string) => Promise<void>;
 }
 
+export type TransferNotificationBadge = { kind: 'ken' } | { kind: 'vip'; vipTypeId?: number };
+
+export interface TransferNotificationContent {
+  text: string;
+  badge?: TransferNotificationBadge;
+}
+
 export interface MeNotificationState extends NotificationStateBase<MeNotification> {
   handleIncoming: (payload: MeNotificationIncoming) => void;
 }

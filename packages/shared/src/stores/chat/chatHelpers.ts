@@ -1,11 +1,14 @@
 import { useAuthStore } from '../auth/authStore';
 import type { Conversation, Message } from '../../types/api/chat.type';
+import { MESSAGE_TYPE } from '../../constants/chat';
+import { giftMessagePreview } from '../../lib/gift';
 
 export function currentUserId(): string {
   return useAuthStore.getState().user?.id ?? '';
 }
 
 export function previewOf(message: Message): string {
+  if (message.type === MESSAGE_TYPE.gift) return giftMessagePreview(message.metadata);
   if (message.content) return message.content;
   if (message.type === 'image') return '📷';
   if (message.type === 'file') return '📎';

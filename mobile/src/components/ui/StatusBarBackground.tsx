@@ -1,11 +1,14 @@
 import { Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import { useThemeColors } from '@hooks/useThemeColors';
 
 export function StatusBarBackground() {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
-  if (Platform.OS !== 'android' || insets.top <= 0) return null;
+  const visible = Platform.OS === 'android' && insets.top > 0;
+  useOverlayBreadcrumb('StatusBarBackground', visible ? 'shown' : null);
+  if (!visible) return null;
   return (
     <View
       pointerEvents="none"

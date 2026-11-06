@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
-import { isAllowedVerifyEmailDomain } from '@ola/shared/constants';
+import {
+  isAllowedVerifyEmailDomain,
+  isAllowedVerifyEmailLocal,
+} from '@ola/shared/constants';
 import { ApiError, EMAIL_UNAVAILABLE_STATUS } from '@ola/shared/lib';
 import { AuthService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
@@ -20,6 +23,7 @@ interface VerifyEmailDialogProps {
 
 type VerifyEmailErrorKey =
   | 'verifyEmail.errGeneric'
+  | 'verifyEmail.errEmailInvalid'
   | 'verifyEmail.errDomainNotAllowed'
   | 'verifyEmail.errDailyLimit'
   | 'verifyEmail.errCooldown'
@@ -34,6 +38,7 @@ function messageKey(err: unknown): VerifyEmailErrorKey {
   if (err.status === EMAIL_UNAVAILABLE_STATUS) return 'verifyEmail.errUnavailable';
   const msg = err.message.toLowerCase();
   if (msg.includes('domain')) return 'verifyEmail.errDomainNotAllowed';
+  if (msg.includes('format')) return 'verifyEmail.errEmailInvalid';
   if (msg.includes('daily')) return 'verifyEmail.errDailyLimit';
   if (msg.includes('wait')) return 'verifyEmail.errCooldown';
   if (msg.includes('already exists')) return 'verifyEmail.errTaken';
@@ -85,6 +90,10 @@ export function VerifyEmailDialog({ visible, initialEmail, onClose, onVerified }
     }
     if (!isAllowedVerifyEmailDomain(value)) {
       push('error', t('verifyEmail.errDomainNotAllowed'));
+      return;
+    }
+    if (!isAllowedVerifyEmailLocal(value)) {
+      push('error', t('verifyEmail.errEmailInvalid'));
       return;
     }
     setSubmitting(true);

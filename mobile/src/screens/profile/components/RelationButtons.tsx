@@ -6,6 +6,7 @@ import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { PublicProfile } from '@ola/shared/types';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { useThemeColors } from '@hooks/useThemeColors';
+import { GIFT_ASSETS } from '@components/gift/giftAssets';
 
 const addFriendIcon = require('@assets/icons/profile/ic_add_friend_black_disable.png');
 const friendsActiveIcon = require('@assets/icons/profile/ic_state_friends.png');
@@ -25,6 +26,7 @@ interface RelationButtonsProps {
   onUpdateInfo: () => void;
   onPostMe: () => void;
   onMore: () => void;
+  onSendGift?: () => void;
 }
 
 function RelationButton({
@@ -39,6 +41,7 @@ function RelationButton({
   onPress: () => void;
 }) {
   const colors = useThemeColors();
+  const color = active ? colors.primary : 'rgba(0,0,0,0.26)';
   return (
     <Pressable onPress={onPress} className="flex-1 items-center gap-1 py-1">
       <Image
@@ -49,7 +52,7 @@ function RelationButton({
       <Text
         numberOfLines={2}
         className="text-center text-xs leading-tight"
-        style={{ color: active ? colors.primary : 'rgba(0,0,0,0.26)' }}
+        style={{ color }}
       >
         {label}
       </Text>
@@ -67,6 +70,7 @@ export function RelationButtons({
   onUpdateInfo,
   onPostMe,
   onMore,
+  onSendGift,
 }: RelationButtonsProps) {
   const { t } = useTranslation();
   const [unfriendOpen, setUnfriendOpen] = useState(false);
@@ -126,6 +130,13 @@ export function RelationButtons({
               active={following}
               onPress={onToggleFollow}
             />
+            {onSendGift != null && (
+              <RelationButton
+                icon={GIFT_ASSETS.profileSend}
+                label={t('gift.title')}
+                onPress={onSendGift}
+              />
+            )}
           </>
         )}
         <RelationButton

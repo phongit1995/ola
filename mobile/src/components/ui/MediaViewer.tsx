@@ -20,7 +20,12 @@ import Animated, {
 } from 'react-native-reanimated';
 import { toast } from '@ola/shared/lib';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
-import { saveImageToGallery } from '@lib/saveImage';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
+import {
+  alertPhotoPermissionDenied,
+  isPhotoPermissionDenied,
+  saveImageToGallery,
+} from '@lib/saveImage';
 import { recordAppError } from '@lib/telemetry';
 import { CachedImage } from './CachedImage';
 import { CloseIcon } from './CloseIcon';
@@ -174,12 +179,15 @@ function MediaViewerBody({ images, index, onClose }: MediaViewerModalProps) {
     if (uri == null || saving) return;
     setSaving(true);
     try {
-      const ok = await saveImageToGallery(uri);
-      if (ok) toast.success(t('media.saved'));
-      else toast.error(t('media.saveFailed'));
+      await saveImageToGallery(uri);
+      toast.success(t('media.saved'));
     } catch (error) {
-      recordAppError(error, `saveImageToGallery: ${uri}`);
-      toast.error(t('media.saveFailed'));
+      if (isPhotoPermissionDenied(error)) {
+        alertPhotoPermissionDenied(t);
+      } else {
+        recordAppError(error, `saveImageToGallery: ${uri}`);
+        toast.error(t('media.saveFailed'));
+      }
     } finally {
       setSaving(false);
     }
@@ -244,5 +252,6 @@ export function MediaViewer() {
   const images = useMediaViewerStore(s => s.images);
   const index = useMediaViewerStore(s => s.index);
   const close = useMediaViewerStore(s => s.close);
+  useOverlayBreadcrumb('MediaViewer', images.length > 0 ? 'open' : null);
   return <MediaViewerModal images={images} index={index} onClose={close} />;
 }

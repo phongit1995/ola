@@ -920,6 +920,17 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_admin_game-match.MatchPlayer:
+    properties:
+      place:
+        example: 1
+        type: integer
+      seat:
+        example: 0
+        type: integer
+      user:
+        $ref: '#/definitions/internal_modules_admin_game-match.UserBrief'
+    type: object
   internal_modules_admin_game-match.MatchStatsResponse:
     properties:
       bucket:
@@ -990,6 +1001,13 @@ definitions:
         $ref: '#/definitions/internal_modules_admin_game-match.UserBrief'
       player1:
         $ref: '#/definitions/internal_modules_admin_game-match.UserBrief'
+      playerCount:
+        example: 2
+        type: integer
+      players:
+        items:
+          $ref: '#/definitions/internal_modules_admin_game-match.MatchPlayer'
+        type: array
       reason:
         example: win
         type: string
@@ -1144,6 +1162,287 @@ definitions:
       username:
         example: john_doe
         type: string
+    type: object
+  internal_modules_admin_gift.CreateGiftRequest:
+    properties:
+      animation:
+        enum:
+        - random
+        - fly
+        - drop
+        - spin
+        - zoom
+        - float
+        - swing
+        - pop
+        - flip
+        - heartbeat
+        - jelly
+        - tornado
+        - slide
+        example: random
+        type: string
+      announceEnabled:
+        example: false
+        type: boolean
+      charmPoints:
+        example: 10
+        maximum: 100000000
+        minimum: 0
+        type: integer
+      imageUrl:
+        example: https://cdn.ola.vn/gifts/rose.png
+        maxLength: 500
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 10
+        maximum: 10000000
+        minimum: 1
+        type: integer
+      name:
+        example: Hoa hồng
+        maxLength: 60
+        type: string
+      nameEn:
+        example: Rose
+        maxLength: 60
+        type: string
+      senderCharmPercent:
+        example: 50
+        maximum: 100
+        minimum: 0
+        type: integer
+      sortOrder:
+        example: 0
+        type: integer
+    required:
+    - imageUrl
+    - kenPrice
+    - name
+    type: object
+  internal_modules_admin_gift.GiftItem:
+    properties:
+      animation:
+        example: random
+        type: string
+      announceEnabled:
+        example: false
+        type: boolean
+      charmPoints:
+        example: 10
+        type: integer
+      createdAt:
+        example: "2026-11-05T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      imageUrl:
+        example: https://cdn.ola.vn/gifts/rose.png
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 10
+        type: integer
+      name:
+        example: Hoa hồng
+        type: string
+      nameEn:
+        example: Rose
+        type: string
+      senderCharmPercent:
+        example: 50
+        type: integer
+      sortOrder:
+        example: 0
+        type: integer
+      updatedAt:
+        example: "2026-11-05T10:00:00Z"
+        type: string
+    type: object
+  internal_modules_admin_gift.GiftItemSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_gift.GiftItem'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_gift.GiftListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_gift.GiftItem'
+        type: array
+    type: object
+  internal_modules_admin_gift.GiftListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_gift.GiftListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_gift.TransactionItem:
+    properties:
+      charmPoints:
+        example: 50
+        type: integer
+      createdAt:
+        example: "2026-11-05T10:00:00Z"
+        type: string
+      giftId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      giftImageUrl:
+        example: https://cdn.ola.vn/gifts/rose.png
+        type: string
+      giftName:
+        example: Hoa hồng
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      note:
+        example: Chúc mừng sinh nhật
+        type: string
+      quantity:
+        example: 5
+        type: integer
+      receiver:
+        $ref: '#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief'
+      sender:
+        $ref: '#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief'
+      senderCharmPoints:
+        example: 25
+        type: integer
+      source:
+        example: chat
+        type: string
+      totalKen:
+        example: 50
+        type: integer
+      unitPrice:
+        example: 10
+        type: integer
+    type: object
+  internal_modules_admin_gift.TransactionListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_gift.TransactionItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 120
+        type: integer
+      totalCharm:
+        example: 25000
+        type: integer
+      totalKen:
+        example: 25000
+        type: integer
+    type: object
+  internal_modules_admin_gift.TransactionListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_gift.TransactionListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_gift.UpdateGiftRequest:
+    properties:
+      animation:
+        enum:
+        - random
+        - fly
+        - drop
+        - spin
+        - zoom
+        - float
+        - swing
+        - pop
+        - flip
+        - heartbeat
+        - jelly
+        - tornado
+        - slide
+        example: random
+        type: string
+      announceEnabled:
+        example: false
+        type: boolean
+      charmPoints:
+        example: 10
+        maximum: 100000000
+        minimum: 0
+        type: integer
+      imageUrl:
+        example: https://cdn.ola.vn/gifts/rose.png
+        maxLength: 500
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 10
+        maximum: 10000000
+        minimum: 1
+        type: integer
+      name:
+        example: Hoa hồng
+        maxLength: 60
+        type: string
+      nameEn:
+        example: Rose
+        maxLength: 60
+        type: string
+      senderCharmPercent:
+        example: 50
+        maximum: 100
+        minimum: 0
+        type: integer
+      sortOrder:
+        example: 0
+        type: integer
     type: object
   internal_modules_admin_ken.AdjustRequest:
     properties:
@@ -1804,6 +2103,10 @@ definitions:
         type: integer
       enabled:
         type: boolean
+      hiddenAt:
+        type: string
+      hiddenBy:
+        type: string
       id:
         type: string
       images:
@@ -1850,6 +2153,10 @@ definitions:
         type: integer
       enabled:
         type: boolean
+      hiddenAt:
+        type: string
+      hiddenBy:
+        type: string
       id:
         type: string
       images:
@@ -1876,13 +2183,241 @@ definitions:
       total:
         type: integer
     type: object
+  internal_modules_admin_me.PenaltyRequest:
+    properties:
+      note:
+        example: Ảnh khoả thân
+        maxLength: 1000
+        type: string
+      reason:
+        enum:
+        - spam
+        - sensitive
+        - scam
+        - harassment
+        - other
+        example: sensitive
+        type: string
+      severity:
+        enum:
+        - none
+        - violation
+        - deliberate
+        example: violation
+        type: string
+    required:
+    - reason
+    - severity
+    type: object
   internal_modules_admin_me.UpdateStatusRequest:
     properties:
       enabled:
         example: false
         type: boolean
+      penalty:
+        $ref: '#/definitions/internal_modules_admin_me.PenaltyRequest'
     required:
     - enabled
+    type: object
+  internal_modules_admin_me.UpdateStatusResponse:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
+      checkIn:
+        $ref: '#/definitions/internal_modules_admin_me.CheckInResponse'
+      commentCount:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      dislikeCount:
+        type: integer
+      enabled:
+        type: boolean
+      hiddenAt:
+        type: string
+      hiddenBy:
+        type: string
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/internal_modules_admin_me.MeImageResponse'
+        type: array
+      likeCount:
+        type: integer
+      mentions:
+        items:
+          type: string
+        type: array
+      penalty:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moderation.PenaltyOutcome'
+      sticker:
+        type: string
+      updatedAt:
+        type: string
+      visibility:
+        type: string
+    type: object
+  internal_modules_admin_megaphone.CheckContentRequest:
+    properties:
+      text:
+        example: ai cần nạp ken giá rẻ ib
+        maxLength: 1000
+        type: string
+    required:
+    - text
+    type: object
+  internal_modules_admin_megaphone.CheckContentSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_content-filter.Result'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_megaphone.ListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_megaphone.MegaphoneItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 120
+        type: integer
+      totalKen:
+        example: 240000
+        type: integer
+    type: object
+  internal_modules_admin_megaphone.ListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_megaphone.ListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_megaphone.MegaphoneItem:
+    properties:
+      content:
+        example: Chúc cả nhà buổi tối vui vẻ
+        type: string
+      createdAt:
+        example: "2026-11-06T09:59:50Z"
+        type: string
+      displaySeconds:
+        example: 12
+        type: integer
+      expiresAt:
+        example: "2026-11-06T10:30:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      kenPrice:
+        example: 2000
+        type: integer
+      removedAt:
+        example: "2026-11-06T10:05:00Z"
+        type: string
+      removedReason:
+        example: Quảng cáo
+        type: string
+      sender:
+        $ref: '#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief'
+      showAt:
+        example: "2026-11-06T10:00:00Z"
+        type: string
+      status:
+        example: active
+        type: string
+      type:
+        example: message
+        type: string
+    type: object
+  internal_modules_admin_megaphone.PenaltyRequest:
+    properties:
+      note:
+        example: Rao bán KEN
+        maxLength: 1000
+        type: string
+      reason:
+        enum:
+        - spam
+        - sensitive
+        - scam
+        - harassment
+        - other
+        example: scam
+        type: string
+      severity:
+        enum:
+        - none
+        - violation
+        - deliberate
+        example: violation
+        type: string
+    required:
+    - reason
+    - severity
+    type: object
+  internal_modules_admin_megaphone.RemoveRequest:
+    properties:
+      penalty:
+        $ref: '#/definitions/internal_modules_admin_megaphone.PenaltyRequest'
+      reason:
+        example: Rao bán KEN
+        maxLength: 200
+        type: string
+    type: object
+  internal_modules_admin_megaphone.RemoveResponse:
+    properties:
+      item:
+        $ref: '#/definitions/internal_modules_admin_megaphone.MegaphoneItem'
+      penalty:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moderation.PenaltyOutcome'
+    type: object
+  internal_modules_admin_megaphone.RemoveSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_megaphone.RemoveResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
     type: object
   internal_modules_admin_moment.AuthorResponse:
     properties:
@@ -2516,6 +3051,21 @@ definitions:
       username:
         type: string
     type: object
+  internal_modules_admin_report.PenaltyRequest:
+    properties:
+      contentRemoved:
+        example: true
+        type: boolean
+      severity:
+        enum:
+        - none
+        - violation
+        - deliberate
+        example: violation
+        type: string
+    required:
+    - severity
+    type: object
   internal_modules_admin_report.ReportItem:
     properties:
       contextId:
@@ -2607,6 +3157,8 @@ definitions:
         example: Đã xoá tin nhắn và khoá tài khoản
         maxLength: 1000
         type: string
+      penalty:
+        $ref: '#/definitions/internal_modules_admin_report.PenaltyRequest'
       status:
         enum:
         - resolved
@@ -2620,6 +3172,8 @@ definitions:
     properties:
       affected:
         type: integer
+      penalty:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moderation.PenaltyOutcome'
       report:
         $ref: '#/definitions/internal_modules_admin_report.ReportItem'
     type: object
@@ -3027,6 +3581,10 @@ definitions:
         type: string
       lastLoginIp:
         type: string
+      lockReason:
+        type: string
+      lockedUntil:
+        type: string
       phone:
         type: string
       updatedAt:
@@ -3063,6 +3621,10 @@ definitions:
       ken:
         type: integer
       lastLoginAt:
+        type: string
+      lockReason:
+        type: string
+      lockedUntil:
         type: string
       username:
         type: string
@@ -3113,6 +3675,23 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  internal_modules_admin_user.ViolationSummary:
+    properties:
+      expireHours:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_moderation.ViolationItem'
+        type: array
+      lockSteps:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_setting.ModerationLockStep'
+        type: array
+      threshold:
+        type: integer
+      total:
+        type: integer
     type: object
   internal_modules_admin_user.VipIconItem:
     properties:
@@ -4431,6 +5010,360 @@ definitions:
       weight:
         type: number
     type: object
+  internal_modules_gift.GiftCatalogResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_gift.GiftItem'
+        type: array
+      settings:
+        $ref: '#/definitions/internal_modules_gift.GiftSettingsView'
+    type: object
+  internal_modules_gift.GiftCatalogSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_gift.GiftCatalogResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_gift.GiftHistoryItem:
+    properties:
+      charmPoints:
+        example: 50
+        type: integer
+      counterparty:
+        $ref: '#/definitions/internal_modules_gift.GiftUserBrief'
+      createdAt:
+        example: "2026-11-05T10:00:00Z"
+        type: string
+      giftAnimation:
+        example: random
+        type: string
+      giftId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      giftImageUrl:
+        example: https://cdn.ola.vn/gifts/rose.png
+        type: string
+      giftName:
+        example: Hoa hồng
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      note:
+        example: Chúc mừng sinh nhật
+        type: string
+      quantity:
+        example: 5
+        type: integer
+      senderCharmPoints:
+        example: 25
+        type: integer
+      source:
+        example: chat
+        type: string
+      totalKen:
+        example: 50
+        type: integer
+    type: object
+  internal_modules_gift.GiftHistoryResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_gift.GiftHistoryItem'
+        type: array
+      nextCursor:
+        type: string
+    type: object
+  internal_modules_gift.GiftHistorySuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_gift.GiftHistoryResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_gift.GiftItem:
+    properties:
+      animation:
+        example: random
+        type: string
+      announceEnabled:
+        example: true
+        type: boolean
+      charmPoints:
+        example: 10
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      imageUrl:
+        example: https://cdn.ola.vn/gifts/rose.png
+        type: string
+      kenPrice:
+        example: 10
+        type: integer
+      name:
+        example: Hoa hồng
+        type: string
+      nameEn:
+        example: Rose
+        type: string
+      senderCharmPercent:
+        example: 50
+        type: integer
+    type: object
+  internal_modules_gift.GiftSettingsView:
+    properties:
+      confirmOverKen:
+        example: 1000
+        type: integer
+      enabled:
+        example: true
+        type: boolean
+      noteMaxLength:
+        example: 100
+        type: integer
+      quantityMax:
+        example: 99
+        type: integer
+      quantityOptions:
+        items:
+          type: integer
+        type: array
+    type: object
+  internal_modules_gift.GiftUserBrief:
+    properties:
+      avatar:
+        example: https://cdn.ola.vn/a.png
+        type: string
+      fullName:
+        example: Minh
+        type: string
+      gender:
+        example: female
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      username:
+        example: minh
+        type: string
+      vipEndTime:
+        type: string
+      vipUsed:
+        type: string
+    type: object
+  internal_modules_gift.GiftWallItem:
+    properties:
+      gift:
+        $ref: '#/definitions/internal_modules_gift.GiftItem'
+      quantity:
+        example: 12
+        type: integer
+    type: object
+  internal_modules_gift.GiftWallResponse:
+    properties:
+      charm:
+        example: 1200
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_gift.GiftWallItem'
+        type: array
+      totalGifts:
+        example: 34
+        type: integer
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  internal_modules_gift.GiftWallSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_gift.GiftWallResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_gift.LeaderboardEntry:
+    properties:
+      rank:
+        example: 1
+        type: integer
+      user:
+        $ref: '#/definitions/internal_modules_gift.GiftUserBrief'
+      value:
+        example: 25000
+        type: integer
+    type: object
+  internal_modules_gift.LeaderboardMe:
+    properties:
+      rank:
+        example: 12
+        type: integer
+      value:
+        example: 300
+        type: integer
+    type: object
+  internal_modules_gift.LeaderboardResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_gift.LeaderboardEntry'
+        type: array
+      me:
+        $ref: '#/definitions/internal_modules_gift.LeaderboardMe'
+      period:
+        example: week
+        type: string
+      type:
+        example: receiver
+        type: string
+    type: object
+  internal_modules_gift.LeaderboardSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_gift.LeaderboardResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_gift.SendGiftRequest:
+    properties:
+      announce:
+        example: true
+        type: boolean
+      clientRequestId:
+        example: 7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10
+        maxLength: 64
+        type: string
+      giftId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      note:
+        example: Chúc mừng sinh nhật
+        maxLength: 400
+        type: string
+      quantity:
+        example: 5
+        minimum: 1
+        type: integer
+      receiverId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      source:
+        enum:
+        - chat
+        - profile
+        example: chat
+        type: string
+    required:
+    - clientRequestId
+    - giftId
+    - quantity
+    - receiverId
+    - source
+    type: object
+  internal_modules_gift.SendGiftResponse:
+    properties:
+      announced:
+        example: true
+        type: boolean
+      charmPoints:
+        example: 50
+        type: integer
+      conversationId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      createdAt:
+        example: "2026-11-05T10:00:00Z"
+        type: string
+      gift:
+        $ref: '#/definitions/internal_modules_gift.GiftItem'
+      kenBalance:
+        example: 950
+        type: integer
+      messageId:
+        example: a1b2c3d4-0000-11ef-8000-000000000000
+        type: string
+      note:
+        example: Chúc mừng sinh nhật
+        type: string
+      quantity:
+        example: 5
+        type: integer
+      receiverCharm:
+        example: 1200
+        type: integer
+      receiverId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      senderCharmPoints:
+        example: 25
+        type: integer
+      totalKen:
+        example: 50
+        type: integer
+      transactionId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
+  internal_modules_gift.SendGiftSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_gift.SendGiftResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_health.HealthResponse:
     properties:
       services:
@@ -5318,6 +6251,124 @@ definitions:
         type: string
       width:
         type: integer
+    type: object
+  internal_modules_megaphone.ConfigResponse:
+    properties:
+      cooldownRemaining:
+        example: 0
+        type: integer
+      cooldownSeconds:
+        example: 60
+        type: integer
+      dailyLimit:
+        example: 20
+        type: integer
+      displaySeconds:
+        example: 12
+        type: integer
+      enabled:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 5000
+        type: integer
+      liveMinutes:
+        example: 30
+        type: integer
+      maxLength:
+        example: 80
+        type: integer
+      queueWaitSeconds:
+        example: 25
+        type: integer
+      todayCount:
+        example: 2
+        type: integer
+    type: object
+  internal_modules_megaphone.ConfigSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_megaphone.ConfigResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_megaphone.HistoryResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone'
+        type: array
+      nextCursor:
+        type: string
+    type: object
+  internal_modules_megaphone.HistorySuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_megaphone.HistoryResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_megaphone.SendRequest:
+    properties:
+      clientRequestId:
+        example: 7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10
+        maxLength: 64
+        type: string
+      content:
+        example: "Chúc cả nhà buổi tối vui vẻ \U0001F389"
+        maxLength: 1000
+        type: string
+    required:
+    - clientRequestId
+    - content
+    type: object
+  internal_modules_megaphone.SendResponse:
+    properties:
+      kenBalance:
+        example: 8000
+        type: integer
+      megaphone:
+        $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone'
+      waitSeconds:
+        example: 25
+        type: integer
+    type: object
+  internal_modules_megaphone.SendSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_megaphone.SendResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
     type: object
   internal_modules_message.MessageResponse:
     properties:
@@ -7485,6 +8536,13 @@ definitions:
         - large
         example: medium
         type: string
+      giftWallPrivacy:
+        enum:
+        - 0
+        - 1
+        - 2
+        example: 0
+        type: integer
       meVisibility:
         enum:
         - all
@@ -7528,6 +8586,9 @@ definitions:
       fontSize:
         example: medium
         type: string
+      giftWallPrivacy:
+        example: 0
+        type: integer
       meVisibility:
         example: all
         type: string
@@ -7962,12 +9023,18 @@ definitions:
       bioImage:
         example: https://example.com/bio.jpg
         type: string
+      canViewGiftWall:
+        example: true
+        type: boolean
       canViewInterested:
         example: true
         type: boolean
       canViewVipStore:
         example: true
         type: boolean
+      charm:
+        example: 0
+        type: integer
       coverPhoto:
         example: https://example.com/cover.jpg
         type: string
@@ -7977,6 +9044,9 @@ definitions:
       dateOfBirth:
         example: "1990-01-01"
         type: string
+      emailVerified:
+        example: false
+        type: boolean
       followerCount:
         example: 0
         type: integer
@@ -8704,6 +9774,76 @@ definitions:
     additionalProperties:
       type: string
     type: object
+  ola-chat-server_internal_domain_megaphone.GiftInfo:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      imageUrl:
+        example: https://cdn.ola.vn/gifts/rose.png
+        type: string
+      name:
+        example: Hoa hồng
+        type: string
+      nameEn:
+        example: Rose
+        type: string
+      quantity:
+        example: 5
+        type: integer
+    type: object
+  ola-chat-server_internal_domain_megaphone.Megaphone:
+    properties:
+      content:
+        example: "Chúc cả nhà buổi tối vui vẻ \U0001F389"
+        type: string
+      createdAt:
+        example: "2026-11-06T09:59:50Z"
+        type: string
+      displaySeconds:
+        example: 12
+        type: integer
+      expiresAt:
+        example: "2026-11-06T10:30:00Z"
+        type: string
+      gift:
+        $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.GiftInfo'
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      receiver:
+        $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Sender'
+      sender:
+        $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Sender'
+      showAt:
+        example: "2026-11-06T10:00:00Z"
+        type: string
+      type:
+        example: message
+        type: string
+    type: object
+  ola-chat-server_internal_domain_megaphone.Sender:
+    properties:
+      avatar:
+        example: https://cdn.ola.vn/a.png
+        type: string
+      fullName:
+        example: Minh
+        type: string
+      gender:
+        example: female
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      username:
+        example: minh
+        type: string
+      vipEndTime:
+        type: string
+      vipUsed:
+        type: string
+    type: object
   ola-chat-server_internal_models.Announcement:
     properties:
       content:
@@ -8821,6 +9961,21 @@ definitions:
     - WheelSegmentVipDays
     - WheelSegmentVipItem
     - WheelSegmentVipRandom
+  ola-chat-server_internal_modules_admin_common.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
   ola-chat-server_internal_modules_announcement.AnnouncementListResponse:
     properties:
       items:
@@ -8889,6 +10044,18 @@ definitions:
       title:
         maxLength: 200
         minLength: 1
+        type: string
+    type: object
+  ola-chat-server_internal_modules_content-filter.Result:
+    properties:
+      blocked:
+        example: true
+        type: boolean
+      reason:
+        example: banned_word
+        type: string
+      word:
+        example: lừa đảo
         type: string
     type: object
   ola-chat-server_internal_modules_egg.AdminDrawListResponse:
@@ -9726,6 +10893,59 @@ definitions:
       sortOrder:
         type: integer
     type: object
+  ola-chat-server_internal_modules_moderation.AdminBrief:
+    properties:
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_moderation.PenaltyOutcome:
+    properties:
+      counted:
+        type: boolean
+      locked:
+        type: boolean
+      lockedUntil:
+        type: string
+      points:
+        type: integer
+      threshold:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_moderation.ViolationItem:
+    properties:
+      admin:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moderation.AdminBrief'
+      createdAt:
+        type: string
+      id:
+        type: string
+      note:
+        type: string
+      points:
+        type: integer
+      reason:
+        type: string
+      reportId:
+        type: string
+      revokedAt:
+        type: string
+      revokedBy:
+        $ref: '#/definitions/ola-chat-server_internal_modules_moderation.AdminBrief'
+      severity:
+        type: string
+      source:
+        type: string
+      targetId:
+        type: string
+      targetType:
+        type: string
+    type: object
   ola-chat-server_internal_modules_moment.MediaPurgeLog:
     properties:
       afterHours:
@@ -10391,6 +11611,13 @@ definitions:
         type: array
       nextBefore:
         type: string
+    type: object
+  ola-chat-server_internal_modules_setting.ModerationLockStep:
+    properties:
+      hours:
+        type: integer
+      points:
+        type: integer
     type: object
   ola-chat-server_internal_modules_setting.StoryCookie:
     properties:
@@ -11729,6 +12956,23 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_UpdateStatusResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_me.UpdateStatusResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MediaPurgeLogsResponse:
     properties:
       data:
@@ -11988,6 +13232,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_admin_user.UsernameChangeListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ViolationSummary:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_user.ViolationSummary'
       error:
         type: string
       path:
@@ -13832,6 +15093,29 @@ paths:
       summary: List clan members (admin)
       tags:
       - admin-clan
+  /admin/content-filter/check:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Câu cần thử
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_megaphone.CheckContentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.CheckContentSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thử một câu với bộ lọc nội dung (admin)
+      tags:
+      - admin-megaphones
   /admin/conversations:
     get:
       description: 'hidden=false: hội thoại đang hiển thị, sắp theo tin mới nhất.
@@ -14407,6 +15691,150 @@ paths:
       summary: Người chơi & cặp đấu thắng bất thường (admin)
       tags:
       - admin-game-match
+  /admin/gifts:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_gift.GiftListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách quà (admin, gồm cả quà tắt)
+      tags:
+      - admin-gifts
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Gift
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_gift.CreateGiftRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_gift.GiftItemSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Thêm quà (admin)
+      tags:
+      - admin-gifts
+  /admin/gifts/{id}:
+    delete:
+      parameters:
+      - description: Gift ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá quà (admin, xoá mềm — tường quà và lịch sử vẫn giữ)
+      tags:
+      - admin-gifts
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Gift ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Gift
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_gift.UpdateGiftRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_gift.GiftItemSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Sửa quà (admin)
+      tags:
+      - admin-gifts
+  /admin/gifts/transactions:
+    get:
+      parameters:
+      - description: Người tặng hoặc người nhận
+        in: query
+        name: userId
+        type: string
+      - description: Người tặng
+        in: query
+        name: senderId
+        type: string
+      - description: Người nhận
+        in: query
+        name: receiverId
+        type: string
+      - description: Loại quà
+        in: query
+        name: giftId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_gift.TransactionListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Sổ quà đã tặng (admin)
+      tags:
+      - admin-gifts
   /admin/ken/auto-jobs:
     get:
       produces:
@@ -15247,12 +16675,93 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_UpdateStatusResponse'
       security:
       - BearerAuth: []
       summary: Enable/disable a post (admin)
       tags:
       - admin-me
+  /admin/megaphones:
+    get:
+      parameters:
+      - description: Người phát
+        in: query
+        name: senderId
+        type: string
+      - description: active, removed
+        in: query
+        name: status
+        type: string
+      - description: 'Loại tin: message, gift'
+        in: query
+        name: type
+        type: string
+      - description: Tìm trong nội dung
+        in: query
+        name: q
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.ListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách loa đã phát (admin)
+      tags:
+      - admin-megaphones
+  /admin/megaphones/{id}/remove:
+    post:
+      consumes:
+      - application/json
+      description: Loa biến mất trên mọi máy, không hoàn KEN. Có penalty thì tính
+        điểm vi phạm cho người phát.
+      parameters:
+      - description: Megaphone ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Lý do + điểm vi phạm
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_megaphone.RemoveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.RemoveSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Gỡ một loa (admin)
+      tags:
+      - admin-megaphones
   /admin/mini-games:
     get:
       produces:
@@ -15952,7 +17461,7 @@ paths:
         name: status
         type: string
       - description: account, post, comment, story_comment, message, room_message,
-          moment
+          moment, megaphone
         in: query
         name: targetType
         type: string
@@ -17276,6 +18785,98 @@ paths:
       security:
       - BearerAuth: []
       summary: Update username
+      tags:
+      - admin-user
+  /admin/users/{id}/violations:
+    delete:
+      description: Revoke every violation still counting points; does not unlock the
+        account (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ViolationSummary'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Clear user violation points
+      tags:
+      - admin-user
+    get:
+      description: Violation history and active points of a user (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ViolationSummary'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: List user violations
+      tags:
+      - admin-user
+  /admin/users/{id}/violations/{violationId}:
+    delete:
+      description: Stop counting a violation; does not unlock the account (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Violation ID
+        in: path
+        name: violationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ViolationSummary'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Revoke a user violation
       tags:
       - admin-user
   /admin/users/{id}/vip-days:
@@ -19689,6 +21290,165 @@ paths:
       summary: Danh sách quà của một gói đập trứng
       tags:
       - egg
+  /gifts:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_gift.GiftCatalogSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách quà đang bán + cấu hình tặng quà
+      tags:
+      - gifts
+  /gifts/leaderboard:
+    get:
+      description: 'type=sender: tổng KEN đã tặng; type=receiver: tổng sức hút nhận
+        được. period theo giờ Việt Nam.'
+      parameters:
+      - description: sender | receiver (mặc định receiver)
+        in: query
+        name: type
+        type: string
+      - description: week | month | all (mặc định week)
+        in: query
+        name: period
+        type: string
+      - description: Số dòng (mặc định 50, tối đa 100)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_gift.LeaderboardSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Bảng xếp hạng quà
+      tags:
+      - gifts
+  /gifts/received:
+    get:
+      parameters:
+      - description: Con trỏ trang tiếp
+        in: query
+        name: cursor
+        type: string
+      - description: Số bản ghi (mặc định 20, tối đa 50)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_gift.GiftHistorySuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử quà mình đã nhận
+      tags:
+      - gifts
+  /gifts/send:
+    post:
+      consumes:
+      - application/json
+      description: Trừ KEN người tặng (GIFT_SENT), cộng sức hút + tường quà cho người
+        nhận. source=chat tạo thêm tin nhắn loại gift, source=profile tạo thông báo.
+        clientRequestId chống trừ KEN hai lần khi gửi lại.
+      parameters:
+      - description: Gift
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_gift.SendGiftRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_gift.SendGiftSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Tặng quà cho user khác
+      tags:
+      - gifts
+  /gifts/sent:
+    get:
+      parameters:
+      - description: Con trỏ trang tiếp
+        in: query
+        name: cursor
+        type: string
+      - description: Số bản ghi (mặc định 20, tối đa 50)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_gift.GiftHistorySuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử quà mình đã tặng
+      tags:
+      - gifts
+  /gifts/users/{id}/wall:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_gift.GiftWallSuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Tường quà + sức hút của một user
+      tags:
+      - gifts
   /health:
     get:
       description: Check the health status of the API and database
@@ -20652,6 +22412,91 @@ paths:
       summary: List a user's posts (visibility-aware)
       tags:
       - me
+  /megaphones:
+    get:
+      parameters:
+      - description: Con trỏ trang sau
+        in: query
+        name: cursor
+        type: string
+      - description: Số loa mỗi trang (mặc định 20, tối đa 50)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_megaphone.HistorySuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Loa thường đã phát trong 24 giờ gần nhất
+      tags:
+      - megaphones
+    post:
+      consumes:
+      - application/json
+      description: Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày
+        trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối,
+        không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId
+        chống trừ hai lần khi gửi lại.
+      parameters:
+      - description: Megaphone
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_megaphone.SendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_megaphone.SendSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Phát loa tới mọi người
+      tags:
+      - megaphones
+  /megaphones/config:
+    get:
+      description: Giá, số ký tự, thời gian hiện, số loa đã phát hôm nay, số giây
+        còn phải chờ và thời gian chờ hàng loa hiện tại.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_megaphone.ConfigSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Cấu hình phát loa + trạng thái của người gọi
+      tags:
+      - megaphones
   /messages:
     post:
       consumes:
@@ -21415,6 +23260,28 @@ paths:
       security:
       - BearerAuth: []
       summary: List my app notifications (friend requests, marriage proposals, ...)
+      tags:
+      - notifications
+  /notifications/{id}:
+    delete:
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Hide one of my app notifications
       tags:
       - notifications
   /notifications/read-all:

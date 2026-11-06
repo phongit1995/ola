@@ -420,6 +420,7 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
 
   return createPortal(
     <div
+      data-megaphone-cover=""
       className="fixed inset-0 z-[100] flex flex-col bg-black text-white select-none"
       onTouchStart={keepTouchInViewer}
       onTouchMove={keepTouchInViewer}

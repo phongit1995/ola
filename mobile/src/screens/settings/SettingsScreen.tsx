@@ -8,7 +8,7 @@ import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useThemeStore } from '@ola/shared/stores/themeStore';
 import { THEME_OPTIONS } from '@ola/shared/constants';
 import { UserService, VipService } from '@ola/shared/services';
-import type { ThemeId, UserSettings } from '@ola/shared/types';
+import type { GiftWallPrivacy, ThemeId, UserSettings } from '@ola/shared/types';
 import {
   pickValidatedCroppedImage,
   WALLPAPER_OUTPUT,
@@ -30,6 +30,11 @@ import {
 
 const VIP_PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'] as const;
+const GIFT_WALL_PRIVACY_OPTIONS = [
+  { value: 2, labelKey: 'settings.vipPrivacyMine' },
+  { value: 1, labelKey: 'settings.optFriends' },
+  { value: 0, labelKey: 'settings.optAll' },
+] as const satisfies readonly { value: GiftWallPrivacy; labelKey: string }[];
 
 const iconPrivacy = require('@assets/icons/settings/icon-privacy.webp');
 const iconNotification = require('@assets/icons/settings/icon-notification.webp');
@@ -272,6 +277,16 @@ export function SettingsScreen({ navigation }: Props) {
                     : key === 'privacyPublic'
                       ? t('settings.optAll')
                       : t(`vip.${key}`),
+              }))}
+            />
+          </SettingRow>
+          <SettingRow label={t('settings.whoCanViewGiftWall')}>
+            <Segmented
+              value={String(draft.giftWallPrivacy)}
+              onChange={(v) => setField('giftWallPrivacy', Number(v) as GiftWallPrivacy)}
+              options={GIFT_WALL_PRIVACY_OPTIONS.map((option) => ({
+                value: String(option.value),
+                label: t(option.labelKey),
               }))}
             />
           </SettingRow>

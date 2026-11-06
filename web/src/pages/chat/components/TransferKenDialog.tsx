@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogButton, UserRow } from '@components';
+import { Dialog, DialogButton, UserRow, UserSearchPicker } from '@components';
 import { colorForName, formatKen, toApiError, toast } from '@lib';
-import { KenService, UserService } from '@services';
+import { KenService } from '@services';
 import type { UserSearchResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import kenIcon from '@/assets/icons/apps/ken.png';
@@ -56,41 +55,17 @@ export function TransferKenDialog({
   );
   const [pickedReceiver, setPickedReceiver] =
     useState<TransferKenReceiver | null>(null);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [amountDigits, setAmountDigits] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const amountInputRef = useRef<HTMLInputElement>(null);
 
-  const runSearch = useDebouncedCallback((value: string) => {
-    if (value === '') {
-      setResults([]);
-      setSearching(false);
-      return;
-    }
-    setSearching(true);
-    UserService.search(value, 30)
-      .then((res) => setResults(res.users))
-      .catch(() => setResults([]))
-      .finally(() => setSearching(false));
-  }, 300);
-
   const activeReceiver = receiver ?? pickedReceiver;
   const amount = amountDigits === '' ? 0 : Number(amountDigits);
   const displayAmount = amountDigits === '' ? '' : formatKen(amount);
 
-  function handleQueryChange(value: string) {
-    setQuery(value);
-    runSearch(value.trim());
-  }
-
   function pickReceiver(user: UserSearchResult) {
-    runSearch.cancel();
     setPickedReceiver(toReceiver(user));
-    setQuery('');
-    setResults([]);
     setStep('input');
   }
 
@@ -198,47 +173,11 @@ export function TransferKenDialog({
       footer={footer}
     >
       {step === 'recipient' ? (
-        <div className="flex flex-col gap-1 px-1 py-1">
-          <span className="text-base text-black/87">
-            {t('chat.transferKenReceiver')}
-          </span>
-          <input
-            autoFocus
-            type="text"
-            value={query}
-            onChange={(event) => handleQueryChange(event.target.value)}
-            placeholder={t('chat.transferKenReceiverHint')}
-            className="mt-1 w-full rounded border border-black/12 px-3 py-2 text-base text-black/87 outline-none focus:border-ola-primary"
-          />
-          {query.trim() !== '' && (
-            <div className="mt-2 max-h-56 overflow-y-auto rounded border border-black/12">
-              {searching ? (
-                <p className="py-3 text-center text-sm text-black/54">
-                  {t('common.loading')}
-                </p>
-              ) : results.length === 0 ? (
-                <p className="py-3 text-center text-sm text-black/54">
-                  {t('chat.composeSearchEmpty')}
-                </p>
-              ) : (
-                <ul className="divide-y divide-black/8 px-2">
-                  {results.map((item) => (
-                    <li key={item.id}>
-                      <UserRow
-                        name={item.fullName || item.username}
-                        username={item.username}
-                        avatar={item.avatar}
-                        color={colorForName(item.username)}
-                        online={item.isOnline}
-                        onClick={() => pickReceiver(item)}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
+        <UserSearchPicker
+          label={t('chat.transferKenReceiver')}
+          placeholder={t('chat.transferKenReceiverHint')}
+          onPick={pickReceiver}
+        />
       ) : step === 'input' ? (
         <div className="flex flex-col gap-1 px-1 py-1">
           <div className="flex items-center justify-center gap-2 text-lg font-bold">

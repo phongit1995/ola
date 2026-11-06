@@ -7,6 +7,7 @@ export const MESSAGE_TYPE = {
   video: 'video',
   audio: 'audio',
   call: 'call',
+  gift: 'gift',
 } as const satisfies Record<string, MessageType>;
 
 export const MESSAGE_STATUS = {

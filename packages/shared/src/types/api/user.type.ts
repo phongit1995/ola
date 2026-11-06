@@ -28,13 +28,16 @@ export interface PublicProfile {
   dateOfBirth?: string;
   spouse?: SpouseInfo;
   verified: boolean;
+  emailVerified: boolean;
   kisses: number;
+  charm?: number;
   vipUsed?: string | null;
   vipEndTime?: string | null;
   followerCount: number;
   followingCount: number;
   canViewInterested: boolean;
   canViewVipStore: boolean;
+  canViewGiftWall?: boolean;
   antiCount: number;
   isOnline: boolean;
   lastActiveAt?: string;

@@ -35,6 +35,8 @@ const (
 	WebSocketEventMeNotification             = "ME_NOTIFICATION"
 	WebSocketEventAppNotification            = "APP_NOTIFICATION"
 	WebSocketEventForceLogout                = "FORCE_LOGOUT"
+	WebSocketEventMegaphonePlay              = "MEGAPHONE_PLAY"
+	WebSocketEventMegaphoneRemoved           = "MEGAPHONE_REMOVED"
 
 	WebSocketMessageEvent = "message"
 )

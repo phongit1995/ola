@@ -38,6 +38,7 @@ var alertTargetLabels = map[string]string{
 	constants.ReportTargetMessage:      "Tin nhắn 1-1",
 	constants.ReportTargetRoomMessage:  "Tin nhắn phòng",
 	constants.ReportTargetMoment:       "Khoảnh khắc",
+	constants.ReportTargetMegaphone:    "Loa",
 }
 
 var alertReasonLabels = map[string]string{

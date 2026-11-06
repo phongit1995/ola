@@ -27,6 +27,7 @@ export interface ProfileActions {
   message: () => void;
   changeCover: (file: File) => Promise<void>;
   changeAvatar: (file: File) => Promise<void>;
+  applyCharm: (charm: number) => void;
 }
 
 export interface UserProfile {
@@ -38,9 +39,11 @@ export interface UserProfile {
   avatar?: string;
   coverPhoto?: string;
   verified: boolean;
+  emailVerified: boolean;
   vipTypeId: number | null;
   fans: number;
   kisses: number;
+  charm: number;
   bio: string;
   gender: 'male' | 'female';
   marriage: string;
@@ -49,6 +52,7 @@ export interface UserProfile {
   joinDate: string;
   isSelf: boolean;
   canViewVipStore: boolean;
+  canViewGiftWall: boolean;
 }
 
 export interface ProfileSecondary {

@@ -72,7 +72,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
   const url = photos[current] ?? '';
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95">
+    <div data-megaphone-cover="" className="fixed inset-0 z-50 bg-black/95">
       <TransformWrapper
         key={current}
         doubleClick={{ mode: 'toggle', step: 2 }}

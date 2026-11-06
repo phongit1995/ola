@@ -22,6 +22,7 @@ import {
   MIN_IMAGE_SOURCE,
 } from '@constants';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
+import { NicknameField } from './components/NicknameField';
 import { VerifyEmailDialog } from './components/VerifyEmailDialog';
 import { INPUT_CLASS, PHONE_PATTERN } from './constants';
 
@@ -329,7 +330,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-white">
+    <div data-megaphone-cover="" className="fixed inset-0 z-40 flex flex-col bg-white">
       <header className="flex h-12 shrink-0 items-center gap-2 bg-ola-primary px-2 text-ola-on-primary shadow-[0_1px_0_rgba(0,0,0,.12)]">
         <button
           type="button"
@@ -420,6 +421,10 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
               onPick={uploadAvatar}
             />
           </div>
+
+          <Field label={t('profileEdit.nicknameLabel')}>
+            <NicknameField username={user.username} />
+          </Field>
 
           <Field label={t('profileEdit.fullnameLabel')}>
             <input

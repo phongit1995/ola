@@ -22,6 +22,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { CLAN_ROLE_ICONS, MEMBERS_PAGE_SIZE } from './constants';
 import { CLAN_ROLE } from '@ola/shared/constants';
+import { UserName } from '@components/ui/UserName';
 
 interface ClanMembersScreenProps {
   clanId: string;
@@ -199,15 +200,11 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                   />
                   <View className="min-w-0 flex-1">
                     <View className="flex-row items-center gap-1.5">
-                      <Text
-                        numberOfLines={1}
+                      <UserName
+                        name={username}
+                        fullName={fullName !== username ? fullName : undefined}
                         className="text-sm text-ola-ink"
-                      >
-                        {username}
-                        {fullName !== '' && fullName !== username && (
-                          <Text className="text-ola-ink-soft"> · {fullName}</Text>
-                        )}
-                      </Text>
+                      />
                       {item.role !== 'member' && (
                         <Image
                           source={CLAN_ROLE_ICONS[item.role]}

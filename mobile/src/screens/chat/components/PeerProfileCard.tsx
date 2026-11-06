@@ -8,6 +8,7 @@ import { CachedImageBackground } from '@components/ui/CachedImage';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { DIVIDER } from '@constants';
 import { GENDER } from '@ola/shared/constants';
+import { UserName } from '@components/ui/UserName';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
 const maleIcon = require('@assets/icons/profile/ic_indicate_male.png');
@@ -75,12 +76,11 @@ export function PeerProfileCard({
           <View className="min-w-0 flex-1">
             <View className="flex-row items-center gap-1">
               <VipAvatar typeId={vipTypeId} size={24} />
-              <Text numberOfLines={1} className="min-w-0 shrink text-base text-ola-ink">
-                {primaryName}
-                {secondaryName != null && (
-                  <Text className="text-ola-ink-soft"> · {secondaryName}</Text>
-                )}
-              </Text>
+              <UserName
+                name={primaryName}
+                fullName={secondaryName}
+                className="min-w-0 shrink text-base text-ola-ink"
+              />
               {profile.verified && (
                 <Image source={checkedIcon} style={{ width: 12, height: 12 }} resizeMode="contain" />
               )}

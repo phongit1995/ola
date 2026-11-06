@@ -19,6 +19,10 @@ const (
 	SettingFontSizeSmall  = "small"
 	SettingFontSizeMedium = "medium"
 	SettingFontSizeLarge  = "large"
+
+	SettingGiftWallPrivacyAll     int16 = 0
+	SettingGiftWallPrivacyFriends int16 = 1
+	SettingGiftWallPrivacyOnlyMe  int16 = 2
 )
 
 type UserSetting struct {
@@ -35,6 +39,7 @@ type UserSetting struct {
 	FontSize        string    `gorm:"type:varchar(20);not null"`
 	WallpaperURL    string    `gorm:"type:text;not null"`
 	VipStorePrivacy int16     `gorm:"not null;default:0"`
+	GiftWallPrivacy int16     `gorm:"not null;default:0"`
 	CreatedAt       time.Time `gorm:"not null;default:CURRENT_TIMESTAMP"`
 	UpdatedAt       time.Time `gorm:"not null;default:CURRENT_TIMESTAMP"`
 }

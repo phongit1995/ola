@@ -28,3 +28,5 @@ export * from './report.service';
 export * from './moment.service';
 export * from './story.service';
 export * from './wordChain.service';
+export * from './gift.service';
+export * from './megaphone.service';

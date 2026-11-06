@@ -100,7 +100,7 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
   ];
 
   return (
-    <FullScreenOverlay position="absolute">
+    <FullScreenOverlay position="absolute" keepMegaphone>
       <ScreenHeader title={name} onBack={onClose} align="center">
         {activeTab === 'members' && (
           <button

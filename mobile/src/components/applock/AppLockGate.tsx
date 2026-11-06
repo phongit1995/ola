@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { AppState, Keyboard } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import { shouldLockAfterBackground } from '@lib/appLock';
 import { isBiometricPromptActive } from '@lib/biometrics';
 import { useAppLockStore } from '@store/appLockStore';
@@ -9,6 +10,12 @@ import { AppLockOverlay } from './AppLockOverlay';
 export function AppLockGate() {
   const signedIn = useAuthStore((s) => s.user != null);
   const enabled = useAppLockStore((s) => s.enabled);
+  const locked = useAppLockStore((s) => s.locked);
+  const covered = useAppLockStore((s) => s.covered);
+  useOverlayBreadcrumb(
+    'AppLockGate',
+    signedIn && enabled ? (locked ? 'locked' : covered ? 'covered' : 'enabled') : null,
+  );
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {

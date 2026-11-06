@@ -54,6 +54,7 @@ export function Dialog({
         if (event.target === event.currentTarget && backdropDownRef.current)
           onClose();
       }}
+      data-megaphone-cover=""
       className="fixed inset-0 z-[110] grid place-items-center bg-black/60 p-4"
     >
       <div

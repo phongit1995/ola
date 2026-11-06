@@ -7,13 +7,21 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ParseKeys } from 'i18next';
-import { toast, colorForName, createTimeFormatter } from '@lib';
+import {
+  toast,
+  colorForName,
+  createTimeFormatter,
+  isTransferNotification,
+  transferNotificationContent,
+  vipIconUrl,
+} from '@lib';
 import {
   ScreenHeader,
   FullScreenOverlay,
   Avatar,
   Spinner,
   ConfirmDialog,
+  UserName,
 } from '@components';
 import { APP_NOTIFICATION_TYPE, isSystemNotice } from '@constants';
 import { MarriageService, RelationshipService } from '@services';
@@ -24,11 +32,17 @@ import type { AppNotification } from '@app-types';
 import icAddSmall from '@/assets/icons/notify/ic_action_add_small.png';
 import icFriend from '@/assets/icons/notify/ic_notification_add_friend.png';
 import icHeart from '@/assets/icons/notify/ic_notification_heart.png';
+import icGift from '@/assets/games/egg/ic_gift.png';
+import icKen from '@/assets/icons/apps/ken.png';
+import icVip from '@/assets/icons/apps/vip-crown.webp';
 import olaLogo from '@/assets/images/ola-logo.png';
 
 const KIND_CONFIG: Record<string, { icon: string; messageKey: ParseKeys }> = {
   friend_request: { icon: icFriend, messageKey: 'notify.msg_friend' },
   marriage_proposal: { icon: icHeart, messageKey: 'notify.msg_proposal' },
+  gift_received: { icon: icGift, messageKey: 'notify.msg_gift' },
+  ken_received: { icon: icKen, messageKey: 'notify.msg_ken' },
+  vip_received: { icon: icVip, messageKey: 'notify.msg_vip' },
 };
 
 function SystemAvatar() {
@@ -206,11 +220,23 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
             {items.map((item) => {
               const config = KIND_CONFIG[item.type];
               const system = isSystemNotice(item.type);
+              const actor = system ? undefined : item.actor;
               const name = system
                 ? t('notify.systemSender')
-                : item.actor?.fullName || item.actor?.username || '';
+                : actor?.fullName || actor?.username || '';
+              const handle = actor != null ? `@${actor.username}` : name;
+              const transfer = transferNotificationContent(t, item);
               const message =
-                config != null ? t(config.messageKey) : item.preview ?? '';
+                transfer?.text ??
+                (config != null ? t(config.messageKey) : item.preview ?? '');
+              const badge = transfer?.badge;
+              const badgeIsVipIcon =
+                badge?.kind === 'vip' && badge.vipTypeId != null;
+              const showPreview =
+                config != null &&
+                !isTransferNotification(item.type) &&
+                item.preview != null &&
+                item.preview !== '';
               return (
                 <li key={item.id} className="bg-white/80">
                   <div className="flex min-h-[72px] items-start p-4">
@@ -224,36 +250,53 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                       />
                     )}
                     <div className="ml-4 min-w-0 flex-1">
-                      {name !== '' && (
-                        <p className="truncate text-base font-bold text-black/87">
-                          {name}
-                        </p>
-                      )}
-                      <p className="mt-1 text-sm leading-snug text-black/87">
-                        {message}
-                      </p>
-                      {config != null &&
-                        item.preview != null &&
-                        item.preview !== '' && (
-                          <p className="mt-0.5 truncate text-sm text-black/54">
-                            {item.preview}
-                          </p>
-                        )}
-
-                      {renderActions(item)}
-
-                      <div className="mt-1 flex items-center gap-1">
-                        {config != null && (
+                      <div className="flex items-center gap-2">
+                        <UserName
+                          name={handle}
+                          fullName={actor?.fullName}
+                          className="min-w-0 flex-1 truncate text-base font-bold text-black/87"
+                          fullNameClassName="font-normal text-black/54"
+                        />
+                        <div className="flex shrink-0 items-center gap-1">
+                          {config != null && (
+                            <img
+                              src={config.icon}
+                              alt=""
+                              className="h-[18px] w-[18px] shrink-0 object-contain"
+                            />
+                          )}
+                          <span className="text-xs text-black/54">
+                            {formatTime(item.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="mt-1 flex items-center gap-1 text-sm leading-snug text-black/87">
+                        <span className="min-w-0">{message}</span>
+                        {badge != null && (
                           <img
-                            src={config.icon}
+                            src={
+                              badge.kind === 'ken'
+                                ? icKen
+                                : badge.vipTypeId != null
+                                  ? vipIconUrl(badge.vipTypeId)
+                                  : icVip
+                            }
                             alt=""
-                            className="h-[18px] w-[18px] shrink-0 object-contain"
+                            className={
+                              badgeIsVipIcon
+                                ? '-my-1 h-6 w-6 shrink-0 object-contain'
+                                : 'h-4 w-4 shrink-0 object-contain'
+                            }
                           />
                         )}
-                        <span className="text-xs text-black/54">
-                          {formatTime(item.createdAt)}
-                        </span>
-                      </div>
+                      </p>
+                      {showPreview && (
+                        <p className="mt-0.5 truncate text-sm text-black/54">
+                          {item.preview}
+                        </p>
+                      )}
+
+                      {renderActions(item)}
                     </div>
                     {busyId === item.id && <Spinner size={16} />}
                     {system && (

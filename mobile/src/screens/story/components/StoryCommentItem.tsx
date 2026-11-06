@@ -15,6 +15,7 @@ import { READER_PALETTES, ROW_SEPARATOR } from '../constants';
 import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryCover } from './StoryCover';
 import { StoryIcon } from './StoryIcons';
+import { UserName } from '@components/ui/UserName';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -87,14 +88,14 @@ function StoryCommentItemComponent({
       <View className="min-w-0 flex-1">
         <View className="min-w-0 flex-row items-center gap-1">
           {vipTypeId != null && <VipBadge typeId={vipTypeId} size={VIP_BADGE_SIZE} />}
-          <Text
-            numberOfLines={1}
+          <UserName
+            name={name}
+            fullName={fullName}
             className="min-w-0 shrink font-semibold text-ola-ink"
+            fullNameClassName="font-normal"
             style={textSize(14, 20)}
-          >
-            {name}
-            {fullName !== '' && <Text className="font-normal" style={{ color: MUTED }}> · {fullName}</Text>}
-          </Text>
+            fullNameStyle={{ color: MUTED }}
+          />
           <Text className="ml-1" style={[textSize(12, 16), { color: MUTED }]}>
             {time}
           </Text>

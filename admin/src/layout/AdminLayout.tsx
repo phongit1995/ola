@@ -26,6 +26,8 @@ import {
   SettingOutlined,
   ShoppingCartOutlined,
   SmileOutlined,
+  SoundOutlined,
+  ShopOutlined,
   SwapOutlined,
   PictureOutlined,
   ReadOutlined,
@@ -85,6 +87,15 @@ const MENU_ITEMS = [
     ],
   },
   {
+    key: 'shop',
+    icon: <ShopOutlined />,
+    label: 'Cửa hàng',
+    children: [
+      { key: '/gifts', icon: <GiftOutlined />, label: 'Quà tặng' },
+      { key: '/megaphones', icon: <SoundOutlined />, label: 'Loa' },
+    ],
+  },
+  {
     key: 'games',
     icon: <RocketOutlined />,
     label: 'Trò chơi',
@@ -130,6 +141,7 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
 })
 
 const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-purchases', '/vip-transfers']
+const SHOP_KEYS = ['/gifts', '/megaphones']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
   '/games/matches': '/games/mini-game',
@@ -148,6 +160,12 @@ const PAGE_TITLES: Record<string, string> = {
   '/vip-shop': 'Shop VIP',
   '/vip-purchases': 'Lịch sử mua VIP',
   '/vip-transfers': 'Lịch sử chuyển VIP',
+  '/gifts': 'Danh sách quà',
+  '/gifts/transactions': 'Sổ quà',
+  '/gifts/settings': 'Cài đặt tặng quà',
+  '/megaphones': 'Danh sách loa',
+  '/megaphones/banned-words': 'Từ cấm',
+  '/megaphones/settings': 'Cài đặt loa',
   '/games/egg': 'Đập trứng',
   '/games/egg/stats': 'Thống kê trứng',
   '/games/wheel': 'Vòng quay may mắn',
@@ -211,6 +229,7 @@ export function AdminLayout() {
     ...(selectedKey.startsWith('/users') ? ['users'] : []),
     ...(selectedKey.startsWith('/rooms') ? ['rooms'] : []),
     ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
+    ...(SHOP_KEYS.includes(selectedKey) ? ['shop'] : []),
     ...(selectedKey.startsWith('/games') ? ['games'] : []),
     ...(selectedKey.startsWith('/stories') ? ['stories'] : []),
     ...(selectedKey.startsWith('/settings') ? ['settings'] : []),

@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { ToastItem, ToastType } from '@ola/shared/types';
+import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import { useThemeColors } from '@hooks/useThemeColors';
 
 const AUTO_DISMISS_MS = 3000;
@@ -37,6 +38,7 @@ export function ToastHost() {
   const insets = useSafeAreaInsets();
   const toasts = useToastStore((state) => state.toasts);
   const dismiss = useToastStore((state) => state.dismiss);
+  useOverlayBreadcrumb('ToastHost', toasts.length > 0 ? 'shown' : null);
 
   if (toasts.length === 0) return null;
 
