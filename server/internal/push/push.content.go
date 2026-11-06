@@ -32,7 +32,7 @@ type DMPush struct {
 	UnreadByUser     map[string]int
 }
 
-const fallbackTitle = "Okela"
+const fallbackTitle = "Ola Me"
 
 func excerpt(s string) string {
 	trimmed := utils.TruncateRunes(s, PushExcerptMaxRunes)
