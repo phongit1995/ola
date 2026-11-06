@@ -42,26 +42,20 @@ Ngoài phạm vi (để sau): loa trong game, loa có ảnh/sticker, loa "nổi 
 
 Postgres là nguồn chuẩn cho tiền, lịch sử và trạng thái gỡ. Redis chỉ giữ lịch phát (4.3) và dựng lại được từ Postgres.
 
-Bảng `megaphones` đã tạo trong `20261105000001_add_moderation_gifts_megaphones`. **Không sửa migration đó.** Thiết kế mới nằm ở `20261106000001_add_megaphone_schedule`:
+Bảng `megaphones` và `gifts.announce_enabled` nằm trong `20261106000001_add_gifts_megaphones`, tạo thẳng schema cuối cùng. Các cột riêng của thiết kế này:
 
 ```sql
-ALTER TABLE megaphones
-  ADD COLUMN type varchar(20) NOT NULL DEFAULT 'message',
-  ADD COLUMN weight smallint NOT NULL DEFAULT 3,
-  ADD COLUMN expires_at timestamptz,
-  ADD COLUMN first_played_at timestamptz,
-  ADD COLUMN gift_transaction_id uuid;
+type varchar(20) NOT NULL DEFAULT 'message',
+weight smallint NOT NULL DEFAULT 3,
+expires_at timestamptz NOT NULL,
+first_played_at timestamptz,
+gift_transaction_id uuid,
 
-UPDATE megaphones
-SET expires_at = show_at + display_seconds * interval '1 second',
-    first_played_at = show_at;
-
-ALTER TABLE megaphones ALTER COLUMN expires_at SET NOT NULL;
 CREATE UNIQUE INDEX uq_megaphones_gift_transaction
   ON megaphones (gift_transaction_id) WHERE gift_transaction_id IS NOT NULL;
-CREATE INDEX idx_megaphones_active ON megaphones (expires_at) WHERE status = 'active';
+CREATE INDEX idx_megaphones_active_expires ON megaphones (expires_at) WHERE status = 'active';
 
-ALTER TABLE gifts ADD COLUMN announce_enabled boolean NOT NULL DEFAULT false;
+gifts.announce_enabled boolean NOT NULL DEFAULT false
 ```
 
 - `type`: `message` (loa thường) | `gift` (loa quà).
@@ -361,7 +355,7 @@ Chốt 06/11/2026:
 
 ## 14. Đã làm thiết kế mới (06/11/2026)
 
-- Server: migration `20261106000001_add_megaphone_schedule`, `megaphone.scheduler.go`, `megaphone.schedule.go`, trần tải, loa quà, event `MEGAPHONE_PLAY`, bỏ `/megaphones/active`, admin lọc loại và cột quà. Test: unit + `33-megaphones.test.js` pass 2 lần liên tiếp với API, chat service, Kafka, Redis thật.
+- Server: migration `20261106000001_add_gifts_megaphones`, `megaphone.scheduler.go`, `megaphone.schedule.go`, trần tải, loa quà, event `MEGAPHONE_PLAY`, bỏ `/megaphones/active`, admin lọc loại và cột quà. Test: unit + `33-megaphones.test.js` pass 2 lần liên tiếp với API, chat service, Kafka, Redis thật.
 - Shared, web, admin: như các mục trên. Kiểm bằng CDP với 2 tài khoản.
 - Còn lại: port Loa sang mobile (mục 7), deploy (mục 10.7).
 - `32-gifts.test.js` có 3 lỗi có sẵn, bản trước khi sửa cũng lỗi y hệt: `gift message metadata`, `gift message has text fallback`, và `TypeError` ở dòng 216.
@@ -369,6 +363,6 @@ Chốt 06/11/2026:
 **Sửa sau review (06/11/2026):**
 
 - **Chặn trước khi trừ KEN:** thời gian chờ thực tế gồm lượt đang chạy cộng hàng chờ. Nếu loa sẽ hết hạn trước lượt của nó thì server trả `MEGAPHONE_QUEUE_FULL`. Admin không lưu được cấu hình có thời gian chạy cộng nghỉ dài bằng hoặc hơn thời gian sống.
-- **Migration:** loa cũ chưa tới giờ phát được giữ là chưa phát và có hạn 30 phút tính từ lúc nâng cấp. `expires_at` có giá trị mặc định để API cũ vẫn gửi được loa trong lúc chờ API mới lên.
+- **Migration:** giữ nguyên các file của nhánh `production`, chỉ thêm một migration `20261106000001_add_gifts_megaphones` cho quà và loa. Deploy tự chạy file này, không cần thao tác tay.
 - **Không hoàn KEN:** user đã chốt không hoàn tiền. Loa đã trả tiền mà hết hạn chưa phát, ví dụ do admin tắt Loa lâu hơn thời gian sống, thì mất KEN.
 - **Chưa làm:** chạy nhiều bản API cần gia hạn khoá `MEGAPHONE:LOCK`. Hiện prod chạy một bản nên chưa cần.

@@ -1,53 +1,7 @@
-ALTER TABLE public.users
-    ADD COLUMN IF NOT EXISTS locked_until timestamp with time zone,
-    ADD COLUMN IF NOT EXISTS lock_reason character varying(20) DEFAULT ''::character varying NOT NULL;
+ALTER TABLE public.user_violations DROP CONSTRAINT IF EXISTS user_violations_source_check;
 
-CREATE TABLE IF NOT EXISTS public.user_violations (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid NOT NULL,
-    source character varying(20) NOT NULL,
-    target_type character varying(20) NOT NULL,
-    target_id character varying(64) NOT NULL,
-    report_id uuid,
-    reason character varying(20) NOT NULL,
-    severity character varying(20) NOT NULL,
-    points smallint DEFAULT 0 NOT NULL,
-    content_removed boolean DEFAULT false NOT NULL,
-    note text DEFAULT ''::text NOT NULL,
-    admin_id uuid,
-    revoked_at timestamp with time zone,
-    revoked_by uuid,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT user_violations_pkey PRIMARY KEY (id),
-    CONSTRAINT user_violations_source_check CHECK (((source)::text = ANY ((ARRAY['report'::character varying, 'me_hide'::character varying, 'megaphone_remove'::character varying])::text[]))),
-    CONSTRAINT user_violations_severity_check CHECK (((severity)::text = ANY ((ARRAY['none'::character varying, 'violation'::character varying, 'deliberate'::character varying])::text[]))),
-    CONSTRAINT user_violations_points_check CHECK ((points >= 0)),
-    CONSTRAINT fk_user_violations_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_user_violations_report FOREIGN KEY (report_id) REFERENCES public.reports(id) ON DELETE SET NULL,
-    CONSTRAINT fk_user_violations_admin FOREIGN KEY (admin_id) REFERENCES public.admin_users(id) ON DELETE SET NULL,
-    CONSTRAINT fk_user_violations_revoked_by FOREIGN KEY (revoked_by) REFERENCES public.admin_users(id) ON DELETE SET NULL
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_user_violations_content ON public.user_violations USING btree (target_type, target_id) WHERE ((revoked_at IS NULL) AND (points > 0) AND ((target_type)::text <> 'account'::text));
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_user_violations_report ON public.user_violations USING btree (report_id) WHERE ((report_id IS NOT NULL) AND (revoked_at IS NULL) AND (points > 0));
-
-CREATE INDEX IF NOT EXISTS idx_user_violations_user_created ON public.user_violations USING btree (user_id, created_at DESC);
-
-ALTER TABLE public.me
-    ADD COLUMN IF NOT EXISTS hidden_by character varying(10),
-    ADD COLUMN IF NOT EXISTS hidden_at timestamp with time zone;
-
-ALTER TABLE public.me DROP CONSTRAINT IF EXISTS me_hidden_by_check;
-
-ALTER TABLE public.me
-    ADD CONSTRAINT me_hidden_by_check CHECK (((hidden_by IS NULL) OR ((hidden_by)::text = ANY ((ARRAY['owner'::character varying, 'admin'::character varying, 'clan'::character varying])::text[]))));
-
-ALTER TABLE public.game_matches DROP CONSTRAINT IF EXISTS game_matches_ken_delta_check;
-
-ALTER TABLE public.game_matches
-    ADD CONSTRAINT game_matches_ken_delta_check
-    CHECK (ken_delta >= 0 AND ken_delta::bigint <= bet::bigint * GREATEST(player_count - 1, 1));
+ALTER TABLE public.user_violations
+    ADD CONSTRAINT user_violations_source_check CHECK (((source)::text = ANY ((ARRAY['report'::character varying, 'me_hide'::character varying, 'megaphone_remove'::character varying])::text[])));
 
 CREATE TABLE IF NOT EXISTS public.gifts (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -60,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.gifts (
     sort_order integer DEFAULT 0 NOT NULL,
     animation character varying(20) DEFAULT 'random'::character varying NOT NULL,
     sender_charm_percent smallint DEFAULT 50 NOT NULL,
+    announce_enabled boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at timestamp with time zone,
@@ -125,21 +80,29 @@ ALTER TABLE public.user_settings
 CREATE TABLE IF NOT EXISTS public.megaphones (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     sender_id uuid NOT NULL,
+    type character varying(20) DEFAULT 'message'::character varying NOT NULL,
     content character varying(200) NOT NULL,
     ken_price integer NOT NULL,
+    weight smallint DEFAULT 3 NOT NULL,
     show_at timestamp with time zone NOT NULL,
     display_seconds integer NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    first_played_at timestamp with time zone,
     status character varying(20) DEFAULT 'active'::character varying NOT NULL,
     removed_by uuid,
     removed_reason character varying(200) DEFAULT ''::character varying NOT NULL,
     removed_at timestamp with time zone,
     client_request_id character varying(64) NOT NULL,
+    gift_transaction_id uuid,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT megaphones_pkey PRIMARY KEY (id),
+    CONSTRAINT megaphones_type_check CHECK (((type)::text = ANY ((ARRAY['message'::character varying, 'gift'::character varying])::text[]))),
+    CONSTRAINT megaphones_weight_check CHECK ((weight > 0)),
     CONSTRAINT megaphones_ken_price_check CHECK ((ken_price >= 0)),
     CONSTRAINT megaphones_display_seconds_check CHECK ((display_seconds > 0)),
     CONSTRAINT megaphones_status_check CHECK (((status)::text = ANY ((ARRAY['active'::character varying, 'removed'::character varying])::text[]))),
-    CONSTRAINT fk_megaphones_sender FOREIGN KEY (sender_id) REFERENCES public.users(id) ON DELETE CASCADE
+    CONSTRAINT fk_megaphones_sender FOREIGN KEY (sender_id) REFERENCES public.users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_megaphones_gift_transaction FOREIGN KEY (gift_transaction_id) REFERENCES public.gift_transactions(id)
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_megaphones_client_request ON public.megaphones USING btree (sender_id, client_request_id);
@@ -147,6 +110,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_megaphones_client_request ON public.megapho
 CREATE INDEX IF NOT EXISTS idx_megaphones_show_at ON public.megaphones USING btree (show_at DESC, id DESC);
 
 CREATE INDEX IF NOT EXISTS idx_megaphones_sender_created ON public.megaphones USING btree (sender_id, created_at DESC);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_megaphones_gift_transaction ON public.megaphones USING btree (gift_transaction_id) WHERE (gift_transaction_id IS NOT NULL);
+
+CREATE INDEX IF NOT EXISTS idx_megaphones_active_expires ON public.megaphones USING btree (expires_at) WHERE ((status)::text = 'active'::text);
 
 ALTER TABLE public.reports DROP CONSTRAINT IF EXISTS reports_target_type_check;
 

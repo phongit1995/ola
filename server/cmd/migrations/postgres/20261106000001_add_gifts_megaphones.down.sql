@@ -19,20 +19,9 @@ DROP TABLE IF EXISTS public.gift_transactions;
 
 DROP TABLE IF EXISTS public.gifts;
 
-ALTER TABLE public.game_matches DROP CONSTRAINT IF EXISTS game_matches_ken_delta_check;
+DELETE FROM public.user_violations WHERE source = 'megaphone_remove';
 
-ALTER TABLE public.game_matches
-    ADD CONSTRAINT game_matches_ken_delta_check
-    CHECK (ken_delta >= 0 AND ken_delta <= bet) NOT VALID;
+ALTER TABLE public.user_violations DROP CONSTRAINT IF EXISTS user_violations_source_check;
 
-ALTER TABLE public.me DROP CONSTRAINT IF EXISTS me_hidden_by_check;
-
-ALTER TABLE public.me
-    DROP COLUMN IF EXISTS hidden_at,
-    DROP COLUMN IF EXISTS hidden_by;
-
-DROP TABLE IF EXISTS public.user_violations;
-
-ALTER TABLE public.users
-    DROP COLUMN IF EXISTS lock_reason,
-    DROP COLUMN IF EXISTS locked_until;
+ALTER TABLE public.user_violations
+    ADD CONSTRAINT user_violations_source_check CHECK (((source)::text = ANY ((ARRAY['report'::character varying, 'me_hide'::character varying])::text[])));

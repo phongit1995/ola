@@ -28,7 +28,7 @@ Ngoài phạm vi (để sau): tặng trong phòng chat, tặng dưới bài Me/k
 
 ## 3. Dữ liệu (PostgreSQL)
 
-Migration mới, version **lớn hơn mọi môi trường** → gộp chung vào `20261105000001_add_moderation_gifts_megaphones` (cùng loa, điểm vi phạm, KEN game theo ghế). Không sửa migration đã chạy.
+Migration mới, version **lớn hơn mọi môi trường** → nằm chung với loa trong `20261106000001_add_gifts_megaphones`. Không sửa migration đã chạy.
 
 ```sql
 CREATE TABLE gifts (
@@ -163,7 +163,7 @@ Response: `{ transactionId, kenBalance, receiverCharm, messageId? }`.
 ## 6. Web
 
 - **`GiftPickerDialog`** (dùng `Dialog`/`DialogButton` chuẩn): lưới quà (ảnh, tên, giá), chọn số lượng theo `quantityOptions`, ô lời nhắn, dòng "Tổng: X KEN · Số dư: Y", nút Tặng disable khi thiếu KEN + link "Nạp KEN". Bước xác nhận khi tổng ≥ ngưỡng (vd 1.000 KEN). Sinh `clientRequestId` một lần mỗi lần mở dialog.
-- **Chat 1-1**: thêm nút `send-gift` vào `MorePanel` (`AttachSendPayload.kind = 'gift'`) → mở dialog với người nhận = peer. Tin `gift` render `GiftMessageCard` (ảnh quà, "×5", lời nhắn, viền/nền theo token `ola-*`) trong `ChatMessageBubble`/`MessageRow`.
+- **Chat 1-1**: icon Tặng quà trên thanh công cụ, bên phải mic, không nằm trong menu Khác (web `AttachSendPayload.kind = 'gift'`, mobile `onSendGift`) → mở dialog với người nhận = peer. Tin `gift` render `GiftMessageCard` (ảnh quà, "×5", lời nhắn, viền/nền theo token `ola-*`) trong `ChatMessageBubble`/`MessageRow`.
 - **Hiệu ứng** `GiftAnimationOverlay`: ảnh quà bay vào giữa, phóng to + lấp lánh ~2s rồi mờ. Chạy cho người tặng sau khi gửi thành công và cho người nhận khi `NEW_MESSAGE` loại `gift` tới (đang mở đúng hội thoại) hoặc khi nhận `APP_NOTIFICATION` `gift_received`. Hàng đợi để nhiều quà liên tiếp không chồng nhau; tôn trọng `prefers-reduced-motion`.
 - **Profile**: nút "Tặng quà" trong `RelationButtons` (chỉ profile người khác); charm cạnh số hôn trong `ProfileCard`; section/overlay **Tường quà** (lưới quà + số lượng, tổng charm); link sang BXH.
 - **Trang "Quà tặng"** (mục mới trong tab Cá nhân, `pages/gift/GiftHomePage.tsx`): sức hút của mình + tường quà + lối vào Bảng xếp hạng và Lịch sử quà. Cần vì "Trang cá nhân" trong tab Cá nhân là form sửa thông tin, người nhận không có chỗ khác xem quà của mình.
