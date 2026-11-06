@@ -1,5 +1,24 @@
-import { isGiftAnimationKey } from '@lib';
-import type { GiftAnimationKey } from '@app-types';
+import type { GiftAnimationKey } from '../types';
+import { isGiftAnimationKey } from './gift';
+
+export const GIFT_RAYS_BACKGROUND =
+  'repeating-conic-gradient(from 0deg, rgba(255,214,0,0.55) 0deg 10deg, transparent 10deg 30deg)';
+
+export const GIFT_RAYS_MASK = 'radial-gradient(circle, black 30%, transparent 70%)';
+
+export const GIFT_GLOW_BACKGROUND =
+  'radial-gradient(circle, rgba(255,214,0,0.55) 0%, rgba(255,64,129,0.35) 40%, transparent 70%)';
+
+export const GIFT_RAINBOW_BACKGROUND =
+  'conic-gradient(#ff4081, #ffd600, #69f0ae, #40c4ff, #e040fb, #ff4081)';
+
+export const GIFT_RAINBOW_MASK =
+  'radial-gradient(circle, transparent 54%, black 56%, black 64%, transparent 66%)';
+
+export const GIFT_FLASH_BACKGROUND =
+  'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 35%, transparent 70%)';
+
+export const GIFT_RING_DELAYS = ['0.45s', '0.75s'];
 
 export type GiftEffect =
   | 'rays'

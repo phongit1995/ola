@@ -8,28 +8,20 @@ import {
   GIFT_BUBBLES,
   GIFT_CONFETTI,
   GIFT_FIREWORK,
+  GIFT_FLASH_BACKGROUND,
+  GIFT_GLOW_BACKGROUND,
   GIFT_HEARTS,
   GIFT_PETALS,
+  GIFT_RAINBOW_BACKGROUND,
+  GIFT_RAINBOW_MASK,
+  GIFT_RAYS_BACKGROUND,
+  GIFT_RAYS_MASK,
+  GIFT_RING_DELAYS,
   GIFT_SPARKS,
   GIFT_STARS,
   variantForAnimation,
   type GiftEffect,
-} from './giftAnimationVariants';
-
-const RAYS_BACKGROUND =
-  'repeating-conic-gradient(from 0deg, rgba(255,214,0,0.55) 0deg 10deg, transparent 10deg 30deg)';
-
-const GLOW_BACKGROUND =
-  'radial-gradient(circle, rgba(255,214,0,0.55) 0%, rgba(255,64,129,0.35) 40%, transparent 70%)';
-
-const RAINBOW_BACKGROUND =
-  'conic-gradient(#ff4081, #ffd600, #69f0ae, #40c4ff, #e040fb, #ff4081)';
-
-const RAINBOW_MASK =
-  'radial-gradient(circle, transparent 54%, black 56%, black 64%, transparent 66%)';
-
-const FLASH_BACKGROUND =
-  'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 35%, transparent 70%)';
+} from '@ola/shared/lib/giftAnimationVariants';
 
 const CENTERED = 'absolute top-1/2 left-1/2';
 
@@ -38,7 +30,7 @@ function LandingFlash() {
     <span
       aria-hidden="true"
       className={`${CENTERED} -mt-[160px] -ml-[160px] h-[320px] w-[320px] animate-gift-flash rounded-full`}
-      style={{ background: FLASH_BACKGROUND }}
+      style={{ background: GIFT_FLASH_BACKGROUND }}
     />
   );
 }
@@ -51,8 +43,8 @@ function GiftEffectLayer({ effect }: { effect: GiftEffect }) {
           aria-hidden="true"
           className={`${CENTERED} -mt-[190px] -ml-[190px] h-[380px] w-[380px] animate-gift-rays rounded-full`}
           style={{
-            background: RAYS_BACKGROUND,
-            maskImage: 'radial-gradient(circle, black 30%, transparent 70%)',
+            background: GIFT_RAYS_BACKGROUND,
+            maskImage: GIFT_RAYS_MASK,
           }}
         />
       );
@@ -61,13 +53,13 @@ function GiftEffectLayer({ effect }: { effect: GiftEffect }) {
         <span
           aria-hidden="true"
           className={`${CENTERED} -mt-[170px] -ml-[170px] h-[340px] w-[340px] animate-gift-glow rounded-full`}
-          style={{ background: GLOW_BACKGROUND }}
+          style={{ background: GIFT_GLOW_BACKGROUND }}
         />
       );
     case 'ring':
       return (
         <>
-          {['0.45s', '0.75s'].map((delay) => (
+          {GIFT_RING_DELAYS.map((delay) => (
             <span
               key={delay}
               aria-hidden="true"
@@ -122,7 +114,10 @@ function GiftEffectLayer({ effect }: { effect: GiftEffect }) {
         <span
           aria-hidden="true"
           className={`${CENTERED} -mt-[175px] -ml-[175px] h-[350px] w-[350px] animate-gift-rainbow rounded-full blur-[1px]`}
-          style={{ background: RAINBOW_BACKGROUND, maskImage: RAINBOW_MASK }}
+          style={{
+            background: GIFT_RAINBOW_BACKGROUND,
+            maskImage: GIFT_RAINBOW_MASK,
+          }}
         />
       );
     case 'stars':

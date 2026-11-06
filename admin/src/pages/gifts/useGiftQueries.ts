@@ -27,9 +27,7 @@ export function useUpdateGift() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateGiftRequest }) =>
       AdminGiftService.update(id, payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [GIFTS_KEY] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [GIFTS_KEY] }),
   })
 }
 
