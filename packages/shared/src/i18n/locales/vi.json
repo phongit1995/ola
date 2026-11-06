@@ -2516,6 +2516,8 @@
       "failed": "Tặng quà thất bại, thử lại sau"
     },
     "receiverLabel": "Người nhận",
+    "receiverHint": "Nhập nick người nhận",
+    "sendNow": "Tặng ngay",
     "giftLabel": "Quà tặng",
     "edit": "Chỉnh sửa",
     "sendWithTotal": "Tặng · {{ken}} KEN",

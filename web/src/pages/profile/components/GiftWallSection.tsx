@@ -4,12 +4,17 @@ import { useGiftWall } from '@ola/shared/stores/gift/useGiftWall';
 import { formatKen, giftDisplayName, randomUuid } from '@lib';
 import type { GiftWallItem } from '@app-types';
 import { useGiftAnimationStore } from '@/store/giftAnimationStore';
-import { GIFT_WALL_PREVIEW_COUNT } from '../constants';
+import {
+  GIFT_WALL_GRID_CLASS,
+  GIFT_WALL_PREVIEW_ROWS,
+  type GiftWallColumns,
+} from '../constants';
 
 interface GiftWallSectionProps {
   userId: string;
   isSelf: boolean;
   refreshKey: number;
+  columns?: GiftWallColumns;
   onOpenHistory?: () => void;
 }
 
@@ -17,6 +22,7 @@ export function GiftWallSection({
   userId,
   isSelf,
   refreshKey,
+  columns = 5,
   onOpenHistory,
 }: GiftWallSectionProps) {
   const { t, i18n } = useTranslation();
@@ -26,7 +32,7 @@ export function GiftWallSection({
 
   if (wall == null) return null;
 
-  const items = expanded ? wall.items : wall.items.slice(0, GIFT_WALL_PREVIEW_COUNT);
+  const items = expanded ? wall.items : wall.items.slice(0, columns * GIFT_WALL_PREVIEW_ROWS);
   const hiddenCount = wall.items.length - items.length;
 
   function replay(item: GiftWallItem) {
@@ -71,7 +77,7 @@ export function GiftWallSection({
       {wall.items.length === 0 ? (
         <p className="py-4 text-center text-sm text-black/45">{t('gift.wall.empty')}</p>
       ) : (
-        <ul className="mt-2 grid grid-cols-5 gap-x-1 gap-y-2">
+        <ul className={`mt-2 grid ${GIFT_WALL_GRID_CLASS[columns]} gap-x-1 gap-y-2`}>
           {items.map((item) => (
             <li key={item.gift.id}>
               <button

@@ -2516,6 +2516,8 @@
       "failed": "Could not send the gift, please try again"
     },
     "receiverLabel": "Receiver",
+    "receiverHint": "Enter the recipient's nickname",
+    "sendNow": "Send a gift",
     "giftLabel": "Gift",
     "edit": "Edit",
     "sendWithTotal": "Send · {{ken}} KEN",

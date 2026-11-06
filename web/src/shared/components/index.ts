@@ -25,6 +25,7 @@ export * from './ui/MessageActionSheet';
 export * from './ui/ReactionBalloons';
 export * from './ui/UserListDialog';
 export * from './ui/UserRow';
+export * from './ui/UserSearchPicker';
 export * from './ui/UserName';
 export * from './ui/PresenceBadge';
 export * from './ui/ActionButton';

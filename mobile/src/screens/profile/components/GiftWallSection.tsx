@@ -9,14 +9,13 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
-import { CARD_SHADOW, GIFT_WALL_COLUMNS, GIFT_WALL_PREVIEW_COUNT } from '../constants';
-
-const GIFT_TILE_STYLE = { width: `${100 / GIFT_WALL_COLUMNS}%` } as const;
+import { CARD_SHADOW, GIFT_WALL_COLUMNS, GIFT_WALL_PREVIEW_ROWS } from '../constants';
 
 interface GiftWallSectionProps {
   userId: string;
   isSelf: boolean;
   refreshKey: number;
+  columns?: number;
   onOpenHistory?: () => void;
 }
 
@@ -24,6 +23,7 @@ export function GiftWallSection({
   userId,
   isSelf,
   refreshKey,
+  columns = GIFT_WALL_COLUMNS,
   onOpenHistory,
 }: GiftWallSectionProps) {
   const { t, i18n } = useTranslation();
@@ -34,8 +34,9 @@ export function GiftWallSection({
 
   if (wall == null) return null;
 
-  const items = expanded ? wall.items : wall.items.slice(0, GIFT_WALL_PREVIEW_COUNT);
+  const items = expanded ? wall.items : wall.items.slice(0, columns * GIFT_WALL_PREVIEW_ROWS);
   const hiddenCount = wall.items.length - items.length;
+  const tileStyle = { width: `${100 / columns}%` } as const;
 
   function replay(item: GiftWallItem) {
     play({
@@ -88,7 +89,7 @@ export function GiftWallSection({
                 accessibilityLabel={name}
                 onPress={() => replay(item)}
                 className="items-center px-0.5 py-1 active:opacity-60"
-                style={GIFT_TILE_STYLE}
+                style={tileStyle}
               >
                 <View>
                   <CachedImage uri={item.gift.imageUrl} style={{ width: 44, height: 44 }} resizeMode="contain" />

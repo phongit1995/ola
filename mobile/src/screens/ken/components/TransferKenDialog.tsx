@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { formatKen, toApiError } from '@ola/shared/lib';
-import { KenService, UserService } from '@ola/shared/services';
+import { KenService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
@@ -11,6 +11,7 @@ import type { TransferReceiver } from '@components/transfer/types';
 import { TransferPasswordField } from '@components/transfer/TransferPasswordField';
 import { TransferWarning } from '@components/transfer/TransferWarning';
 import { userIdentityFromSearchResult } from '@components/user/userIdentity';
+import { UserSearchPicker } from '@components/user/UserSearchPicker';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
@@ -50,29 +51,9 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
   const [step, setStep] = useState<Step>(receiver != null ? 'input' : 'recipient');
   const [pickedReceiver, setPickedReceiver] =
     useState<TransferReceiver | null>(null);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [amountDigits, setAmountDigits] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    const value = query.trim();
-    const timer = setTimeout(() => {
-      if (value === '') {
-        setResults([]);
-        setSearching(false);
-        return;
-      }
-      setSearching(true);
-      UserService.search(value, 30)
-        .then((res) => setResults(res.users))
-        .catch(() => setResults([]))
-        .finally(() => setSearching(false));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query]);
 
   const activeReceiver = receiver ?? pickedReceiver;
   const amount = amountDigits === '' ? 0 : Number(amountDigits);
@@ -80,8 +61,6 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
 
   function pickReceiver(user: UserSearchResult) {
     setPickedReceiver(toReceiver(user));
-    setQuery('');
-    setResults([]);
     setStep('input');
   }
 
@@ -166,46 +145,11 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
   return (
     <Dialog visible={visible} onClose={onClose} title={title} icon={kenIcon} footer={footer}>
       {step === 'recipient' ? (
-        <View className="px-1 py-1">
-          <Text className="text-base" style={{ color: TEXT_PRIMARY }}>{t('chat.transferKenReceiver')}</Text>
-          <TextInput
-            autoFocus
-            value={query}
-            onChangeText={setQuery}
-            placeholder={t('chat.transferKenReceiverHint')}
-            placeholderTextColor="rgba(0,0,0,0.38)"
-            autoCapitalize="none"
-            className="mt-1 w-full rounded px-3 py-2 text-base"
-            style={{ borderWidth: 1, borderColor: DIVIDER, color: TEXT_PRIMARY }}
-          />
-          {query.trim() !== '' && (
-            <View className="mt-2 rounded" style={{ borderWidth: 1, borderColor: DIVIDER, maxHeight: 224 }}>
-              {searching ? (
-                <Text className="py-3 text-center text-sm" style={{ color: TEXT_SECONDARY }}>
-                  {t('common.loading')}
-                </Text>
-              ) : results.length === 0 ? (
-                <Text className="py-3 text-center text-sm" style={{ color: TEXT_SECONDARY }}>
-                  {t('chat.composeSearchEmpty')}
-                </Text>
-              ) : (
-                <ScrollView keyboardShouldPersistTaps="handled" className="px-2">
-                  {results.map((item, index) => (
-                    <View
-                      key={item.id}
-                      style={index > 0 ? { borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.08)' } : null}
-                    >
-                      <TransferReceiverRow
-                        receiver={toReceiver(item)}
-                        onPress={() => pickReceiver(item)}
-                      />
-                    </View>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
-        </View>
+        <UserSearchPicker
+          label={t('chat.transferKenReceiver')}
+          placeholder={t('chat.transferKenReceiverHint')}
+          onPick={pickReceiver}
+        />
       ) : step === 'input' ? (
         <View className="px-1 py-1">
           <View className="flex-row items-center justify-center gap-2">

@@ -1,30 +1,32 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { GIFT_SOURCE } from '@ola/shared/constants';
 import { formatKen } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { GIFT_HEADER_GRADIENT } from '@components/gift/constants';
-import { DIVIDER, TEXT_PRIMARY } from '@constants';
+import { GIFT_ACCENT_DARK, GIFT_HEADER_GRADIENT } from '@components/gift/constants';
+import { GiftPickerDialog, type GiftReceiver } from '@components/gift/GiftPickerDialog';
 import { GiftWallSection } from '@screens/profile/components/GiftWallSection';
-import { CARD_SHADOW } from '@screens/profile/constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
+import { GiftRecipientDialog } from './components/GiftRecipientDialog';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftHome'>;
 
-function HomeRow({ label, emoji, onPress }: { label: string; emoji: string; onPress: () => void }) {
+function HeaderAction({ label, emoji, onPress }: { label: string; emoji: string; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} className="flex-row items-center gap-3 px-4 py-3 active:bg-black/5">
-      <Text className="text-lg">{emoji}</Text>
-      <Text className="flex-1 text-sm" style={{ color: TEXT_PRIMARY }}>
-        {label}
-      </Text>
-      <Text className="text-lg text-ola-ink-hint">›</Text>
+    <Pressable
+      onPress={onPress}
+      className="h-8 flex-row items-center gap-0.5 rounded-full bg-white/15 px-2 active:bg-white/25"
+    >
+      <Text className="text-xs">{emoji}</Text>
+      <Text className="text-xs font-medium text-white">{label}</Text>
     </Pressable>
   );
 }
@@ -35,14 +37,49 @@ export function GiftHomeScreen({ navigation }: Props) {
   const userId = useAuthStore((s) => s.user?.id ?? '');
   const charm = useAuthStore((s) => s.user?.charm ?? 0);
   const refreshUser = useAuthStore((s) => s.refreshUser);
+  const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
+  const loadGiftCatalog = useGiftCatalogStore((s) => s.load);
+  const [recipientOpen, setRecipientOpen] = useState(false);
+  const [receiver, setReceiver] = useState<GiftReceiver | null>(null);
+  const pendingReceiverRef = useRef<GiftReceiver | null>(null);
 
   useEffect(() => {
     void refreshUser();
-  }, [refreshUser]);
+    void loadGiftCatalog();
+  }, [refreshUser, loadGiftCatalog]);
+
+  const openPendingReceiver = useCallback(() => {
+    const picked = pendingReceiverRef.current;
+    pendingReceiverRef.current = null;
+    if (picked != null) setReceiver(picked);
+  }, []);
+
+  function pickReceiver(picked: GiftReceiver) {
+    pendingReceiverRef.current = picked;
+    setRecipientOpen(false);
+    if (Platform.OS !== 'ios') requestAnimationFrame(openPendingReceiver);
+  }
 
   return (
     <View className="flex-1 bg-ola-surface">
-      <ScreenHeader title={t('home.apps.gifts')} onBack={() => navigation.goBack()} />
+      <ScreenHeader
+        title={t('home.apps.gifts')}
+        onBack={() => navigation.goBack()}
+        right={
+          <View className="flex-row gap-1">
+            <HeaderAction
+              emoji="🏆"
+              label={t('gift.wall.leaderboard')}
+              onPress={() => navigation.navigate(ROOT_ROUTES.GiftLeaderboard)}
+            />
+            <HeaderAction
+              emoji="🎁"
+              label={t('gift.wall.history')}
+              onPress={() => navigation.navigate(ROOT_ROUTES.GiftHistory)}
+            />
+          </View>
+        }
+      />
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
         <View className="mb-2 items-center px-4 py-5">
           <LinearGradient
@@ -58,24 +95,35 @@ export function GiftHomeScreen({ navigation }: Props) {
             <CharmIcon size={34} />
             <Text className="text-3xl font-bold text-white">{formatKen(charm)}</Text>
           </View>
+          {giftsEnabled && (
+            <Pressable
+              onPress={() => setRecipientOpen(true)}
+              className="mt-3 rounded-full bg-white px-5 py-1.5 active:opacity-80"
+            >
+              <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
+                🎁 {t('gift.sendNow')}
+              </Text>
+            </Pressable>
+          )}
         </View>
 
-        <View className="mb-2 bg-white" style={CARD_SHADOW}>
-          <HomeRow
-            emoji="🏆"
-            label={t('gift.wall.leaderboard')}
-            onPress={() => navigation.navigate(ROOT_ROUTES.GiftLeaderboard)}
-          />
-          <View className="mx-4" style={{ height: 1, backgroundColor: DIVIDER }} />
-          <HomeRow
-            emoji="🎁"
-            label={t('gift.wall.history')}
-            onPress={() => navigation.navigate(ROOT_ROUTES.GiftHistory)}
-          />
-        </View>
-
-        <GiftWallSection userId={userId} isSelf refreshKey={0} />
+        <GiftWallSection userId={userId} isSelf refreshKey={0} columns={4} />
       </ScrollView>
+
+      <GiftRecipientDialog
+        visible={recipientOpen}
+        onClose={() => setRecipientOpen(false)}
+        onDismiss={openPendingReceiver}
+        onPick={pickReceiver}
+      />
+      {receiver != null && (
+        <GiftPickerDialog
+          source={GIFT_SOURCE.profile}
+          receiver={receiver}
+          onClose={() => setReceiver(null)}
+          onSent={() => void refreshUser()}
+        />
+      )}
     </View>
   );
 }
