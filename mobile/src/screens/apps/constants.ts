@@ -7,7 +7,6 @@ export type AppItemAction =
   | 'pen'
   | 'wheel'
   | 'profile'
-  | 'nickname'
   | 'vip'
   | 'ken'
   | 'gifts'
@@ -54,11 +53,6 @@ export const PERSONAL_ITEMS: AppItem[] = [
     icon: require('@assets/icons/apps/personal.png'),
     titleKey: 'home.apps.profile',
     action: 'profile',
-  },
-  {
-    icon: require('@assets/icons/apps/nickname.png'),
-    titleKey: 'home.apps.changeNickname',
-    action: 'nickname',
   },
   {
     icon: require('@assets/icons/apps/vip-crown.webp'),

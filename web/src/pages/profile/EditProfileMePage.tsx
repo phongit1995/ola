@@ -22,6 +22,7 @@ import {
   MIN_IMAGE_SOURCE,
 } from '@constants';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
+import { NicknameField } from './components/NicknameField';
 import { VerifyEmailDialog } from './components/VerifyEmailDialog';
 import { INPUT_CLASS, PHONE_PATTERN } from './constants';
 
@@ -420,6 +421,10 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
               onPick={uploadAvatar}
             />
           </div>
+
+          <Field label={t('profileEdit.nicknameLabel')}>
+            <NicknameField username={user.username} />
+          </Field>
 
           <Field label={t('profileEdit.fullnameLabel')}>
             <input

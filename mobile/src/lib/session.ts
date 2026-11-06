@@ -3,16 +3,19 @@ import { AuthService, SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 
-export function removeSavedAccountOfCurrentUser(): void {
-  const currentUsername = useAuthStore.getState().user?.username;
-  if (currentUsername == null) return;
-  const normalizedUsername = currentUsername.trim().toLowerCase();
+export function removeSavedAccount(username: string): void {
+  const normalizedUsername = username.trim().toLowerCase();
   const savedAccount = useSavedAccountsStore
     .getState()
     .accounts.find((account) => account.username.trim().toLowerCase() === normalizedUsername);
   if (savedAccount != null) {
     useSavedAccountsStore.getState().removeAccount(savedAccount.username);
   }
+}
+
+export function removeSavedAccountOfCurrentUser(): void {
+  const currentUsername = useAuthStore.getState().user?.username;
+  if (currentUsername != null) removeSavedAccount(currentUsername);
 }
 
 export function clearSavedAccounts(): void {
