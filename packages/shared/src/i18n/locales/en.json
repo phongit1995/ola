@@ -2494,13 +2494,12 @@
     "leaderboard": {
       "title": "Gift leaderboard",
       "sender": "Top givers",
-      "receiver": "Most loved",
+      "receiver": "Charm points",
       "week": "This week",
       "month": "This month",
       "all": "All time",
       "myRank": "Your rank",
       "notRanked": "Not ranked",
-      "kenValue": "{{value}} KEN",
       "empty": "No one on the leaderboard yet"
     },
     "errors": {

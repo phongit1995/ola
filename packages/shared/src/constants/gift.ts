@@ -52,8 +52,6 @@ export const GIFT_HISTORY_TABS = [
   { value: GIFT_HISTORY_DIRECTION.sent, labelKey: 'gift.history.sent' },
 ] as const;
 
-export const GIFT_PODIUM_MEDALS = ['🥇', '🥈', '🥉'] as const;
-
 export const GIFT_HISTORY_PAGE_SIZE = 20;
 export const GIFT_LEADERBOARD_LIMIT = 50;
 export const GIFT_LEADERBOARD_PODIUM_SIZE = 3;

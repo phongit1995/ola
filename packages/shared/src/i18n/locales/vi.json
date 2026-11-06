@@ -2494,13 +2494,12 @@
     "leaderboard": {
       "title": "Bảng xếp hạng quà",
       "sender": "Đại gia",
-      "receiver": "Được yêu thích",
+      "receiver": "Điểm sức hút",
       "week": "Tuần này",
       "month": "Tháng này",
       "all": "Tất cả",
       "myRank": "Hạng của bạn",
       "notRanked": "Chưa có hạng",
-      "kenValue": "{{value}} KEN",
       "empty": "Chưa có ai trên bảng xếp hạng"
     },
     "errors": {

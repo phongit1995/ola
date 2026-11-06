@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import kenIcon from '@/assets/icons/apps/ken.png';
 import {
   Avatar,
   CharmIcon,
@@ -13,69 +15,181 @@ import {
   GIFT_LEADERBOARD_PODIUM_SIZE,
   GIFT_LEADERBOARD_TYPE,
   GIFT_LEADERBOARD_TYPE_TABS,
-  GIFT_PODIUM_MEDALS,
 } from '@constants';
 import { useGiftLeaderboard } from '@ola/shared/stores/gift/useGiftLeaderboard';
+import type { GiftLeaderboardEntry } from '@app-types';
 import { cn, colorForName, formatKen } from '@lib';
+import { useAuthStore } from '@/store/authStore';
 
 interface GiftLeaderboardPageProps {
   onClose: () => void;
   z?: 40 | 50 | 60;
 }
 
+const PODIUM_POP_DELAY_MS = 180;
+const ROW_BASE_DELAY_MS = 420;
+const ROW_STAGGER_MS = 35;
+const ROW_STAGGER_MAX_INDEX = 12;
+
+interface PodiumSlotStyle {
+  rank: number;
+  delayMs: number;
+  avatarSize: number;
+  ring: string;
+  block: string;
+  rankColor: string;
+}
+
+const PODIUM_SLOTS: PodiumSlotStyle[] = [
+  {
+    rank: 2,
+    delayMs: 120,
+    avatarSize: 60,
+    ring: 'ring-[#aab3c2]',
+    block: 'h-14 from-[#e3e7ee] to-[#f3f5f8]',
+    rankColor: 'text-[#7f8999]',
+  },
+  {
+    rank: 1,
+    delayMs: 240,
+    avatarSize: 76,
+    ring: 'ring-[#f5b301]',
+    block: 'h-20 from-[#ffe9a8] to-[#fff6dc]',
+    rankColor: 'text-[#c98f00]',
+  },
+  {
+    rank: 3,
+    delayMs: 0,
+    avatarSize: 60,
+    ring: 'ring-[#d0894a]',
+    block: 'h-10 from-[#f6d9bf] to-[#fcefe3]',
+    rankColor: 'text-[#b06a2c]',
+  },
+];
+
+function PodiumSlot({
+  slot,
+  entry,
+  value,
+}: {
+  slot: PodiumSlotStyle;
+  entry: GiftLeaderboardEntry | undefined;
+  value: ReactNode;
+}) {
+  const name =
+    entry == null ? '' : entry.user.fullName || entry.user.username;
+  return (
+    <div className="flex min-w-0 flex-1 flex-col items-center">
+      <div
+        className="flex w-full animate-gift-rank-pop flex-col items-center"
+        style={{ animationDelay: `${slot.delayMs + PODIUM_POP_DELAY_MS}ms` }}
+      >
+        {entry == null ? (
+          <span
+            className="rounded-full border-2 border-dashed border-black/15"
+            style={{ width: slot.avatarSize, height: slot.avatarSize }}
+          />
+        ) : (
+          <span className={cn('rounded-full ring-3', slot.ring)}>
+            <Avatar
+              name={name}
+              src={entry.user.avatar}
+              color={colorForName(name)}
+              size={slot.avatarSize}
+            />
+          </span>
+        )}
+        <span className="mt-2.5 w-full truncate px-1 text-center text-sm font-semibold text-black/87">
+          {entry == null ? '—' : name}
+        </span>
+        <span className="mt-0.5 mb-2 flex h-5 items-center gap-1 text-sm font-bold text-black/87">
+          {value}
+        </span>
+      </div>
+      <span
+        className={cn(
+          'flex w-full origin-bottom animate-gift-rank-rise items-start justify-center rounded-t-lg bg-linear-to-b pt-1.5 text-2xl font-extrabold',
+          slot.block,
+          slot.rankColor
+        )}
+        style={{ animationDelay: `${slot.delayMs}ms` }}
+      >
+        {slot.rank}
+      </span>
+    </div>
+  );
+}
+
 export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
   const { t } = useTranslation();
+  const me = useAuthStore((s) => s.user);
   const { type, period, selectType, selectPeriod, board, failed } =
     useGiftLeaderboard();
+  const myName = me?.fullName || me?.username || '';
+  const restEntries =
+    board?.items.filter(
+      (entry) => entry.rank > GIFT_LEADERBOARD_PODIUM_SIZE
+    ) ?? [];
 
-  function valueText(value: number): string {
-    return type === GIFT_LEADERBOARD_TYPE.sender
-      ? t('gift.leaderboard.kenValue', { value: formatKen(value) })
-      : formatKen(value);
+  function renderValue(value: number) {
+    return (
+      <>
+        {formatKen(value)}
+        {type === GIFT_LEADERBOARD_TYPE.sender ? (
+          <img
+            src={kenIcon}
+            alt=""
+            aria-hidden="true"
+            className="h-4 w-4 shrink-0 object-contain"
+          />
+        ) : (
+          <CharmIcon />
+        )}
+      </>
+    );
   }
 
   return (
     <FullScreenOverlay z={z}>
       <ScreenHeader title={t('gift.leaderboard.title')} onBack={onClose} />
 
-      <div className="bg-linear-to-b from-ola-accent to-ola-marriage px-3 pt-3 pb-4 text-white">
-        <div className="flex rounded-full bg-white/20 p-1">
-          {GIFT_LEADERBOARD_TYPE_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => selectType(tab.value)}
-              className={cn(
-                'flex-1 rounded-full py-1.5 text-sm font-semibold transition-colors',
-                tab.value === type
-                  ? 'bg-white text-ola-accent-dark shadow'
-                  : 'text-white/90'
-              )}
-            >
-              {t(tab.labelKey)}
-            </button>
-          ))}
-        </div>
-        <div className="mt-3 flex justify-center gap-2">
+      <div className="flex border-b border-black/10 bg-white">
+        {GIFT_LEADERBOARD_TYPE_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            type="button"
+            onClick={() => selectType(tab.value)}
+            className={cn(
+              'flex-1 border-b-2 py-2.5 text-sm font-medium',
+              tab.value === type
+                ? 'border-ola-accent text-ola-accent-dark'
+                : 'border-transparent text-black/54'
+            )}
+          >
+            {t(tab.labelKey)}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto bg-white">
+        <div className="flex justify-center gap-2 pt-3">
           {GIFT_LEADERBOARD_PERIODS.map((value) => (
             <button
               key={value}
               type="button"
               onClick={() => selectPeriod(value)}
               className={cn(
-                'rounded-full border px-3 py-0.5 text-xs font-medium',
+                'rounded-full px-3 py-1 text-xs font-medium',
                 value === period
-                  ? 'border-white bg-white/25'
-                  : 'border-white/50 text-white/85'
+                  ? 'bg-ola-accent/10 text-ola-accent-dark'
+                  : 'bg-black/4 text-black/54'
               )}
             >
               {t(GIFT_LEADERBOARD_PERIOD_LABEL[value])}
             </button>
           ))}
         </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto">
         {board == null ? (
           <div className="flex justify-center py-10">
             {failed ? (
@@ -91,61 +205,84 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
             {t('gift.leaderboard.empty')}
           </p>
         ) : (
-          <ol className="divide-y divide-black/6 bg-white">
-            {board.items.map((entry) => {
-              const name = entry.user.fullName || entry.user.username;
-              const podium = entry.rank <= GIFT_LEADERBOARD_PODIUM_SIZE;
-              return (
-                <li
-                  key={entry.user.id}
-                  className="flex items-center gap-3 px-4 py-2.5"
-                >
-                  <span
-                    className={cn(
-                      'w-7 text-center font-bold',
-                      podium ? 'text-xl' : 'text-sm text-black/45'
-                    )}
-                  >
-                    {podium ? GIFT_PODIUM_MEDALS[entry.rank - 1] : entry.rank}
-                  </span>
-                  <Avatar
-                    name={name}
-                    src={entry.user.avatar}
-                    color={colorForName(name)}
-                    size={podium ? 44 : 36}
+          <div key={`${type}:${period}`}>
+            <div className="flex items-end gap-1.5 border-b border-black/6 px-3 pt-6">
+              {PODIUM_SLOTS.map((slot) => {
+                const entry = board.items.find(
+                  (item) => item.rank === slot.rank
+                );
+                return (
+                  <PodiumSlot
+                    key={slot.rank}
+                    slot={slot}
+                    entry={entry}
+                    value={entry == null ? null : renderValue(entry.value)}
                   />
-                  <span className="flex min-w-0 flex-1">
-                    <UserName
-                      name={entry.user.username}
-                      fullName={entry.user.fullName}
-                      className="min-w-0 truncate text-sm font-medium text-black/87"
+                );
+              })}
+            </div>
+            <ol className="divide-y divide-black/6">
+              {restEntries.map((entry, index) => {
+                const name = entry.user.fullName || entry.user.username;
+                const stagger = Math.min(index, ROW_STAGGER_MAX_INDEX);
+                return (
+                  <li
+                    key={entry.user.id}
+                    className="flex animate-ola-rise-in items-center gap-3 px-4 py-2.5"
+                    style={{
+                      animationDelay: `${ROW_BASE_DELAY_MS + stagger * ROW_STAGGER_MS}ms`,
+                    }}
+                  >
+                    <span className="w-6 text-center text-sm font-semibold text-black/45">
+                      {entry.rank}
+                    </span>
+                    <Avatar
+                      name={name}
+                      src={entry.user.avatar}
+                      color={colorForName(name)}
+                      size={36}
                     />
-                  </span>
-                  <span className="flex items-center gap-1 text-sm font-semibold text-ola-accent-dark">
-                    {valueText(entry.value)}
-                    {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
+                    <span className="flex min-w-0 flex-1">
+                      <UserName
+                        name={entry.user.username}
+                        fullName={entry.user.fullName}
+                        className="min-w-0 truncate text-sm font-medium text-black/87"
+                      />
+                    </span>
+                    <span className="flex items-center gap-1 text-sm font-bold text-black/87">
+                      {renderValue(entry.value)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
         )}
       </div>
 
       {board != null && (
-        <div className="flex items-center gap-3 border-t border-black/10 bg-white px-4 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
-          <span className="text-sm text-black/54">
-            {t('gift.leaderboard.myRank')}
+        <div className="flex items-center gap-3 border-t border-black/10 bg-white px-4 py-2.5 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+          <span className="w-6 text-center text-sm font-bold text-ola-accent-dark">
+            {board.me.rank > 0 ? board.me.rank : '—'}
           </span>
-          <span className="text-base font-bold text-black/87">
-            {board.me.rank > 0
-              ? `#${board.me.rank}`
-              : t('gift.leaderboard.notRanked')}
+          <Avatar
+            name={myName}
+            src={me?.avatar}
+            color={colorForName(myName)}
+            size={36}
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold text-black/87">
+              {myName}
+            </span>
+            <span className="block text-xs text-black/54">
+              {board.me.rank > 0
+                ? t('gift.leaderboard.myRank')
+                : t('gift.leaderboard.notRanked')}
+            </span>
           </span>
-          <span className="flex-1" />
-          <span className="flex items-center gap-1 text-sm font-semibold text-ola-accent-dark">
-            {valueText(board.me.value)}
-            {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
+          <span className="flex items-center gap-1 text-sm font-bold text-black/87">
+            {renderValue(board.me.value)}
           </span>
         </div>
       )}

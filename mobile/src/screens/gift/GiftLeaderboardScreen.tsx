@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown, ZoomIn } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
-import { FlashList } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
@@ -10,110 +10,203 @@ import {
   GIFT_LEADERBOARD_PODIUM_SIZE,
   GIFT_LEADERBOARD_TYPE,
   GIFT_LEADERBOARD_TYPE_TABS,
-  GIFT_PODIUM_MEDALS,
 } from '@ola/shared/constants';
 import { colorForName, formatKen } from '@ola/shared/lib';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useGiftLeaderboard } from '@ola/shared/stores/gift/useGiftLeaderboard';
-import type { GiftLeaderboardEntry } from '@ola/shared/types';
+import type { GiftLeaderboardEntry, GiftLeaderboardType } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { Avatar } from '@components/ui/Avatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { InsetListSeparator } from '@components/ui/InsetListSeparator';
-import { GIFT_ACCENT, GIFT_ACCENT_DARK, GIFT_HEADER_GRADIENT } from '@components/gift/constants';
+import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
+import { GIFT_ASSETS } from '@components/gift/giftAssets';
 import { DIVIDER, TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftLeaderboard'>;
 
+const PODIUM_POP_DELAY_MS = 180;
+const PODIUM_RISE_MS = 450;
+const ROW_BASE_DELAY_MS = 420;
+const ROW_STAGGER_MS = 35;
+const ROW_STAGGER_MAX_INDEX = 12;
+const ROW_FADE_MS = 220;
+const KEN_ICON_STYLE = { width: 16, height: 16 };
+
+interface PodiumSlotStyle {
+  rank: number;
+  delayMs: number;
+  avatarSize: number;
+  ring: string;
+  blockHeight: number;
+  blockColors: string[];
+  rankColor: string;
+}
+
+const PODIUM_SLOTS: PodiumSlotStyle[] = [
+  {
+    rank: 2,
+    delayMs: 120,
+    avatarSize: 60,
+    ring: '#aab3c2',
+    blockHeight: 56,
+    blockColors: ['#e3e7ee', '#f3f5f8'],
+    rankColor: '#7f8999',
+  },
+  {
+    rank: 1,
+    delayMs: 240,
+    avatarSize: 76,
+    ring: '#f5b301',
+    blockHeight: 80,
+    blockColors: ['#ffe9a8', '#fff6dc'],
+    rankColor: '#c98f00',
+  },
+  {
+    rank: 3,
+    delayMs: 0,
+    avatarSize: 60,
+    ring: '#d0894a',
+    blockHeight: 40,
+    blockColors: ['#f6d9bf', '#fcefe3'],
+    rankColor: '#b06a2c',
+  },
+];
+
+function BoardValue({ type, value }: { type: GiftLeaderboardType; value: number }) {
+  return (
+    <View className="flex-row items-center" style={{ gap: 4 }}>
+      <Text className="text-sm font-bold" style={{ color: TEXT_PRIMARY }}>
+        {formatKen(value)}
+      </Text>
+      {type === GIFT_LEADERBOARD_TYPE.sender ? (
+        <Image source={GIFT_ASSETS.ken} style={KEN_ICON_STYLE} resizeMode="contain" />
+      ) : (
+        <CharmIcon />
+      )}
+    </View>
+  );
+}
+
+function PodiumSlot({
+  slot,
+  entry,
+  type,
+}: {
+  slot: PodiumSlotStyle;
+  entry: GiftLeaderboardEntry | undefined;
+  type: GiftLeaderboardType;
+}) {
+  const name = entry == null ? '' : entry.user.fullName || entry.user.username;
+  const ringSize = slot.avatarSize + 6;
+  return (
+    <View className="min-w-0 flex-1 items-center">
+      <Animated.View
+        entering={ZoomIn.delay(slot.delayMs + PODIUM_POP_DELAY_MS).springify()}
+        style={styles.podiumPerson}
+      >
+        {entry == null ? (
+          <View
+            style={{
+              width: slot.avatarSize,
+              height: slot.avatarSize,
+              borderRadius: slot.avatarSize / 2,
+              borderWidth: 2,
+              borderStyle: 'dashed',
+              borderColor: DIVIDER,
+            }}
+          />
+        ) : (
+          <View
+            style={{
+              width: ringSize,
+              height: ringSize,
+              borderRadius: ringSize / 2,
+              borderWidth: 3,
+              borderColor: slot.ring,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Avatar
+              name={name}
+              uri={entry.user.avatar}
+              color={colorForName(name)}
+              size={slot.avatarSize}
+            />
+          </View>
+        )}
+        <Text
+          numberOfLines={1}
+          className="mt-2 text-sm font-semibold"
+          style={styles.podiumName}
+        >
+          {entry == null ? '—' : name}
+        </Text>
+        <View style={styles.podiumValue}>
+          {entry != null && <BoardValue type={type} value={entry.value} />}
+        </View>
+      </Animated.View>
+      <Animated.View
+        entering={FadeInDown.delay(slot.delayMs).duration(PODIUM_RISE_MS)}
+        style={[styles.podiumBlock, { height: slot.blockHeight }]}
+      >
+        <LinearGradient colors={slot.blockColors} style={StyleSheet.absoluteFill} />
+        <Text className="text-2xl font-extrabold" style={{ color: slot.rankColor }}>
+          {slot.rank}
+        </Text>
+      </Animated.View>
+    </View>
+  );
+}
+
 export function GiftLeaderboardScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const me = useAuthStore((s) => s.user);
   const { type, period, selectType, selectPeriod, board, failed } = useGiftLeaderboard();
-
-  function valueText(value: number): string {
-    return type === GIFT_LEADERBOARD_TYPE.sender
-      ? t('gift.leaderboard.kenValue', { value: formatKen(value) })
-      : formatKen(value);
-  }
-
-  function renderEntry({ item }: { item: GiftLeaderboardEntry }) {
-    const name = item.user.fullName || item.user.username;
-    const podium = item.rank <= GIFT_LEADERBOARD_PODIUM_SIZE;
-    return (
-      <View className="flex-row items-center gap-3 bg-white px-4 py-2.5">
-        <Text
-          className={`w-7 text-center font-bold ${podium ? 'text-xl' : 'text-sm'}`}
-          style={podium ? undefined : { color: TEXT_FAINT }}
-        >
-          {podium ? GIFT_PODIUM_MEDALS[item.rank - 1] : item.rank}
-        </Text>
-        <Avatar name={name} uri={item.user.avatar} color={colorForName(name)} size={podium ? 44 : 36} />
-        <View className="min-w-0 flex-1">
-          <Text numberOfLines={1} className="text-sm font-medium" style={{ color: TEXT_PRIMARY }}>
-            {name}
-          </Text>
-          <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_FAINT }}>
-            @{item.user.username}
-          </Text>
-        </View>
-        <View className="flex-row items-center" style={{ gap: 4 }}>
-          <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
-            {valueText(item.value)}
-          </Text>
-          {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
-        </View>
-      </View>
-    );
-  }
+  const myName = me?.fullName || me?.username || '';
+  const restEntries = board?.items.filter((entry) => entry.rank > GIFT_LEADERBOARD_PODIUM_SIZE) ?? [];
 
   return (
-    <View className="flex-1 bg-ola-surface">
+    <View className="flex-1 bg-white">
       <ScreenHeader title={t('gift.leaderboard.title')} onBack={() => navigation.goBack()} />
 
-      <View className="px-3 pb-4 pt-3">
-        <LinearGradient
-          colors={GIFT_HEADER_GRADIENT}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <View className="flex-row rounded-full p-1" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-          {GIFT_LEADERBOARD_TYPE_TABS.map((tab) => {
-            const active = tab.value === type;
-            return (
-              <Pressable
-                key={tab.value}
-                onPress={() => selectType(tab.value)}
-                className="flex-1 items-center rounded-full py-1.5"
-                style={active ? { backgroundColor: '#ffffff' } : undefined}
+      <View className="flex-row bg-white" style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}>
+        {GIFT_LEADERBOARD_TYPE_TABS.map((tab) => {
+          const active = tab.value === type;
+          return (
+            <Pressable
+              key={tab.value}
+              onPress={() => selectType(tab.value)}
+              className="flex-1 items-center py-2.5"
+              style={{ borderBottomWidth: 2, borderBottomColor: active ? GIFT_ACCENT : 'transparent' }}
+            >
+              <Text
+                className="text-sm font-medium"
+                style={{ color: active ? GIFT_ACCENT_DARK : TEXT_SECONDARY }}
               >
-                <Text
-                  className="text-sm font-semibold"
-                  style={{ color: active ? GIFT_ACCENT_DARK : 'rgba(255,255,255,0.9)' }}
-                >
-                  {t(tab.labelKey)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <View className="mt-3 flex-row justify-center gap-2">
+                {t(tab.labelKey)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <ScrollView className="flex-1" contentContainerStyle={styles.scrollContent}>
+        <View className="flex-row justify-center gap-2 pt-3">
           {GIFT_LEADERBOARD_PERIODS.map((value) => {
             const active = value === period;
             return (
               <Pressable
                 key={value}
                 onPress={() => selectPeriod(value)}
-                className="rounded-full px-3 py-0.5"
-                style={{
-                  borderWidth: 1,
-                  borderColor: active ? '#ffffff' : 'rgba(255,255,255,0.5)',
-                  backgroundColor: active ? 'rgba(255,255,255,0.25)' : 'transparent',
-                }}
+                className="rounded-full px-3 py-1"
+                style={{ backgroundColor: active ? 'rgba(255,64,129,0.1)' : 'rgba(0,0,0,0.04)' }}
               >
                 <Text
                   className="text-xs font-medium"
-                  style={{ color: active ? '#ffffff' : 'rgba(255,255,255,0.85)' }}
+                  style={{ color: active ? GIFT_ACCENT_DARK : TEXT_SECONDARY }}
                 >
                   {t(GIFT_LEADERBOARD_PERIOD_LABEL[value])}
                 </Text>
@@ -121,9 +214,7 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
             );
           })}
         </View>
-      </View>
 
-      <View className="flex-1 bg-white">
         {board == null ? (
           <View className="items-center py-10">
             {failed ? (
@@ -139,21 +230,51 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
             {t('gift.leaderboard.empty')}
           </Text>
         ) : (
-          <FlashList
-            key={`${type}:${period}`}
-            data={board.items}
-            keyExtractor={(entry) => entry.user.id}
-            renderItem={renderEntry}
-            ItemSeparatorComponent={InsetListSeparator}
-          />
+          <View key={`${type}:${period}`}>
+            <View style={styles.podium}>
+              {PODIUM_SLOTS.map((slot) => (
+                <PodiumSlot
+                  key={slot.rank}
+                  slot={slot}
+                  type={type}
+                  entry={board.items.find((item) => item.rank === slot.rank)}
+                />
+              ))}
+            </View>
+            {restEntries.map((entry, index) => {
+              const name = entry.user.fullName || entry.user.username;
+              const stagger = Math.min(index, ROW_STAGGER_MAX_INDEX);
+              return (
+                <Animated.View
+                  key={entry.user.id}
+                  entering={FadeInDown.delay(ROW_BASE_DELAY_MS + stagger * ROW_STAGGER_MS).duration(ROW_FADE_MS)}
+                  style={styles.row}
+                >
+                  <Text className="text-center text-sm font-semibold" style={styles.rowRank}>
+                    {entry.rank}
+                  </Text>
+                  <Avatar name={name} uri={entry.user.avatar} color={colorForName(name)} size={36} />
+                  <View className="min-w-0 flex-1">
+                    <Text numberOfLines={1} className="text-sm font-medium" style={{ color: TEXT_PRIMARY }}>
+                      {name}
+                    </Text>
+                    <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_FAINT }}>
+                      @{entry.user.username}
+                    </Text>
+                  </View>
+                  <BoardValue type={type} value={entry.value} />
+                </Animated.View>
+              );
+            })}
+          </View>
         )}
-      </View>
+      </ScrollView>
 
       {board != null && (
         <View
-          className="flex-row items-center gap-3 bg-white px-4 pt-3"
+          className="flex-row items-center gap-3 bg-white px-4 pt-2.5"
           style={{
-            paddingBottom: 12 + insets.bottom,
+            paddingBottom: 10 + insets.bottom,
             borderTopWidth: 1,
             borderTopColor: DIVIDER,
             shadowColor: '#000',
@@ -163,20 +284,56 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
             elevation: 4,
           }}
         >
-          <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
-            {t('gift.leaderboard.myRank')}
+          <Text className="text-center text-sm font-bold" style={styles.myRank}>
+            {board.me.rank > 0 ? board.me.rank : '—'}
           </Text>
-          <Text className="flex-1 text-base font-bold" style={{ color: TEXT_PRIMARY }}>
-            {board.me.rank > 0 ? `#${board.me.rank}` : t('gift.leaderboard.notRanked')}
-          </Text>
-          <View className="flex-row items-center" style={{ gap: 4 }}>
-            <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
-              {valueText(board.me.value)}
+          <Avatar name={myName} uri={me?.avatar} color={colorForName(myName)} size={36} />
+          <View className="min-w-0 flex-1">
+            <Text numberOfLines={1} className="text-sm font-semibold" style={{ color: TEXT_PRIMARY }}>
+              {myName}
             </Text>
-            {type !== GIFT_LEADERBOARD_TYPE.sender && <CharmIcon />}
+            <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
+              {board.me.rank > 0 ? t('gift.leaderboard.myRank') : t('gift.leaderboard.notRanked')}
+            </Text>
           </View>
+          <BoardValue type={type} value={board.me.value} />
         </View>
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  scrollContent: { paddingBottom: 16 },
+  podium: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingTop: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: DIVIDER,
+  },
+  podiumPerson: { width: '100%', alignItems: 'center' },
+  podiumName: { color: TEXT_PRIMARY, width: '100%', paddingHorizontal: 4, textAlign: 'center' },
+  podiumValue: { height: 20, marginTop: 2, marginBottom: 8, justifyContent: 'center' },
+  podiumBlock: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 6,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: DIVIDER,
+  },
+  rowRank: { width: 24, color: TEXT_FAINT },
+  myRank: { width: 24, color: GIFT_ACCENT_DARK },
+});
