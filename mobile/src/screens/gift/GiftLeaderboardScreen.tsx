@@ -27,6 +27,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'GiftLeaderboard'>;
 
 const PODIUM_POP_DELAY_MS = 180;
 const PODIUM_RISE_MS = 450;
+const RANK_BADGE_ASPECT = 0.73;
+const MY_RANK_BADGE_HEIGHT = 28;
 const ROW_BASE_DELAY_MS = 420;
 const ROW_STAGGER_MS = 35;
 const ROW_STAGGER_MAX_INDEX = 12;
@@ -40,7 +42,12 @@ interface PodiumSlotStyle {
   ring: string;
   blockHeight: number;
   blockColors: string[];
-  rankColor: string;
+  badge: number;
+  badgeHeight: number;
+}
+
+function rankBadgeSize(height: number) {
+  return { width: height * RANK_BADGE_ASPECT, height };
 }
 
 const PODIUM_SLOTS: PodiumSlotStyle[] = [
@@ -49,9 +56,10 @@ const PODIUM_SLOTS: PodiumSlotStyle[] = [
     delayMs: 120,
     avatarSize: 60,
     ring: '#aab3c2',
-    blockHeight: 56,
+    blockHeight: 64,
     blockColors: ['#e3e7ee', '#f3f5f8'],
-    rankColor: '#7f8999',
+    badge: GIFT_ASSETS.rank2,
+    badgeHeight: 44,
   },
   {
     rank: 1,
@@ -60,18 +68,31 @@ const PODIUM_SLOTS: PodiumSlotStyle[] = [
     ring: '#f5b301',
     blockHeight: 80,
     blockColors: ['#ffe9a8', '#fff6dc'],
-    rankColor: '#c98f00',
+    badge: GIFT_ASSETS.rank1,
+    badgeHeight: 60,
   },
   {
     rank: 3,
     delayMs: 0,
     avatarSize: 60,
     ring: '#d0894a',
-    blockHeight: 40,
+    blockHeight: 52,
     blockColors: ['#f6d9bf', '#fcefe3'],
-    rankColor: '#b06a2c',
+    badge: GIFT_ASSETS.rank3,
+    badgeHeight: 44,
   },
 ];
+
+function HandleName({ username, fullName, className }: { username: string; fullName?: string; className: string }) {
+  return (
+    <Text numberOfLines={1} className={className} style={{ color: TEXT_PRIMARY }}>
+      {`@${username}`}
+      {fullName != null && fullName !== '' && (
+        <Text className="font-normal" style={{ color: TEXT_SECONDARY }}>{` · ${fullName}`}</Text>
+      )}
+    </Text>
+  );
+}
 
 function BoardValue({ type, value }: { type: GiftLeaderboardType; value: number }) {
   return (
@@ -141,7 +162,7 @@ function PodiumSlot({
           className="mt-2 text-sm font-semibold"
           style={styles.podiumName}
         >
-          {entry == null ? '—' : name}
+          {entry == null ? '—' : `@${entry.user.username}`}
         </Text>
         <View style={styles.podiumValue}>
           {entry != null && <BoardValue type={type} value={entry.value} />}
@@ -152,9 +173,12 @@ function PodiumSlot({
         style={[styles.podiumBlock, { height: slot.blockHeight }]}
       >
         <LinearGradient colors={slot.blockColors} style={StyleSheet.absoluteFill} />
-        <Text className="text-2xl font-extrabold" style={{ color: slot.rankColor }}>
-          {slot.rank}
-        </Text>
+        <Image
+          source={slot.badge}
+          style={rankBadgeSize(slot.badgeHeight)}
+          resizeMode="contain"
+          accessibilityLabel={String(slot.rank)}
+        />
       </Animated.View>
     </View>
   );
@@ -166,6 +190,7 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
   const me = useAuthStore((s) => s.user);
   const { type, period, selectType, selectPeriod, board, failed } = useGiftLeaderboard();
   const myName = me?.fullName || me?.username || '';
+  const myBadge = PODIUM_SLOTS.find((slot) => slot.rank === board?.me.rank)?.badge;
   const restEntries = board?.items.filter((entry) => entry.rank > GIFT_LEADERBOARD_PODIUM_SIZE) ?? [];
 
   return (
@@ -255,14 +280,11 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
                   </Text>
                   <Avatar name={name} uri={entry.user.avatar} color={colorForName(name)} size={36} />
                   <View className="min-w-0 flex-1">
-                    <Text numberOfLines={1} className="text-sm font-medium" style={{ color: TEXT_PRIMARY }}>
-                      {name}
-                    </Text>
-                    {entry.user.fullName != null && entry.user.fullName !== '' && (
-                      <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_FAINT }}>
-                        @{entry.user.username}
-                      </Text>
-                    )}
+                    <HandleName
+                      username={entry.user.username}
+                      fullName={entry.user.fullName}
+                      className="text-sm font-medium"
+                    />
                   </View>
                   <BoardValue type={type} value={entry.value} />
                 </Animated.View>
@@ -286,14 +308,23 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
             elevation: 4,
           }}
         >
-          <Text className="text-center text-sm font-bold" style={styles.myRank}>
-            {board.me.rank > 0 ? board.me.rank : '—'}
-          </Text>
+          {myBadge != null ? (
+            <View style={styles.myBadge}>
+              <Image
+                source={myBadge}
+                style={rankBadgeSize(MY_RANK_BADGE_HEIGHT)}
+                resizeMode="contain"
+                accessibilityLabel={String(board.me.rank)}
+              />
+            </View>
+          ) : (
+            <Text className="text-center text-sm font-bold" style={styles.myRank}>
+              {board.me.rank > 0 ? board.me.rank : '—'}
+            </Text>
+          )}
           <Avatar name={myName} uri={me?.avatar} color={colorForName(myName)} size={36} />
           <View className="min-w-0 flex-1">
-            <Text numberOfLines={1} className="text-sm font-semibold" style={{ color: TEXT_PRIMARY }}>
-              {myName}
-            </Text>
+            <HandleName username={me?.username ?? ''} fullName={me?.fullName} className="text-sm font-semibold" />
             <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
               {board.me.rank > 0 ? t('gift.leaderboard.myRank') : t('gift.leaderboard.notRanked')}
             </Text>
@@ -322,7 +353,7 @@ const styles = StyleSheet.create({
   podiumBlock: {
     width: '100%',
     alignItems: 'center',
-    paddingTop: 6,
+    justifyContent: 'center',
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
     overflow: 'hidden',
@@ -338,4 +369,5 @@ const styles = StyleSheet.create({
   },
   rowRank: { width: 24, color: TEXT_FAINT },
   myRank: { width: 24, color: GIFT_ACCENT_DARK },
+  myBadge: { width: 24, alignItems: 'center' },
 });

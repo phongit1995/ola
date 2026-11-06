@@ -6,4 +6,7 @@ export const GIFT_ASSETS = {
   history: require('@assets/icons/gift/gift-history.webp'),
   sendNow: require('@assets/icons/gift/gift-send-now.webp'),
   profileSend: require('@assets/icons/gift/gift-profile-send.webp'),
+  rank1: require('@assets/icons/gift/gift-rank-1.webp'),
+  rank2: require('@assets/icons/gift/gift-rank-2.webp'),
+  rank3: require('@assets/icons/gift/gift-rank-3.webp'),
 };

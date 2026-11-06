@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import kenIcon from '@/assets/icons/apps/ken.png';
+import rankBadge1 from '@/assets/icons/gift/gift-rank-1.webp';
+import rankBadge2 from '@/assets/icons/gift/gift-rank-2.webp';
+import rankBadge3 from '@/assets/icons/gift/gift-rank-3.webp';
 import {
   Avatar,
   CharmIcon,
@@ -37,7 +40,8 @@ interface PodiumSlotStyle {
   avatarSize: number;
   ring: string;
   block: string;
-  rankColor: string;
+  badge: string;
+  badgeHeight: number;
 }
 
 const PODIUM_SLOTS: PodiumSlotStyle[] = [
@@ -46,8 +50,9 @@ const PODIUM_SLOTS: PodiumSlotStyle[] = [
     delayMs: 120,
     avatarSize: 60,
     ring: 'ring-[#aab3c2]',
-    block: 'h-14 from-[#e3e7ee] to-[#f3f5f8]',
-    rankColor: 'text-[#7f8999]',
+    block: 'h-16 from-[#e3e7ee] to-[#f3f5f8]',
+    badge: rankBadge2,
+    badgeHeight: 44,
   },
   {
     rank: 1,
@@ -55,15 +60,17 @@ const PODIUM_SLOTS: PodiumSlotStyle[] = [
     avatarSize: 76,
     ring: 'ring-[#f5b301]',
     block: 'h-20 from-[#ffe9a8] to-[#fff6dc]',
-    rankColor: 'text-[#c98f00]',
+    badge: rankBadge1,
+    badgeHeight: 60,
   },
   {
     rank: 3,
     delayMs: 0,
     avatarSize: 60,
     ring: 'ring-[#d0894a]',
-    block: 'h-10 from-[#f6d9bf] to-[#fcefe3]',
-    rankColor: 'text-[#b06a2c]',
+    block: 'h-13 from-[#f6d9bf] to-[#fcefe3]',
+    badge: rankBadge3,
+    badgeHeight: 44,
   },
 ];
 
@@ -100,7 +107,7 @@ function PodiumSlot({
           </span>
         )}
         <span className="mt-2.5 w-full truncate px-1 text-center text-sm font-semibold text-black/87">
-          {entry == null ? '—' : name}
+          {entry == null ? '—' : `@${entry.user.username}`}
         </span>
         <span className="mt-0.5 mb-2 flex h-5 items-center gap-1 text-sm font-bold text-black/87">
           {value}
@@ -108,13 +115,17 @@ function PodiumSlot({
       </div>
       <span
         className={cn(
-          'flex w-full origin-bottom animate-gift-rank-rise items-start justify-center rounded-t-lg bg-linear-to-b pt-1.5 text-2xl font-extrabold',
-          slot.block,
-          slot.rankColor
+          'flex w-full origin-bottom animate-gift-rank-rise items-center justify-center rounded-t-lg bg-linear-to-b',
+          slot.block
         )}
         style={{ animationDelay: `${slot.delayMs}ms` }}
       >
-        {slot.rank}
+        <img
+          src={slot.badge}
+          alt={String(slot.rank)}
+          className="object-contain"
+          style={{ height: slot.badgeHeight }}
+        />
       </span>
     </div>
   );
@@ -126,6 +137,7 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
   const { type, period, selectType, selectPeriod, board, failed } =
     useGiftLeaderboard();
   const myName = me?.fullName || me?.username || '';
+  const myBadge = PODIUM_SLOTS.find((slot) => slot.rank === board?.me.rank)?.badge;
   const restEntries =
     board?.items.filter(
       (entry) => entry.rank > GIFT_LEADERBOARD_PODIUM_SIZE
@@ -244,9 +256,10 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
                     />
                     <span className="flex min-w-0 flex-1">
                       <UserName
-                        name={entry.user.username}
+                        name={`@${entry.user.username}`}
                         fullName={entry.user.fullName}
                         className="min-w-0 truncate text-sm font-medium text-black/87"
+                        fullNameClassName="font-normal text-black/54"
                       />
                     </span>
                     <span className="flex items-center gap-1 text-sm font-bold text-black/87">
@@ -262,8 +275,18 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
 
       {board != null && (
         <div className="flex items-center gap-3 border-t border-black/10 bg-white px-4 py-2.5 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
-          <span className="w-6 text-center text-sm font-bold text-ola-accent-dark">
-            {board.me.rank > 0 ? board.me.rank : '—'}
+          <span className="flex w-6 justify-center text-sm font-bold text-ola-accent-dark">
+            {myBadge != null ? (
+              <img
+                src={myBadge}
+                alt={String(board.me.rank)}
+                className="h-7 object-contain"
+              />
+            ) : board.me.rank > 0 ? (
+              board.me.rank
+            ) : (
+              '—'
+            )}
           </span>
           <Avatar
             name={myName}
@@ -272,9 +295,12 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
             size={36}
           />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-semibold text-black/87">
-              {myName}
-            </span>
+            <UserName
+              name={`@${me?.username ?? ''}`}
+              fullName={me?.fullName}
+              className="block truncate text-sm font-semibold text-black/87"
+              fullNameClassName="font-normal text-black/54"
+            />
             <span className="block text-xs text-black/54">
               {board.me.rank > 0
                 ? t('gift.leaderboard.myRank')
