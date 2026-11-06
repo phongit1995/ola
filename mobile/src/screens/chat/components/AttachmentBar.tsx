@@ -5,8 +5,8 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '@screens/room/components/SmileyKulPanel';
 
-export type AttachTab = 'smiley' | 'camera' | 'photo' | 'voice' | 'more';
-export type AttachPanelTab = Exclude<AttachTab, 'voice'>;
+export type AttachTab = 'smiley' | 'camera' | 'photo' | 'voice' | 'gift' | 'more';
+export type AttachPanelTab = Exclude<AttachTab, 'voice' | 'gift'>;
 
 const TAB_ICONS: Record<AttachTab, { icon: ImageSourcePropType; active: ImageSourcePropType }> = {
   smiley: {
@@ -25,13 +25,17 @@ const TAB_ICONS: Record<AttachTab, { icon: ImageSourcePropType; active: ImageSou
     icon: require('@assets/icons/chat/ic_voice.png'),
     active: require('@assets/icons/chat/ic_voice_selected.png'),
   },
+  gift: {
+    icon: require('@assets/icons/chat/ic_gift.webp'),
+    active: require('@assets/icons/chat/ic_gift.webp'),
+  },
   more: {
     icon: require('@assets/icons/chat/ic_more.png'),
     active: require('@assets/icons/chat/ic_more_selected.png'),
   },
 };
 
-const ALL_TABS: AttachTab[] = ['smiley', 'camera', 'photo', 'voice', 'more'];
+const ALL_TABS: AttachTab[] = ['smiley', 'camera', 'photo', 'voice', 'gift', 'more'];
 
 interface AttachmentBarProps {
   openTab: AttachPanelTab | null;
@@ -54,12 +58,10 @@ function MorePanel({
   onTransferKen,
   onTradingVip,
   onSendVipDays,
-  onSendGift,
 }: {
   onTransferKen?: () => void;
   onTradingVip?: () => void;
   onSendVipDays?: () => void;
-  onSendGift?: () => void;
 }) {
   const { t } = useTranslation();
   const push = useToastStore((s) => s.push);
@@ -84,11 +86,6 @@ function MorePanel({
       key: 'send-vip-days',
       label: t('chat.attachSendVipDays'),
       onPress: () => (onSendVipDays != null ? onSendVipDays() : push('info', t('chat.comingSoon'))),
-    },
-    {
-      key: 'send-gift',
-      label: t('chat.attachSendGift'),
-      onPress: () => (onSendGift != null ? onSendGift() : push('info', t('chat.comingSoon'))),
     },
   ];
 
@@ -136,6 +133,10 @@ export function AttachmentBar({
       onStartVoice();
       return;
     }
+    if (tab === 'gift' && onSendGift != null) {
+      onSendGift();
+      return;
+    }
     if (tab === 'smiley' || tab === 'more') {
       onToggleTab(tab);
       return;
@@ -163,13 +164,14 @@ export function AttachmentBar({
       <View className="flex-row">
         {ALL_TABS.map((tab) => {
           const isVoice = tab === 'voice';
-          const active = !isVoice && tab === openTab;
+          const active = !isVoice && tab !== 'gift' && tab === openTab;
           const disabled = isVoice && voiceDisabled;
           return (
             <Pressable
               key={tab}
               onPress={() => handlePress(tab)}
               disabled={disabled}
+              accessibilityLabel={tab === 'gift' ? t('chat.attachSendGift') : undefined}
               className="h-11 flex-1 items-center justify-center"
               style={{ opacity: disabled ? 0.3 : active ? 1 : 0.6 }}
             >
@@ -195,7 +197,6 @@ export function AttachmentBar({
           onTransferKen={onTransferKen}
           onTradingVip={onTradingVip}
           onSendVipDays={onSendVipDays}
-          onSendGift={onSendGift}
         />
       )}
     </View>

@@ -819,7 +819,7 @@ export function ChatConversationView({
 
             {!voiceRecording && pendingAudio == null && (
               <AttachmentBar
-                tabs={['smiley', 'camera', 'photo', 'voice', 'more']}
+                tabs={['smiley', 'camera', 'photo', 'voice', 'gift', 'more']}
                 groupSmileyTabs
                 openTab={openTab}
                 onToggleTab={(tab) => {

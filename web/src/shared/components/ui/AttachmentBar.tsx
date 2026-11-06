@@ -14,6 +14,7 @@ import photoIcon from '@/assets/icons/chat/ic_local.png';
 import photoIconActive from '@/assets/icons/chat/ic_local_selected.png';
 import voiceIcon from '@/assets/icons/chat/ic_voice.png';
 import voiceIconActive from '@/assets/icons/chat/ic_voice_selected.png';
+import giftIcon from '@/assets/icons/chat/ic_gift.webp';
 import moreIcon from '@/assets/icons/chat/ic_more.png';
 import moreIconActive from '@/assets/icons/chat/ic_more_selected.png';
 import openGridIcon from '@/assets/icons/chat/ic_open_grid_view.png';
@@ -37,9 +38,10 @@ export type AttachTab =
   | 'camera'
   | 'photo'
   | 'voice'
+  | 'gift'
   | 'more';
 
-export type AttachPanelTab = Exclude<AttachTab, 'voice'>;
+export type AttachPanelTab = Exclude<AttachTab, 'voice' | 'gift'>;
 
 export type AttachBarVariant = 'full' | 'compact';
 
@@ -57,6 +59,7 @@ const ALL_TABS: AttachTab[] = [
   'camera',
   'photo',
   'voice',
+  'gift',
   'more',
 ];
 
@@ -70,6 +73,7 @@ const ATTACH_TAB_ICONS: Record<
   camera: { icon: cameraIcon, iconActive: cameraIconActive },
   photo: { icon: photoIcon, iconActive: photoIconActive },
   voice: { icon: voiceIcon, iconActive: voiceIconActive },
+  gift: { icon: giftIcon, iconActive: giftIcon },
   more: { icon: moreIcon, iconActive: moreIconActive },
 };
 
@@ -195,11 +199,6 @@ function MorePanel({
       label: t('chat.attachSendVipDays'),
       onClick: () => onSend({ kind: 'vipDays' }),
     },
-    {
-      key: 'send-gift',
-      label: t('chat.attachSendGift'),
-      onClick: () => onSend({ kind: 'gift' }),
-    },
   ];
   return (
     <div className="flex flex-col gap-2 px-4 py-2">
@@ -247,6 +246,7 @@ export function AttachmentBar({
     camera: t('chat.attachTabCamera'),
     photo: t('chat.attachTabPhoto'),
     voice: t('chat.attachTabVoice'),
+    gift: t('chat.attachSendGift'),
     more: t('chat.attachTabMore'),
   };
 
@@ -262,7 +262,8 @@ export function AttachmentBar({
         <div className="flex">
           {tabs.map((tab) => {
             const isVoice = tab === 'voice';
-            const isActive = !isVoice && tab === openTab;
+            const isGift = tab === 'gift';
+            const isActive = !isVoice && !isGift && tab === openTab;
             const isPhoto = tab === 'photo';
             const isDisabled = isVoice && voiceDisabled;
             return (
@@ -287,6 +288,10 @@ export function AttachmentBar({
                   }
                   if (isVoice) {
                     onStartVoice();
+                    return;
+                  }
+                  if (isGift) {
+                    onSend({ kind: 'gift' });
                     return;
                   }
                   onToggleTab(tab);
