@@ -96,8 +96,8 @@ export function GiftHomePage({ onClose }: GiftHomePageProps) {
         <div className="mx-2 mt-2 rounded-lg bg-linear-to-br from-ola-accent to-ola-marriage px-4 py-5 text-center text-white shadow-sm">
           <p className="text-sm text-white/85">{t('gift.charm')}</p>
           <p className="mt-1 flex items-center justify-center gap-2 text-3xl font-bold">
-            <CharmIcon className="h-9 w-9" />
             {formatKen(charm)}
+            <CharmIcon className="h-9 w-9" />
           </p>
           {giftsEnabled && (
             <button

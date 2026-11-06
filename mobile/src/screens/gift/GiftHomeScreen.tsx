@@ -103,8 +103,8 @@ export function GiftHomeScreen({ navigation }: Props) {
             {t('gift.charm')}
           </Text>
           <View className="mt-1 flex-row items-center justify-center" style={{ gap: 8 }}>
-            <CharmIcon size={34} />
             <Text className="text-3xl font-bold text-white">{formatKen(charm)}</Text>
+            <CharmIcon size={34} />
           </View>
           {giftsEnabled && (
             <Pressable
