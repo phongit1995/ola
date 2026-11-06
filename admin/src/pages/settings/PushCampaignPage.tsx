@@ -186,7 +186,7 @@ export function PushCampaignPage() {
               label="Username"
               rules={[{ required: true, whitespace: true, message: 'Nhập username người nhận' }]}
             >
-              <Input placeholder="vd: okela" />
+              <Input placeholder="vd: olame" />
             </Form.Item>
           )}
           <Form.Item

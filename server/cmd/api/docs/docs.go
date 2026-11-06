@@ -22000,7 +22000,7 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "maxLength": 50,
-                    "example": "okela"
+                    "example": "olame"
                 }
             }
         },

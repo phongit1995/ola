@@ -2,7 +2,7 @@ package adminpushcampaign
 
 type CreateCampaignRequest struct {
 	Audience string `json:"audience" binding:"required,oneof=all vip user" example:"all"`
-	Username string `json:"username" binding:"omitempty,max=50" example:"okela"`
+	Username string `json:"username" binding:"omitempty,max=50" example:"olame"`
 	Title    string `json:"title" binding:"required,max=100" example:"Sự kiện cuối tuần"`
 	Body     string `json:"body" binding:"required,max=500" example:"Nhân đôi KEN khi nạp từ tối nay đến hết Chủ nhật!"`
 }

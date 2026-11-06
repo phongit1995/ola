@@ -2,6 +2,8 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -56,4 +58,29 @@ func ParseAppNotificationTransfer(preview string) (AppNotificationTransfer, bool
 		return AppNotificationTransfer{}, false
 	}
 	return t, true
+}
+
+func IsAppNotificationTransfer(ntype string) bool {
+	return ntype == AppNotificationKenReceived || ntype == AppNotificationVipReceived
+}
+
+func (t AppNotificationTransfer) Message(ntype string) string {
+	if ntype == AppNotificationKenReceived {
+		if t.Amount > 0 {
+			return "Đã chuyển cho bạn " + groupThousands(t.Amount) + " Ken"
+		}
+		return "Đã chuyển Ken cho bạn"
+	}
+	if t.Days > 0 {
+		return fmt.Sprintf("Đã tặng bạn %d ngày VIP", t.Days)
+	}
+	return "Đã tặng bạn VIP"
+}
+
+func groupThousands(n int) string {
+	digits := strconv.Itoa(n)
+	for i := len(digits) - 3; i > 0; i -= 3 {
+		digits = digits[:i] + "," + digits[i:]
+	}
+	return digits
 }

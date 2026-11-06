@@ -64,7 +64,7 @@ func TestIsNativeAppUserAgent(t *testing.T) {
 		{"ios app cfnetwork", "OlaMobile/1 CFNetwork/1494.0.7 Darwin/23.4.0", true},
 		{"android chrome", "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36", false},
 		{"iphone safari", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1", false},
-		{"electron mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Okela/1.0.0 Chrome/138.0 Electron/37.2.0 Safari/537.36", false},
+		{"electron mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) OlaMe/1.0.0 Chrome/138.0 Electron/37.2.0 Safari/537.36", false},
 		{"axios script", "axios/1.7.4", false},
 		{"empty", "", false},
 	}

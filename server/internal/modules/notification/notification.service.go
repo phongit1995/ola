@@ -186,6 +186,12 @@ func toAppNotificationResponse(n *models.AppNotification) AppNotificationRespons
 		IsRead:    n.IsRead,
 		CreatedAt: n.CreatedAt.UTC().Format(time.RFC3339),
 	}
+	if models.IsAppNotificationTransfer(n.Type) {
+		if transfer, ok := models.ParseAppNotificationTransfer(n.Preview); ok {
+			resp.Transfer = &transfer
+			resp.Preview = transfer.Message(n.Type)
+		}
+	}
 	if n.RefID != nil {
 		resp.RefID = n.RefID.String()
 	}

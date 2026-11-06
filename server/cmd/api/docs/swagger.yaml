@@ -2812,7 +2812,7 @@ definitions:
         maxLength: 100
         type: string
       username:
-        example: okela
+        example: olame
         maxLength: 50
         type: string
     required:
