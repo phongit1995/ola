@@ -6,6 +6,6 @@ export const GIFT_SPARK = '#ffd600';
 
 export const GIFT_HEADER_GRADIENT = [GIFT_ACCENT, GIFT_MARRIAGE];
 
-export const GIFT_GRID_COLUMNS = 4;
-export const GIFT_GRID_MAX_HEIGHT = 248;
+export const GIFT_GRID_COLUMNS = 3;
+export const GIFT_GRID_MAX_HEIGHT = 228;
 export const GIFT_TILE_GAP = 3;

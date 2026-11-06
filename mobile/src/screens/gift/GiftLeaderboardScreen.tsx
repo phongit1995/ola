@@ -258,9 +258,11 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
                     <Text numberOfLines={1} className="text-sm font-medium" style={{ color: TEXT_PRIMARY }}>
                       {name}
                     </Text>
-                    <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_FAINT }}>
-                      @{entry.user.username}
-                    </Text>
+                    {entry.user.fullName != null && entry.user.fullName !== '' && (
+                      <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_FAINT }}>
+                        @{entry.user.username}
+                      </Text>
+                    )}
                   </View>
                   <BoardValue type={type} value={entry.value} />
                 </Animated.View>

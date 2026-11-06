@@ -2461,13 +2461,9 @@
     "quantity": "Quantity",
     "notePlaceholder": "Add a message (optional)",
     "total": "Total",
-    "balance": "Balance",
-    "kenAmount": "{{ken}} KEN",
     "topUp": "Top up KEN",
     "notEnoughKen": "Not enough KEN",
-    "toReceiver": "Gift to {{name}}",
     "confirmTitle": "Confirm gift",
-    "confirmMessage": "Send {{quantity}} {{name}} to {{receiver}} for {{ken}} KEN?",
     "sentToast": "Sent {{name}} ×{{quantity}}",
     "empty": "No gifts yet",
     "loadFailed": "Could not load gifts",
@@ -2488,8 +2484,7 @@
       "sent": "Sent",
       "empty": "No history yet",
       "loadMore": "Load more",
-      "receivedLine": "{{name}} sent {{gift}} ×{{quantity}}",
-      "sentLine": "Sent {{name}} {{gift}} ×{{quantity}}"
+      "receivedLine": "{{name}} sent {{gift}} ×{{quantity}}"
     },
     "leaderboard": {
       "title": "Gift leaderboard",

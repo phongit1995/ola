@@ -1,25 +1,31 @@
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { formatKen, giftDisplayName, senderCharmGain, withAlpha } from '@ola/shared/lib';
+import { formatKen, giftDisplayName, senderCharmGain } from '@ola/shared/lib';
 import { useGiftPicker } from '@ola/shared/stores/gift/useGiftPicker';
 import type { Gift, GiftSource, SendGiftResult } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImage } from '@components/ui/CachedImage';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
-import { ERROR, TEXT_PRIMARY, TEXT_SECONDARY, WARNING } from '@constants';
+import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY, WARNING } from '@constants';
 import {
   GIFT_ACCENT,
-  GIFT_ACCENT_DARK,
   GIFT_GRID_COLUMNS,
   GIFT_GRID_MAX_HEIGHT,
   GIFT_TILE_GAP,
 } from './constants';
 import { GIFT_ASSETS } from './giftAssets';
 import { CharmIcon } from './CharmIcon';
+import { GiftPill } from './GiftPill';
+
+const KEN_ICON_LARGE = { width: 20, height: 20 };
+const KEN_ICON_SMALL = { width: 12, height: 12 };
+const SECTION_DIVIDER = { borderTopWidth: 1, borderTopColor: DIVIDER };
 
 export interface GiftReceiver {
   id: string;
   name: string;
+  username?: string;
   avatar?: string;
   color?: string;
 }
@@ -36,36 +42,59 @@ function GiftTile({
   active,
   language,
   onPress,
+  onActiveLayout,
 }: {
   gift: Gift;
   active: boolean;
   language: string;
   onPress: () => void;
+  onActiveLayout: (y: number) => void;
 }) {
   return (
-    <View style={{ width: `${100 / GIFT_GRID_COLUMNS}%`, padding: GIFT_TILE_GAP }}>
+    <View
+      style={{ width: `${100 / GIFT_GRID_COLUMNS}%`, padding: GIFT_TILE_GAP }}
+      onLayout={active ? (event) => onActiveLayout(event.nativeEvent.layout.y) : undefined}
+    >
       <Pressable
         onPress={onPress}
         accessibilityState={{ selected: active }}
         className="items-center rounded-lg px-1 pb-1 pt-1.5"
         style={{
-          borderWidth: active ? 2 : 1,
-          borderColor: active ? GIFT_ACCENT : 'rgba(0,0,0,0.08)',
-          backgroundColor: active ? withAlpha(GIFT_ACCENT, 0.08) : '#ffffff',
+          borderWidth: 1,
+          borderColor: active ? GIFT_ACCENT : 'transparent',
+          backgroundColor: '#ffffff',
         }}
       >
-        <CachedImage uri={gift.imageUrl} style={{ width: 48, height: 48 }} resizeMode="contain" />
-        <Text numberOfLines={1} className="mt-0.5 text-xs" style={{ color: TEXT_PRIMARY }}>
+        <CachedImage uri={gift.imageUrl} style={{ width: 64, height: 64 }} resizeMode="contain" />
+        <Text numberOfLines={1} className="mt-0.5 text-center text-xs" style={{ color: TEXT_PRIMARY }}>
           {giftDisplayName(gift, language)}
         </Text>
         <View className="flex-row items-center gap-0.5">
-          <Image source={GIFT_ASSETS.ken} style={{ width: 12, height: 12 }} resizeMode="contain" />
+          <Image source={GIFT_ASSETS.ken} style={KEN_ICON_SMALL} resizeMode="contain" />
           <Text className="text-[11px] font-semibold" style={{ color: WARNING }}>
             {formatKen(gift.kenPrice)}
           </Text>
         </View>
       </Pressable>
     </View>
+  );
+}
+
+function ReceiverIdentity({ receiver }: { receiver: GiftReceiver }) {
+  return (
+    <>
+      <Avatar name={receiver.name} uri={receiver.avatar} color={receiver.color} size={36} />
+      <View className="min-w-0 flex-1">
+        <Text numberOfLines={1} className="text-base" style={{ color: TEXT_PRIMARY }}>
+          {receiver.name}
+        </Text>
+        {receiver.username != null && receiver.username !== '' && (
+          <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_SECONDARY }}>
+            @{receiver.username}
+          </Text>
+        )}
+      </View>
+    </>
   );
 }
 
@@ -88,9 +117,18 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
     step,
     submitting,
   } = picker;
+  const gridRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const [activeTileY, setActiveTileY] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (step === 'pick' && activeTileY != null) {
+      gridRef.current?.scrollTo({ y: activeTileY, animated: false });
+    }
+  }, [activeTileY, step]);
 
   if (step === 'confirm' && selected != null) {
     const senderGain = senderCharmGain(selected, quantity);
+    const trimmedNote = note.trim();
     return (
       <Dialog
         visible
@@ -102,7 +140,7 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
         footer={
           <>
             <DialogButton onPress={picker.cancelConfirm} disabled={submitting}>
-              {t('dialog.cancel')}
+              {t('gift.edit')}
             </DialogButton>
             <DialogButton variant="green" onPress={picker.confirmSend} disabled={submitting}>
               {submitting ? t('gift.sending') : t('gift.send')}
@@ -110,37 +148,73 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
           </>
         }
       >
-        <View className="items-center gap-2 px-2 py-2">
-          <CachedImage uri={selected.imageUrl} style={{ width: 96, height: 96 }} resizeMode="contain" />
-          <Text className="text-center text-base" style={{ color: TEXT_PRIMARY }}>
-            {t('gift.confirmMessage', {
-              quantity,
-              name: selectedName,
-              receiver: receiver.name,
-              ken: formatKen(total),
-            })}
-          </Text>
-          <View className="flex-row items-center justify-center" style={{ gap: 4 }}>
+        <View className="px-1">
+          <View className="gap-1.5 pb-3">
             <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
-              {t('gift.receiverCharmGain', {
-                name: receiver.name,
-                value: formatKen(selected.charmPoints * quantity),
-              })}
+              {t('gift.receiverLabel')}
             </Text>
-            <CharmIcon />
-          </View>
-          {senderGain > 0 && (
-            <View className="flex-row items-center justify-center" style={{ gap: 4 }}>
-              <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
-                {t('gift.senderCharmGain', { value: formatKen(senderGain) })}
-              </Text>
-              <CharmIcon />
+            <View className="flex-row items-center gap-3">
+              <ReceiverIdentity receiver={receiver} />
             </View>
-          )}
+          </View>
+          <View className="gap-1.5 py-3" style={SECTION_DIVIDER}>
+            <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
+              {t('gift.giftLabel')}
+            </Text>
+            <View className="flex-row items-center gap-3">
+              <CachedImage uri={selected.imageUrl} style={{ width: 64, height: 64 }} resizeMode="contain" />
+              <View className="min-w-0 flex-1 gap-1">
+                <Text numberOfLines={1} className="text-lg font-bold" style={{ color: TEXT_PRIMARY }}>
+                  {selectedName}{' '}
+                  <Text style={{ color: GIFT_ACCENT }}>{t('gift.quantityTimes', { count: quantity })}</Text>
+                </Text>
+                <GiftPill
+                  tone="charm"
+                  text={t('gift.receiverCharmGain', {
+                    name: receiver.name,
+                    value: formatKen(selected.charmPoints * quantity),
+                  })}
+                  trailing={<CharmIcon />}
+                />
+                {senderGain > 0 && (
+                  <GiftPill
+                    tone="ken"
+                    text={t('gift.senderCharmGain', { value: formatKen(senderGain) })}
+                    trailing={<CharmIcon />}
+                  />
+                )}
+              </View>
+            </View>
+            {trimmedNote !== '' && (
+              <Text
+                className="mt-1 rounded-lg px-3 py-2 text-sm italic"
+                style={{ backgroundColor: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.7)' }}
+              >
+                “{trimmedNote}”
+              </Text>
+            )}
+          </View>
+          <View className="flex-row items-center justify-between pt-3" style={SECTION_DIVIDER}>
+            <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
+              {t('gift.total')}
+            </Text>
+            <View className="flex-row items-center gap-1">
+              <Image source={GIFT_ASSETS.ken} style={KEN_ICON_LARGE} resizeMode="contain" />
+              <Text className="text-lg font-bold" style={{ color: WARNING }}>
+                {formatKen(total)} {t('chat.transferKenUnit')}
+              </Text>
+            </View>
+          </View>
         </View>
       </Dialog>
     );
   }
+
+  const sendLabel = submitting
+    ? t('gift.sending')
+    : !affordable && selected != null
+      ? t('gift.notEnoughKen')
+      : t('gift.sendWithTotal', { ken: formatKen(total) });
 
   return (
     <Dialog
@@ -152,16 +226,22 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
       showToasts
       footer={
         <DialogButton variant="green" onPress={picker.requestSend} disabled={!picker.canSend}>
-          {submitting ? t('gift.sending') : t('gift.send')}
+          {sendLabel}
         </DialogButton>
       }
     >
-      <View className="gap-3 px-1 py-1">
-        <View className="flex-row items-center gap-2">
-          <Avatar name={receiver.name} uri={receiver.avatar} color={receiver.color} size={32} />
-          <Text numberOfLines={1} className="min-w-0 flex-1 text-base font-medium" style={{ color: TEXT_PRIMARY }}>
-            {t('gift.toReceiver', { name: receiver.name })}
-          </Text>
+      <View className="gap-2.5 px-1 py-1">
+        <View
+          className="flex-row items-center gap-3 rounded px-3 py-2"
+          style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
+        >
+          <ReceiverIdentity receiver={receiver} />
+          <View className="flex-row items-center gap-1">
+            <Image source={GIFT_ASSETS.ken} style={KEN_ICON_LARGE} resizeMode="contain" />
+            <Text className="text-base font-bold" style={{ color: TEXT_PRIMARY }}>
+              {formatKen(balance)}
+            </Text>
+          </View>
         </View>
 
         {!loaded ? (
@@ -184,8 +264,10 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
           </Text>
         ) : (
           <ScrollView
-            style={{ maxHeight: GIFT_GRID_MAX_HEIGHT }}
-            contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap' }}
+            ref={gridRef}
+            className="rounded"
+            style={{ maxHeight: GIFT_GRID_MAX_HEIGHT, borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
+            contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', padding: 1 }}
           >
             {gifts.map((gift) => (
               <GiftTile
@@ -194,6 +276,7 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
                 active={gift.id === selected?.id}
                 language={i18n.language}
                 onPress={() => picker.selectGift(gift.id)}
+                onActiveLayout={setActiveTileY}
               />
             ))}
           </ScrollView>
@@ -202,10 +285,10 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
         {ready && (
           <>
             <View className="flex-row items-center gap-2">
-              <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
+              <Text className="text-sm" style={{ color: TEXT_PRIMARY }}>
                 {t('gift.quantity')}
               </Text>
-              <View className="flex-1 flex-row flex-wrap gap-1.5">
+              <View className="flex-1 flex-row gap-1.5">
                 {settings.quantityOptions.map((option) => {
                   const active = option === quantity;
                   return (
@@ -213,7 +296,7 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
                       key={option}
                       onPress={() => picker.selectQuantity(option)}
                       accessibilityState={{ selected: active }}
-                      className="min-w-10 items-center rounded-full px-2.5 py-0.5"
+                      className="flex-1 items-center rounded py-1"
                       style={{
                         borderWidth: 1,
                         borderColor: active ? GIFT_ACCENT : 'rgba(0,0,0,0.12)',
@@ -236,31 +319,10 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
                 onChangeText={picker.changeNote}
                 placeholder={t('gift.notePlaceholder')}
                 placeholderTextColor="rgba(0,0,0,0.38)"
-                className="rounded px-3 py-2 text-sm"
+                className="rounded px-3 py-1.5 text-sm"
                 style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)', color: TEXT_PRIMARY }}
               />
             )}
-
-            <View className="flex-row items-center justify-between gap-2 rounded-lg bg-ola-surface px-3 py-2">
-              <Text className="flex-shrink text-sm" style={{ color: TEXT_SECONDARY }}>
-                {t('gift.balance')}{' '}
-                <Text className="font-bold" style={{ color: TEXT_PRIMARY }}>
-                  {t('gift.kenAmount', { ken: formatKen(balance) })}
-                </Text>
-              </Text>
-              {affordable ? (
-                <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
-                  {t('gift.total')}{' '}
-                  <Text className="font-bold" style={{ color: GIFT_ACCENT_DARK }}>
-                    {t('gift.kenAmount', { ken: formatKen(total) })}
-                  </Text>
-                </Text>
-              ) : (
-                <Text className="text-sm font-semibold" style={{ color: ERROR }}>
-                  {t('gift.notEnoughKen')}
-                </Text>
-              )}
-            </View>
           </>
         )}
       </View>

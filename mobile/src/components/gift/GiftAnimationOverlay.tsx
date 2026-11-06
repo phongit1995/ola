@@ -291,9 +291,10 @@ function GiftImage({ item, size }: { item: GiftAnimationItem; size: number }) {
 }
 
 function GiftCaption({ item }: { item: GiftAnimationItem }) {
+  if (item.caption == null) return null;
   return (
     <View className="rounded-full px-4 py-1.5" style={styles.caption}>
-      <Text className="text-center text-sm font-semibold text-white">{item.caption ?? item.name}</Text>
+      <Text className="text-center text-sm font-semibold text-white">{item.caption}</Text>
       {item.charmPoints > 0 && (
         <View className="flex-row items-center justify-center" style={{ gap: 3 }}>
           <Text className="text-xs" style={{ color: GIFT_SPARK }}>

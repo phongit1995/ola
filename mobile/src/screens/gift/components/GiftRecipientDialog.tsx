@@ -28,6 +28,7 @@ export function GiftRecipientDialog({ visible, onClose, onDismiss, onPick }: Gif
     onPick({
       id: user.id,
       name: user.fullName || user.username,
+      username: user.username,
       avatar: user.avatar,
       color: colorForName(user.username),
     });

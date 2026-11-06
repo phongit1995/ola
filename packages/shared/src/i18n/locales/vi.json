@@ -2461,13 +2461,9 @@
     "quantity": "Số lượng",
     "notePlaceholder": "Gửi kèm lời nhắn (không bắt buộc)",
     "total": "Tổng",
-    "balance": "Số dư",
-    "kenAmount": "{{ken}} KEN",
     "topUp": "Nạp KEN",
     "notEnoughKen": "Không đủ KEN",
-    "toReceiver": "Tặng {{name}}",
     "confirmTitle": "Xác nhận tặng quà",
-    "confirmMessage": "Tặng {{quantity}} {{name}} cho {{receiver}} với giá {{ken}} KEN?",
     "sentToast": "Đã tặng {{name}} ×{{quantity}}",
     "empty": "Chưa có quà nào",
     "loadFailed": "Không tải được danh sách quà",
@@ -2488,8 +2484,7 @@
       "sent": "Đã tặng",
       "empty": "Chưa có lịch sử",
       "loadMore": "Xem thêm",
-      "receivedLine": "{{name}} tặng {{gift}} ×{{quantity}}",
-      "sentLine": "Tặng {{name}} {{gift}} ×{{quantity}}"
+      "receivedLine": "{{name}} tặng {{gift}} ×{{quantity}}"
     },
     "leaderboard": {
       "title": "Bảng xếp hạng quà",

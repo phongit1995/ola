@@ -253,7 +253,7 @@ export function UserProfileScreen({
         <GiftPickerDialog
           source={GIFT_SOURCE.profile}
           onClose={() => setGiftOpen(false)}
-          receiver={{ id: profile.id, name: nick, avatar: profile.avatar }}
+          receiver={{ id: profile.id, name: nick, username: profile.username, avatar: profile.avatar }}
           onSent={result => {
             applyCharm(result.receiverCharm);
             setGiftWallKey(key => key + 1);

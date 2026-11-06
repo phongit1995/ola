@@ -1,33 +1,34 @@
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { GIFT_HISTORY_DIRECTION, GIFT_HISTORY_TABS } from '@ola/shared/constants';
-import { colorForName, formatClockHM, formatDateDMY, formatKen } from '@ola/shared/lib';
+import { colorForName, formatClockHM, formatDateDMY, formatKen, randomUuid } from '@ola/shared/lib';
+import { useGiftAnimationStore } from '@ola/shared/stores/gift/giftAnimationStore';
 import { useGiftHistory } from '@ola/shared/stores/gift/useGiftHistory';
 import type { GiftHistoryItem } from '@ola/shared/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 import type { RootStackParamList } from '@navigation/types';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImage } from '@components/ui/CachedImage';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
+import { GIFT_ASSETS } from '@components/gift/giftAssets';
+import { GiftPill } from '@components/gift/GiftPill';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { DIVIDER, TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { DIVIDER, TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY, WARNING } from '@constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftHistory'>;
 
-function CharmText({ value }: { value: number }) {
-  return (
-    <View className="flex-row items-center" style={{ gap: 2 }}>
-      <Text className="text-xs font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
-        {`+${formatKen(value)}`}
-      </Text>
-      <CharmIcon size={13} />
-    </View>
-  );
+const AVATAR_SIZE = 44;
+const DIRECTION_BADGE_SIZE = 20;
+const KEN_PILL_ICON = { width: 14, height: 14 };
+
+function CharmPill({ value }: { value: number }) {
+  return <GiftPill tone="charm" text={`+${formatKen(value)}`} trailing={<CharmIcon size={14} />} />;
 }
 
 export function GiftHistoryScreen({ navigation }: Props) {
@@ -35,49 +36,96 @@ export function GiftHistoryScreen({ navigation }: Props) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const { direction, selectDirection, items, done, loading, loadMore } = useGiftHistory();
+  const play = useGiftAnimationStore((s) => s.play);
   const received = direction === GIFT_HISTORY_DIRECTION.received;
+  const directionColor = received ? GIFT_ACCENT : WARNING;
+
+  function replay(item: GiftHistoryItem) {
+    play({
+      id: randomUuid(),
+      imageUrl: item.giftImageUrl,
+      animation: item.giftAnimation,
+      name: item.giftName,
+      quantity: item.quantity,
+      charmPoints: item.charmPoints,
+    });
+  }
 
   function renderItem({ item }: { item: GiftHistoryItem }) {
-    const name = item.counterparty.fullName || item.counterparty.username;
-    const line = received
-      ? t('gift.history.receivedLine', { name, gift: item.giftName, quantity: item.quantity })
-      : t('gift.history.sentLine', { name, gift: item.giftName, quantity: item.quantity });
+    const { fullName, username, avatar } = item.counterparty;
+    const name = fullName || username;
+    const color = colorForName(name);
+    const openUser = () => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: username, color });
     return (
       <View className="flex-row items-start gap-3 bg-white px-4 py-3">
-        <Avatar name={name} uri={item.counterparty.avatar} color={colorForName(name)} size={40} />
-        <View className="min-w-0 flex-1">
-          <View className="flex-row items-start" style={{ gap: 8 }}>
-            <Text className="flex-1 text-sm" style={{ color: TEXT_PRIMARY }}>
-              {line}
+        <Pressable onPress={openUser} className="active:opacity-70" accessibilityLabel={name}>
+          <Avatar name={name} uri={avatar} color={color} size={AVATAR_SIZE} />
+          <View
+            className="absolute items-center justify-center rounded-full"
+            style={{
+              right: -4,
+              bottom: -4,
+              width: DIRECTION_BADGE_SIZE,
+              height: DIRECTION_BADGE_SIZE,
+              borderWidth: 2,
+              borderColor: '#ffffff',
+              backgroundColor: directionColor,
+            }}
+          >
+            <Text className="text-xs font-bold text-white" style={{ lineHeight: 14 }}>
+              {received ? '↙' : '↗'}
             </Text>
+          </View>
+        </Pressable>
+        <View className="min-w-0 flex-1">
+          <View className="flex-row items-center gap-2">
+            <Pressable onPress={openUser} className="min-w-0 flex-1 active:opacity-70">
+              <Text numberOfLines={1} className="text-sm font-semibold" style={{ color: TEXT_PRIMARY }}>
+                {username}
+                {fullName != null && fullName !== '' && (
+                  <Text className="font-normal" style={{ color: TEXT_FAINT }}>
+                    {` · ${fullName}`}
+                  </Text>
+                )}
+              </Text>
+            </Pressable>
             <Text className="text-xs" style={{ color: TEXT_FAINT }}>
               {`${formatDateDMY(item.createdAt)} ${formatClockHM(item.createdAt)}`}
             </Text>
           </View>
+          <Text className="mt-0.5 text-sm" style={{ color: 'rgba(0,0,0,0.6)' }}>
+            {received ? t('gift.messageIn') : t('gift.messageOut')}{' '}
+            <Text className="font-semibold" style={{ color: TEXT_PRIMARY }}>
+              {item.giftName}
+            </Text>{' '}
+            <Text className="font-semibold" style={{ color: directionColor }}>
+              {t('gift.quantityTimes', { count: item.quantity })}
+            </Text>
+          </Text>
           {item.note != null && item.note !== '' && (
-            <Text className="mt-0.5 text-sm italic" style={{ color: 'rgba(0,0,0,0.6)' }}>
-              “{item.note}”
+            <Text
+              className="mt-1.5 rounded-lg px-2.5 py-1.5 text-sm"
+              style={{ backgroundColor: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.7)' }}
+            >
+              {item.note}
             </Text>
           )}
-          <View className="mt-1 flex-row flex-wrap items-center" style={{ gap: 4 }}>
+          <View className="mt-1.5 flex-row flex-wrap items-center gap-2">
             {received ? (
-              <CharmText value={item.charmPoints} />
+              <CharmPill value={item.charmPoints} />
             ) : (
-              <Text className="text-xs" style={{ color: TEXT_FAINT }}>
-                {t('gift.kenAmount', { ken: formatKen(item.totalKen) })}
-              </Text>
+              <GiftPill
+                tone="ken"
+                text={`−${formatKen(item.totalKen)}`}
+                leading={<Image source={GIFT_ASSETS.ken} style={KEN_PILL_ICON} resizeMode="contain" />}
+              />
             )}
-            {!received && (item.senderCharmPoints ?? 0) > 0 && (
-              <>
-                <Text className="text-xs" style={{ color: TEXT_FAINT }}>
-                  ·
-                </Text>
-                <CharmText value={item.senderCharmPoints ?? 0} />
-              </>
-            )}
+            {!received && (item.senderCharmPoints ?? 0) > 0 && <CharmPill value={item.senderCharmPoints ?? 0} />}
           </View>
         </View>
-        <CachedImage uri={item.giftImageUrl} style={{ width: 48, height: 48 }} resizeMode="contain" />
+        <Pressable onPress={() => replay(item)} className="active:opacity-60" accessibilityLabel={item.giftName}>
+          <CachedImage uri={item.giftImageUrl} style={{ width: 56, height: 56 }} resizeMode="contain" />
+        </Pressable>
       </View>
     );
   }
