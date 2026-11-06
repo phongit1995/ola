@@ -315,7 +315,7 @@ export function ProfileCard({
         </span>
       </button>
 
-      <p className="mt-1 flex items-center justify-center gap-1 text-sm text-ola-accent-dark">
+      <p className="mt-1 flex items-center justify-center gap-1 text-sm text-black">
         <CharmIcon className="h-5 w-5" />
         <span>{t('gift.charmCount', { value: formatKen(profile.charm) })}</span>
       </p>

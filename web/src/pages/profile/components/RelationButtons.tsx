@@ -36,20 +36,14 @@ function RelationButton({
   icon,
   label,
   active,
-  accent,
   onClick,
 }: {
   icon: string;
   label: string;
   active?: boolean;
-  accent?: boolean;
   onClick: () => void;
 }) {
-  const tone = accent
-    ? 'font-medium text-ola-accent'
-    : active
-    ? 'text-ola-primary-ink'
-    : 'text-black/26';
+  const tone = active ? 'text-ola-primary-ink' : 'text-black/26';
   return (
     <button
       type="button"
@@ -175,7 +169,6 @@ export function RelationButtons({
               <RelationButton
                 icon={giftIcon}
                 label={t('gift.title')}
-                accent
                 onClick={onSendGift}
               />
             )}

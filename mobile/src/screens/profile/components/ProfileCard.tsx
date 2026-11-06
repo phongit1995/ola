@@ -17,7 +17,6 @@ import { DIVIDER } from '@constants';
 import { CARD_SHADOW, DEFAULT_COVER_COLOR } from '../constants';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
 import { RelationButtons } from './RelationButtons';
-import { GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { GENDER } from '@ola/shared/constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
 
@@ -299,7 +298,7 @@ export function ProfileCard({
 
       <View className="mt-1 flex-row items-center justify-center" style={{ gap: 4 }}>
         <CharmIcon size={18} />
-        <Text className="text-sm" style={{ color: GIFT_ACCENT_DARK }}>
+        <Text className="text-sm" style={{ color: '#000' }}>
           {t('gift.charmCount', { value: formatKen(profile.charm ?? 0) })}
         </Text>
       </View>
