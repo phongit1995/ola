@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import { formatKen, giftDisplayName, senderCharmGain } from '@ola/shared/lib';
 import { useGiftPicker } from '@ola/shared/stores/gift/useGiftPicker';
 import type { Gift, GiftSource, SendGiftResult } from '@ola/shared/types';
@@ -95,6 +95,29 @@ function ReceiverIdentity({ receiver }: { receiver: GiftReceiver }) {
         )}
       </View>
     </>
+  );
+}
+
+function AnnounceSwitch({
+  value,
+  onValueChange,
+}: {
+  value: boolean;
+  onValueChange?: (value: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View className="flex-row items-center justify-between gap-2">
+      <Text className="flex-1 text-sm" style={{ color: TEXT_SECONDARY }}>
+        {t('gift.announceLabel')}
+      </Text>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        disabled={onValueChange == null}
+        trackColor={{ true: GIFT_ACCENT }}
+      />
+    </View>
   );
 }
 
@@ -194,6 +217,11 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
               </Text>
             )}
           </View>
+          {picker.canAnnounce && (
+            <View className="py-3" style={SECTION_DIVIDER}>
+              <AnnounceSwitch value={picker.announce} />
+            </View>
+          )}
           <View className="flex-row items-center justify-between pt-3" style={SECTION_DIVIDER}>
             <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
               {t('gift.total')}
@@ -322,6 +350,10 @@ export function GiftPickerDialog({ receiver, source, onClose, onSent }: GiftPick
                 className="rounded px-3 py-1.5 text-sm"
                 style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)', color: TEXT_PRIMARY }}
               />
+            )}
+
+            {picker.canAnnounce && (
+              <AnnounceSwitch value={picker.announce} onValueChange={picker.setAnnounce} />
             )}
           </>
         )}

@@ -2764,6 +2764,7 @@ export interface AdminGift {
   sortOrder: number
   animation: GiftAnimationSetting
   senderCharmPercent: number
+  announceEnabled: boolean
   createdAt: string
   updatedAt: string
 }
@@ -2778,6 +2779,7 @@ export interface CreateGiftRequest {
   sortOrder?: number
   animation?: GiftAnimationSetting
   senderCharmPercent?: number
+  announceEnabled?: boolean
 }
 
 export type UpdateGiftRequest = Partial<CreateGiftRequest>
@@ -2837,7 +2839,16 @@ export interface MegaphoneSetting {
   displaySeconds: number
   cooldownSeconds: number
   dailyLimit: number
-  maxQueueSeconds: number
+  liveMinutes: number
+  gapSeconds: number
+  repeatBaseSeconds: number
+  messageWeight: number
+  giftTiers: MegaphoneGiftTier[]
+}
+
+export interface MegaphoneGiftTier {
+  minKen: number
+  weight: number
 }
 
 export interface ContentFilterSetting {
@@ -2846,13 +2857,17 @@ export interface ContentFilterSetting {
 
 export type MegaphoneStatus = 'active' | 'removed'
 
+export type MegaphoneType = 'message' | 'gift'
+
 export interface AdminMegaphone {
   id: string
+  type: MegaphoneType
   sender: AdminGiftUserBrief
   content: string
   kenPrice: number
   showAt: string
   displaySeconds: number
+  expiresAt: string
   status: MegaphoneStatus
   removedReason?: string
   removedAt?: string
@@ -2862,6 +2877,7 @@ export interface AdminMegaphone {
 export interface MegaphoneListParams {
   senderId?: string
   status?: MegaphoneStatus
+  type?: MegaphoneType
   q?: string
   from?: string
   to?: string

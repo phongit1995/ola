@@ -47,11 +47,13 @@ func NewService(
 func toItem(m *models.Megaphone, sender admincommon.UserBrief) MegaphoneItem {
 	item := MegaphoneItem{
 		ID:             m.ID.String(),
+		Type:           m.Type,
 		Sender:         sender,
 		Content:        m.Content,
 		KenPrice:       m.KenPrice,
 		ShowAt:         m.ShowAt.UTC().Format(time.RFC3339),
 		DisplaySeconds: m.DisplaySeconds,
+		ExpiresAt:      m.ExpiresAt.UTC().Format(time.RFC3339),
 		Status:         m.Status,
 		RemovedReason:  m.RemovedReason,
 		CreatedAt:      m.CreatedAt.UTC().Format(time.RFC3339),

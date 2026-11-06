@@ -1,8 +1,7 @@
 import type { Megaphone } from '../api/megaphone.type';
 
-export interface MegaphoneNewEvent {
+export interface MegaphonePlayEvent {
   megaphone?: Megaphone;
-  serverTime?: string;
 }
 
 export interface MegaphoneRemovedEvent {

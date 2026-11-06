@@ -11,6 +11,7 @@ type GiftItem struct {
 	CharmPoints        int    `json:"charmPoints" example:"10"`
 	Animation          string `json:"animation" example:"random"`
 	SenderCharmPercent int    `json:"senderCharmPercent" example:"50"`
+	AnnounceEnabled    bool   `json:"announceEnabled" example:"true"`
 }
 
 type GiftSettingsView struct {
@@ -33,6 +34,7 @@ type SendGiftRequest struct {
 	Note            string `json:"note" binding:"max=400" example:"Chúc mừng sinh nhật"`
 	Source          string `json:"source" binding:"required,oneof=chat profile" example:"chat"`
 	ClientRequestID string `json:"clientRequestId" binding:"required,max=64" example:"7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10"`
+	Announce        bool   `json:"announce" example:"true"`
 }
 
 type SendGiftResponse struct {
@@ -46,6 +48,7 @@ type SendGiftResponse struct {
 	Note              string   `json:"note,omitempty" example:"Chúc mừng sinh nhật"`
 	KenBalance        int      `json:"kenBalance" example:"950"`
 	ReceiverCharm     int      `json:"receiverCharm" example:"1200"`
+	Announced         bool     `json:"announced" example:"true"`
 	ConversationID    string   `json:"conversationId,omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
 	MessageID         string   `json:"messageId,omitempty" example:"a1b2c3d4-0000-11ef-8000-000000000000"`
 	CreatedAt         string   `json:"createdAt" example:"2026-11-05T10:00:00Z"`

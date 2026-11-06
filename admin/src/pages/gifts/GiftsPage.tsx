@@ -23,7 +23,7 @@ import { GIFT_SECTION_LINKS } from '@/pages/shop/sections'
 import { errorMessage } from '@/lib/apiError'
 import { formatCount } from '@/lib/format'
 import type { GiftAnimationSetting } from '@ola/shared/types'
-import type { AdminGift } from '@/types'
+import type { AdminGift, UpdateGiftRequest } from '@/types'
 
 const GIFT_THUMB_SIZE = 44
 const GIFT_THUMB_BUTTON_STYLE = {
@@ -55,14 +55,27 @@ export function GiftsPage() {
     setFormOpen(true)
   }
 
-  function toggleActive(gift: AdminGift, isActive: boolean) {
+  function savingField(gift: AdminGift, field: 'isActive' | 'announceEnabled') {
+    const saving = updateGift.variables
+    return updateGift.isPending && saving?.id === gift.id && saving.payload[field] !== undefined
+  }
+
+  function saveToggle(gift: AdminGift, payload: UpdateGiftRequest, successText: string) {
     updateGift.mutate(
-      { id: gift.id, payload: { isActive } },
+      { id: gift.id, payload },
       {
-        onSuccess: () => message.success(isActive ? 'Đã bật bán' : 'Đã tắt bán'),
+        onSuccess: () => message.success(successText),
         onError: (err) => message.error(errorMessage(err, 'Thao tác thất bại')),
       },
     )
+  }
+
+  function toggleAnnounce(gift: AdminGift, announceEnabled: boolean) {
+    saveToggle(gift, { announceEnabled }, announceEnabled ? 'Đã bật loa' : 'Đã tắt loa')
+  }
+
+  function toggleActive(gift: AdminGift, isActive: boolean) {
+    saveToggle(gift, { isActive }, isActive ? 'Đã bật bán' : 'Đã tắt bán')
   }
 
   function animationOf(gift: AdminGift): GiftAnimationSetting {
@@ -190,8 +203,20 @@ export function GiftsPage() {
       render: (isActive: boolean, gift) => (
         <Switch
           checked={isActive}
-          loading={updateGift.isPending && updateGift.variables?.id === gift.id}
+          loading={savingField(gift, 'isActive')}
           onChange={(value) => toggleActive(gift, value)}
+        />
+      ),
+    },
+    {
+      title: 'Loa',
+      dataIndex: 'announceEnabled',
+      width: 80,
+      render: (announceEnabled: boolean, gift) => (
+        <Switch
+          checked={announceEnabled}
+          loading={savingField(gift, 'announceEnabled')}
+          onChange={(value) => toggleAnnounce(gift, value)}
         />
       ),
     },

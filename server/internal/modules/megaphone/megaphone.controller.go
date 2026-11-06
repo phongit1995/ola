@@ -36,24 +36,8 @@ func (ctrl *Controller) Config(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Active godoc
-// @Summary      Loa đang phát và đang chờ phát
-// @Description  Sắp theo giờ phát tăng dần, kèm serverTime để client tính lịch phát theo giờ server.
-// @Tags         megaphones
-// @Produce      json
-// @Security     BearerAuth
-// @Success      200  {object}  ActiveSuccessResponse
-// @Router       /megaphones/active [get]
-func (ctrl *Controller) Active(c *gin.Context) (interface{}, error) {
-	resp, err := ctrl.service.Active()
-	if err != nil {
-		return nil, utils.ServiceError(err)
-	}
-	return resp, nil
-}
-
 // History godoc
-// @Summary      Loa đã phát trong 24 giờ gần nhất
+// @Summary      Loa thường đã phát trong 24 giờ gần nhất
 // @Tags         megaphones
 // @Produce      json
 // @Security     BearerAuth
@@ -72,7 +56,7 @@ func (ctrl *Controller) History(c *gin.Context) (interface{}, error) {
 
 // Send godoc
 // @Summary      Phát loa tới mọi người
-// @Description  Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Hàng chờ quá dài thì từ chối, không trừ KEN. clientRequestId chống trừ hai lần khi gửi lại.
+// @Description  Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.
 // @Tags         megaphones
 // @Accept       json
 // @Produce      json

@@ -28,6 +28,7 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
   const [step, setStep] = useState<GiftPickerStep>('pick');
   const [submitting, setSubmitting] = useState(false);
   const [requestId, setRequestId] = useState(randomUuid);
+  const [announce, setAnnounce] = useState(true);
 
   useEffect(() => {
     void loadCatalog(true);
@@ -41,6 +42,7 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
   const affordable = selected != null && canAffordGift(balance, selected, quantity);
   const selectedName = selected != null ? giftDisplayName(selected, i18n.language) : '';
   const canSend = selected != null && affordable && !submitting && settings.enabled;
+  const canAnnounce = selected?.announceEnabled === true;
 
   function changeSelection(update: () => void) {
     update();
@@ -52,6 +54,7 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
     setSubmitting(true);
     try {
       const trimmed = note.trim();
+      const shouldAnnounce = canAnnounce && announce;
       const result = await GiftService.send({
         giftId: selected.id,
         receiverId,
@@ -59,6 +62,7 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
         note: trimmed === '' ? undefined : trimmed,
         source,
         clientRequestId: requestId,
+        announce: shouldAnnounce,
       });
       const current = useAuthStore.getState().user;
       if (current != null) useAuthStore.getState().setUser({ ...current, ken: result.kenBalance });
@@ -71,6 +75,7 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
         charmPoints: result.senderCharmPoints ?? 0,
         caption: i18n.t('gift.sentToast', { name: selectedName, quantity: result.quantity }),
       });
+      if (shouldAnnounce && result.announced !== true) toast.info(i18n.t('gift.announceSkipped'));
       onSent?.(result);
       onClose();
     } catch (error) {
@@ -97,6 +102,9 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
     step,
     submitting,
     canSend,
+    canAnnounce,
+    announce,
+    setAnnounce,
     selectGift: (giftId) => changeSelection(() => setSelectedId(giftId)),
     selectQuantity: (value) => changeSelection(() => setQuantity(value)),
     changeNote: (value) => changeSelection(() => setNote(value)),

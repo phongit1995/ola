@@ -41,6 +41,7 @@ export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
         isActive: gift?.isActive ?? true,
         animation: gift?.animation ?? GIFT_ANIMATION_RANDOM,
         senderCharmPercent: gift?.senderCharmPercent ?? GIFT_SENDER_CHARM_PERCENT_DEFAULT,
+        announceEnabled: gift?.announceEnabled ?? false,
       })
     }
   }, [open, gift, form])
@@ -183,6 +184,14 @@ export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
           extra="Ví dụ 50%: người nhận được 30 sức hút thì người tặng được 15 (làm tròn xuống). Đặt 0 để tắt."
         >
           <InputNumber min={0} max={100} precision={0} addonAfter="%" style={{ width: '100%' }} />
+        </Form.Item>
+        <Form.Item
+          name="announceEnabled"
+          label="Cho phép thông báo loa"
+          valuePropName="checked"
+          extra="Bật thì khi tặng quà này, người tặng được chọn thông báo cho mọi người. Thông báo cho người nhận không bị ảnh hưởng."
+        >
+          <Switch />
         </Form.Item>
         <Space.Compact block>
           <Form.Item

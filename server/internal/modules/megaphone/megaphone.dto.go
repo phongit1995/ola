@@ -7,9 +7,10 @@ import (
 
 type ConfigResponse struct {
 	Enabled           bool `json:"enabled" example:"true"`
-	KenPrice          int  `json:"kenPrice" example:"2000"`
+	KenPrice          int  `json:"kenPrice" example:"5000"`
 	MaxLength         int  `json:"maxLength" example:"80"`
-	DisplaySeconds    int  `json:"displaySeconds" example:"10"`
+	DisplaySeconds    int  `json:"displaySeconds" example:"12"`
+	LiveMinutes       int  `json:"liveMinutes" example:"30"`
 	CooldownSeconds   int  `json:"cooldownSeconds" example:"60"`
 	DailyLimit        int  `json:"dailyLimit" example:"20"`
 	TodayCount        int  `json:"todayCount" example:"2"`
@@ -28,11 +29,6 @@ type SendResponse struct {
 	WaitSeconds int                       `json:"waitSeconds" example:"25"`
 }
 
-type ActiveResponse struct {
-	Items      []megaphoneEvents.Megaphone `json:"items"`
-	ServerTime string                      `json:"serverTime" example:"2026-11-06T10:00:00.123Z"`
-}
-
 type HistoryResponse struct {
 	Items      []megaphoneEvents.Megaphone `json:"items"`
 	NextCursor string                      `json:"nextCursor,omitempty"`
@@ -40,5 +36,4 @@ type HistoryResponse struct {
 
 type ConfigSuccessResponse = utils.BaseResponse[ConfigResponse]
 type SendSuccessResponse = utils.BaseResponse[SendResponse]
-type ActiveSuccessResponse = utils.BaseResponse[ActiveResponse]
 type HistorySuccessResponse = utils.BaseResponse[HistoryResponse]

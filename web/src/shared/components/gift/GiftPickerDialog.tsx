@@ -43,6 +43,33 @@ function ReceiverRow({ receiver }: { receiver: GiftReceiver }) {
   );
 }
 
+function AnnounceCheckbox({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange?: (checked: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <label
+      className={cn(
+        'flex items-center justify-between gap-2 text-sm text-black/70',
+        onChange != null && 'cursor-pointer'
+      )}
+    >
+      {t('gift.announceLabel')}
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={onChange == null}
+        onChange={(event) => onChange?.(event.target.checked)}
+        className="h-4 w-4 accent-ola-primary"
+      />
+    </label>
+  );
+}
+
 function GiftPickerContent({
   receiver,
   source,
@@ -154,6 +181,11 @@ function GiftPickerContent({
               </p>
             )}
           </section>
+          {picker.canAnnounce && (
+            <section className="py-3">
+              <AnnounceCheckbox checked={picker.announce} />
+            </section>
+          )}
           <section className="flex items-center justify-between pt-3">
             <span className="text-sm text-black/54">{t('gift.total')}</span>
             <span className="flex items-center gap-1 text-lg font-bold text-ola-warning">
@@ -307,6 +339,10 @@ function GiftPickerContent({
                 placeholder={t('gift.notePlaceholder')}
                 className="w-full rounded border border-black/12 px-3 py-1.5 text-sm text-black/87 outline-none focus:border-ola-primary"
               />
+            )}
+
+            {picker.canAnnounce && (
+              <AnnounceCheckbox checked={picker.announce} onChange={picker.setAnnounce} />
             )}
           </>
         )}

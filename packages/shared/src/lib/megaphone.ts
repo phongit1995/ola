@@ -22,41 +22,16 @@ export function megaphoneLength(text: string): number {
   return Array.from(normalizeMegaphoneContent(text)).length;
 }
 
-export function megaphoneShowAtMs(megaphone: Pick<Megaphone, 'showAt'>): number {
-  return Date.parse(megaphone.showAt);
-}
-
-export function megaphoneEndsAtMs(megaphone: Pick<Megaphone, 'showAt' | 'displaySeconds'>): number {
-  return megaphoneShowAtMs(megaphone) + megaphone.displaySeconds * 1000;
-}
-
-export function sortMegaphones(items: readonly Megaphone[]): Megaphone[] {
-  return [...items].sort((a, b) => megaphoneShowAtMs(a) - megaphoneShowAtMs(b) || a.id.localeCompare(b.id));
-}
-
-export function pendingMegaphones(items: readonly Megaphone[], now: number): Megaphone[] {
-  return items.filter((item) => megaphoneEndsAtMs(item) > now);
-}
-
-export interface MegaphoneSchedule {
-  current: Megaphone | null;
-  nextChangeAt: number | null;
-}
-
-export function currentMegaphone(items: readonly Megaphone[], now: number): MegaphoneSchedule {
-  let nextChangeAt: number | null = null;
-  for (const item of items) {
-    const start = megaphoneShowAtMs(item);
-    const end = megaphoneEndsAtMs(item);
-    if (Number.isNaN(start) || end <= now) continue;
-    if (start <= now) return { current: item, nextChangeAt: end };
-    if (nextChangeAt == null || start < nextChangeAt) nextChangeAt = start;
-  }
-  return { current: null, nextChangeAt };
-}
-
 export function megaphoneSenderName(megaphone: Pick<Megaphone, 'sender'>): string {
   return megaphone.sender.fullName || megaphone.sender.username;
+}
+
+export function megaphoneExpiresAtMs(megaphone: Pick<Megaphone, 'expiresAt'>): number {
+  return Date.parse(megaphone.expiresAt);
+}
+
+export function activeSeenIds(seenIds: Record<string, number>, now: number): Record<string, number> {
+  return Object.fromEntries(Object.entries(seenIds).filter(([, expiresAt]) => expiresAt > now));
 }
 
 export function megaphoneWaitMinutes(seconds: number): number {

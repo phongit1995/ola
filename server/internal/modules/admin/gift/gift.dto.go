@@ -16,6 +16,7 @@ type GiftItem struct {
 	SortOrder          int    `json:"sortOrder" example:"0"`
 	Animation          string `json:"animation" example:"random"`
 	SenderCharmPercent int    `json:"senderCharmPercent" example:"50"`
+	AnnounceEnabled    bool   `json:"announceEnabled" example:"false"`
 	CreatedAt          string `json:"createdAt" example:"2026-11-05T10:00:00Z"`
 	UpdatedAt          string `json:"updatedAt" example:"2026-11-05T10:00:00Z"`
 }
@@ -34,6 +35,7 @@ type CreateGiftRequest struct {
 	SortOrder          int    `json:"sortOrder" example:"0"`
 	Animation          string `json:"animation" binding:"omitempty,oneof=random fly drop spin zoom float swing pop flip heartbeat jelly tornado slide" example:"random"`
 	SenderCharmPercent *int   `json:"senderCharmPercent" binding:"omitempty,min=0,max=100" example:"50"`
+	AnnounceEnabled    bool   `json:"announceEnabled" example:"false"`
 }
 
 type UpdateGiftRequest struct {
@@ -46,6 +48,7 @@ type UpdateGiftRequest struct {
 	SortOrder          *int    `json:"sortOrder" example:"0"`
 	Animation          *string `json:"animation" binding:"omitempty,oneof=random fly drop spin zoom float swing pop flip heartbeat jelly tornado slide" example:"random"`
 	SenderCharmPercent *int    `json:"senderCharmPercent" binding:"omitempty,min=0,max=100" example:"50"`
+	AnnounceEnabled    *bool   `json:"announceEnabled" example:"false"`
 }
 
 type TransactionItem struct {

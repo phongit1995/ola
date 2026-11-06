@@ -16,6 +16,7 @@ type Gift struct {
 	SortOrder          int    `gorm:"not null;default:0"`
 	Animation          string `gorm:"type:varchar(20);not null;default:'random'"`
 	SenderCharmPercent int    `gorm:"type:smallint;not null"`
+	AnnounceEnabled    bool   `gorm:"not null"`
 }
 
 func (Gift) TableName() string {

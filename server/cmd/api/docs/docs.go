@@ -3180,6 +3180,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Loại tin: message, gift",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Tìm trong nội dung",
                         "name": "q",
                         "in": "query"
@@ -10696,6 +10702,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/internal_modules_gift.GiftWallSuccessResponse"
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -12266,7 +12278,7 @@ const docTemplate = `{
                 "tags": [
                     "megaphones"
                 ],
-                "summary": "Loa đã phát trong 24 giờ gần nhất",
+                "summary": "Loa thường đã phát trong 24 giờ gần nhất",
                 "parameters": [
                     {
                         "type": "string",
@@ -12302,7 +12314,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Hàng chờ quá dài thì từ chối, không trừ KEN. clientRequestId chống trừ hai lần khi gửi lại.",
+                "description": "Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.",
                 "consumes": [
                     "application/json"
                 ],
@@ -12353,31 +12365,6 @@ const docTemplate = `{
                         "description": "Too Many Requests",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/megaphones/active": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Sắp theo giờ phát tăng dần, kèm serverTime để client tính lịch phát theo giờ server.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "megaphones"
-                ],
-                "summary": "Loa đang phát và đang chờ phát",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/internal_modules_megaphone.ActiveSuccessResponse"
                         }
                     }
                 }
@@ -19631,6 +19618,29 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "animation": {
+                    "type": "string",
+                    "enum": [
+                        "random",
+                        "fly",
+                        "drop",
+                        "spin",
+                        "zoom",
+                        "float",
+                        "swing",
+                        "pop",
+                        "flip",
+                        "heartbeat",
+                        "jelly",
+                        "tornado",
+                        "slide"
+                    ],
+                    "example": "random"
+                },
+                "announceEnabled": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "charmPoints": {
                     "type": "integer",
                     "maximum": 100000000,
@@ -19662,6 +19672,12 @@ const docTemplate = `{
                     "maxLength": 60,
                     "example": "Rose"
                 },
+                "senderCharmPercent": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "example": 50
+                },
                 "sortOrder": {
                     "type": "integer",
                     "example": 0
@@ -19671,6 +19687,14 @@ const docTemplate = `{
         "internal_modules_admin_gift.GiftItem": {
             "type": "object",
             "properties": {
+                "animation": {
+                    "type": "string",
+                    "example": "random"
+                },
+                "announceEnabled": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "charmPoints": {
                     "type": "integer",
                     "example": 10
@@ -19702,6 +19726,10 @@ const docTemplate = `{
                 "nameEn": {
                     "type": "string",
                     "example": "Rose"
+                },
+                "senderCharmPercent": {
+                    "type": "integer",
+                    "example": 50
                 },
                 "sortOrder": {
                     "type": "integer",
@@ -19817,6 +19845,10 @@ const docTemplate = `{
                 "sender": {
                     "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
                 },
+                "senderCharmPoints": {
+                    "type": "integer",
+                    "example": 25
+                },
                 "source": {
                     "type": "string",
                     "example": "chat"
@@ -19891,6 +19923,29 @@ const docTemplate = `{
         "internal_modules_admin_gift.UpdateGiftRequest": {
             "type": "object",
             "properties": {
+                "animation": {
+                    "type": "string",
+                    "enum": [
+                        "random",
+                        "fly",
+                        "drop",
+                        "spin",
+                        "zoom",
+                        "float",
+                        "swing",
+                        "pop",
+                        "flip",
+                        "heartbeat",
+                        "jelly",
+                        "tornado",
+                        "slide"
+                    ],
+                    "example": "random"
+                },
+                "announceEnabled": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "charmPoints": {
                     "type": "integer",
                     "maximum": 100000000,
@@ -19921,6 +19976,12 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 60,
                     "example": "Rose"
+                },
+                "senderCharmPercent": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "example": 50
                 },
                 "sortOrder": {
                     "type": "integer",
@@ -21227,7 +21288,11 @@ const docTemplate = `{
                 },
                 "displaySeconds": {
                     "type": "integer",
-                    "example": 10
+                    "example": 12
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:30:00Z"
                 },
                 "id": {
                     "type": "string",
@@ -21255,6 +21320,10 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "active"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "message"
                 }
             }
         },
@@ -25250,6 +25319,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-05T10:00:00Z"
                 },
+                "giftAnimation": {
+                    "type": "string",
+                    "example": "random"
+                },
                 "giftId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -25273,6 +25346,10 @@ const docTemplate = `{
                 "quantity": {
                     "type": "integer",
                     "example": 5
+                },
+                "senderCharmPoints": {
+                    "type": "integer",
+                    "example": 25
                 },
                 "source": {
                     "type": "string",
@@ -25327,6 +25404,14 @@ const docTemplate = `{
         "internal_modules_gift.GiftItem": {
             "type": "object",
             "properties": {
+                "animation": {
+                    "type": "string",
+                    "example": "random"
+                },
+                "announceEnabled": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "charmPoints": {
                     "type": "integer",
                     "example": 10
@@ -25350,6 +25435,10 @@ const docTemplate = `{
                 "nameEn": {
                     "type": "string",
                     "example": "Rose"
+                },
+                "senderCharmPercent": {
+                    "type": "integer",
+                    "example": 50
                 }
             }
         },
@@ -25559,6 +25648,10 @@ const docTemplate = `{
                 "source"
             ],
             "properties": {
+                "announce": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "clientRequestId": {
                     "type": "string",
                     "maxLength": 64,
@@ -25595,6 +25688,10 @@ const docTemplate = `{
         "internal_modules_gift.SendGiftResponse": {
             "type": "object",
             "properties": {
+                "announced": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "charmPoints": {
                     "type": "integer",
                     "example": 50
@@ -25633,6 +25730,10 @@ const docTemplate = `{
                 "receiverId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "senderCharmPoints": {
+                    "type": "integer",
+                    "example": 25
                 },
                 "totalKen": {
                     "type": "integer",
@@ -26979,47 +27080,6 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_megaphone.ActiveResponse": {
-            "type": "object",
-            "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone"
-                    }
-                },
-                "serverTime": {
-                    "type": "string",
-                    "example": "2026-11-06T10:00:00.123Z"
-                }
-            }
-        },
-        "internal_modules_megaphone.ActiveSuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/internal_modules_megaphone.ActiveResponse"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "traceId": {
-                    "type": "string"
-                }
-            }
-        },
         "internal_modules_megaphone.ConfigResponse": {
             "type": "object",
             "properties": {
@@ -27037,7 +27097,7 @@ const docTemplate = `{
                 },
                 "displaySeconds": {
                     "type": "integer",
-                    "example": 10
+                    "example": 12
                 },
                 "enabled": {
                     "type": "boolean",
@@ -27045,7 +27105,11 @@ const docTemplate = `{
                 },
                 "kenPrice": {
                     "type": "integer",
-                    "example": 2000
+                    "example": 5000
+                },
+                "liveMinutes": {
+                    "type": "integer",
+                    "example": 30
                 },
                 "maxLength": {
                     "type": "integer",
@@ -30407,6 +30471,15 @@ const docTemplate = `{
                     ],
                     "example": "medium"
                 },
+                "giftWallPrivacy": {
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ],
+                    "example": 0
+                },
                 "meVisibility": {
                     "type": "string",
                     "enum": [
@@ -30464,6 +30537,10 @@ const docTemplate = `{
                 "fontSize": {
                     "type": "string",
                     "example": "medium"
+                },
+                "giftWallPrivacy": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "meVisibility": {
                     "type": "string",
@@ -31091,6 +31168,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "https://example.com/bio.jpg"
                 },
+                "canViewGiftWall": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "canViewInterested": {
                     "type": "boolean",
                     "example": true
@@ -31114,6 +31195,10 @@ const docTemplate = `{
                 "dateOfBirth": {
                     "type": "string",
                     "example": "1990-01-01"
+                },
+                "emailVerified": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "followerCount": {
                     "type": "integer",
@@ -32176,6 +32261,31 @@ const docTemplate = `{
                 "type": "string"
             }
         },
+        "ola-chat-server_internal_domain_megaphone.GiftInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/gifts/rose.png"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Hoa hồng"
+                },
+                "nameEn": {
+                    "type": "string",
+                    "example": "Rose"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 5
+                }
+            }
+        },
         "ola-chat-server_internal_domain_megaphone.Megaphone": {
             "type": "object",
             "properties": {
@@ -32189,11 +32299,21 @@ const docTemplate = `{
                 },
                 "displaySeconds": {
                     "type": "integer",
-                    "example": 10
+                    "example": 12
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-06T10:30:00Z"
+                },
+                "gift": {
+                    "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.GiftInfo"
                 },
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "receiver": {
+                    "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Sender"
                 },
                 "sender": {
                     "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Sender"
@@ -32201,6 +32321,10 @@ const docTemplate = `{
                 "showAt": {
                     "type": "string",
                     "example": "2026-11-06T10:00:00Z"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "message"
                 }
             }
         },

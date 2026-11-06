@@ -8,12 +8,26 @@ export interface MegaphoneSender {
   vipEndTime?: string | null;
 }
 
+export type MegaphoneType = 'message' | 'gift';
+
+export interface MegaphoneGift {
+  id: string;
+  name: string;
+  nameEn?: string;
+  imageUrl: string;
+  quantity: number;
+}
+
 export interface Megaphone {
   id: string;
+  type: MegaphoneType;
   sender: MegaphoneSender;
+  receiver?: MegaphoneSender;
+  gift?: MegaphoneGift;
   content: string;
   showAt: string;
   displaySeconds: number;
+  expiresAt: string;
   createdAt: string;
 }
 
@@ -22,6 +36,7 @@ export interface MegaphoneConfig {
   kenPrice: number;
   maxLength: number;
   displaySeconds: number;
+  liveMinutes: number;
   cooldownSeconds: number;
   dailyLimit: number;
   todayCount: number;
@@ -38,11 +53,6 @@ export interface SendMegaphoneResult {
   megaphone: Megaphone;
   kenBalance: number;
   waitSeconds: number;
-}
-
-export interface MegaphoneActiveResult {
-  items: Megaphone[];
-  serverTime: string;
 }
 
 export interface MegaphoneHistoryParams {

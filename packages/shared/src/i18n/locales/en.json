@@ -2454,6 +2454,8 @@
     "open": "View moment"
   },
   "gift": {
+    "announceLabel": "Announce to everyone",
+    "announceSkipped": "Gift sent, but it was not announced this time",
     "title": "Send a gift",
     "send": "Send",
     "sending": "Sending…",
@@ -2521,14 +2523,16 @@
   },
   "megaphone": {
     "title": "Megaphone",
+    "menuTitle": "Megaphone",
     "open": "Open megaphone",
+    "dismiss": "Hide this megaphone",
+    "giftVerb": "gave",
     "compose": "Megaphone",
     "composeTitle": "Broadcast to everyone",
     "placeholder": "Say something to all of Ola…",
-    "hint": "Everyone on the Chat and Rooms tabs will see this scroll across the top for {{seconds}} seconds.",
+    "hint": "This will scroll across the top for everyone over the next {{minutes}} minutes.",
     "price": "Price",
     "balance": "Balance",
-    "kenAmount": "{{ken}} KEN",
     "free": "Free",
     "remaining": "{{count}}/{{max}}",
     "send": "Broadcast",

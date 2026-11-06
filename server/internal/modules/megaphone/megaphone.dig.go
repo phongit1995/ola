@@ -5,7 +5,9 @@ import "go.uber.org/dig"
 func Provider(c *dig.Container) error {
 	providers := []interface{}{
 		NewRepository,
+		NewSchedule,
 		NewService,
+		NewScheduler,
 		NewController,
 		NewRouter,
 	}

@@ -18,7 +18,6 @@ import type {
   MegaphoneComposerStep,
 } from '../../types/client/megaphone.type';
 import { setAuthUserKen, useAuthStore } from '../auth/authStore';
-import { useMegaphoneStore } from './megaphoneStore';
 
 export type { MegaphoneComposer, MegaphoneComposerOptions } from '../../types/client/megaphone.type';
 
@@ -32,7 +31,6 @@ interface LoadedConfig {
 
 export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptions): MegaphoneComposer {
   const balance = useAuthStore((s) => s.user?.ken ?? 0);
-  const receive = useMegaphoneStore((s) => s.receive);
   const [loaded, setLoaded] = useState<LoadedConfig | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [content, setContent] = useState('');
@@ -91,7 +89,6 @@ export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptio
         clientRequestId: requestId,
       });
       setAuthUserKen(result.kenBalance);
-      receive(result.megaphone);
       toast.success(
         result.waitSeconds > 0
           ? i18n.t('megaphone.sentQueued', { minutes: megaphoneWaitMinutes(result.waitSeconds) })

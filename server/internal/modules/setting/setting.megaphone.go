@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"ola-chat-server/internal/models"
 )
@@ -18,36 +19,99 @@ const (
 	MegaphoneDisplaySecondsMax  = 60
 	MegaphoneCooldownSecondsMax = 24 * 60 * 60
 	MegaphoneDailyLimitMax      = 1000
-	MegaphoneMaxQueueSecondsMax = 60 * 60
+	MegaphoneLiveMinutesMax     = 24 * 60
+	MegaphoneGapSecondsMax      = 60
+	MegaphoneRepeatBaseMin      = 10
+	MegaphoneRepeatBaseMax      = 24 * 60 * 60
+	MegaphoneWeightMax          = 20
+	MegaphoneGiftTiersMax       = 10
 
-	megaphoneKenPriceDefault        = 2000
+	megaphoneKenPriceDefault        = 5000
 	megaphoneMaxLengthDefault       = 80
-	megaphoneDisplaySecondsDefault  = 10
+	megaphoneDisplaySecondsDefault  = 12
 	megaphoneCooldownSecondsDefault = 60
 	megaphoneDailyLimitDefault      = 20
-	megaphoneMaxQueueSecondsDefault = 300
+	megaphoneLiveMinutesDefault     = 30
+	megaphoneGapSecondsDefault      = 3
+	megaphoneRepeatBaseDefault      = 720
+	megaphoneMessageWeightDefault   = 3
+
+	secondsPerMinute         = 60
+	megaphoneWaitShareOfLive = 3
+	megaphoneGiftWaitShare   = 2
 )
 
+type MegaphoneGiftTier struct {
+	MinKen int `json:"minKen"`
+	Weight int `json:"weight"`
+}
+
 type MegaphoneConfig struct {
-	Enabled         bool `json:"enabled"`
-	KenPrice        int  `json:"kenPrice"`
-	MaxLength       int  `json:"maxLength"`
-	DisplaySeconds  int  `json:"displaySeconds"`
-	CooldownSeconds int  `json:"cooldownSeconds"`
-	DailyLimit      int  `json:"dailyLimit"`
-	MaxQueueSeconds int  `json:"maxQueueSeconds"`
+	Enabled           bool                `json:"enabled"`
+	KenPrice          int                 `json:"kenPrice"`
+	MaxLength         int                 `json:"maxLength"`
+	DisplaySeconds    int                 `json:"displaySeconds"`
+	CooldownSeconds   int                 `json:"cooldownSeconds"`
+	DailyLimit        int                 `json:"dailyLimit"`
+	LiveMinutes       int                 `json:"liveMinutes"`
+	GapSeconds        int                 `json:"gapSeconds"`
+	RepeatBaseSeconds int                 `json:"repeatBaseSeconds"`
+	MessageWeight     int                 `json:"messageWeight"`
+	GiftTiers         []MegaphoneGiftTier `json:"giftTiers"`
 }
 
 func DefaultMegaphoneConfig() MegaphoneConfig {
 	return MegaphoneConfig{
-		Enabled:         true,
-		KenPrice:        megaphoneKenPriceDefault,
-		MaxLength:       megaphoneMaxLengthDefault,
-		DisplaySeconds:  megaphoneDisplaySecondsDefault,
-		CooldownSeconds: megaphoneCooldownSecondsDefault,
-		DailyLimit:      megaphoneDailyLimitDefault,
-		MaxQueueSeconds: megaphoneMaxQueueSecondsDefault,
+		Enabled:           true,
+		KenPrice:          megaphoneKenPriceDefault,
+		MaxLength:         megaphoneMaxLengthDefault,
+		DisplaySeconds:    megaphoneDisplaySecondsDefault,
+		CooldownSeconds:   megaphoneCooldownSecondsDefault,
+		DailyLimit:        megaphoneDailyLimitDefault,
+		LiveMinutes:       megaphoneLiveMinutesDefault,
+		GapSeconds:        megaphoneGapSecondsDefault,
+		RepeatBaseSeconds: megaphoneRepeatBaseDefault,
+		MessageWeight:     megaphoneMessageWeightDefault,
+		GiftTiers: []MegaphoneGiftTier{
+			{MinKen: 0, Weight: 1},
+			{MinKen: 1000, Weight: 3},
+			{MinKen: 20000, Weight: 6},
+		},
 	}
+}
+
+func (c MegaphoneConfig) SlotSeconds() int {
+	return c.DisplaySeconds + c.GapSeconds
+}
+
+func (c MegaphoneConfig) LiveDuration() time.Duration {
+	return time.Duration(c.LiveMinutes) * time.Minute
+}
+
+func (c MegaphoneConfig) MessageQueueLimit() int {
+	limit := c.LiveMinutes * secondsPerMinute / megaphoneWaitShareOfLive / c.SlotSeconds()
+	if limit < 1 {
+		return 1
+	}
+	return limit
+}
+
+func (c MegaphoneConfig) GiftQueueLimit() int {
+	limit := c.MessageQueueLimit() / megaphoneGiftWaitShare
+	if limit < 1 {
+		return 1
+	}
+	return limit
+}
+
+func (c MegaphoneConfig) GiftWeight(totalKen int) int {
+	weight := 1
+	for _, tier := range c.GiftTiers {
+		if totalKen >= tier.MinKen {
+			weight = tier.Weight
+		}
+	}
+	return weight
 }
 
 func (s *Service) GetMegaphone() (MegaphoneConfig, error) {
@@ -76,8 +140,38 @@ func validateMegaphoneConfig(cfg MegaphoneConfig) error {
 	if cfg.DailyLimit < 1 || cfg.DailyLimit > MegaphoneDailyLimitMax {
 		return fmt.Errorf("số loa mỗi ngày phải từ 1 đến %d", MegaphoneDailyLimitMax)
 	}
-	if cfg.MaxQueueSeconds < cfg.DisplaySeconds || cfg.MaxQueueSeconds > MegaphoneMaxQueueSecondsMax {
-		return fmt.Errorf("hàng chờ tối đa phải từ %d đến %d giây", cfg.DisplaySeconds, MegaphoneMaxQueueSecondsMax)
+	if cfg.LiveMinutes < 1 || cfg.LiveMinutes > MegaphoneLiveMinutesMax {
+		return fmt.Errorf("thời gian sống phải từ 1 đến %d phút", MegaphoneLiveMinutesMax)
+	}
+	if cfg.GapSeconds < 0 || cfg.GapSeconds > MegaphoneGapSecondsMax {
+		return fmt.Errorf("thời gian nghỉ giữa 2 lượt phải từ 0 đến %d giây", MegaphoneGapSecondsMax)
+	}
+	if cfg.SlotSeconds() >= cfg.LiveMinutes*secondsPerMinute {
+		return errors.New("thời gian chạy cộng thời gian nghỉ phải ngắn hơn thời gian sống")
+	}
+	if cfg.RepeatBaseSeconds < MegaphoneRepeatBaseMin || cfg.RepeatBaseSeconds > MegaphoneRepeatBaseMax {
+		return fmt.Errorf("nhịp lặp phải từ %d đến %d giây", MegaphoneRepeatBaseMin, MegaphoneRepeatBaseMax)
+	}
+	if cfg.MessageWeight < 1 || cfg.MessageWeight > MegaphoneWeightMax {
+		return fmt.Errorf("trọng số loa phải từ 1 đến %d", MegaphoneWeightMax)
+	}
+	return validateMegaphoneGiftTiers(cfg.GiftTiers)
+}
+
+func validateMegaphoneGiftTiers(tiers []MegaphoneGiftTier) error {
+	if len(tiers) == 0 || len(tiers) > MegaphoneGiftTiersMax {
+		return fmt.Errorf("mốc quà phải có từ 1 đến %d dòng", MegaphoneGiftTiersMax)
+	}
+	if tiers[0].MinKen != 0 {
+		return errors.New("mốc quà đầu tiên phải bắt đầu từ 0 KEN")
+	}
+	for i, tier := range tiers {
+		if tier.Weight < 1 || tier.Weight > MegaphoneWeightMax {
+			return fmt.Errorf("trọng số quà phải từ 1 đến %d", MegaphoneWeightMax)
+		}
+		if i > 0 && tier.MinKen <= tiers[i-1].MinKen {
+			return errors.New("các mốc quà phải tăng dần")
+		}
 	}
 	return nil
 }
@@ -88,13 +182,17 @@ func ValidateMegaphoneValue(value models.JSONB) error {
 		return errors.New("invalid megaphone config")
 	}
 	var cfg struct {
-		Enabled         *bool `json:"enabled"`
-		KenPrice        *int  `json:"kenPrice"`
-		MaxLength       *int  `json:"maxLength"`
-		DisplaySeconds  *int  `json:"displaySeconds"`
-		CooldownSeconds *int  `json:"cooldownSeconds"`
-		DailyLimit      *int  `json:"dailyLimit"`
-		MaxQueueSeconds *int  `json:"maxQueueSeconds"`
+		Enabled           *bool               `json:"enabled"`
+		KenPrice          *int                `json:"kenPrice"`
+		MaxLength         *int                `json:"maxLength"`
+		DisplaySeconds    *int                `json:"displaySeconds"`
+		CooldownSeconds   *int                `json:"cooldownSeconds"`
+		DailyLimit        *int                `json:"dailyLimit"`
+		LiveMinutes       *int                `json:"liveMinutes"`
+		GapSeconds        *int                `json:"gapSeconds"`
+		RepeatBaseSeconds *int                `json:"repeatBaseSeconds"`
+		MessageWeight     *int                `json:"messageWeight"`
+		GiftTiers         []MegaphoneGiftTier `json:"giftTiers"`
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()
@@ -102,16 +200,21 @@ func ValidateMegaphoneValue(value models.JSONB) error {
 		return errors.New("invalid megaphone config: " + err.Error())
 	}
 	if cfg.Enabled == nil || cfg.KenPrice == nil || cfg.MaxLength == nil || cfg.DisplaySeconds == nil ||
-		cfg.CooldownSeconds == nil || cfg.DailyLimit == nil || cfg.MaxQueueSeconds == nil {
-		return errors.New("cấu hình loa cần đủ enabled, kenPrice, maxLength, displaySeconds, cooldownSeconds, dailyLimit, maxQueueSeconds")
+		cfg.CooldownSeconds == nil || cfg.DailyLimit == nil || cfg.LiveMinutes == nil || cfg.GapSeconds == nil ||
+		cfg.RepeatBaseSeconds == nil || cfg.MessageWeight == nil || cfg.GiftTiers == nil {
+		return errors.New("cấu hình loa cần đủ enabled, kenPrice, maxLength, displaySeconds, cooldownSeconds, dailyLimit, liveMinutes, gapSeconds, repeatBaseSeconds, messageWeight, giftTiers")
 	}
 	return validateMegaphoneConfig(MegaphoneConfig{
-		Enabled:         *cfg.Enabled,
-		KenPrice:        *cfg.KenPrice,
-		MaxLength:       *cfg.MaxLength,
-		DisplaySeconds:  *cfg.DisplaySeconds,
-		CooldownSeconds: *cfg.CooldownSeconds,
-		DailyLimit:      *cfg.DailyLimit,
-		MaxQueueSeconds: *cfg.MaxQueueSeconds,
+		Enabled:           *cfg.Enabled,
+		KenPrice:          *cfg.KenPrice,
+		MaxLength:         *cfg.MaxLength,
+		DisplaySeconds:    *cfg.DisplaySeconds,
+		CooldownSeconds:   *cfg.CooldownSeconds,
+		DailyLimit:        *cfg.DailyLimit,
+		LiveMinutes:       *cfg.LiveMinutes,
+		GapSeconds:        *cfg.GapSeconds,
+		RepeatBaseSeconds: *cfg.RepeatBaseSeconds,
+		MessageWeight:     *cfg.MessageWeight,
+		GiftTiers:         cfg.GiftTiers,
 	})
 }

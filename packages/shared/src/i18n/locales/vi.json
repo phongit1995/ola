@@ -2454,6 +2454,8 @@
     "open": "Xem khoảnh khắc"
   },
   "gift": {
+    "announceLabel": "Thông báo cho mọi người",
+    "announceSkipped": "Đã tặng quà, nhưng lần này không phát thông báo",
     "title": "Tặng quà",
     "send": "Tặng",
     "sending": "Đang tặng…",
@@ -2521,14 +2523,16 @@
   },
   "megaphone": {
     "title": "Loa",
+    "menuTitle": "Loa Loa Loa",
     "open": "Mở loa",
+    "dismiss": "Ẩn loa này",
+    "giftVerb": "tặng",
     "compose": "Phát loa",
     "composeTitle": "Phát loa tới mọi người",
     "placeholder": "Nhập lời muốn nói với cả Ola…",
-    "hint": "Mọi người đang mở tab Chat và Phòng chat sẽ thấy câu này chạy trên đầu màn hình trong {{seconds}} giây.",
+    "hint": "Câu này sẽ chạy trên đầu màn hình của mọi người trong {{minutes}} phút tới.",
     "price": "Giá",
     "balance": "Số dư",
-    "kenAmount": "{{ken}} KEN",
     "free": "Miễn phí",
     "remaining": "{{count}}/{{max}}",
     "send": "Phát",

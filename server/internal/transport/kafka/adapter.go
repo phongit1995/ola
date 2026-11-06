@@ -142,8 +142,8 @@ func (a *KafkaEventAdapter) HandlePushBroadcast(ctx context.Context, message []b
 	return a.pushBroadcastHandler.OnRequested(ctx, message)
 }
 
-func (a *KafkaEventAdapter) HandleMegaphoneCreated(ctx context.Context, message []byte) error {
-	return a.megaphoneHandler.OnCreated(ctx, message)
+func (a *KafkaEventAdapter) HandleMegaphonePlay(ctx context.Context, message []byte) error {
+	return a.megaphoneHandler.OnPlay(ctx, message)
 }
 
 func (a *KafkaEventAdapter) HandleMegaphoneRemoved(ctx context.Context, message []byte) error {
@@ -173,6 +173,6 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicAppNotification, adapter.HandleAppNotification)
 	consumer.RegisterHandler(constants.KafkaTopicUserBanned, adapter.HandleUserBanned)
 	consumer.RegisterHandler(constants.KafkaTopicPushBroadcast, adapter.HandlePushBroadcast)
-	consumer.RegisterHandler(constants.KafkaTopicMegaphoneCreated, adapter.HandleMegaphoneCreated)
+	consumer.RegisterHandler(constants.KafkaTopicMegaphonePlay, adapter.HandleMegaphonePlay)
 	consumer.RegisterHandler(constants.KafkaTopicMegaphoneRemoved, adapter.HandleMegaphoneRemoved)
 }

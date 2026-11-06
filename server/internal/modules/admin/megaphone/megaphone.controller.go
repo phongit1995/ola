@@ -20,6 +20,11 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_megaphone_controller]")}
 }
 
+var megaphoneTypes = map[string]bool{
+	models.MegaphoneTypeMessage: true,
+	models.MegaphoneTypeGift:    true,
+}
+
 var megaphoneStatuses = map[string]bool{
 	models.MegaphoneStatusActive:  true,
 	models.MegaphoneStatusRemoved: true,
@@ -32,6 +37,7 @@ var megaphoneStatuses = map[string]bool{
 // @Security     BearerAuth
 // @Param        senderId query string false "Người phát"
 // @Param        status   query string false "active, removed"
+// @Param        type     query string false "Loại tin: message, gift"
 // @Param        q        query string false "Tìm trong nội dung"
 // @Param        from     query string false "Từ thời gian (RFC3339)"
 // @Param        to       query string false "Đến thời gian (RFC3339)"
@@ -51,6 +57,9 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	}
 	if status := c.Query("status"); megaphoneStatuses[status] {
 		f.Status = status
+	}
+	if megaphoneType := c.Query("type"); megaphoneTypes[megaphoneType] {
+		f.Type = megaphoneType
 	}
 	if f.From, f.To, err = utils.ParseTimeRange(c); err != nil {
 		return nil, err

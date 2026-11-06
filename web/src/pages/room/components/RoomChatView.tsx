@@ -10,7 +10,6 @@ import {
   memberMatchesFilter,
 } from '@ola/shared/stores/room/roomFilterStore';
 import { ScreenHeader, FullScreenOverlay } from '@components';
-import { MegaphoneBar } from '@components/megaphone/MegaphoneBar';
 import type { ReactionType } from '@app-types';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
 import { RoomMessagesTab } from './RoomMessagesTab';
@@ -101,7 +100,7 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
   ];
 
   return (
-    <FullScreenOverlay position="absolute">
+    <FullScreenOverlay position="absolute" keepMegaphone>
       <ScreenHeader title={name} onBack={onClose} align="center">
         {activeTab === 'members' && (
           <button
@@ -137,7 +136,6 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
           </button>
         )}
       </ScreenHeader>
-      <MegaphoneBar />
       <div className="flex shrink-0 justify-center">
         <span className="h-px w-full bg-[repeating-linear-gradient(to_right,rgba(0,0,0,.3)_0_4px,transparent_4px_16px)]" />
       </div>

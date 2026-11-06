@@ -7,9 +7,14 @@ import { UserBriefCell } from '@/components/UserBriefCell'
 import { PAGE_SIZE } from '@/lib/constants'
 import { toIsoRange } from '@/lib/dateRange'
 import { formatCount, formatDateTime } from '@/lib/format'
-import type { AdminMegaphone, MegaphoneStatus } from '@/types'
+import type { AdminMegaphone, MegaphoneStatus, MegaphoneType } from '@/types'
 import { MegaphoneRemoveModal } from './MegaphoneRemoveModal'
-import { MEGAPHONE_STATUS_OPTIONS, MEGAPHONE_STATUS_TAG } from './constants'
+import {
+  MEGAPHONE_STATUS_OPTIONS,
+  MEGAPHONE_STATUS_TAG,
+  MEGAPHONE_TYPE_OPTIONS,
+  MEGAPHONE_TYPE_TAG,
+} from './constants'
 import { useMegaphones } from './useMegaphoneQueries'
 import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
 import { MEGAPHONE_SECTION_LINKS } from '@/pages/shop/sections'
@@ -18,6 +23,7 @@ export function MegaphonesPage() {
   const [senderId, setSenderId] = useState('')
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<'all' | MegaphoneStatus>('all')
+  const [type, setType] = useState<'all' | MegaphoneType>('all')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [page, setPage] = useState(1)
@@ -29,11 +35,12 @@ export function MegaphonesPage() {
       senderId: senderId || undefined,
       q: query || undefined,
       status: status === 'all' ? undefined : status,
+      type: type === 'all' ? undefined : type,
       ...range,
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
     }),
-    [senderId, query, status, range, page],
+    [senderId, query, status, type, range, page],
   )
   const { data, isFetching, refetch } = useMegaphones(params)
 
@@ -50,6 +57,12 @@ export function MegaphonesPage() {
       dataIndex: 'showAt',
       width: 160,
       render: (value: string) => formatDateTime(value),
+    },
+    {
+      title: 'Loại',
+      dataIndex: 'type',
+      width: 100,
+      render: (value: MegaphoneType) => <Tag color={MEGAPHONE_TYPE_TAG[value].color}>{MEGAPHONE_TYPE_TAG[value].label}</Tag>,
     },
     {
       title: 'Người phát',
@@ -119,6 +132,12 @@ export function MegaphonesPage() {
             onChange={resetPage(setStatus)}
             style={{ width: 170 }}
             options={MEGAPHONE_STATUS_OPTIONS}
+          />
+          <Select
+            value={type}
+            onChange={resetPage(setType)}
+            style={{ width: 150 }}
+            options={MEGAPHONE_TYPE_OPTIONS}
           />
           <DateRangeFilter from={from} to={to} onFromChange={resetPage(setFrom)} onToChange={resetPage(setTo)} />
           <Button icon={<ReloadOutlined />} onClick={() => void refetch()}>

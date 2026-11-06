@@ -156,6 +156,7 @@ export function ArcadeOverlay() {
   return (
     <>
       <div
+        data-megaphone-cover=""
         className={`absolute inset-0 z-50 bg-[#0f0f23] ${
           minimized ? 'invisible' : ''
         }`}

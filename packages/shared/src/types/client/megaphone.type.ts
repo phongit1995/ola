@@ -1,15 +1,17 @@
 import type { Megaphone, MegaphoneConfig, SendMegaphoneResult } from '../api/megaphone.type';
 
 export interface MegaphoneState {
-  items: Megaphone[];
+  current: Megaphone | null;
   removedIds: Record<string, true>;
-  clockOffset: number;
-  synced: boolean;
-  receive: (megaphone: Megaphone, serverTime?: string) => void;
+  seenIds: Record<string, number>;
+  play: (megaphone: Megaphone) => void;
+  stop: (id: string) => void;
+  markSeen: (id: string) => void;
   remove: (id: string) => void;
-  sync: () => Promise<void>;
   reset: () => void;
 }
+
+export type PersistedMegaphoneState = Pick<MegaphoneState, 'seenIds'>;
 
 export type MegaphoneComposerStep = 'compose' | 'confirm';
 
@@ -47,4 +49,5 @@ export interface MegaphoneHistory {
   loading: boolean;
   loadMore: () => void;
   refresh: () => void;
+  prepend: (megaphone: Megaphone) => void;
 }

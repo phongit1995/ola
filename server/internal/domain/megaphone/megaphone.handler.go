@@ -25,26 +25,24 @@ func NewEventHandler(wsServer *websocket.Server, logger *zap.SugaredLogger) *Eve
 	}
 }
 
-func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
-	var event CreatedEvent
+func (h *EventHandler) OnPlay(ctx context.Context, message []byte) error {
+	var event PlayEvent
 	if err := json.Unmarshal(message, &event); err != nil {
-		h.logger.Errorw("Failed to unmarshal MegaphoneCreated", "error", err)
+		h.logger.Errorw("Failed to unmarshal MegaphonePlay", "error", err)
 		return err
 	}
 	if event.Megaphone.ID == "" {
 		return errors.New("megaphone id is required")
 	}
-	now := time.Now().UTC()
-	if !now.Before(event.Megaphone.EndsAt()) {
-		h.logger.Infow("Skip finished megaphone", "megaphone_id", event.Megaphone.ID, "show_at", event.Megaphone.ShowAt)
+	if event.Stale(time.Now().UTC()) {
+		h.logger.Infow("Skip stale megaphone play", "megaphone_id", event.Megaphone.ID, "played_at", event.PlayedAt)
 		return nil
 	}
 
-	h.wsServer.BroadcastToAll(constants.WebSocketEventMegaphoneNew, map[string]any{
-		"megaphone":  utils.MustToJSONMap(event.Megaphone),
-		"serverTime": now.Format(time.RFC3339Nano),
+	h.wsServer.BroadcastToAll(constants.WebSocketEventMegaphonePlay, map[string]any{
+		"megaphone": utils.MustToJSONMap(event.Megaphone),
 	})
-	h.logger.Infow("✅ MEGAPHONE_NEW broadcast", "megaphone_id", event.Megaphone.ID)
+	h.logger.Infow("✅ MEGAPHONE_PLAY broadcast", "megaphone_id", event.Megaphone.ID)
 	return nil
 }
 

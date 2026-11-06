@@ -31,6 +31,7 @@ export interface Gift {
   charmPoints: number;
   animation?: GiftAnimationSetting;
   senderCharmPercent?: number;
+  announceEnabled?: boolean;
 }
 
 export interface GiftSettings {
@@ -53,6 +54,7 @@ export interface SendGiftRequest {
   note?: string;
   source: GiftSource;
   clientRequestId: string;
+  announce?: boolean;
 }
 
 export interface SendGiftResult {
@@ -66,6 +68,7 @@ export interface SendGiftResult {
   note?: string;
   kenBalance: number;
   receiverCharm: number;
+  announced?: boolean;
   conversationId?: string;
   messageId?: string;
   createdAt: string;

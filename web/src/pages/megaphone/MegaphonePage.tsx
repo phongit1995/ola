@@ -12,9 +12,8 @@ import { REPORT_TARGET_TYPE } from '@constants';
 import { colorForName, megaphoneSenderName } from '@lib';
 import { useMegaphoneHistory } from '@ola/shared/stores/megaphone/useMegaphoneHistory';
 import type { Megaphone } from '@app-types';
-import megaphoneImage from '@/assets/images/announcement-megaphone.png';
+import megaphoneImage from '@/assets/images/member-megaphone.webp';
 import { useAuthStore } from '@/store/authStore';
-import { MegaphoneBar } from '@components/megaphone/MegaphoneBar';
 import { UserProfileView } from '../profile/UserProfileView';
 import { MegaphoneComposeDialog } from './components/MegaphoneComposeDialog';
 import { MegaphoneHistoryItem } from './components/MegaphoneHistoryItem';
@@ -65,7 +64,6 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
   return (
     <FullScreenOverlay>
       <ScreenHeader title={t('megaphone.title')} onBack={onClose} />
-      <MegaphoneBar clickable={false} />
       <div className="flex-1 overflow-y-auto">
         <section className="m-3 flex items-center gap-3 rounded-xl border border-ola-megaphone-line bg-ola-megaphone-soft p-3">
           <img src={megaphoneImage} alt="" className="h-14 w-14 shrink-0 object-contain" draggable={false} />
@@ -118,7 +116,7 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
       </div>
 
       {composeOpen && (
-        <MegaphoneComposeDialog onClose={() => setComposeOpen(false)} onSent={history.refresh} />
+        <MegaphoneComposeDialog onClose={() => setComposeOpen(false)} onSent={(result) => history.prepend(result.megaphone)} />
       )}
       <ListOptionDialog
         open={menuTarget != null}

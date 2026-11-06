@@ -2,6 +2,7 @@ package megaphone
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"strings"
 	"time"
@@ -23,16 +24,19 @@ import (
 
 type Service struct {
 	repo      *Repository
+	schedule  *Schedule
 	settings  *setting.Service
 	filter    *contentfilter.Service
 	userCache *user.CacheService
 	producer  *kafka.Producer
 	wsServer  *websocket.Server
+	wake      chan struct{}
 	logger    *zap.SugaredLogger
 }
 
 func NewService(
 	repo *Repository,
+	schedule *Schedule,
 	settings *setting.Service,
 	filter *contentfilter.Service,
 	userCache *user.CacheService,
@@ -42,11 +46,13 @@ func NewService(
 ) *Service {
 	return &Service{
 		repo:      repo,
+		schedule:  schedule,
 		settings:  settings,
 		filter:    filter,
 		userCache: userCache,
 		producer:  producer,
 		wsServer:  wsServer,
+		wake:      make(chan struct{}, 1),
 		logger:    logger.Named("[megaphone_service]"),
 	}
 }
@@ -75,6 +81,18 @@ func cooldownOf(cfg setting.MegaphoneConfig) time.Duration {
 	return time.Duration(cfg.CooldownSeconds) * time.Second
 }
 
+func (s *Service) runningSlot(now time.Time) time.Duration {
+	nextSlot, err := s.schedule.NextSlot()
+	if err != nil {
+		s.logger.Warnw("Failed to read megaphone slot", "error", err.Error())
+		return 0
+	}
+	if nextSlot.After(now) {
+		return nextSlot.Sub(now)
+	}
+	return 0
+}
+
 func (s *Service) cooldownRemaining(userID uuid.UUID, cooldown time.Duration, now time.Time) (time.Duration, error) {
 	if cooldown <= 0 {
 		return 0, nil
@@ -97,7 +115,7 @@ func (s *Service) Config(userID uuid.UUID) (*ConfigResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	end, err := s.repo.QueueEnd(now)
+	waiting, err := s.repo.CountWaiting(now)
 	if err != nil {
 		return nil, err
 	}
@@ -106,11 +124,12 @@ func (s *Service) Config(userID uuid.UUID) (*ConfigResponse, error) {
 		KenPrice:          cfg.KenPrice,
 		MaxLength:         cfg.MaxLength,
 		DisplaySeconds:    cfg.DisplaySeconds,
+		LiveMinutes:       cfg.LiveMinutes,
 		CooldownSeconds:   cfg.CooldownSeconds,
 		DailyLimit:        cfg.DailyLimit,
 		TodayCount:        int(today),
 		CooldownRemaining: ceilSeconds(cooldownLeft),
-		QueueWaitSeconds:  ceilSeconds(end.Sub(now)),
+		QueueWaitSeconds:  ceilSeconds(queueWait(waiting, cfg.SlotSeconds(), s.runningSlot(now))),
 	}, nil
 }
 
@@ -155,8 +174,12 @@ func (s *Service) Send(senderID uuid.UUID, req SendRequest) (*SendResponse, erro
 		SenderID:        senderID,
 		Content:         content,
 		KenPrice:        cfg.KenPrice,
+		Weight:          cfg.MessageWeight,
 		DisplaySeconds:  cfg.DisplaySeconds,
-		MaxQueue:        time.Duration(cfg.MaxQueueSeconds) * time.Second,
+		SlotSeconds:     cfg.SlotSeconds(),
+		RunningSlot:     s.runningSlot(now),
+		QueueLimit:      cfg.MessageQueueLimit(),
+		ExpiresAt:       now.Add(cfg.LiveDuration()),
 		DailyLimit:      cfg.DailyLimit,
 		DayStart:        dayStart(now),
 		Cooldown:        cooldownOf(cfg),
@@ -188,8 +211,20 @@ func (s *Service) replay(existing *models.Megaphone, content string) (*SendRespo
 	if err != nil {
 		return nil, err
 	}
-	wait := existing.ShowAt.Sub(time.Now().UTC())
-	return &SendResponse{Megaphone: s.ToView(existing), KenBalance: balance, WaitSeconds: ceilSeconds(wait)}, nil
+	return &SendResponse{Megaphone: s.ToView(existing), KenBalance: balance, WaitSeconds: s.replayWait(existing)}, nil
+}
+
+func (s *Service) replayWait(existing *models.Megaphone) int {
+	if existing.FirstPlayedAt != nil {
+		return 0
+	}
+	now := time.Now().UTC()
+	waiting, err := s.repo.CountWaiting(now)
+	if err != nil {
+		s.logger.Warnw("Failed to count waiting megaphones", "error", err.Error())
+		return 0
+	}
+	return ceilSeconds(queueWait(waiting, s.config().SlotSeconds(), s.runningSlot(now)))
 }
 
 func (s *Service) afterSend(senderID uuid.UUID, balance int, view megaphoneEvents.Megaphone) {
@@ -197,14 +232,87 @@ func (s *Service) afterSend(senderID uuid.UUID, balance int, view megaphoneEvent
 	if err := s.userCache.InvalidateUser(senderID); err != nil {
 		s.logger.Warnw("Failed to invalidate user cache after megaphone", "user_id", senderID, "error", err.Error())
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), publishTimeout)
-	defer cancel()
-	if err := s.producer.PublishMegaphoneCreated(ctx, &megaphoneEvents.CreatedEvent{Megaphone: view}); err != nil {
-		s.logger.Errorw("Failed to publish megaphone created", "megaphone_id", view.ID, "error", err.Error())
+	s.enqueue(view, s.config().MessageWeight)
+}
+
+func (s *Service) enqueue(view megaphoneEvents.Megaphone, weight int) {
+	if err := s.schedule.Add(scheduledItem{Megaphone: view, Weight: weight}); err != nil {
+		s.logger.Errorw("Failed to schedule megaphone, reconcile will retry", "megaphone_id", view.ID, "error", err.Error())
+		return
+	}
+	select {
+	case s.wake <- struct{}{}:
+	default:
 	}
 }
 
+type GiftAnnouncement struct {
+	TransactionID uuid.UUID
+	SenderID      uuid.UUID
+	ReceiverID    uuid.UUID
+	GiftName      string
+	Quantity      int
+	TotalKen      int
+}
+
+func giftContent(sender, receiver megaphoneEvents.Sender, giftName string, quantity int) string {
+	content := fmt.Sprintf("%s tặng %s %s ×%d", senderName(sender), senderName(receiver), giftName, quantity)
+	runes := []rune(content)
+	if len(runes) > giftContentRunes {
+		return string(runes[:giftContentRunes])
+	}
+	return content
+}
+
+func senderName(sender megaphoneEvents.Sender) string {
+	if sender.FullName != "" {
+		return sender.FullName
+	}
+	return sender.Username
+}
+
+func (s *Service) AnnounceGift(in GiftAnnouncement) bool {
+	cfg := s.config()
+	if !cfg.Enabled {
+		return false
+	}
+	now := time.Now().UTC()
+	people := s.senders([]uuid.UUID{in.SenderID, in.ReceiverID})
+	record, err := s.repo.CreateGift(GiftParams{
+		SenderID:          in.SenderID,
+		GiftTransactionID: in.TransactionID,
+		Content:           giftContent(people[in.SenderID], people[in.ReceiverID], in.GiftName, in.Quantity),
+		Weight:            cfg.GiftWeight(in.TotalKen),
+		DisplaySeconds:    cfg.DisplaySeconds,
+		QueueLimit:        cfg.GiftQueueLimit(),
+		ExpiresAt:         now.Add(cfg.LiveDuration()),
+		Cooldown:          cooldownOf(cfg),
+		Now:               now,
+	})
+	if err != nil {
+		s.logger.Errorw("Failed to create gift megaphone", "gift_transaction_id", in.TransactionID, "error", err.Error())
+		return false
+	}
+	if record == nil {
+		return false
+	}
+	s.enqueue(s.ToView(record), record.Weight)
+	return true
+}
+
+func (s *Service) GiftAnnounced(txID uuid.UUID) bool {
+	item, err := s.repo.FindByGiftTransaction(txID)
+	if err != nil {
+		s.logger.Warnw("Failed to read gift megaphone", "gift_transaction_id", txID, "error", err.Error())
+		return false
+	}
+	return item != nil
+}
+
 func (s *Service) PublishRemoved(id uuid.UUID) {
+	if err := s.schedule.Remove(id.String()); err != nil {
+		s.logger.Warnw("Failed to unschedule megaphone, reconcile will retry", "megaphone_id", id, "error", err.Error())
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), publishTimeout)
 	defer cancel()
 	if err := s.producer.PublishMegaphoneRemoved(ctx, &megaphoneEvents.RemovedEvent{ID: id.String()}); err != nil {
@@ -241,42 +349,83 @@ func (s *Service) senders(ids []uuid.UUID) map[uuid.UUID]megaphoneEvents.Sender 
 func toView(m *models.Megaphone, sender megaphoneEvents.Sender) megaphoneEvents.Megaphone {
 	return megaphoneEvents.Megaphone{
 		ID:             m.ID.String(),
+		Type:           m.Type,
 		Sender:         sender,
 		Content:        m.Content,
 		ShowAt:         m.ShowAt.UTC(),
 		DisplaySeconds: m.DisplaySeconds,
+		ExpiresAt:      m.ExpiresAt.UTC(),
 		CreatedAt:      m.CreatedAt.UTC(),
 	}
 }
 
 func (s *Service) ToView(m *models.Megaphone) megaphoneEvents.Megaphone {
-	return toView(m, s.senders([]uuid.UUID{m.SenderID})[m.SenderID])
+	return s.toViews([]models.Megaphone{*m})[0]
+}
+
+func (s *Service) giftTransactions(items []models.Megaphone) map[uuid.UUID]models.GiftTransaction {
+	ids := make([]uuid.UUID, 0, len(items))
+	for i := range items {
+		if items[i].GiftTransactionID != nil {
+			ids = append(ids, *items[i].GiftTransactionID)
+		}
+	}
+	txs, err := s.repo.GiftTransactions(ids)
+	if err != nil {
+		s.logger.Warnw("Failed to read gift transactions for megaphones", "error", err.Error())
+	}
+	return txs
+}
+
+func (s *Service) giftNamesEn(txs map[uuid.UUID]models.GiftTransaction) map[uuid.UUID]string {
+	ids := make([]uuid.UUID, 0, len(txs))
+	for _, tx := range txs {
+		ids = append(ids, tx.GiftID)
+	}
+	names, err := s.repo.GiftNamesEn(ids)
+	if err != nil {
+		s.logger.Warnw("Failed to read gift names for megaphones", "error", err.Error())
+	}
+	return names
 }
 
 func (s *Service) toViews(items []models.Megaphone) []megaphoneEvents.Megaphone {
-	seen := make(map[uuid.UUID]bool, len(items))
-	ids := make([]uuid.UUID, 0, len(items))
-	for i := range items {
-		if !seen[items[i].SenderID] {
-			seen[items[i].SenderID] = true
-			ids = append(ids, items[i].SenderID)
+	txs := s.giftTransactions(items)
+	namesEn := s.giftNamesEn(txs)
+	seen := make(map[uuid.UUID]bool, len(items)+len(txs))
+	ids := make([]uuid.UUID, 0, len(items)+len(txs))
+	addID := func(id uuid.UUID) {
+		if !seen[id] {
+			seen[id] = true
+			ids = append(ids, id)
 		}
 	}
-	senders := s.senders(ids)
+	for i := range items {
+		addID(items[i].SenderID)
+	}
+	for _, tx := range txs {
+		addID(tx.ReceiverID)
+	}
+	people := s.senders(ids)
 	out := make([]megaphoneEvents.Megaphone, 0, len(items))
 	for i := range items {
-		out = append(out, toView(&items[i], senders[items[i].SenderID]))
+		view := toView(&items[i], people[items[i].SenderID])
+		if items[i].GiftTransactionID != nil {
+			if tx, ok := txs[*items[i].GiftTransactionID]; ok {
+				receiver := people[tx.ReceiverID]
+				view.Receiver = &receiver
+				view.Gift = &megaphoneEvents.GiftInfo{
+					ID:       tx.GiftID.String(),
+					Name:     tx.GiftName,
+					NameEn:   namesEn[tx.GiftID],
+					ImageURL: tx.GiftImageURL,
+					Quantity: tx.Quantity,
+				}
+			}
+		}
+		out = append(out, view)
 	}
 	return out
-}
-
-func (s *Service) Active() (*ActiveResponse, error) {
-	now := time.Now().UTC()
-	items, err := s.repo.ListActive(now, ActiveLimit)
-	if err != nil {
-		return nil, err
-	}
-	return &ActiveResponse{Items: s.toViews(items), ServerTime: now.Format(time.RFC3339Nano)}, nil
 }
 
 func (s *Service) History(cursor string, limit int) (*HistoryResponse, error) {

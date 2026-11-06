@@ -9,11 +9,13 @@ import (
 
 type MegaphoneItem struct {
 	ID             string                `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Type           string                `json:"type" example:"message"`
 	Sender         admincommon.UserBrief `json:"sender"`
 	Content        string                `json:"content" example:"Chúc cả nhà buổi tối vui vẻ"`
 	KenPrice       int                   `json:"kenPrice" example:"2000"`
 	ShowAt         string                `json:"showAt" example:"2026-11-06T10:00:00Z"`
-	DisplaySeconds int                   `json:"displaySeconds" example:"10"`
+	DisplaySeconds int                   `json:"displaySeconds" example:"12"`
+	ExpiresAt      string                `json:"expiresAt" example:"2026-11-06T10:30:00Z"`
 	Status         string                `json:"status" example:"active"`
 	RemovedReason  string                `json:"removedReason,omitempty" example:"Quảng cáo"`
 	RemovedAt      string                `json:"removedAt,omitempty" example:"2026-11-06T10:05:00Z"`

@@ -18,7 +18,18 @@ const BASE_SETTING = {
   displaySeconds: 3,
   cooldownSeconds: 0,
   dailyLimit: 50,
-  maxQueueSeconds: 600,
+  liveMinutes: 30,
+  gapSeconds: 0,
+  repeatBaseSeconds: 720,
+  messageWeight: 3,
+  giftTiers: [{ minKen: 0, weight: 1 }, { minKen: 1000, weight: 3 }, { minKen: 20000, weight: 6 }],
+}
+
+const DEFAULT_SETTING = { ...BASE_SETTING, kenPrice: 5000, displaySeconds: 12, cooldownSeconds: 60, dailyLimit: 20, gapSeconds: 3 }
+
+function restoredSetting(original) {
+  const saved = Object.keys(BASE_SETTING).filter((key) => original?.[key] !== undefined)
+  return { ...DEFAULT_SETTING, ...Object.fromEntries(saved.map((key) => [key, original[key]])) }
 }
 
 async function adminLogin() {
@@ -147,7 +158,7 @@ async function main() {
     const ws = await connectWS(B.token)
     const content = `Chào   cả nhà 🎉 ${Date.now()}`
     const normalized = content.replace(/\s+/g, ' ')
-    const eventPromise = waitForEvent(ws, 'MEGAPHONE_NEW', (d) => d?.megaphone?.content === normalized)
+    const eventPromise = waitForEvent(ws, 'MEGAPHONE_PLAY', (d) => d?.megaphone?.content === normalized, 20000)
     const requestId = crypto.randomUUID()
     r = await send(A.token, content, requestId)
     ok('send → 201', r.status === 201)
@@ -155,14 +166,14 @@ async function main() {
     created.push(sent.megaphone.id)
     ok('send normalizes whitespace', sent.megaphone.content === normalized)
     ok('send returns sender brief', sent.megaphone.sender.id === A.id && typeof sent.megaphone.sender.username === 'string')
-    ok('send returns schedule', sent.megaphone.displaySeconds === 3 && !Number.isNaN(Date.parse(sent.megaphone.showAt)))
+    ok('send returns message type', sent.megaphone.type === 'message')
+    ok('send returns live window', Math.abs(Date.parse(sent.megaphone.expiresAt) - Date.now() - 30 * 60 * 1000) < 10000)
     ok('send returns balance', sent.kenBalance === 1000 - PRICE)
     ok('balance charged once', (await kenOf(A.token)) === 1000 - PRICE)
     r = await req('GET', '/megaphones/active', undefined, B.token)
-    ok('active → 200 with serverTime', r.status === 200 && typeof data(r).serverTime === 'string')
-    ok('active lists playing megaphone', data(r).items.some((m) => m.id === sent.megaphone.id))
+    ok('active endpoint is gone → 404', r.status === 404)
     const event = await eventPromise
-    ok('other users receive MEGAPHONE_NEW', event != null && event.megaphone.id === sent.megaphone.id && typeof event.serverTime === 'string')
+    ok('other users receive MEGAPHONE_PLAY from the scheduler', event != null && event.megaphone.id === sent.megaphone.id)
 
     r = await send(A.token, content, requestId)
     ok('replay same clientRequestId → 201 same megaphone', r.status === 201 && data(r).megaphone.id === sent.megaphone.id)
@@ -181,13 +192,8 @@ async function main() {
     const kenItems = data(r)?.items ?? data(r)?.transactions ?? []
     ok('ken history shows MEGAPHONE debit', kenItems.some((t) => t.type === 'MEGAPHONE' && t.amount === PRICE))
 
-    // ── active + history ──
-    r = await req('GET', '/megaphones/active', undefined, B.token)
-    const active = data(r).items
-    ok('active sorted by showAt', active.every((m, i) => i === 0 || Date.parse(active[i - 1].showAt) <= Date.parse(m.showAt)))
-
-    const firstShowAt = Date.parse(sent.megaphone.showAt)
-    await sleep(Math.max(0, firstShowAt - Date.now()) + 300)
+    // ── history ──
+    await sleep(300)
     r = await req('GET', '/megaphones?limit=50', undefined, B.token)
     ok('history → 200', r.status === 200)
     ok('history includes played megaphone', data(r).items.some((m) => m.id === sent.megaphone.id))
@@ -266,9 +272,91 @@ async function main() {
     ok('third send → 429 MEGAPHONE_DAILY_LIMIT', r.status === 429 && r.body.code === 'MEGAPHONE_DAILY_LIMIT')
     ok('daily limit rejection does not charge', (await kenOf(D.token)) === 1000 - 2 * PRICE)
 
+    // ── scheduler repeats until removed ──
+    for (const id of created.splice(0)) {
+      await req('POST', `/admin/megaphones/${id}/remove`, { reason: 'test cleanup' }, adminToken)
+    }
+    await putSetting(adminToken, 'megaphone', { ...BASE_SETTING, repeatBaseSeconds: 10, messageWeight: 5 })
+    const repeater = await newUser(adminToken, 'loaR', 1000)
+    const repeatSocket = await connectWS(B.token)
+    r = await send(repeater.token, 'lặp lại nhiều lần')
+    const repeated = data(r).megaphone
+    created.push(repeated.id)
+    const firstPlay = await waitForEvent(repeatSocket, 'MEGAPHONE_PLAY', (d) => d?.megaphone?.id === repeated.id, 20000)
+    ok('scheduler plays new megaphone', firstPlay != null)
+    const secondPlay = await waitForEvent(repeatSocket, 'MEGAPHONE_PLAY', (d) => d?.megaphone?.id === repeated.id, 20000)
+    ok('scheduler repeats megaphone within its live time', secondPlay != null)
+    const removedEvent = waitForEvent(repeatSocket, 'MEGAPHONE_REMOVED', (d) => d?.id === repeated.id)
+    r = await req('POST', `/admin/megaphones/${repeated.id}/remove`, { reason: 'test' }, adminToken)
+    ok('admin removes repeating megaphone', r.status === 201 && (await removedEvent) != null)
+    const replayAfterRemove = await waitForEvent(repeatSocket, 'MEGAPHONE_PLAY', (d) => d?.megaphone?.id === repeated.id, 6000)
+    ok('removed megaphone stops repeating', replayAfterRemove == null)
+
+    // ── gift megaphone ──
+    await putSetting(adminToken, 'megaphone', BASE_SETTING)
+    r = await req('POST', '/admin/gifts', { name: 'Loa quà test', nameEn: 'Announce test', imageUrl: 'https://example.com/a.png', kenPrice: 10, charmPoints: 10, announceEnabled: true }, adminToken)
+    ok('admin creates gift with announce enabled', (r.status === 200 || r.status === 201) && data(r).announceEnabled === true)
+    const announcing = data(r)
+    r = await req('POST', '/admin/gifts', { name: 'Không loa test', imageUrl: 'https://example.com/b.png', kenPrice: 10, charmPoints: 10 }, adminToken)
+    ok('gift announce is off by default', data(r).announceEnabled === false)
+    const silent = data(r)
+    r = await req('GET', '/gifts', undefined, A.token)
+    ok('catalog exposes announceEnabled', data(r).items.find((g) => g.id === announcing.id)?.announceEnabled === true)
+
+    const giver = await newUser(adminToken, 'loaG', 1000)
+    const receiver = await newUser(adminToken, 'loaH', 0)
+    const gift = (body, token = giver.token) => req('POST', '/gifts/send', {
+      receiverId: receiver.id, quantity: 1, source: 'profile', clientRequestId: crypto.randomUUID(), ...body,
+    }, token)
+
+    r = await gift({ giftId: silent.id, announce: true })
+    ok('gift not allowed by admin is not announced', r.status === 201 && data(r).announced === false)
+    r = await gift({ giftId: announcing.id, announce: false })
+    ok('sender can turn the announcement off', r.status === 201 && data(r).announced === false)
+    r = await gift({ giftId: announcing.id })
+    ok('missing announce means no announcement', r.status === 201 && data(r).announced === false)
+    r = await req('GET', '/notifications', undefined, receiver.token)
+    ok('receiver still gets the normal notification', (data(r)?.items ?? []).some((n) => n.type === 'gift_received'))
+
+    const giftPlay = waitForEvent(repeatSocket, 'MEGAPHONE_PLAY', (d) => d?.megaphone?.type === 'gift' && d.megaphone.sender.id === giver.id, 15000)
+    const giftRequestId = crypto.randomUUID()
+    r = await gift({ giftId: announcing.id, announce: true, clientRequestId: giftRequestId })
+    ok('allowed gift with announce on is announced', r.status === 201 && data(r).announced === true)
+    const played = await giftPlay
+    ok('gift megaphone reaches everyone with gift and receiver', played?.megaphone?.gift?.name === 'Loa quà test' && played?.megaphone?.receiver?.id === receiver.id)
+    if (played != null) created.push(played.megaphone.id)
+    ok('gift megaphone carries the english name', played?.megaphone?.gift?.nameEn === 'Announce test')
+    const kenAfterGift = await kenOf(giver.token)
+    r = await gift({ giftId: announcing.id, announce: true, clientRequestId: giftRequestId })
+    ok('gift retry reports announced without charging', r.status === 201 && data(r).announced === true && (await kenOf(giver.token)) === kenAfterGift)
+    const duplicate = await waitForEvent(repeatSocket, 'MEGAPHONE_PLAY', (d) => d?.megaphone?.type === 'gift' && d.megaphone.sender.id === giver.id && d.megaphone.id !== played?.megaphone?.id, 4000)
+    ok('gift retry creates no second megaphone', duplicate == null)
+
+    await sleep(300)
+    r = await req('GET', '/megaphones?limit=50', undefined, B.token)
+    ok('history hides gift megaphones', data(r).items.every((m) => m.type === 'message') && !data(r).items.some((m) => m.id === played?.megaphone?.id))
+    r = await req('GET', '/megaphones/config', undefined, giver.token)
+    ok('gift megaphone does not use the daily limit', data(r).todayCount === 0)
+    r = await req('GET', `/admin/megaphones?type=gift&senderId=${giver.id}`, undefined, adminToken)
+    ok('admin can list gift megaphones', r.status === 200 && data(r).items.length === 1 && data(r).items[0].type === 'gift')
+
+    await putSetting(adminToken, 'megaphone', { ...BASE_SETTING, cooldownSeconds: 60 })
+    r = await gift({ giftId: announcing.id, announce: true })
+    ok('gift cooldown skips the announcement but keeps the gift', r.status === 201 && data(r).announced === false)
+    await putSetting(adminToken, 'megaphone', BASE_SETTING)
+
+    const privateReceiver = await newUser(adminToken, 'loaI', 0)
+    r = await req('PUT', '/user-settings', { giftWallPrivacy: 2 }, privateReceiver.token)
+    ok('receiver hides gift wall', r.status === 200)
+    r = await gift({ giftId: announcing.id, announce: true, receiverId: privateReceiver.id })
+    ok('private gift wall is not announced', r.status === 201 && data(r).announced === false)
+    repeatSocket.disconnect()
+    await req('DELETE', `/admin/gifts/${announcing.id}`, undefined, adminToken)
+    await req('DELETE', `/admin/gifts/${silent.id}`, undefined, adminToken)
+
     // ── queue full ──
     const E = await newUser(adminToken, 'loaE', 5000)
-    await putSetting(adminToken, 'megaphone', { ...BASE_SETTING, displaySeconds: 60, maxQueueSeconds: 60 })
+    await putSetting(adminToken, 'megaphone', { ...BASE_SETTING, displaySeconds: 15, liveMinutes: 1 })
     let full = null
     let spent = 0
     for (let i = 0; i < 6 && full == null; i += 1) {
@@ -293,12 +381,28 @@ async function main() {
     ok('disabled → 403 MEGAPHONE_DISABLED', r.status === 403 && r.body.code === 'MEGAPHONE_DISABLED')
     r = await send(F.token, 'gửi trước khi tắt', lateId)
     ok('retry of a charged megaphone after disabling still replays', r.status === 201 && data(r).megaphone.id === late.id)
+
+    section('Queue wait')
+    for (const id of created.splice(0)) {
+      await req('POST', `/admin/megaphones/${id}/remove`, { reason: 'test cleanup' }, adminToken)
+    }
+    await sleep(3500)
+    await putSetting(adminToken, 'megaphone', { ...BASE_SETTING, displaySeconds: 20, gapSeconds: 5 })
+    const G = await newUser(adminToken, 'loaG', 1000)
+    const H = await newUser(adminToken, 'loaH', 1000)
+    r = await send(G.token, 'loa đang chạy')
+    ok('first paid megaphone accepted', r.status === 201)
+    created.push(data(r).megaphone.id)
+    await sleep(2500)
+    r = await send(H.token, 'loa chờ lượt')
+    ok('second paid megaphone accepted', r.status === 201)
+    ok('wait counts the running turn', data(r)?.waitSeconds > 0)
+    if (data(r)?.megaphone != null) created.push(data(r).megaphone.id)
   } finally {
     for (const id of created) {
       await req('POST', `/admin/megaphones/${id}/remove`, { reason: 'test cleanup' }, adminToken)
     }
-    if (originalMegaphone) await putSetting(adminToken, 'megaphone', originalMegaphone)
-    else await putSetting(adminToken, 'megaphone', { ...BASE_SETTING, kenPrice: 2000, displaySeconds: 10, cooldownSeconds: 60, dailyLimit: 20, maxQueueSeconds: 300 })
+    await putSetting(adminToken, 'megaphone', restoredSetting(originalMegaphone))
     await putSetting(adminToken, 'content_filter', originalFilter ?? { bannedWords: [] })
   }
 

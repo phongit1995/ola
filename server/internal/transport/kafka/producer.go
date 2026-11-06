@@ -136,8 +136,8 @@ func (p *Producer) PublishPushBroadcast(ctx context.Context, event *pushBroadcas
 	return p.publishKeyed(ctx, constants.KafkaTopicPushBroadcast, event.CampaignID, event)
 }
 
-func (p *Producer) PublishMegaphoneCreated(ctx context.Context, event *megaphoneEvents.CreatedEvent) error {
-	return p.publishKeyed(ctx, constants.KafkaTopicMegaphoneCreated, event.Megaphone.ID, event)
+func (p *Producer) PublishMegaphonePlay(ctx context.Context, event *megaphoneEvents.PlayEvent) error {
+	return p.publishKeyed(ctx, constants.KafkaTopicMegaphonePlay, event.Megaphone.ID, event)
 }
 
 func (p *Producer) PublishMegaphoneRemoved(ctx context.Context, event *megaphoneEvents.RemovedEvent) error {

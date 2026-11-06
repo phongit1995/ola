@@ -36,7 +36,7 @@ export function MegaphoneHistoryItem({ megaphone, isMine, nowMs, onOpenProfile, 
             <UserName
               name={`@${megaphone.sender.username}`}
               fullName={megaphone.sender.fullName}
-              className="text-sm font-semibold text-ola-megaphone-ink"
+              className="text-sm font-semibold text-ola-megaphone-name"
               fullNameClassName="font-normal text-black/54"
             />
           </button>

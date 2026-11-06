@@ -22,6 +22,7 @@ func NewRepository(db *gorm.DB) *Repository {
 type ListFilter struct {
 	SenderID *uuid.UUID
 	Status   string
+	Type     string
 	Query    string
 	From     *time.Time
 	To       *time.Time
@@ -41,6 +42,9 @@ func listScope(f ListFilter) func(*gorm.DB) *gorm.DB {
 		}
 		if f.Status != "" {
 			db = db.Where("status = ?", f.Status)
+		}
+		if f.Type != "" {
+			db = db.Where("type = ?", f.Type)
 		}
 		if f.Query != "" {
 			db = db.Where("content ILIKE ?", utils.LikeContains(f.Query))

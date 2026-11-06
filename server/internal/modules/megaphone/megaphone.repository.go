@@ -25,8 +25,12 @@ type SendParams struct {
 	SenderID        uuid.UUID
 	Content         string
 	KenPrice        int
+	Weight          int
 	DisplaySeconds  int
-	MaxQueue        time.Duration
+	SlotSeconds     int
+	RunningSlot     time.Duration
+	QueueLimit      int
+	ExpiresAt       time.Time
 	DailyLimit      int
 	DayStart        time.Time
 	Cooldown        time.Duration
@@ -34,16 +38,23 @@ type SendParams struct {
 	Now             time.Time
 }
 
+type GiftParams struct {
+	SenderID          uuid.UUID
+	GiftTransactionID uuid.UUID
+	Content           string
+	Weight            int
+	DisplaySeconds    int
+	QueueLimit        int
+	ExpiresAt         time.Time
+	Cooldown          time.Duration
+	Now               time.Time
+}
+
 type SendResult struct {
 	Megaphone     models.Megaphone
 	SenderBalance int
 	Wait          time.Duration
 	Replayed      bool
-}
-
-func activeAt(db *gorm.DB, now time.Time) *gorm.DB {
-	return db.Where("status = ? AND show_at > ? AND show_at + display_seconds * interval '1 second' > ?",
-		models.MegaphoneStatusActive, now.Add(-queueLookback), now)
 }
 
 func (r *Repository) FindByID(id uuid.UUID) (*models.Megaphone, error) {
@@ -72,7 +83,9 @@ func (r *Repository) FindByClientRequest(senderID uuid.UUID, clientRequestID str
 
 func countSentSince(db *gorm.DB, senderID uuid.UUID, since time.Time) (int64, error) {
 	var count int64
-	err := db.Model(&models.Megaphone{}).Where("sender_id = ? AND created_at >= ?", senderID, since).Count(&count).Error
+	err := db.Model(&models.Megaphone{}).
+		Where("sender_id = ? AND type = ? AND created_at >= ?", senderID, models.MegaphoneTypeMessage, since).
+		Count(&count).Error
 	return count, err
 }
 
@@ -80,9 +93,9 @@ func (r *Repository) CountSentSince(senderID uuid.UUID, since time.Time) (int64,
 	return countSentSince(r.db, senderID, since)
 }
 
-func lastSentAt(db *gorm.DB, senderID uuid.UUID) (*time.Time, error) {
+func lastSentAt(db *gorm.DB, senderID uuid.UUID, megaphoneType string) (*time.Time, error) {
 	var last sql.NullTime
-	err := db.Model(&models.Megaphone{}).Where("sender_id = ?", senderID).
+	err := db.Model(&models.Megaphone{}).Where("sender_id = ? AND type = ?", senderID, megaphoneType).
 		Select("MAX(created_at)").Row().Scan(&last)
 	if err != nil || !last.Valid {
 		return nil, err
@@ -92,7 +105,7 @@ func lastSentAt(db *gorm.DB, senderID uuid.UUID) (*time.Time, error) {
 }
 
 func (r *Repository) LastSentAt(senderID uuid.UUID) (*time.Time, error) {
-	return lastSentAt(r.db, senderID)
+	return lastSentAt(r.db, senderID, models.MegaphoneTypeMessage)
 }
 
 func (r *Repository) KenBalance(userID uuid.UUID) (int, error) {
@@ -103,28 +116,26 @@ func (r *Repository) KenBalance(userID uuid.UUID) (int, error) {
 	return u.Ken, nil
 }
 
-func queueEnd(db *gorm.DB, now time.Time) (time.Time, error) {
-	var end sql.NullTime
-	err := activeAt(db.Model(&models.Megaphone{}), now).
-		Select("MAX(show_at + display_seconds * interval '1 second')").
-		Row().Scan(&end)
-	if err != nil {
-		return now, err
-	}
-	if !end.Valid || end.Time.Before(now) {
-		return now, nil
-	}
-	return end.Time.UTC(), nil
+func countWaiting(db *gorm.DB, now time.Time) (int, error) {
+	var count int64
+	err := db.Model(&models.Megaphone{}).
+		Where("status = ? AND first_played_at IS NULL AND expires_at > ?", models.MegaphoneStatusActive, now).
+		Count(&count).Error
+	return int(count), err
 }
 
-func (r *Repository) QueueEnd(now time.Time) (time.Time, error) {
-	return queueEnd(r.db, now)
+func (r *Repository) CountWaiting(now time.Time) (int, error) {
+	return countWaiting(r.db, now)
+}
+
+func lockQueue(tx *gorm.DB) error {
+	return tx.Exec("SELECT pg_advisory_xact_lock(?)", queueAdvisoryLockKey).Error
 }
 
 func (r *Repository) Send(p SendParams) (*SendResult, error) {
 	result := &SendResult{}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Exec("SELECT pg_advisory_xact_lock(?)", queueAdvisoryLockKey).Error; err != nil {
+		if err := lockQueue(tx); err != nil {
 			return err
 		}
 		existing, err := findByClientRequest(tx, p.SenderID, p.ClientRequestID)
@@ -144,7 +155,7 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 			return ErrMegaphoneDailyLimit
 		}
 		if p.Cooldown > 0 {
-			last, err := lastSentAt(tx, p.SenderID)
+			last, err := lastSentAt(tx, p.SenderID, models.MegaphoneTypeMessage)
 			if err != nil {
 				return err
 			}
@@ -152,12 +163,15 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 				return ErrMegaphoneCooldown
 			}
 		}
-		showAt, err := queueEnd(tx, p.Now)
+		waiting, err := countWaiting(tx, p.Now)
 		if err != nil {
 			return err
 		}
-		wait := showAt.Sub(p.Now)
-		if wait > p.MaxQueue {
+		if waiting >= p.QueueLimit {
+			return ErrMegaphoneQueueFull
+		}
+		wait := queueWait(waiting, p.SlotSeconds, p.RunningSlot)
+		if !p.Now.Add(wait).Before(p.ExpiresAt) {
 			return ErrMegaphoneQueueFull
 		}
 
@@ -175,10 +189,13 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 		record := models.Megaphone{
 			ID:              uuid.New(),
 			SenderID:        p.SenderID,
+			Type:            models.MegaphoneTypeMessage,
 			Content:         p.Content,
 			KenPrice:        p.KenPrice,
-			ShowAt:          showAt,
+			Weight:          p.Weight,
+			ShowAt:          p.Now,
 			DisplaySeconds:  p.DisplaySeconds,
+			ExpiresAt:       p.ExpiresAt,
 			Status:          models.MegaphoneStatusActive,
 			ClientRequestID: p.ClientRequestID,
 			CreatedAt:       p.Now,
@@ -224,14 +241,111 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 	return result, nil
 }
 
-func (r *Repository) ListActive(now time.Time, limit int) ([]models.Megaphone, error) {
+func (r *Repository) FindByGiftTransaction(txID uuid.UUID) (*models.Megaphone, error) {
+	var item models.Megaphone
+	err := r.db.Where("gift_transaction_id = ?", txID).First(&item).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
+func (r *Repository) CreateGift(p GiftParams) (*models.Megaphone, error) {
+	var created *models.Megaphone
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := lockQueue(tx); err != nil {
+			return err
+		}
+		if p.Cooldown > 0 {
+			last, err := lastSentAt(tx, p.SenderID, models.MegaphoneTypeGift)
+			if err != nil {
+				return err
+			}
+			if last != nil && p.Now.Sub(*last) < p.Cooldown {
+				return nil
+			}
+		}
+		waiting, err := countWaiting(tx, p.Now)
+		if err != nil {
+			return err
+		}
+		if waiting >= p.QueueLimit {
+			return nil
+		}
+		txID := p.GiftTransactionID
+		record := models.Megaphone{
+			ID:                uuid.New(),
+			SenderID:          p.SenderID,
+			Type:              models.MegaphoneTypeGift,
+			Content:           p.Content,
+			Weight:            p.Weight,
+			ShowAt:            p.Now,
+			DisplaySeconds:    p.DisplaySeconds,
+			ExpiresAt:         p.ExpiresAt,
+			Status:            models.MegaphoneStatusActive,
+			ClientRequestID:   giftRequestPrefix + txID.String(),
+			GiftTransactionID: &txID,
+			CreatedAt:         p.Now,
+		}
+		if err := tx.Create(&record).Error; err != nil {
+			return err
+		}
+		created = &record
+		return nil
+	})
+	return created, err
+}
+
+func (r *Repository) ListSchedulable(now time.Time) ([]models.Megaphone, error) {
 	var items []models.Megaphone
-	err := activeAt(r.db, now).Order("show_at ASC, id ASC").Limit(limit).Find(&items).Error
+	err := r.db.Joins("JOIN users ON users.id = megaphones.sender_id AND users.is_active AND users.deleted_at IS NULL").
+		Where("megaphones.status = ? AND megaphones.expires_at > ?", models.MegaphoneStatusActive, now).
+		Order("megaphones.created_at ASC, megaphones.id ASC").Find(&items).Error
 	return items, err
 }
 
+func (r *Repository) MarkPlayed(id uuid.UUID, at time.Time) error {
+	return r.db.Model(&models.Megaphone{}).
+		Where("id = ? AND first_played_at IS NULL", id).
+		Updates(map[string]interface{}{"first_played_at": at, "show_at": at}).Error
+}
+
+func (r *Repository) GiftTransactions(ids []uuid.UUID) (map[uuid.UUID]models.GiftTransaction, error) {
+	out := make(map[uuid.UUID]models.GiftTransaction, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+	var items []models.GiftTransaction
+	if err := r.db.Where("id IN ?", ids).Find(&items).Error; err != nil {
+		return out, err
+	}
+	for i := range items {
+		out[items[i].ID] = items[i]
+	}
+	return out, nil
+}
+
+func (r *Repository) GiftNamesEn(ids []uuid.UUID) (map[uuid.UUID]string, error) {
+	out := make(map[uuid.UUID]string, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+	var gifts []models.Gift
+	if err := r.db.Unscoped().Select("id", "name_en").Where("id IN ?", ids).Find(&gifts).Error; err != nil {
+		return out, err
+	}
+	for i := range gifts {
+		out[gifts[i].ID] = gifts[i].NameEn
+	}
+	return out, nil
+}
+
 func (r *Repository) History(now time.Time, cursorAt *time.Time, cursorID *uuid.UUID, limit int) ([]models.Megaphone, error) {
-	q := r.db.Where("status = ? AND show_at > ? AND show_at <= ?", models.MegaphoneStatusActive, now.Add(-HistoryWindow), now)
+	q := r.db.Where("status = ? AND type = ? AND first_played_at IS NOT NULL AND show_at > ?",
+		models.MegaphoneStatusActive, models.MegaphoneTypeMessage, now.Add(-HistoryWindow))
 	if cursorAt != nil && cursorID != nil {
 		q = q.Where("(show_at, id) < (?, ?)", *cursorAt, *cursorID)
 	}

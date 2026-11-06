@@ -212,7 +212,6 @@ export const API_PATH = {
   megaphones: {
     base: '/megaphones',
     config: '/megaphones/config',
-    active: '/megaphones/active',
   },
   gifts: {
     base: '/gifts',

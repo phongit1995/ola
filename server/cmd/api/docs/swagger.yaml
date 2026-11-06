@@ -1165,6 +1165,26 @@ definitions:
     type: object
   internal_modules_admin_gift.CreateGiftRequest:
     properties:
+      animation:
+        enum:
+        - random
+        - fly
+        - drop
+        - spin
+        - zoom
+        - float
+        - swing
+        - pop
+        - flip
+        - heartbeat
+        - jelly
+        - tornado
+        - slide
+        example: random
+        type: string
+      announceEnabled:
+        example: false
+        type: boolean
       charmPoints:
         example: 10
         maximum: 100000000
@@ -1190,6 +1210,11 @@ definitions:
         example: Rose
         maxLength: 60
         type: string
+      senderCharmPercent:
+        example: 50
+        maximum: 100
+        minimum: 0
+        type: integer
       sortOrder:
         example: 0
         type: integer
@@ -1200,6 +1225,12 @@ definitions:
     type: object
   internal_modules_admin_gift.GiftItem:
     properties:
+      animation:
+        example: random
+        type: string
+      announceEnabled:
+        example: false
+        type: boolean
       charmPoints:
         example: 10
         type: integer
@@ -1224,6 +1255,9 @@ definitions:
       nameEn:
         example: Rose
         type: string
+      senderCharmPercent:
+        example: 50
+        type: integer
       sortOrder:
         example: 0
         type: integer
@@ -1302,6 +1336,9 @@ definitions:
         $ref: '#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief'
       sender:
         $ref: '#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief'
+      senderCharmPoints:
+        example: 25
+        type: integer
       source:
         example: chat
         type: string
@@ -1353,6 +1390,26 @@ definitions:
     type: object
   internal_modules_admin_gift.UpdateGiftRequest:
     properties:
+      animation:
+        enum:
+        - random
+        - fly
+        - drop
+        - spin
+        - zoom
+        - float
+        - swing
+        - pop
+        - flip
+        - heartbeat
+        - jelly
+        - tornado
+        - slide
+        example: random
+        type: string
+      announceEnabled:
+        example: false
+        type: boolean
       charmPoints:
         example: 10
         maximum: 100000000
@@ -1378,6 +1435,11 @@ definitions:
         example: Rose
         maxLength: 60
         type: string
+      senderCharmPercent:
+        example: 50
+        maximum: 100
+        minimum: 0
+        type: integer
       sortOrder:
         example: 0
         type: integer
@@ -2269,8 +2331,11 @@ definitions:
         example: "2026-11-06T09:59:50Z"
         type: string
       displaySeconds:
-        example: 10
+        example: 12
         type: integer
+      expiresAt:
+        example: "2026-11-06T10:30:00Z"
+        type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -2290,6 +2355,9 @@ definitions:
         type: string
       status:
         example: active
+        type: string
+      type:
+        example: message
         type: string
     type: object
   internal_modules_admin_megaphone.PenaltyRequest:
@@ -4978,6 +5046,9 @@ definitions:
       createdAt:
         example: "2026-11-05T10:00:00Z"
         type: string
+      giftAnimation:
+        example: random
+        type: string
       giftId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -4995,6 +5066,9 @@ definitions:
         type: string
       quantity:
         example: 5
+        type: integer
+      senderCharmPoints:
+        example: 25
         type: integer
       source:
         example: chat
@@ -5031,6 +5105,12 @@ definitions:
     type: object
   internal_modules_gift.GiftItem:
     properties:
+      animation:
+        example: random
+        type: string
+      announceEnabled:
+        example: true
+        type: boolean
       charmPoints:
         example: 10
         type: integer
@@ -5049,6 +5129,9 @@ definitions:
       nameEn:
         example: Rose
         type: string
+      senderCharmPercent:
+        example: 50
+        type: integer
     type: object
   internal_modules_gift.GiftSettingsView:
     properties:
@@ -5186,6 +5269,9 @@ definitions:
     type: object
   internal_modules_gift.SendGiftRequest:
     properties:
+      announce:
+        example: true
+        type: boolean
       clientRequestId:
         example: 7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10
         maxLength: 64
@@ -5219,6 +5305,9 @@ definitions:
     type: object
   internal_modules_gift.SendGiftResponse:
     properties:
+      announced:
+        example: true
+        type: boolean
       charmPoints:
         example: 50
         type: integer
@@ -5248,6 +5337,9 @@ definitions:
       receiverId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      senderCharmPoints:
+        example: 25
+        type: integer
       totalKen:
         example: 50
         type: integer
@@ -6160,33 +6252,6 @@ definitions:
       width:
         type: integer
     type: object
-  internal_modules_megaphone.ActiveResponse:
-    properties:
-      items:
-        items:
-          $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone'
-        type: array
-      serverTime:
-        example: "2026-11-06T10:00:00.123Z"
-        type: string
-    type: object
-  internal_modules_megaphone.ActiveSuccessResponse:
-    properties:
-      data:
-        $ref: '#/definitions/internal_modules_megaphone.ActiveResponse'
-      error:
-        type: string
-      path:
-        type: string
-      status:
-        type: integer
-      success:
-        type: boolean
-      timestamp:
-        type: string
-      traceId:
-        type: string
-    type: object
   internal_modules_megaphone.ConfigResponse:
     properties:
       cooldownRemaining:
@@ -6199,13 +6264,16 @@ definitions:
         example: 20
         type: integer
       displaySeconds:
-        example: 10
+        example: 12
         type: integer
       enabled:
         example: true
         type: boolean
       kenPrice:
-        example: 2000
+        example: 5000
+        type: integer
+      liveMinutes:
+        example: 30
         type: integer
       maxLength:
         example: 80
@@ -8468,6 +8536,13 @@ definitions:
         - large
         example: medium
         type: string
+      giftWallPrivacy:
+        enum:
+        - 0
+        - 1
+        - 2
+        example: 0
+        type: integer
       meVisibility:
         enum:
         - all
@@ -8511,6 +8586,9 @@ definitions:
       fontSize:
         example: medium
         type: string
+      giftWallPrivacy:
+        example: 0
+        type: integer
       meVisibility:
         example: all
         type: string
@@ -8945,6 +9023,9 @@ definitions:
       bioImage:
         example: https://example.com/bio.jpg
         type: string
+      canViewGiftWall:
+        example: true
+        type: boolean
       canViewInterested:
         example: true
         type: boolean
@@ -8963,6 +9044,9 @@ definitions:
       dateOfBirth:
         example: "1990-01-01"
         type: string
+      emailVerified:
+        example: false
+        type: boolean
       followerCount:
         example: 0
         type: integer
@@ -9690,6 +9774,24 @@ definitions:
     additionalProperties:
       type: string
     type: object
+  ola-chat-server_internal_domain_megaphone.GiftInfo:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      imageUrl:
+        example: https://cdn.ola.vn/gifts/rose.png
+        type: string
+      name:
+        example: Hoa hồng
+        type: string
+      nameEn:
+        example: Rose
+        type: string
+      quantity:
+        example: 5
+        type: integer
+    type: object
   ola-chat-server_internal_domain_megaphone.Megaphone:
     properties:
       content:
@@ -9699,15 +9801,25 @@ definitions:
         example: "2026-11-06T09:59:50Z"
         type: string
       displaySeconds:
-        example: 10
+        example: 12
         type: integer
+      expiresAt:
+        example: "2026-11-06T10:30:00Z"
+        type: string
+      gift:
+        $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.GiftInfo'
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
+      receiver:
+        $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Sender'
       sender:
         $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Sender'
       showAt:
         example: "2026-11-06T10:00:00Z"
+        type: string
+      type:
+        example: message
         type: string
     type: object
   ola-chat-server_internal_domain_megaphone.Sender:
@@ -16580,6 +16692,10 @@ paths:
         in: query
         name: status
         type: string
+      - description: 'Loại tin: message, gift'
+        in: query
+        name: type
+        type: string
       - description: Tìm trong nội dung
         in: query
         name: q
@@ -21320,6 +21436,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/internal_modules_gift.GiftWallSuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
@@ -22316,15 +22436,16 @@ paths:
             $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
-      summary: Loa đã phát trong 24 giờ gần nhất
+      summary: Loa thường đã phát trong 24 giờ gần nhất
       tags:
       - megaphones
     post:
       consumes:
       - application/json
       description: Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày
-        trước khi trừ KEN (MEGAPHONE). Hàng chờ quá dài thì từ chối, không trừ KEN.
-        clientRequestId chống trừ hai lần khi gửi lại.
+        trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối,
+        không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId
+        chống trừ hai lần khi gửi lại.
       parameters:
       - description: Megaphone
         in: body
@@ -22358,22 +22479,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Phát loa tới mọi người
-      tags:
-      - megaphones
-  /megaphones/active:
-    get:
-      description: Sắp theo giờ phát tăng dần, kèm serverTime để client tính lịch
-        phát theo giờ server.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/internal_modules_megaphone.ActiveSuccessResponse'
-      security:
-      - BearerAuth: []
-      summary: Loa đang phát và đang chờ phát
       tags:
       - megaphones
   /megaphones/config:

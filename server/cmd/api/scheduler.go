@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ola-chat-server/internal/modules/kenchest"
+	"ola-chat-server/internal/modules/megaphone"
 	"ola-chat-server/internal/modules/moment"
 	"ola-chat-server/internal/modules/story"
 
@@ -14,6 +15,7 @@ type Schedulers struct {
 	dig.In
 
 	KenChest        *kenchest.Scheduler
+	Megaphone       *megaphone.Scheduler
 	StoryCrawler    *story.Crawler
 	RookiesCrawler  *story.RookiesCrawler
 	MomentCleaner   *moment.Cleaner
@@ -22,6 +24,7 @@ type Schedulers struct {
 
 func (s Schedulers) Start(ctx context.Context) {
 	s.KenChest.Start(ctx)
+	s.Megaphone.Start(ctx)
 	s.StoryCrawler.Start(ctx)
 	s.RookiesCrawler.Start(ctx)
 	s.MomentCleaner.Start(ctx)

@@ -1,7 +1,6 @@
 import { http } from '../api/http';
 import { API_PATH } from '../config/api';
 import type {
-  MegaphoneActiveResult,
   MegaphoneConfig,
   MegaphoneHistoryParams,
   MegaphoneHistoryResult,
@@ -12,10 +11,6 @@ import type {
 export class MegaphoneService {
   static config(): Promise<MegaphoneConfig> {
     return http.get<MegaphoneConfig>(API_PATH.megaphones.config);
-  }
-
-  static active(): Promise<MegaphoneActiveResult> {
-    return http.get<MegaphoneActiveResult>(API_PATH.megaphones.active);
   }
 
   static history(params: MegaphoneHistoryParams = {}): Promise<MegaphoneHistoryResult> {

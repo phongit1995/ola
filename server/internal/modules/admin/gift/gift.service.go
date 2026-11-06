@@ -33,6 +33,7 @@ func toGiftItem(g *models.Gift) GiftItem {
 		SortOrder:          g.SortOrder,
 		Animation:          g.Animation,
 		SenderCharmPercent: g.SenderCharmPercent,
+		AnnounceEnabled:    g.AnnounceEnabled,
 		CreatedAt:          g.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:          g.UpdatedAt.UTC().Format(time.RFC3339),
 	}
@@ -73,6 +74,7 @@ func (s *Service) Create(req CreateGiftRequest) (*GiftItem, error) {
 		SortOrder:          req.SortOrder,
 		Animation:          animation,
 		SenderCharmPercent: senderCharmPercent,
+		AnnounceEnabled:    req.AnnounceEnabled,
 	}
 	if err := s.giftRepo.Create(g); err != nil {
 		return nil, err
@@ -113,6 +115,9 @@ func (s *Service) Update(id uuid.UUID, req UpdateGiftRequest) (*GiftItem, error)
 	}
 	if req.SenderCharmPercent != nil {
 		g.SenderCharmPercent = *req.SenderCharmPercent
+	}
+	if req.AnnounceEnabled != nil {
+		g.AnnounceEnabled = *req.AnnounceEnabled
 	}
 	if g.Name == "" {
 		return nil, ErrGiftNameRequired

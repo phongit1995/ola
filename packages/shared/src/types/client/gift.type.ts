@@ -66,6 +66,9 @@ export interface GiftPicker {
   step: GiftPickerStep;
   submitting: boolean;
   canSend: boolean;
+  canAnnounce: boolean;
+  announce: boolean;
+  setAnnounce: (announce: boolean) => void;
   selectGift: (giftId: string) => void;
   selectQuantity: (quantity: number) => void;
   changeNote: (note: string) => void;

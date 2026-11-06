@@ -3,8 +3,8 @@ import { MEGAPHONE_HISTORY_PAGE_SIZE } from '../../constants/megaphone';
 import { MegaphoneService } from '../../services/megaphone.service';
 import type { Megaphone } from '../../types/api/megaphone.type';
 import type { MegaphoneHistory } from '../../types/client/megaphone.type';
+import { useRoomFilterStore } from '../room/roomFilterStore';
 import { useMegaphoneStore } from './megaphoneStore';
-import { useVisibleMegaphones } from './useCurrentMegaphone';
 
 export type { MegaphoneHistory } from '../../types/client/megaphone.type';
 
@@ -16,6 +16,15 @@ interface HistoryState {
 }
 
 const EMPTY_HISTORY: HistoryState = { items: [], done: false, loading: false };
+
+function useVisibleMegaphones(items: readonly Megaphone[]): Megaphone[] {
+  const blockedUserIds = useRoomFilterStore((s) => s.blockedUserIds);
+  return useMemo(() => {
+    if (blockedUserIds.length === 0) return [...items];
+    const blocked = new Set(blockedUserIds);
+    return items.filter((item) => !blocked.has(item.sender.id));
+  }, [items, blockedUserIds]);
+}
 
 export function useMegaphoneHistory(): MegaphoneHistory {
   const [state, setState] = useState<HistoryState>(EMPTY_HISTORY);
@@ -52,6 +61,12 @@ export function useMegaphoneHistory(): MegaphoneHistory {
     },
     refresh: () => {
       if (!state.loading) void fetchPage();
+    },
+    prepend: (megaphone) => {
+      setState((prev) => ({
+        ...prev,
+        items: [megaphone, ...prev.items.filter((item) => item.id !== megaphone.id)],
+      }));
     },
   };
 }

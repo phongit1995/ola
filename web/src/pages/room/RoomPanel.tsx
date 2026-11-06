@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, PullToRefresh } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
-import { MegaphoneBar } from '@components/megaphone/MegaphoneBar';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
@@ -100,7 +99,6 @@ export function RoomPanel() {
           </svg>
         </button>
       </HomeHeader>
-      <MegaphoneBar />
 
       <PullToRefresh
         onRefresh={refresh}

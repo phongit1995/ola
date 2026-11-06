@@ -1,15 +1,19 @@
-import type { MegaphoneConfig } from '../types/api/megaphone.type';
+import type { MegaphoneConfig, MegaphoneType } from '../types/api/megaphone.type';
 import type { MegaphoneErrorKey } from '../types/lib.type';
 
 export const MEGAPHONE_HISTORY_PAGE_SIZE = 20;
-export const MEGAPHONE_MARQUEE_SPEED_PX_PER_SEC = 60;
-export const MEGAPHONE_MARQUEE_START_DELAY_MS = 800;
+
+export const MEGAPHONE_TYPE = {
+  message: 'message',
+  gift: 'gift',
+} as const satisfies Record<string, MegaphoneType>;
 
 export const DEFAULT_MEGAPHONE_CONFIG: MegaphoneConfig = {
   enabled: true,
-  kenPrice: 2000,
+  kenPrice: 5000,
   maxLength: 80,
-  displaySeconds: 10,
+  displaySeconds: 12,
+  liveMinutes: 30,
   cooldownSeconds: 60,
   dailyLimit: 20,
   todayCount: 0,

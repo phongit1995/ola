@@ -1,15 +1,26 @@
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
-import { cn, formatKen } from '@lib';
+import { activeVipTypeId, cn, formatKen } from '@lib';
 import { useMegaphoneComposer } from '@ola/shared/stores/megaphone/useMegaphoneComposer';
-import megaphoneImage from '@/assets/images/announcement-megaphone.png';
+import type { SendMegaphoneResult } from '@app-types';
+import kenIcon from '@/assets/icons/apps/ken.png';
+import megaphoneImage from '@/assets/images/member-megaphone.webp';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useAuthStore } from '@/store/authStore';
 import { MegaphonePreview } from './MegaphonePreview';
 
 interface MegaphoneComposeDialogProps {
   onClose: () => void;
-  onSent?: () => void;
+  onSent?: (result: SendMegaphoneResult) => void;
+}
+
+function KenValue({ ken, className }: { ken: number; className: string }) {
+  return (
+    <b className={cn('inline-flex items-center gap-1', className)}>
+      {formatKen(ken)}
+      <img src={kenIcon} alt="KEN" className="h-4 w-4 object-contain" />
+    </b>
+  );
 }
 
 export function MegaphoneComposeDialog({ onClose, onSent }: MegaphoneComposeDialogProps) {
@@ -19,7 +30,6 @@ export function MegaphoneComposeDialog({ onClose, onSent }: MegaphoneComposeDial
   const user = useAuthStore((s) => s.user);
   const { config, loaded, loadError, step, submitting } = composer;
   const icon = <img src={megaphoneImage} alt="" className="h-7 w-7 object-contain" />;
-  const priceText = config.kenPrice > 0 ? t('megaphone.kenAmount', { ken: formatKen(config.kenPrice) }) : t('megaphone.free');
 
   if (step === 'confirm') {
     return (
@@ -41,8 +51,8 @@ export function MegaphoneComposeDialog({ onClose, onSent }: MegaphoneComposeDial
       >
         <div className="flex flex-col gap-3 px-1 py-1">
           <MegaphonePreview
-            name={user?.fullName || user?.username || ''}
-            avatar={user?.avatar}
+            username={user?.username ?? ''}
+            vipTypeId={activeVipTypeId(user?.vipUsed, user?.vipEndTime)}
             content={composer.normalizedContent}
           />
           <p className="text-center text-base text-black/87">
@@ -90,7 +100,7 @@ export function MegaphoneComposeDialog({ onClose, onSent }: MegaphoneComposeDial
         </p>
       ) : (
         <div className="flex flex-col gap-3 px-1 py-1">
-          <p className="text-sm text-black/60">{t('megaphone.hint', { seconds: config.displaySeconds })}</p>
+          <p className="text-sm text-black/60">{t('megaphone.hint', { minutes: config.liveMinutes })}</p>
           <div className="relative">
             <textarea
               value={composer.content}
@@ -115,13 +125,18 @@ export function MegaphoneComposeDialog({ onClose, onSent }: MegaphoneComposeDial
           <p className="text-xs text-black/45">{t('megaphone.rules')}</p>
           <p className="text-center text-sm font-medium text-ola-megaphone-ink">{statusLine()}</p>
           <div className="flex items-center justify-between rounded-lg bg-ola-surface px-3 py-2 text-sm">
-            <span className="text-black/54">
-              {t('megaphone.balance')}{' '}
-              <b className="text-black/87">{t('megaphone.kenAmount', { ken: formatKen(composer.balance) })}</b>
+            <span className="inline-flex items-center gap-1 text-black/54">
+              {t('megaphone.balance')}
+              <KenValue ken={composer.balance} className="text-black/87" />
             </span>
             {composer.affordable ? (
-              <span className="text-black/54">
-                {t('megaphone.price')} <b className="text-ola-megaphone-ink">{priceText}</b>
+              <span className="inline-flex items-center gap-1 text-black/54">
+                {t('megaphone.price')}
+                {config.kenPrice > 0 ? (
+                  <KenValue ken={config.kenPrice} className="text-ola-megaphone-ink" />
+                ) : (
+                  <b className="text-ola-megaphone-ink">{t('megaphone.free')}</b>
+                )}
               </span>
             ) : (
               <button

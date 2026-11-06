@@ -23,7 +23,7 @@ const (
 	KafkaTopicAppNotification            = "CHAT.APP.NOTIFICATION"
 	KafkaTopicUserBanned                 = "CHAT.USER.BANNED"
 	KafkaTopicPushBroadcast              = "CHAT.PUSH.BROADCAST"
-	KafkaTopicMegaphoneCreated           = "CHAT.MEGAPHONE.CREATED"
+	KafkaTopicMegaphonePlay              = "CHAT.MEGAPHONE.PLAY"
 	KafkaTopicMegaphoneRemoved           = "CHAT.MEGAPHONE.REMOVED"
 )
 
@@ -51,7 +51,7 @@ func AllKafkaTopics() []string {
 		KafkaTopicAppNotification,
 		KafkaTopicUserBanned,
 		KafkaTopicPushBroadcast,
-		KafkaTopicMegaphoneCreated,
+		KafkaTopicMegaphonePlay,
 		KafkaTopicMegaphoneRemoved,
 	}
 }

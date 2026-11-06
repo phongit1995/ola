@@ -21,6 +21,5 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		megaphones.GET("", r.controller.History)
 		megaphones.POST("", r.rateLimit.LimitPolicy(middleware.PolicyMegaphoneSend), r.controller.Send)
 		megaphones.GET("/config", r.controller.Config)
-		megaphones.GET("/active", r.controller.Active)
 	}
 }

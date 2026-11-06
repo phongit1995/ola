@@ -11,6 +11,7 @@ import (
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/megaphone"
 	"ola-chat-server/internal/modules/message"
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/relationships"
@@ -33,6 +34,7 @@ type Service struct {
 	cache      *services.CacheService
 	msgService *message.Service
 	notifSvc   *notification.Service
+	megaphone  *megaphone.Service
 	wsServer   *websocket.Server
 	logger     *zap.SugaredLogger
 }
@@ -45,6 +47,7 @@ func NewService(
 	cache *services.CacheService,
 	msgService *message.Service,
 	notifSvc *notification.Service,
+	megaphoneSvc *megaphone.Service,
 	wsServer *websocket.Server,
 	logger *zap.SugaredLogger,
 ) *Service {
@@ -56,6 +59,7 @@ func NewService(
 		cache:      cache,
 		msgService: msgService,
 		notifSvc:   notifSvc,
+		megaphone:  megaphoneSvc,
 		wsServer:   wsServer,
 		logger:     logger.Named("[gift_service]"),
 	}
@@ -79,6 +83,7 @@ func ToGiftItem(g *models.Gift) GiftItem {
 		CharmPoints:        g.CharmPoints,
 		Animation:          g.Animation,
 		SenderCharmPercent: g.SenderCharmPercent,
+		AnnounceEnabled:    g.AnnounceEnabled,
 	}
 }
 
@@ -204,7 +209,31 @@ func (s *Service) Send(senderID uuid.UUID, req SendGiftRequest) (*SendGiftRespon
 	}
 
 	s.afterSend(gift, result)
-	return s.buildSendResponse(gift, &result.Transaction, result.SenderBalance, result.ReceiverCharm), nil
+	resp := s.buildSendResponse(gift, &result.Transaction, result.SenderBalance, result.ReceiverCharm)
+	resp.Announced = s.announce(gift, &result.Transaction, req.Announce)
+	return resp, nil
+}
+
+func (s *Service) announce(gift *models.Gift, tx *models.GiftTransaction, requested bool) bool {
+	if !requested || !gift.AnnounceEnabled {
+		return false
+	}
+	privacy, err := s.repo.GiftWallPrivacy(tx.ReceiverID)
+	if err != nil {
+		s.logger.Warnw("Failed to read gift wall privacy", "user_id", tx.ReceiverID, "error", err.Error())
+		return false
+	}
+	if privacy != models.SettingGiftWallPrivacyAll {
+		return false
+	}
+	return s.megaphone.AnnounceGift(megaphone.GiftAnnouncement{
+		TransactionID: tx.ID,
+		SenderID:      tx.SenderID,
+		ReceiverID:    tx.ReceiverID,
+		GiftName:      tx.GiftName,
+		Quantity:      tx.Quantity,
+		TotalKen:      tx.TotalKen,
+	})
 }
 
 func (s *Service) replay(existing *models.GiftTransaction, giftID, receiverID uuid.UUID, quantity int) (*SendGiftResponse, error) {
@@ -222,7 +251,9 @@ func (s *Service) replay(existing *models.GiftTransaction, giftID, receiverID uu
 	if err != nil {
 		return nil, err
 	}
-	return s.buildSendResponse(gift, existing, ken, charm), nil
+	resp := s.buildSendResponse(gift, existing, ken, charm)
+	resp.Announced = s.megaphone.GiftAnnounced(existing.ID)
+	return resp, nil
 }
 
 func (s *Service) buildSendResponse(gift *models.Gift, tx *models.GiftTransaction, kenBalance, receiverCharm int) *SendGiftResponse {
