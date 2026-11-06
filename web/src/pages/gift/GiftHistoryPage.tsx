@@ -96,13 +96,7 @@ export function GiftHistoryPage({
               const { fullName, username, avatar } = item.counterparty;
               const name = fullName || username;
               return (
-                <li
-                  key={item.id}
-                  className={cn(
-                    'flex items-start gap-3 border-l-4 py-3 pr-4 pl-3',
-                    received ? 'border-ola-accent/70' : 'border-ola-warning/70'
-                  )}
-                >
+                <li key={item.id} className="flex items-start gap-3 px-4 py-3">
                   <button
                     type="button"
                     onClick={() => onOpenUser?.(item.counterparty)}
