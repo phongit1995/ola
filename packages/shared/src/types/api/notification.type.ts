@@ -20,6 +20,7 @@ export interface AppNotification {
   actor?: AppNotificationActor;
   refId?: string;
   preview?: string;
+  transfer?: AppNotificationTransfer;
   isRead: boolean;
   createdAt: string;
 }

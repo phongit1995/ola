@@ -1,7 +1,6 @@
 package push
 
 import (
-	"fmt"
 	"strconv"
 
 	"ola-chat-server/internal/constants"
@@ -163,25 +162,13 @@ var appNotifSystemTypes = map[string]bool{
 }
 
 func appNotifTransferBody(ntype, preview string) (string, bool) {
-	transfer, ok := models.ParseAppNotificationTransfer(preview)
-	if !ok {
+	if !models.IsAppNotificationTransfer(ntype) || preview == "" {
 		return "", false
 	}
-	switch {
-	case ntype == models.AppNotificationKenReceived && transfer.Amount > 0:
-		return "Đã chuyển cho bạn " + groupThousands(transfer.Amount) + " Ken", true
-	case ntype == models.AppNotificationVipReceived && transfer.Days > 0:
-		return fmt.Sprintf("Đã tặng bạn %d ngày VIP", transfer.Days), true
+	if transfer, ok := models.ParseAppNotificationTransfer(preview); ok {
+		return transfer.Message(ntype), true
 	}
-	return "", false
-}
-
-func groupThousands(n int) string {
-	digits := strconv.Itoa(n)
-	for i := len(digits) - 3; i > 0; i -= 3 {
-		digits = digits[:i] + "," + digits[i:]
-	}
-	return digits
+	return preview, true
 }
 
 func buildAppNotifContent(id, actorName, ntype, preview string, unread int) Content {

@@ -747,6 +747,12 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 	if c := buildAppNotifContent("n1", "Hoa", models.AppNotificationVipReceived, models.AppNotificationTransfer{VipTypeID: 4}.Preview(), 0); c.Body != "Đã tặng bạn VIP" {
 		t.Fatalf("unexpected vip icon push: %+v", c)
 	}
+	if c := buildAppNotifContent("n1", "Hoa", models.AppNotificationKenReceived, "Đã chuyển cho bạn 1,250,000 Ken", 0); c.Body != "Đã chuyển cho bạn 1,250,000 Ken" {
+		t.Fatalf("unexpected ken push from display preview: %+v", c)
+	}
+	if c := buildAppNotifContent("n1", "Hoa", models.AppNotificationVipReceived, "Đã tặng bạn 30 ngày VIP", 0); c.Body != "Đã tặng bạn 30 ngày VIP" {
+		t.Fatalf("unexpected vip push from display preview: %+v", c)
+	}
 	if c := buildAppNotifContent("n1", "", "unknown", "", 0); c.Body != "Bạn có thông báo mới" {
 		t.Fatalf("unexpected unknown-type body: %q", c.Body)
 	}
