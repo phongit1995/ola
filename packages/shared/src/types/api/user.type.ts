@@ -28,6 +28,7 @@ export interface PublicProfile {
   dateOfBirth?: string;
   spouse?: SpouseInfo;
   verified: boolean;
+  emailVerified: boolean;
   kisses: number;
   charm?: number;
   vipUsed?: string | null;

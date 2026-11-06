@@ -92,6 +92,7 @@ type UserPublicProfileResponse struct {
 	DateOfBirth       string            `json:"dateOfBirth,omitempty" example:"1990-01-01"`
 	Spouse            *SpouseInfo       `json:"spouse,omitempty"`
 	Verified          bool              `json:"verified" example:"false"`
+	EmailVerified     bool              `json:"emailVerified" example:"false"`
 	Kisses            int               `json:"kisses" example:"0"`
 	Charm             int               `json:"charm" example:"0"`
 	VipUsed           *string           `json:"vipUsed" example:"gold"`

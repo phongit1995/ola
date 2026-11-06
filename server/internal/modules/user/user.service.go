@@ -496,6 +496,7 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		Bio:            user.Bio,
 		Gender:         user.Gender,
 		Verified:       user.Verified,
+		EmailVerified:  user.EmailVerified,
 		Kisses:         user.Kisses,
 		Charm:          user.Charm,
 		VipUsed:        user.VipUsed,
