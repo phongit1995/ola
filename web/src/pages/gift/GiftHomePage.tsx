@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import leaderboardIcon from '@/assets/icons/gift/gift-leaderboard.webp';
+import historyIcon from '@/assets/icons/gift/gift-history.webp';
+import sendNowIcon from '@/assets/icons/gift/gift-send-now.webp';
 import {
   CharmIcon,
   FullScreenOverlay,
@@ -24,20 +27,25 @@ interface GiftHomePageProps {
 
 function HeaderAction({
   label,
-  emoji,
+  icon,
   onClick,
 }: {
   label: string;
-  emoji: string;
+  icon: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex h-8 shrink-0 items-center gap-0.5 rounded-full bg-white/15 px-2 text-xs font-medium hover:bg-white/25"
+      className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-white/15 px-2 text-xs font-medium hover:bg-white/25"
     >
-      <span aria-hidden="true">{emoji}</span>
+      <img
+        src={icon}
+        alt=""
+        aria-hidden="true"
+        className="h-5 w-5 shrink-0 object-contain"
+      />
       <span>{label}</span>
     </button>
   );
@@ -73,12 +81,12 @@ export function GiftHomePage({ onClose }: GiftHomePageProps) {
       <ScreenHeader title={t('home.apps.gifts')} onBack={onClose}>
         <div className="flex shrink-0 items-center gap-1">
           <HeaderAction
-            emoji="🏆"
+            icon={leaderboardIcon}
             label={t('gift.wall.leaderboard')}
             onClick={() => setLeaderboardOpen(true)}
           />
           <HeaderAction
-            emoji="🎁"
+            icon={historyIcon}
             label={t('gift.wall.history')}
             onClick={() => setHistoryOpen(true)}
           />
@@ -95,9 +103,15 @@ export function GiftHomePage({ onClose }: GiftHomePageProps) {
             <button
               type="button"
               onClick={() => setRecipientOpen(true)}
-              className="mt-3 rounded-full bg-white px-5 py-1.5 text-sm font-semibold text-ola-accent-dark shadow-sm active:opacity-80"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-1.5 text-sm font-semibold text-ola-accent-dark shadow-sm active:opacity-80"
             >
-              🎁 {t('gift.sendNow')}
+              <img
+                src={sendNowIcon}
+                alt=""
+                aria-hidden="true"
+                className="h-5 w-5 shrink-0 object-contain"
+              />
+              {t('gift.sendNow')}
             </button>
           )}
         </div>

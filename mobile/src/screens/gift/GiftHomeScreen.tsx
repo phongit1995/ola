@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,6 +12,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { GIFT_ACCENT_DARK, GIFT_HEADER_GRADIENT } from '@components/gift/constants';
+import { GIFT_ASSETS } from '@components/gift/giftAssets';
 import { GiftPickerDialog, type GiftReceiver } from '@components/gift/GiftPickerDialog';
 import { GiftWallSection } from '@screens/profile/components/GiftWallSection';
 import { CharmIcon } from '@components/gift/CharmIcon';
@@ -19,13 +20,23 @@ import { GiftRecipientDialog } from './components/GiftRecipientDialog';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftHome'>;
 
-function HeaderAction({ label, emoji, onPress }: { label: string; emoji: string; onPress: () => void }) {
+const ACTION_ICON_STYLE = { width: 20, height: 20 };
+
+function HeaderAction({
+  label,
+  icon,
+  onPress,
+}: {
+  label: string;
+  icon: ImageSourcePropType;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
-      className="h-8 flex-row items-center gap-0.5 rounded-full bg-white/15 px-2 active:bg-white/25"
+      className="h-8 flex-row items-center gap-1 rounded-full bg-white/15 px-2 active:bg-white/25"
     >
-      <Text className="text-xs">{emoji}</Text>
+      <Image source={icon} style={ACTION_ICON_STYLE} resizeMode="contain" />
       <Text className="text-xs font-medium text-white">{label}</Text>
     </Pressable>
   );
@@ -68,12 +79,12 @@ export function GiftHomeScreen({ navigation }: Props) {
         right={
           <View className="flex-row gap-1">
             <HeaderAction
-              emoji="🏆"
+              icon={GIFT_ASSETS.leaderboard}
               label={t('gift.wall.leaderboard')}
               onPress={() => navigation.navigate(ROOT_ROUTES.GiftLeaderboard)}
             />
             <HeaderAction
-              emoji="🎁"
+              icon={GIFT_ASSETS.history}
               label={t('gift.wall.history')}
               onPress={() => navigation.navigate(ROOT_ROUTES.GiftHistory)}
             />
@@ -98,10 +109,11 @@ export function GiftHomeScreen({ navigation }: Props) {
           {giftsEnabled && (
             <Pressable
               onPress={() => setRecipientOpen(true)}
-              className="mt-3 rounded-full bg-white px-5 py-1.5 active:opacity-80"
+              className="mt-3 flex-row items-center gap-1.5 rounded-full bg-white px-5 py-1.5 active:opacity-80"
             >
+              <Image source={GIFT_ASSETS.sendNow} style={ACTION_ICON_STYLE} resizeMode="contain" />
               <Text className="text-sm font-semibold" style={{ color: GIFT_ACCENT_DARK }}>
-                🎁 {t('gift.sendNow')}
+                {t('gift.sendNow')}
               </Text>
             </Pressable>
           )}
