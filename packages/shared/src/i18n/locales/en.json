@@ -2457,7 +2457,7 @@
     "send": "Send",
     "sending": "Sending…",
     "charm": "Charm",
-    "charmCount": "{{value}} charm",
+    "charmUnit": "charm",
     "quantity": "Quantity",
     "notePlaceholder": "Add a message (optional)",
     "total": "Total",

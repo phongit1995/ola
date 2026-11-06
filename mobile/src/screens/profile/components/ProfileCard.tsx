@@ -298,8 +298,11 @@ export function ProfileCard({
 
       <View className="mt-1 flex-row items-center justify-center" style={{ gap: 4 }}>
         <CharmIcon size={18} />
+        <Text className="text-sm font-semibold" style={{ color: '#000' }}>
+          {formatKen(profile.charm ?? 0)}
+        </Text>
         <Text className="text-sm" style={{ color: '#000' }}>
-          {t('gift.charmCount', { value: formatKen(profile.charm ?? 0) })}
+          {t('gift.charmUnit')}
         </Text>
       </View>
 

@@ -2457,7 +2457,7 @@
     "send": "Tặng",
     "sending": "Đang tặng…",
     "charm": "Sức hút",
-    "charmCount": "{{value}} sức hút",
+    "charmUnit": "sức hút",
     "quantity": "Số lượng",
     "notePlaceholder": "Gửi kèm lời nhắn (không bắt buộc)",
     "total": "Tổng",

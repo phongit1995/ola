@@ -316,8 +316,9 @@ export function ProfileCard({
       </button>
 
       <p className="mt-1 flex items-center justify-center gap-1 text-sm text-black">
-        <CharmIcon className="h-5 w-5" />
-        <span>{t('gift.charmCount', { value: formatKen(profile.charm) })}</span>
+        <CharmIcon className="h-[18px] w-[18px]" />
+        <span className="font-semibold">{formatKen(profile.charm)}</span>
+        <span>{t('gift.charmUnit')}</span>
       </p>
 
       <p className="mt-3 line-clamp-5 px-4 text-center text-xs text-black/54">
