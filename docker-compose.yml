@@ -1,3 +1,8 @@
+x-app-logging: &app-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
 
 services:
   migrate:
@@ -29,6 +34,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/ola-chat-server-api${IMAGE_SUFFIX:-}:${API_VERSION:-latest}
     container_name: ola-chat-server-api${CONTAINER_SUFFIX:-}
     restart: unless-stopped
+    logging: *app-logging
     environment:
       - DB_HOST=${DB_HOST:-postgres}
       - DB_PORT=${DB_PORT:-5432}
@@ -83,6 +89,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/ola-chat-server-chat${IMAGE_SUFFIX:-}:${CHAT_VERSION:-latest}
     container_name: ola-chat-server-chat${CONTAINER_SUFFIX:-}
     restart: unless-stopped
+    logging: *app-logging
     environment:
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
@@ -98,6 +105,7 @@ services:
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
       - CHAT_PORT=${CHAT_PORT:-8081}
       - SERVICE_NAME=chat
+      - GIN_MODE=${GIN_MODE:-release}
       - DB_HOST=${DB_HOST:-postgres}
       - DB_PORT=${DB_PORT:-5432}
       - DB_NAME=${DB_NAME:-ola_chat_server}
@@ -115,6 +123,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/ola-chat-server-game${IMAGE_SUFFIX:-}:${GAME_VERSION:-latest}
     container_name: ola-chat-server-game${CONTAINER_SUFFIX:-}
     restart: unless-stopped
+    logging: *app-logging
     environment:
       - JWT_SECRET=${JWT_SECRET:-your-jwt-secret-change-in-production-min-32-chars}
       - JWT_EXPIRY=${JWT_EXPIRY:-24h}
@@ -143,6 +152,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/ola-game-web${IMAGE_SUFFIX:-}:${GAME_WEB_VERSION:-latest}
     container_name: ola-game-web${CONTAINER_SUFFIX:-}
     restart: unless-stopped
+    logging: *app-logging
     labels:
       - dockflare.enable=${GAME_DOCKFLARE_ENABLE:-false}
       - dockflare.hostname=${GAME_DOMAIN:-game.ola-server.click}
@@ -158,6 +168,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/ola-web${IMAGE_SUFFIX:-}:${WEB_VERSION:-latest}
     container_name: ola-web${CONTAINER_SUFFIX:-}
     restart: unless-stopped
+    logging: *app-logging
     labels:
       - dockflare.enable=${WEB_DOCKFLARE_ENABLE:-true}
       - dockflare.hostname=${WEB_DOMAIN:-web.ola-server.click}
@@ -171,6 +182,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/ola-admin${IMAGE_SUFFIX:-}:${ADMIN_VERSION:-latest}
     container_name: ola-admin${CONTAINER_SUFFIX:-}
     restart: unless-stopped
+    logging: *app-logging
     labels:
       - dockflare.enable=${ADMIN_DOCKFLARE_ENABLE:-true}
       - dockflare.hostname=${ADMIN_DOMAIN:-admin.ola-server.click}
@@ -184,6 +196,7 @@ services:
     image: nginx:alpine
     container_name: ola-chat-server-nginx${CONTAINER_SUFFIX:-}
     restart: unless-stopped
+    logging: *app-logging
     labels:
       - dockflare.enable=${DOCKFLARE_ENABLE:-false}
       - dockflare.hostname=${CHAT_DOMAIN:-}

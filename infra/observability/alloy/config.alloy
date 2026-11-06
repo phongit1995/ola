@@ -1,0 +1,77 @@
+discovery.docker "ola" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "ola" {
+  targets = discovery.docker.ola.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/ola-chat-server-(api|chat|game)(-dev)?"
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/ola-chat-server-(api|chat|game)(-dev)?"
+    target_label  = "service"
+    replacement   = "$1"
+  }
+}
+
+loki.source.docker "ola" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.ola.output
+  forward_to = [loki.process.ola.receiver]
+}
+
+loki.process "ola" {
+  forward_to = [loki.write.central.receiver]
+
+  stage.decolorize {}
+
+  stage.static_labels {
+    values = {
+      env = sys.env("LOG_ENV"),
+    }
+  }
+
+  stage.regex {
+    expression = "^\\{\"level\":\"(?P<level>[a-z]+)\""
+  }
+
+  stage.regex {
+    expression = "^\\S+\\s+(?P<level>DEBUG|INFO|WARN|ERROR)\\s"
+  }
+
+  stage.regex {
+    expression = "^(?P<kind>\\[GIN\\])"
+  }
+
+  stage.template {
+    source   = "level"
+    template = "{{ ToLower .Value }}"
+  }
+
+  stage.template {
+    source   = "level"
+    template = "{{ if .Value }}{{ .Value }}{{ else if .kind }}access{{ else }}other{{ end }}"
+  }
+
+  stage.labels {
+    values = {
+      level = "",
+    }
+  }
+}
+
+loki.write "central" {
+  endpoint {
+    url = sys.env("LOKI_PUSH_URL")
+
+    basic_auth {
+      username = sys.env("LOKI_PUSH_USER")
+      password = sys.env("LOKI_PUSH_PASSWORD")
+    }
+  }
+}

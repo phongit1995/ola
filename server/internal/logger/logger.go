@@ -13,10 +13,10 @@ func CreateLogger(cfg *config.Config) (*zap.SugaredLogger, error) {
 	if cfg.Env == "production" || cfg.Env == "release" {
 		zapConfig = zap.NewProductionConfig()
 		zapConfig.DisableCaller = true
-		zapConfig.DisableStacktrace = true
 		zapConfig.EncoderConfig.TimeKey = "time"
 		zapConfig.EncoderConfig.LevelKey = "level"
 		zapConfig.EncoderConfig.MessageKey = "msg"
+		zapConfig.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 		zapConfig.InitialFields = map[string]interface{}{
 			"service": cfg.ServiceName,
 		}

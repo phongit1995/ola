@@ -92,14 +92,14 @@ func (s *MailService) send(ctx context.Context, toEmail, subject, html string) e
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		s.logger.Errorw("Failed to call Resend API", "to", toEmail, "error", err)
+		s.logger.Errorw("Failed to call Resend API", "error", err)
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		respBody, _ := io.ReadAll(io.LimitReader(resp.Body, resendErrorBodyLimit))
-		s.logger.Errorw("Resend API returned error", "to", toEmail, "status", resp.StatusCode, "body", string(respBody))
+		s.logger.Errorw("Resend API returned error", "status", resp.StatusCode, "body", string(respBody))
 		var parsed resendError
 		if json.Unmarshal(respBody, &parsed) == nil && parsed.Message != "" {
 			return fmt.Errorf("resend status %d: %s", resp.StatusCode, parsed.Message)
