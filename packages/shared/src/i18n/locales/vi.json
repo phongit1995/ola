@@ -1314,7 +1314,7 @@
     "success": "Xác thực email thành công",
     "rewardToast": "Xác thực email thành công! Bạn được tặng {{days}} ngày VIP 🎉",
     "errEmailRequired": "Vui lòng nhập email.",
-    "errEmailInvalid": "Email không hợp lệ.",
+    "errEmailInvalid": "Email không đúng định dạng.",
     "errDomainNotAllowed": "Chỉ hỗ trợ email Gmail, Yahoo hoặc iCloud.",
     "errCodeRequired": "Vui lòng nhập đủ 6 số.",
     "errCodeInvalid": "Mã không đúng, vui lòng thử lại.",

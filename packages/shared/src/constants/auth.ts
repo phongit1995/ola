@@ -15,3 +15,15 @@ export function isAllowedVerifyEmailDomain(email: string): boolean {
   const domain = email.slice(email.lastIndexOf('@') + 1);
   return EMAIL_VERIFY_ALLOWED_DOMAINS.includes(domain);
 }
+
+const EMAIL_SUBADDRESS_MARK = '+';
+const GMAIL_DOMAIN = 'gmail.com';
+const GMAIL_LOCAL_PATTERN = /^[a-z0-9](?:\.?[a-z0-9])*$/;
+
+export function isAllowedVerifyEmailLocal(email: string): boolean {
+  const at = email.lastIndexOf('@');
+  if (at <= 0) return false;
+  const local = email.slice(0, at);
+  if (local.includes(EMAIL_SUBADDRESS_MARK)) return false;
+  return email.slice(at + 1) !== GMAIL_DOMAIN || GMAIL_LOCAL_PATTERN.test(local);
+}

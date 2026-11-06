@@ -81,7 +81,8 @@ func (r *Repository) ClearRefreshToken(userID uuid.UUID) error {
 func (r *Repository) EmailVerifiedByOther(email string, excludeID uuid.UUID) (bool, error) {
 	var count int64
 	err := r.db.Model(&models.User{}).
-		Where("LOWER(email) = LOWER(?) AND email_verified = true AND id <> ?", email, excludeID).
+		Where(emailInboxKeySQL("email")+" = "+emailInboxKeySQL("@email")+" AND email_verified = true AND id <> @exclude",
+			map[string]interface{}{"email": email, "exclude": excludeID}).
 		Count(&count).Error
 	if err != nil {
 		return false, err
