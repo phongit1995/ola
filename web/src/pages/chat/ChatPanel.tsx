@@ -6,7 +6,6 @@ import { ROUTES } from '@constants';
 import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import { MegaphoneBar } from '@components/megaphone/MegaphoneBar';
-import { MegaphoneHeaderButton } from '@components/megaphone/MegaphoneHeaderButton';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import addContactIcon from '@/assets/icons/chat/ic_add_contact_gray.png';
 import { AuthService, RelationshipService, SocketService } from '@services';
@@ -235,7 +234,6 @@ export function ChatPanel() {
         <div className="flex w-full items-center">
           {renderTab('messages', t('home.subMessages'), totalUnread)}
           {renderTab('contacts', t('home.subContacts'))}
-          <MegaphoneHeaderButton />
           <button
             type="button"
             aria-label={t('common.menu')}

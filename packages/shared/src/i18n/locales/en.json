@@ -2523,7 +2523,6 @@
     "open": "Open megaphone",
     "compose": "Megaphone",
     "composeTitle": "Broadcast to everyone",
-    "heroHint": "Your message scrolls across the Chat and Rooms tabs for everyone to see",
     "placeholder": "Say something to all of Ola…",
     "hint": "Everyone on the Chat and Rooms tabs will see this scroll across the top for {{seconds}} seconds.",
     "price": "Price",

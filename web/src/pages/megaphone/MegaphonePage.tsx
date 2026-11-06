@@ -71,7 +71,6 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
           <img src={megaphoneImage} alt="" className="h-14 w-14 shrink-0 object-contain" draggable={false} />
           <div className="min-w-0 flex-1">
             <p className="text-base font-semibold text-black/87">{t('megaphone.composeTitle')}</p>
-            <p className="text-xs text-black/54">{t('megaphone.heroHint')}</p>
           </div>
           <button
             type="button"

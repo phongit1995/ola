@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Avatar, VipBadge } from '@components';
+import { Avatar, UserName, VipBadge } from '@components';
 import { activeVipTypeId, colorForName, formatOlaTimeAgo, megaphoneSenderName } from '@lib';
 import type { Megaphone } from '@app-types';
 
@@ -31,9 +31,14 @@ export function MegaphoneHistoryItem({ megaphone, isMine, nowMs, onOpenProfile, 
           <button
             type="button"
             onClick={() => onOpenProfile(megaphone)}
-            className="min-w-0 truncate text-sm font-semibold text-ola-megaphone-ink"
+            className="min-w-0 truncate"
           >
-            {name}
+            <UserName
+              name={`@${megaphone.sender.username}`}
+              fullName={megaphone.sender.fullName}
+              className="text-sm font-semibold text-ola-megaphone-ink"
+              fullNameClassName="font-normal text-black/54"
+            />
           </button>
           {vipTypeId != null && <VipBadge typeId={vipTypeId} className="h-4 w-4" />}
           <span className="ml-auto shrink-0 text-xs text-black/40">

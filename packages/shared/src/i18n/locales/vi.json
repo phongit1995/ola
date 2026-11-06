@@ -2523,7 +2523,6 @@
     "open": "Mở loa",
     "compose": "Phát loa",
     "composeTitle": "Phát loa tới mọi người",
-    "heroHint": "Câu của bạn sẽ chạy trên đầu tab Chat và Phòng chat cho mọi người cùng thấy",
     "placeholder": "Nhập lời muốn nói với cả Ola…",
     "hint": "Mọi người đang mở tab Chat và Phòng chat sẽ thấy câu này chạy trên đầu màn hình trong {{seconds}} giây.",
     "price": "Giá",

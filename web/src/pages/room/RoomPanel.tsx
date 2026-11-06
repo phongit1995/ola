@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, PullToRefresh } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { MegaphoneBar } from '@components/megaphone/MegaphoneBar';
-import { MegaphoneHeaderButton } from '@components/megaphone/MegaphoneHeaderButton';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
@@ -81,7 +80,7 @@ export function RoomPanel() {
   return (
     <>
       <HomeHeader>
-        <MegaphoneHeaderButton />
+        <span className="w-9" />
         <span className="flex-1 text-center text-lg font-medium">
           {t('home.tabRoom')}
         </span>
