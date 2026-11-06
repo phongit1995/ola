@@ -9,7 +9,7 @@ export function PillCloseButton({ label, onClick }: PillCloseButtonProps) {
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ola-primary-ink/70 transition-colors hover:bg-black/10"
+      className="pointer-events-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ola-primary-ink/70 transition-colors hover:bg-black/10"
     >
       <svg
         viewBox="0 0 24 24"

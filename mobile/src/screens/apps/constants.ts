@@ -1,5 +1,6 @@
 import type { ParseKeys } from 'i18next';
 import { GIFT_ASSETS } from '@components/gift/giftAssets';
+import { MEGAPHONE_IMAGE } from '@components/megaphone/megaphoneAssets';
 
 export type AppItemAction =
   | 'notifications'
@@ -10,6 +11,7 @@ export type AppItemAction =
   | 'vip'
   | 'ken'
   | 'gifts'
+  | 'megaphone'
   | 'media'
   | 'social'
   | 'settings'
@@ -68,6 +70,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
     icon: GIFT_ASSETS.icon,
     titleKey: 'home.apps.gifts',
     action: 'gifts',
+  },
+  {
+    icon: MEGAPHONE_IMAGE,
+    titleKey: 'megaphone.menuTitle',
+    action: 'megaphone',
   },
   {
     icon: require('@assets/icons/apps/media.png'),

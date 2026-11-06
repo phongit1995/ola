@@ -5,7 +5,6 @@ import { useMegaphoneStore } from '@ola/shared/stores/megaphone/megaphoneStore';
 import type { Megaphone } from '@app-types';
 import megaphoneImage from '@/assets/images/member-megaphone.webp';
 import { useAnnouncementStore } from '@/store/announcementStore';
-import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { PillCloseButton } from '../ui/PillCloseButton';
 import { isMegaphoneCovered } from './megaphoneCover';
 import { MegaphoneText } from './MegaphoneText';
@@ -39,7 +38,6 @@ export function MegaphoneBar() {
 
 function MegaphonePill({ megaphone }: { megaphone: Megaphone }) {
   const { t } = useTranslation();
-  const openOverlay = useAppOverlayStore((s) => s.push);
   const markSeen = useMegaphoneStore((s) => s.markSeen);
   const { clipRef, trackRef, startMarquee } = useMegaphoneMarquee(megaphone);
   const { id } = megaphone;
@@ -49,7 +47,7 @@ function MegaphonePill({ megaphone }: { megaphone: Megaphone }) {
       onAnimationEnd={(event) => {
         if (event.animationName === 'ola-banner-expand') startMarquee();
       }}
-      className="pointer-events-auto mx-auto flex h-9 max-w-xs animate-ola-banner-expand items-center gap-1 overflow-hidden rounded-full bg-white pr-1 pl-3 shadow-[0_4px_14px_rgba(0,0,0,0.22)] ring-1 ring-black/10"
+      className="mx-auto flex h-9 max-w-xs animate-ola-banner-expand items-center gap-1 overflow-hidden rounded-full bg-white pr-1 pl-3 shadow-[0_4px_14px_rgba(0,0,0,0.22)] ring-1 ring-black/10"
     >
       <img
         src={megaphoneImage}
@@ -58,23 +56,14 @@ function MegaphonePill({ megaphone }: { megaphone: Megaphone }) {
         className="h-6 w-6 shrink-0 object-contain select-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
         draggable={false}
       />
-      <button
-        ref={clipRef}
-        type="button"
-        aria-label={t('megaphone.open')}
-        onClick={() => {
-          markSeen(id);
-          openOverlay('megaphone');
-        }}
-        className="flex h-full min-w-0 flex-1 items-center overflow-hidden text-left"
-      >
+      <div ref={clipRef} className="flex h-full min-w-0 flex-1 items-center overflow-hidden text-left">
         <span
           ref={trackRef}
           className="inline-flex items-center gap-1 text-sm whitespace-nowrap will-change-transform motion-reduce:flex motion-reduce:truncate"
         >
           <MegaphoneText megaphone={megaphone} />
         </span>
-      </button>
+      </div>
       <PillCloseButton label={t('megaphone.dismiss')} onClick={() => markSeen(id)} />
     </div>
   );

@@ -18,10 +18,12 @@ import type {
   MegaphoneComposerStep,
 } from '../../types/client/megaphone.type';
 import { setAuthUserKen, useAuthStore } from '../auth/authStore';
+import { useMegaphoneStore } from './megaphoneStore';
 
 export type { MegaphoneComposer, MegaphoneComposerOptions } from '../../types/client/megaphone.type';
 
 const COOLDOWN_TICK_MS = 1000;
+const OWN_MEGAPHONE_PLAY_DELAY_MS = 500;
 const REFRESH_CONFIG_CODES = new Set(['MEGAPHONE_COOLDOWN', 'MEGAPHONE_DAILY_LIMIT', 'MEGAPHONE_QUEUE_FULL']);
 
 interface LoadedConfig {
@@ -96,6 +98,9 @@ export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptio
       );
       onSent?.(result);
       onClose();
+      if (result.waitSeconds === 0) {
+        setTimeout(() => useMegaphoneStore.getState().play(result.megaphone), OWN_MEGAPHONE_PLAY_DELAY_MS);
+      }
     } catch (error) {
       const apiError = toApiError(error);
       toast.error(megaphoneErrorText(i18n.t, apiError));

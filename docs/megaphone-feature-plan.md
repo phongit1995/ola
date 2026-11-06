@@ -269,17 +269,17 @@ Client chỉ hiển thị, không xếp lịch. Bỏ `MegaphoneService.active`, 
 - `pages/megaphone/MegaphonePage.tsx` (overlay): danh sách 24 giờ chỉ gồm loa thường, không có loa quà (avatar → profile, menu Báo cáo), nút "Phát loa". Bỏ dải chữ trong màn.
 - `MegaphoneComposeDialog` (`Dialog` chuẩn): ô nhập + đếm ký tự, giá, số dư, câu "Loa sẽ phát sau khoảng X phút" khi có tin đang chờ, nút Phát (luôn hỏi lại vì là trả tiền). Sửa câu gợi ý `megaphone.hint`, không còn nói chỉ tab Chat và Phòng chat.
 - Hộp chọn quà: quà `announceEnabled` hiện ô "Thông báo cho mọi người" ngay ở màn chọn, không để ở bước xác nhận vì bước đó chỉ có với quà đắt.
-- Điểm vào: mục Loa trong menu Cá nhân và bấm vào viên loa; cả hai mở màn Loa (overlay `megaphone` trong `AppOverlay`).
+- Điểm vào: mục Loa trong menu Cá nhân mở màn Loa (overlay `megaphone` trong `AppOverlay`). Viên loa chỉ để đọc: bấm vào thân viên thì thao tác đi xuyên xuống dưới, chỉ nút ✕ bấm được.
 
 ## 7. Mobile (React Native)
 
-Port bằng skill `port-web-to-mobile`, logic giữ ở shared:
+Đã port, logic dùng chung ở shared:
 
-- Viên nổi theo `components/ui/AnnouncementBanner.tsx`, mount ở cấp root; chạy chữ bằng `react-native-reanimated`, định vị bằng số. Hai bẫy đã gặp khi làm hiệu ứng quà: `left: '50%'` trong khung co theo nội dung bị lệch, và padding đặt thẳng lên `LinearGradient` cắt mất nội dung (gradient phải là nền `absoluteFill`).
-- Biết đang bị che: theo route hiện tại của navigator, chỉ cho hiện ở 6 tab và `RoomChatScreen`.
-- `MegaphoneScreen` trên root stack (`ScreenHeader`), dialog soạn dùng `Dialog` + `showToasts`, ô nhập trong `KeyboardView`, `TextInput` set màu chữ bằng inline style.
-- Icon loa phải là PNG (Metro không nhận `.svg`), đặt trong file asset riêng `megaphoneAssets.ts`.
-- Hộp chọn quà mobile thêm ô thông báo ngay từ đợt đầu, kể cả khi chưa port màn Loa, vì mobile đã tặng được quà.
+- Viên nổi `components/megaphone/MegaphoneBar.tsx`, mount ở `App.tsx`. Phần chạy chữ dùng chung với thông báo admin ở `components/ui/MarqueePill.tsx`. Viên chỉ để đọc: bấm thân viên đi xuyên xuống dưới, chỉ nút ✕ bấm được.
+- Biết đang bị che qua `useMegaphoneCovered`: chỉ hiện ở các tab, `RoomChat` và màn Loa; dừng khi app xuống nền, có `Dialog`/`OlaModal` đang mở (`store/openModalStore.ts`) hoặc game đang mở.
+- `MegaphoneScreen` trên root stack, mục "Loa Loa Loa" ở menu Cá nhân dưới Quà tặng. Hộp soạn `MegaphoneComposeDialog` dùng một `Dialog` cho cả hai bước để iOS không phải đổi Modal.
+- Ảnh `assets/images/member-megaphone.webp`, khai báo ở `components/megaphone/megaphoneAssets.ts`.
+- Màn Loa không che viên loa, và `useMegaphoneComposer` phát lại loa của người gửi sau khi hộp soạn đóng, để người gửi thấy ngay loa của mình.
 
 ## 8. Admin web
 

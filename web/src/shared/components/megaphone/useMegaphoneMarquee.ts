@@ -14,7 +14,7 @@ function prefersReducedMotion(): boolean {
 
 export function useMegaphoneMarquee({ id, displaySeconds }: Pick<Megaphone, 'id' | 'displaySeconds'>) {
   const markSeen = useMegaphoneStore((s) => s.markSeen);
-  const clipRef = useRef<HTMLButtonElement>(null);
+  const clipRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLSpanElement>(null);
   const animationRef = useRef<Animation | null>(null);
   const durationMs = displaySeconds * MS_PER_SECOND;

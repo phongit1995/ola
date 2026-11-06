@@ -106,6 +106,10 @@ export function PersonalScreen() {
       navigation.navigate(ROOT_ROUTES.GiftHome);
       return;
     }
+    if (item.action === 'megaphone') {
+      navigation.navigate(ROOT_ROUTES.Megaphone);
+      return;
+    }
     if (item.action === 'media') {
       navigation.navigate(ROOT_ROUTES.MediaStore);
       return;

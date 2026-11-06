@@ -33,6 +33,7 @@ export const ROOT_ROUTES = {
   GiftHome: 'GiftHome',
   GiftLeaderboard: 'GiftLeaderboard',
   GiftHistory: 'GiftHistory',
+  Megaphone: 'Megaphone',
   Notifications: 'Notifications',
   Settings: 'Settings',
   AppLock: 'AppLock',

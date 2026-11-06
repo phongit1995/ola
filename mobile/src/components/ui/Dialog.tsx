@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { AppLockOverlaySlot, useBlockedByAppLock } from '@components/applock/appLockModal';
+import { useTrackOpenModal } from '@store/openModalStore';
 import { KeyboardView } from '../KeyboardView';
 import { ToastHost } from './ToastHost';
 
@@ -49,6 +50,7 @@ export function Dialog({
 }: DialogProps) {
   const Body = avoidKeyboard ? KeyboardView : View;
   const blockedByAppLock = useBlockedByAppLock();
+  useTrackOpenModal(visible);
   return (
     <Modal
       visible={visible}

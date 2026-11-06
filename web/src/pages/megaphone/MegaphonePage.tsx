@@ -35,7 +35,7 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
   const [menuTarget, setMenuTarget] = useState<Megaphone | null>(null);
   const [reportTarget, setReportTarget] = useState<Megaphone | null>(null);
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
-  const [nowMs] = useState(() => Date.now());
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   function openProfile(megaphone: Megaphone) {
     setProfileTarget({
@@ -62,7 +62,7 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
         ];
 
   return (
-    <FullScreenOverlay>
+    <FullScreenOverlay keepMegaphone>
       <ScreenHeader title={t('megaphone.title')} onBack={onClose} />
       <div className="flex-1 overflow-y-auto">
         <section className="m-3 flex items-center gap-3 rounded-xl border border-ola-megaphone-line bg-ola-megaphone-soft p-3">
@@ -116,7 +116,13 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
       </div>
 
       {composeOpen && (
-        <MegaphoneComposeDialog onClose={() => setComposeOpen(false)} onSent={(result) => history.prepend(result.megaphone)} />
+        <MegaphoneComposeDialog
+          onClose={() => setComposeOpen(false)}
+          onSent={(result) => {
+            setNowMs(Date.now());
+            history.prepend(result.megaphone);
+          }}
+        />
       )}
       <ListOptionDialog
         open={menuTarget != null}

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Avatar, UserName, VipBadge } from '@components';
-import { activeVipTypeId, colorForName, formatOlaTimeAgo, megaphoneSenderName } from '@lib';
+import { Avatar, UserName } from '@components';
+import { colorForName, formatOlaTimeAgo, megaphoneSenderName } from '@lib';
 import type { Megaphone } from '@app-types';
 
 interface MegaphoneHistoryItemProps {
@@ -14,7 +14,6 @@ interface MegaphoneHistoryItemProps {
 export function MegaphoneHistoryItem({ megaphone, isMine, nowMs, onOpenProfile, onMore }: MegaphoneHistoryItemProps) {
   const { t, i18n } = useTranslation();
   const name = megaphoneSenderName(megaphone);
-  const vipTypeId = activeVipTypeId(megaphone.sender.vipUsed, megaphone.sender.vipEndTime);
 
   return (
     <li className="flex items-start gap-3 bg-white px-4 py-3">
@@ -40,7 +39,6 @@ export function MegaphoneHistoryItem({ megaphone, isMine, nowMs, onOpenProfile, 
               fullNameClassName="font-normal text-black/54"
             />
           </button>
-          {vipTypeId != null && <VipBadge typeId={vipTypeId} className="h-4 w-4" />}
           <span className="ml-auto shrink-0 text-xs text-black/40">
             {formatOlaTimeAgo(megaphone.showAt, i18n.language, nowMs)}
           </span>
