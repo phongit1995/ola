@@ -17,6 +17,13 @@ discovery.relabel "ola" {
     target_label  = "service"
     replacement   = "$1"
   }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/ola-chat-server-(api|chat|game)(-dev)?"
+    target_label  = "service_name"
+    replacement   = "$1"
+  }
 }
 
 loki.source.docker "ola" {

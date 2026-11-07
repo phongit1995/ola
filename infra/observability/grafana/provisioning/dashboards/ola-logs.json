@@ -1,0 +1,1486 @@
+{
+  "uid": "ola-logs",
+  "title": "Ola - Tổng quan log",
+  "tags": [
+    "ola",
+    "logs"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "30s",
+      "1m",
+      "5m",
+      "15m"
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "ds",
+        "label": "Nguồn",
+        "type": "datasource",
+        "query": "loki",
+        "hide": 2,
+        "current": {
+          "text": "Loki",
+          "value": "Loki"
+        }
+      },
+      {
+        "name": "env",
+        "label": "Môi trường",
+        "type": "custom",
+        "query": "prod,dev",
+        "current": {
+          "text": "prod",
+          "value": "prod"
+        },
+        "options": [
+          {
+            "text": "prod",
+            "value": "prod",
+            "selected": true
+          },
+          {
+            "text": "dev",
+            "value": "dev",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "service",
+        "label": "Service",
+        "type": "custom",
+        "query": "api,chat,game",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".+",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": true
+          },
+          {
+            "text": "api",
+            "value": "api",
+            "selected": false
+          },
+          {
+            "text": "chat",
+            "value": "chat",
+            "selected": false
+          },
+          {
+            "text": "game",
+            "value": "game",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "search",
+        "label": "Tìm kiếm",
+        "type": "textbox",
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "options": [
+          {
+            "text": "",
+            "value": "",
+            "selected": true
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Lỗi",
+      "description": "Số dòng log mức error trong khoảng thời gian đã chọn",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum(count_over_time({env=\"$env\",service=~\"${service:regex}\",level=~\"error|fatal|panic|dpanic\"}[$__range]))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Cảnh báo",
+      "description": "",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum(count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"warn\"}[$__range]))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Request 5xx",
+      "description": "Server trả lỗi",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum(count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | status=~\"5..\" [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Request 4xx",
+      "description": "Request bị từ chối, thường do người dùng hoặc app",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum(count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | status=~\"4..\" [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Tổng request",
+      "description": "",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum(count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" [$__range]))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Xử lý p95",
+      "description": "95% request xử lý nhanh hơn mức này",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "quantile_over_time(0.95, {env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | unwrap duration(latency) | __error__=\"\" [$__range]) by ()",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "row",
+      "title": "Xu hướng",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "panels": []
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Lỗi theo service",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum by (service) (count_over_time({env=\"$env\",service=~\"${service:regex}\",level=~\"error|fatal|panic|dpanic\"}[$__auto]))",
+          "queryType": "range",
+          "legendFormat": "{{service}}",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineWidth": 0,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Log theo mức",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum by (level) (count_over_time({env=\"$env\",service=~\"${service:regex}\"}[$__auto]))",
+          "queryType": "range",
+          "legendFormat": "{{level}}",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineWidth": 0,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "warn"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "info"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "access"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "other"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "purple"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Request theo trạng thái",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum(count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | status=~\"2..|3..\" [$__auto]))",
+          "queryType": "range",
+          "legendFormat": "2xx-3xx",
+          "editorMode": "code"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum(count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | status=~\"4..\" [$__auto]))",
+          "queryType": "range",
+          "legendFormat": "4xx",
+          "editorMode": "code"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "sum(count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | status=~\"5..\" [$__auto]))",
+          "queryType": "range",
+          "legendFormat": "5xx",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineWidth": 0,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "2xx-3xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "4xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "5xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "row",
+      "title": "Lỗi",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "panels": []
+    },
+    {
+      "id": 12,
+      "type": "logs",
+      "title": "Log lỗi",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "{env=\"$env\",service=~\"${service:regex}\",level=~\"error|fatal|panic|dpanic\"} |~ `(?i)$search`",
+          "queryType": "range",
+          "legendFormat": "",
+          "editorMode": "code",
+          "maxLines": 500
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending",
+        "showLabels": false,
+        "showCommonLabels": false
+      }
+    },
+    {
+      "id": 13,
+      "type": "table",
+      "title": "Lỗi hay gặp nhất",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "topk(10, sum by (msg) (count_over_time({env=\"$env\",service=~\"${service:regex}\",level=~\"error|fatal|panic|dpanic\"} | json | __error__=\"\" [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "Số lần",
+              "Value #A": "Số lần",
+              "msg": "Nội dung"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Số lần",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Số lần"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 14,
+      "type": "table",
+      "title": "API trả 5xx nhiều nhất",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "topk(10, sum by (route) (count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | status=~\"5..\" | label_format route=`{{ regexReplaceAll \"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\" .path \":id\" }}` [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "Số lần",
+              "Value #A": "Số lần",
+              "route": "Nội dung"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Số lần",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Số lần"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 15,
+      "type": "logs",
+      "title": "Cảnh báo",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 33
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "{env=\"$env\",service=~\"${service:regex}\",level=\"warn\"} |~ `(?i)$search`",
+          "queryType": "range",
+          "legendFormat": "",
+          "editorMode": "code",
+          "maxLines": 500
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending",
+        "showLabels": false,
+        "showCommonLabels": false
+      }
+    },
+    {
+      "id": 16,
+      "type": "logs",
+      "title": "Request 5xx",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "{env=\"$env\",service=~\"${service:regex}\",level=\"access\"} |~ `\\| *5\\d\\d *\\|` |~ `(?i)$search`",
+          "queryType": "range",
+          "legendFormat": "",
+          "editorMode": "code",
+          "maxLines": 500
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending",
+        "showLabels": false,
+        "showCommonLabels": false
+      }
+    },
+    {
+      "id": 17,
+      "type": "row",
+      "title": "API",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "panels": []
+    },
+    {
+      "id": 18,
+      "type": "table",
+      "title": "API chậm nhất (p95)",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 43
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "topk(10, quantile_over_time(0.95, {env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | label_format route=`{{ regexReplaceAll \"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\" .path \":id\" }}` | unwrap duration(latency) | __error__=\"\" [$__range]) by (route))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "p95",
+              "Value #A": "p95",
+              "route": "Nội dung"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "p95",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 19,
+      "type": "table",
+      "title": "API gọi nhiều nhất",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 8,
+        "y": 43
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "topk(10, sum by (route) (count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | label_format route=`{{ regexReplaceAll \"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\" .path \":id\" }}` [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "Số lần",
+              "Value #A": "Số lần",
+              "route": "Nội dung"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Số lần",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Số lần"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 20,
+      "type": "table",
+      "title": "API trả 4xx nhiều nhất",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 43
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "topk(10, sum by (route) (count_over_time({env=\"$env\",service=~\"${service:regex}\",level=\"access\"} | regexp `\\| *(?P<status>\\d{3}) *\\| *(?P<latency>\\S+) *\\| *(?P<ip>\\S+) *\\| *(?P<method>[A-Z]+) +\"(?P<path>[^\"?]*)` | path!=\"/api/v1/health\" | status=~\"4..\" | label_format route=`{{ regexReplaceAll \"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\" .path \":id\" }}` [$__range])))",
+          "queryType": "instant",
+          "legendFormat": "",
+          "editorMode": "code"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "renameByName": {
+              "Value": "Số lần",
+              "Value #A": "Số lần",
+              "route": "Nội dung"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "Số lần",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Số lần"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 21,
+      "type": "row",
+      "title": "Tất cả log",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "panels": []
+    },
+    {
+      "id": 22,
+      "type": "logs",
+      "title": "Tìm log (nhập traceId, user id, từ khoá ở ô Tìm kiếm)",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds}"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${ds}"
+          },
+          "expr": "{env=\"$env\",service=~\"${service:regex}\"} |~ `(?i)$search`",
+          "queryType": "range",
+          "legendFormat": "",
+          "editorMode": "code",
+          "maxLines": 500
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending",
+        "showLabels": false,
+        "showCommonLabels": false
+      }
+    }
+  ]
+}
