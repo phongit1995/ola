@@ -46,12 +46,12 @@ async function promptRestart(version: string, restart: () => void): Promise<void
   promptedVersion = version;
   const { response } = await showPrompt({
     type: 'info',
-    buttons: ['Khởi động lại', 'Để sau'],
+    buttons: ['Khởi động lại', 'Bỏ qua'],
     defaultId: 0,
     cancelId: 1,
-    title: 'Có bản cập nhật',
-    message: `Ola Chat ${version} đã sẵn sàng`,
-    detail: 'Khởi động lại để cập nhật. Nếu chọn Để sau, bản mới sẽ được cài khi bạn thoát app.',
+    title: 'Ola',
+    message: 'Đã có bản Ola mới',
+    detail: 'Khởi động lại để cập nhật ngay. Nếu bỏ qua, app sẽ tự cập nhật ở lần mở sau.',
   });
   if (response === 0) restart();
 }
@@ -64,8 +64,8 @@ async function promptDownload(version: string, page: string): Promise<void> {
     buttons: ['Tải bản mới', 'Để sau'],
     defaultId: 0,
     cancelId: 1,
-    title: 'Có bản cập nhật',
-    message: `Đã có Ola Chat ${version}`,
+    title: 'Ola',
+    message: 'Đã có bản Ola mới',
     detail: 'Bản này cần tải và cài thủ công.',
   });
   if (response === 0) void shell.openExternal(page);

@@ -105,13 +105,15 @@ jobs:
       - name: Gom installer
         run: |
           set -e
-          ENV="${{ inputs.environment }}"
-          OS="${{ matrix.platform }}"
+          BASE="ola-chat"
+          if [ "${{ inputs.environment }}" = "dev" ]; then
+            BASE="ola-chat-dev"
+          fi
           mkdir -p artifacts
           shopt -s nullglob
           for f in desktop/release/*.dmg desktop/release/*.exe desktop/release/*.AppImage desktop/release/*.deb; do
             ext="${f##*.}"
-            cp "$f" "artifacts/ola-desktop-${ENV}-${OS}.${ext}"
+            cp "$f" "artifacts/${BASE}.${ext}"
           done
           ls -la artifacts
           [ -n "$(ls artifacts)" ] || { echo "Không có installer nào!"; exit 1; }
@@ -166,6 +168,11 @@ jobs:
           LINKS=""
           for f in artifacts/*; do
             FILE="$(basename "$f")"
+            # Đổi tên ngay trên Drive để giữ ID file, link đã share không đổi
+            OLD_FILE="ola-desktop-${ENV}-${OS}.${FILE##*.}"
+            if $RC lsf "$DEST" | grep -xF "$OLD_FILE" >/dev/null; then
+              $RC moveto "$DEST/$OLD_FILE" "$DEST/$FILE"
+            fi
             $RC copy "$f" "$DEST" --progress
             LINK=$($RC link "$DEST/$FILE")
             echo "Drive link: $FILE -> $LINK"

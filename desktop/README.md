@@ -45,7 +45,7 @@ Có hai lớp cập nhật:
 
 App kiểm tra khi mở và mỗi 6 giờ:
 
-- Windows và Linux AppImage: `electron-updater` tải ngầm, xong thì hỏi khởi động lại. Chọn Để sau thì bản mới được cài khi thoát app.
+- Windows và Linux AppImage: `electron-updater` tải ngầm, xong thì hỏi khởi động lại. Chọn Bỏ qua thì bản mới được cài khi thoát app, lần mở sau đã là bản mới.
 - macOS: tự tải và thay `.app` (`src/macUpdater.ts`), hỏi khởi động lại giống Windows. Không dùng Squirrel.Mac vì nó bắt buộc chữ ký Apple, app chỉ ký ad-hoc. Bản cập nhật phải có `updateSignature` khớp khoá công khai trong code. Thiếu chữ ký, tải lỗi hoặc không ghi được thư mục app (chạy từ DMG, tài khoản không phải admin) thì quay về báo có bản mới và mở trang release.
 - Linux `.deb`: chỉ báo có bản mới một lần cho mỗi version, vì cài cần quyền root.
 
