@@ -12,11 +12,13 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strings"
+	"sync"
 
 	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/utils"
 
 	_ "golang.org/x/image/webp"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -43,11 +45,40 @@ type uploadedMedia struct {
 }
 
 type uploadTracker struct {
+	mu      sync.Mutex
 	objects []string
 }
 
 func (t *uploadTracker) add(objectName string) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	t.objects = append(t.objects, objectName)
+}
+
+type imageUploader func(header *multipart.FileHeader, maxSize int64) (*uploadedMedia, error)
+
+func uploadImageSet(images, thumbs []*multipart.FileHeader, upload imageUploader) ([]*uploadedMedia, []*uploadedMedia, error) {
+	uploadedImages := make([]*uploadedMedia, len(images))
+	uploadedThumbs := make([]*uploadedMedia, len(images))
+	var group errgroup.Group
+	for index := range images {
+		group.Go(func() error {
+			result, err := upload(images[index], media.MaxImageUploadSize)
+			uploadedImages[index] = result
+			return err
+		})
+		if index < len(thumbs) {
+			group.Go(func() error {
+				result, err := upload(thumbs[index], MaxMomentThumbUploadSize)
+				uploadedThumbs[index] = result
+				return err
+			})
+		}
+	}
+	if err := group.Wait(); err != nil {
+		return nil, nil, err
+	}
+	return uploadedImages, uploadedThumbs, nil
 }
 
 func readUpload(header *multipart.FileHeader, maxSize int64) ([]byte, bool, error) {

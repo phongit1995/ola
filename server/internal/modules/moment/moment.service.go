@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"slices"
 	"strconv"
@@ -213,20 +214,19 @@ func (s *Service) attachMedia(
 ) error {
 	switch momentType {
 	case MomentTypeText, MomentTypeImage:
-		for index, draft := range imageDrafts(drafts) {
-			image, err := s.uploadImage(ctx, folder, input.Images[index], media.MaxImageUploadSize, uploads)
-			if err != nil {
-				return err
-			}
-			applyMedia(draft, image)
-			if index < len(input.Thumbs) {
-				thumb, err := s.uploadImage(ctx, folder, input.Thumbs[index], MaxMomentThumbUploadSize, uploads)
-				if err != nil {
-					return err
-				}
-				applyThumb(draft, thumb)
+		images := imageDrafts(drafts)
+		uploadedImages, uploadedThumbs, err := uploadImageSet(input.Images[:len(images)], input.Thumbs, func(header *multipart.FileHeader, maxSize int64) (*uploadedMedia, error) {
+			return s.uploadImage(ctx, folder, header, maxSize, uploads)
+		})
+		if err != nil {
+			return err
+		}
+		for index, draft := range images {
+			applyMedia(draft, uploadedImages[index])
+			if uploadedThumbs[index] != nil {
+				applyThumb(draft, uploadedThumbs[index])
 			} else {
-				draft.ThumbURL = image.URL
+				draft.ThumbURL = uploadedImages[index].URL
 			}
 		}
 	case MomentTypeVideo:
