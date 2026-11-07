@@ -9,6 +9,15 @@ on:
         default: 'production'
         type: choice
         options: [dev, production]
+      version:
+        description: 'Version app, ví dụ 0.2.0 (để trống thì lấy từ desktop/package.json)'
+        required: false
+        type: string
+      publish:
+        description: 'Tạo release nháp để app tự cập nhật (chỉ áp dụng production)'
+        required: true
+        default: false
+        type: boolean
 
 concurrency:
   group: desktop-${{ github.ref }}-${{ inputs.environment }}
@@ -47,6 +56,20 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
+      - name: Đặt version
+        if: inputs.version != ''
+        working-directory: desktop
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const { VERSION } = process.env;
+            if (!/^\d+\.\d+\.\d+$/.test(VERSION)) throw new Error('Version phải có dạng 0.2.0');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            fs.writeFileSync('package.json', JSON.stringify({ ...pkg, version: VERSION }, null, 2));
+          "
+
       - name: Build web + main (vite + esbuild, env desktop)
         working-directory: desktop
         run: |
@@ -62,12 +85,17 @@ jobs:
       - name: Đóng gói electron-builder (${{ matrix.platform }})
         working-directory: desktop
         env:
-          # Không có cert ký: mac bỏ qua signing, win build nsis không ký
+          # Không có cert: mac ký ad-hoc theo electron-builder.yml, win build nsis không ký
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         # Gọi thẳng CLI (không qua pnpm exec) để module collector chạy chế độ npm:
         # desktop không có dependency runtime, còn `pnpm list` quét cả monorepo
         # thì nổ EMFILE trên runner Windows.
-        run: node ../node_modules/electron-builder/out/cli/cli.js --${{ matrix.platform }} --publish never
+        run: |
+          # Bản dev không được nhận cập nhật từ kênh production
+          if [ "${{ inputs.environment }}" = "dev" ]; then
+            node -e "const fs=require('fs');const f='electron-builder.yml';fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace(/^publish:\r?\n(?:[ \t]+.*\r?\n)+/m,''))"
+          fi
+          node ../node_modules/electron-builder/out/cli/cli.js --${{ matrix.platform }} --publish never
 
       - name: Gom installer
         run: |
@@ -90,6 +118,21 @@ jobs:
           path: artifacts/*
           if-no-files-found: error
           retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: inputs.publish && inputs.environment == 'production'
+        with:
+          name: ola-desktop-release-${{ matrix.platform }}
+          path: |
+            desktop/release/latest*.yml
+            desktop/release/*.blockmap
+            desktop/release/*.zip
+            desktop/release/*.dmg
+            desktop/release/*.exe
+            desktop/release/*.AppImage
+            desktop/release/*.deb
+          if-no-files-found: error
+          retention-days: 3
 
       - name: Upload lên Google Drive
         id: drive
@@ -150,6 +193,58 @@ jobs:
             echo ""
             echo "OLA_EOF"
           } >> "$GITHUB_OUTPUT"
+
+  publish:
+    needs: build
+    if: inputs.publish && inputs.environment == 'production'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ola-desktop-release-*
+          path: release-files
+          merge-multiple: true
+
+      - name: Ký bản cập nhật Mac
+        env:
+          DESKTOP_UPDATE_SIGNING_KEY: ${{ secrets.DESKTOP_UPDATE_SIGNING_KEY }}
+        run: |
+          node <<'EOF'
+          const crypto = require('crypto');
+          const fs = require('fs');
+          const metadataPath = 'release-files/latest-mac.yml';
+          const metadata = fs.readFileSync(metadataPath, 'utf8');
+          const field = (name) => new RegExp(`^${name}: (.+)$`, 'm').exec(metadata)[1].trim();
+          const version = field('version');
+          const zip = fs.readFileSync(`release-files/${field('path')}`);
+          const sha512 = crypto.createHash('sha512').update(zip).digest('base64');
+          if (sha512 !== field('sha512')) throw new Error('sha512 của zip không khớp latest-mac.yml');
+          const signature = crypto.sign(null, Buffer.from(`${version}\n${sha512}`), process.env.DESKTOP_UPDATE_SIGNING_KEY);
+          fs.appendFileSync(metadataPath, `updateSignature: ${signature.toString('base64')}\n`);
+          EOF
+
+      - name: Tạo release nháp
+        env:
+          GH_TOKEN: ${{ secrets.DESKTOP_RELEASE_TOKEN }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -e
+          REPO="$(awk '/^  owner:/{o=$2} /^  repo:/{r=$2} END{print o "/" r}' desktop/electron-builder.yml)"
+          VERSION="${INPUT_VERSION:-$(jq -r .version desktop/package.json)}"
+          TAG="v${VERSION}"
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            echo "Release $TAG đã có trên $REPO: nhập version mới hoặc xoá bản nháp cũ."
+            exit 1
+          fi
+          ls -la release-files
+          gh release create "$TAG" release-files/* \
+            --repo "$REPO" \
+            --draft \
+            --title "Ola Chat ${VERSION}" \
+            --notes "Build #${{ github.run_number }}, commit ${GITHUB_SHA:0:7}"
+          echo "Đã tạo bản nháp $TAG trên $REPO, kiểm tra rồi bấm Publish."
 
   notify:
     needs: build
