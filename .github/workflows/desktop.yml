@@ -16,7 +16,7 @@ on:
       publish:
         description: 'Tạo release nháp để app tự cập nhật (chỉ áp dụng production)'
         required: true
-        default: false
+        default: true
         type: boolean
 
 concurrency:
@@ -101,13 +101,12 @@ jobs:
         run: |
           set -e
           ENV="${{ inputs.environment }}"
-          RUN="${{ github.run_number }}"
           OS="${{ matrix.platform }}"
           mkdir -p artifacts
           shopt -s nullglob
           for f in desktop/release/*.dmg desktop/release/*.exe desktop/release/*.AppImage desktop/release/*.deb; do
             ext="${f##*.}"
-            cp "$f" "artifacts/ola-desktop-${ENV}-${RUN}-${OS}.${ext}"
+            cp "$f" "artifacts/ola-desktop-${ENV}-${OS}.${ext}"
           done
           ls -la artifacts
           [ -n "$(ls artifacts)" ] || { echo "Không có installer nào!"; exit 1; }
@@ -168,23 +167,13 @@ jobs:
             LINKS="${LINKS}[${FILE}](${LINK})"$'\n'
           done
 
-          # Chỉ giữ file của 2 run mới nhất cho env+OS này
-          KEEP_RUNS=$($RC lsf "$DEST" \
-            | grep -E "^ola-desktop-${ENV}-[0-9]+-${OS}\." \
-            | sed -E 's/^ola-desktop-[^-]+-([0-9]+)-.*/\1/' \
-            | sort -rn | uniq | head -2 | tr '\n' ' ')
+          # Dọn file cũ còn số build trong tên, file mới cố định tên nên ghi đè lên nhau
           $RC lsf "$DEST" \
             | grep -E "^ola-desktop-${ENV}-[0-9]+-${OS}\." \
             | while read -r old; do
-                run=$(echo "$old" | sed -E 's/^ola-desktop-[^-]+-([0-9]+)-.*/\1/')
-                case " $KEEP_RUNS " in
-                  *" $run "*) ;;
-                  *)
-                    echo "Xoá bản cũ: $old"
-                    $RC deletefile "$DEST/$old" || echo "  (bỏ qua, không xoá được: $old)"
-                    ;;
-                esac
-              done
+                echo "Xoá bản cũ: $old"
+                $RC deletefile "$DEST/$old" || echo "  (bỏ qua, không xoá được: $old)"
+              done || true
 
           # Trả link cho job notify (mỗi leg chỉ set key của OS mình)
           {
