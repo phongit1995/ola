@@ -22,7 +22,7 @@ export function GiftWallSection({
   userId,
   isSelf,
   refreshKey,
-  columns = 5,
+  columns = 4,
   onOpenHistory,
 }: GiftWallSectionProps) {
   const { t, i18n } = useTranslation();
@@ -90,13 +90,13 @@ export function GiftWallSection({
                     src={item.gift.imageUrl}
                     alt={giftDisplayName(item.gift, i18n.language)}
                     loading="lazy"
-                    className="h-11 w-11 object-contain"
+                    className="h-16 w-16 object-contain"
                   />
                   <span className="absolute -right-2 -bottom-1 rounded-full bg-ola-accent px-1 text-[10px] leading-4 font-bold text-white">
                     {t('gift.quantityTimes', { count: item.quantity })}
                   </span>
                 </span>
-                <span className="mt-1 w-full truncate text-center text-[11px] text-black/54">
+                <span className="mt-1 w-full truncate text-center text-xs text-black/54">
                   {giftDisplayName(item.gift, i18n.language)}
                 </span>
               </button>

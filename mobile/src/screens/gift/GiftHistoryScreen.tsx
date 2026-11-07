@@ -4,7 +4,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { GIFT_HISTORY_DIRECTION, GIFT_HISTORY_TABS } from '@ola/shared/constants';
-import { colorForName, formatClockHM, formatDateDMY, formatKen, randomUuid } from '@ola/shared/lib';
+import { colorForName, formatCompactDateTime, formatKen, randomUuid } from '@ola/shared/lib';
 import { useGiftAnimationStore } from '@ola/shared/stores/gift/giftAnimationStore';
 import { useGiftHistory } from '@ola/shared/stores/gift/useGiftHistory';
 import type { GiftHistoryItem } from '@ola/shared/types';
@@ -27,6 +27,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'GiftHistory'>;
 const AVATAR_SIZE = 44;
 const DIRECTION_BADGE_SIZE = 20;
 const KEN_PILL_ICON = { width: 14, height: 14 };
+const GIFT_IMAGE_STYLE = { width: 80, height: 80 };
 
 function CharmPill({ value }: { value: number }) {
   return <GiftPill tone="charm" text={`+${formatKen(value)}`} trailing={<CharmIcon size={14} />} />;
@@ -91,7 +92,7 @@ export function GiftHistoryScreen({ navigation }: Props) {
               />
             </Pressable>
             <Text className="text-xs" style={{ color: TEXT_FAINT }}>
-              {`${formatDateDMY(item.createdAt)} ${formatClockHM(item.createdAt)}`}
+              {formatCompactDateTime(item.createdAt)}
             </Text>
           </View>
           <Text className="mt-0.5 text-sm" style={{ color: 'rgba(0,0,0,0.6)' }}>
@@ -125,7 +126,7 @@ export function GiftHistoryScreen({ navigation }: Props) {
           </View>
         </View>
         <Pressable onPress={() => replay(item)} className="active:opacity-60" accessibilityLabel={item.giftName}>
-          <CachedImage uri={item.giftImageUrl} style={{ width: 56, height: 56 }} resizeMode="contain" />
+          <CachedImage uri={item.giftImageUrl} style={GIFT_IMAGE_STYLE} resizeMode="contain" />
         </Pressable>
       </View>
     );

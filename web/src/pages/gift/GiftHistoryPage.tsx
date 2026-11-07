@@ -12,8 +12,7 @@ import { useGiftHistory } from '@ola/shared/stores/gift/useGiftHistory';
 import {
   cn,
   colorForName,
-  formatClockHM,
-  formatDateDMY,
+  formatCompactDateTime,
   formatKen,
   randomUuid,
 } from '@lib';
@@ -136,8 +135,7 @@ export function GiftHistoryPage({
                         />
                       </button>
                       <span className="shrink-0 text-xs text-black/45">
-                        {formatDateDMY(item.createdAt)}{' '}
-                        {formatClockHM(item.createdAt)}
+                        {formatCompactDateTime(item.createdAt)}
                       </span>
                     </div>
                     <p className="mt-0.5 text-sm text-black/60">
@@ -186,7 +184,7 @@ export function GiftHistoryPage({
                     <img
                       src={item.giftImageUrl}
                       alt=""
-                      className="h-14 w-14 object-contain drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)]"
+                      className="h-20 w-20 object-contain drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)]"
                     />
                   </button>
                 </li>
