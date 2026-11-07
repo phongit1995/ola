@@ -290,7 +290,7 @@ func (s *Service) authenticate(req *LoginRequest) (*models.User, error) {
 	user, err := s.repo.FindByUsername(req.Username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.logger.Warnw("User not found", "username", req.Username)
+			s.logger.Debugw("User not found", "username", req.Username)
 			return nil, errors.New("invalid username or password")
 		}
 		s.logger.Errorw("Database error while finding user", "username", req.Username, "error", err.Error())
@@ -298,7 +298,7 @@ func (s *Service) authenticate(req *LoginRequest) (*models.User, error) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		s.logger.Warnw("Invalid password", "user_id", user.ID, "username", req.Username)
+		s.logger.Debugw("Invalid password", "user_id", user.ID, "username", req.Username)
 		return nil, errors.New("invalid username or password")
 	}
 

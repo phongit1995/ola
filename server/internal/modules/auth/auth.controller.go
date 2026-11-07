@@ -49,7 +49,7 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.Register(&req, c.ClientIP())
 	if err != nil {
-		ctrl.logger.Warnw("Registration failed",
+		ctrl.logger.Infow("Registration failed",
 			"username", req.Username,
 			"error", err.Error(),
 		)
@@ -235,7 +235,7 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.Login(&req, c.ClientIP(), c.GetHeader("User-Agent"))
 	if err != nil {
-		ctrl.logger.Warnw("Login failed",
+		ctrl.logger.Infow("Login failed",
 			"username", req.Username,
 			"error", err.Error(),
 			"ip", c.ClientIP(),

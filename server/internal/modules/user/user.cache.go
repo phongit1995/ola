@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
@@ -205,9 +206,13 @@ func (c *CacheService) GetUsersBatch(userIDs []uuid.UUID, fallbackToDB bool) map
 }
 
 func (c *CacheService) GetUserCache(userID uuid.UUID, fallbackToDB bool) (*models.User, error) {
-	if cachedUser, err := c.GetUser(userID); err == nil && cachedUser != nil {
+	cachedUser, err := c.GetUser(userID)
+	if err == nil && cachedUser != nil {
 		c.logger.Debugw("User cache HIT", "user_id", userID, "fallback_enabled", fallbackToDB)
 		return cachedUser, nil
+	}
+	if err != nil && !errors.Is(err, services.ErrCacheMiss) {
+		c.logger.Warnw("User cache read failed", "user_id", userID, "error", err)
 	}
 
 	if !fallbackToDB {
