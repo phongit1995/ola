@@ -16,7 +16,7 @@ pnpm desktop:dev    # 1 lệnh: vite (port 3005, env desktop/.env.development) �
 
 ```bash
 pnpm desktop:dist          # OS hiện tại
-pnpm -C desktop dist:mac   # dmg + zip
+pnpm -C desktop dist:mac   # dmg + zip universal (Intel + Apple Silicon)
 pnpm -C desktop dist:win   # nsis installer
 pnpm -C desktop dist:linux # AppImage + deb
 ```
