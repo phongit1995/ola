@@ -169,6 +169,21 @@ func TestTycoonMatchOverPaysTheWholeFourSeatPot(t *testing.T) {
 	}
 }
 
+func TestTycoonEveryoneLeavingPaysTheRichestSeat(t *testing.T) {
+	gameEngine, _, match := startTycoonMatch(t, 2)
+	defer stopEngineTimers(gameEngine)
+
+	state := match.state.(*tycoon.State)
+	state.Players[0].Cash = 9000
+	state.Players[1].Cash = 1
+	match.mu.Lock()
+	winner := gameEngine.winnerWhenEveryoneLeft(match)
+	match.mu.Unlock()
+	if winner != match.players[0].ID {
+		t.Fatalf("winner = %s, want %s", winner, match.players[0].ID)
+	}
+}
+
 func TestTycoonFinishedSnapshotKeepsRankingsForSettlement(t *testing.T) {
 	gameEngine, emitter, match := startTycoonMatch(t, 4)
 	defer stopEngineTimers(gameEngine)

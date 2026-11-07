@@ -1610,12 +1610,14 @@ func (e *Engine) onGraceExpire(matchID string, gen int) {
 func anySeatCanWin(int) bool { return true }
 
 func (e *Engine) winnerWhenEveryoneLeft(m *Match) string {
-	handler, ok := m.logic.(logic.QuitHandler)
-	if !ok {
+	if handler, ok := m.logic.(logic.EveryoneLeftHandler); ok {
+		handler.OnEveryoneLeft(m.state)
+	} else if handler, ok := m.logic.(logic.QuitHandler); ok {
+		for _, idx := range m.activeIdxs() {
+			handler.OnPlayerQuit(m.state, idx)
+		}
+	} else {
 		return ""
-	}
-	for _, idx := range m.activeIdxs() {
-		handler.OnPlayerQuit(m.state, idx)
 	}
 	if over, winnerIdx := m.logic.Result(m.state); over && winnerIdx >= 0 && winnerIdx < len(m.players) {
 		return m.players[winnerIdx].ID

@@ -1,7 +1,7 @@
 # 05 — Gameplay: luật v1, bàn 32 ô, thẻ bài, state, protocol
 
 > **Hiện trạng (01/11/2026):** bản chơi với máy vẫn chạy toàn bộ luật ở client (`game/tycoon/logic/engine.ts`, bot ở `logic/bot.ts`). **Server đã có** package `server/internal/game/games/tycoon/` (port 1:1 từ `engine.ts`, đã đăng ký engine, phí `TYCOON_COMMISSION_PERCENT`, BXH dùng nhánh thắng của Tiến Lên) nhưng **client chưa nối**: chưa có màn online nào gửi `joinGame('tycoon')`. Parity Go ↔ TS:
-- `go generate ./internal/game/games/tycoon` **chỉ** sinh `testdata/parity.json` (dữ liệu tĩnh + 3 ván chơi theo seed, mỗi ván tối đa 120 nước + 5 tình huống hiếm: Sinh nhật nhiều con nợ, con nợ/người rút thẻ bỏ cuộc, phạt tù bắt buộc khi thiếu tiền, phá sản chuyển đất thành thắng ngay) — tổng **8 ván / 471 nước**. Chưa sinh `constants.gen.ts` / `board.gen.json` / `cards.gen.json` cho client (§11).
+- `go generate ./internal/game/games/tycoon` **chỉ** sinh `testdata/parity.json` (dữ liệu tĩnh + 3 ván chơi theo seed, mỗi ván tối đa 120 nước + 7 tình huống hiếm: Sinh nhật nhiều con nợ, con nợ/người rút thẻ bỏ cuộc, phạt tù bắt buộc khi thiếu tiền, phá sản chuyển đất thành thắng ngay, chủ ô bỏ cuộc lúc đang được mời mua lại, Sinh nhật thành thắng ngay) — tổng **10 ván / 479 nước**. Chưa sinh `constants.gen.ts` / `board.gen.json` / `cards.gen.json` cho client (§11).
 - Kiểm fixture đã commit: `node game/scripts/tycoon-parity.mjs` (bundle `logic/engine.ts` bằng esbuild, chơi lại từng nước, so steps + mã lỗi + state cuối; exit 1 nếu lệch).
 - Kiểm lớn, không commit file: `cd server && go run ./cmd/tycoongen -stress /tmp/tycoon-stress.json -games 300` rồi `node game/scripts/tycoon-parity.mjs /tmp/tycoon-stress.json` — 305 ván / 75.099 nước (có state sau mỗi nước, ~130 MB). Kết quả 01/11/2026: 0 lệch.
 - Client chưa có `parity.test.ts`; khi nối client thì chuyển phần kiểm này vào vitest (như thirteen).
@@ -137,6 +137,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 - Trả thuê xong (không rơi vào nợ) ở ô **thành phố** (`street`) của người chơi khác còn hoạt động, ô **chưa lên Khách sạn** (cấp < 3) và `cash ≥ giá mua lại` → pha `takeover`.
 - Giá mua lại = `TAKEOVER_MULTIPLIER × (giá đất + cấp × houseCost)` = ×2. Tiền trả **cho chủ cũ**; ô đổi chủ, giữ nguyên cấp nhà.
 - `TAKEOVER` mua lại, `DECLINE` bỏ qua; hết giờ = `DECLINE`. Sân bay và ô Khách sạn không mua lại được. Sau đó sang `manage`.
+- Chủ ô bỏ cuộc trong pha `takeover`: ô về vô chủ, pha chuyển sang `decide` để người đang đứng mua theo giá gốc hoặc bỏ qua.
 - Bot mua lại khi việc đó giúp nó gom trọn nhóm (còn ≥ 120 tr sau khi trả), hoặc phá nhóm trọn của chủ cũ (còn ≥ 360 tr).
 
 ### 4.3c Thắng ngay
@@ -171,6 +172,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 | Hết `MAX_ROUNDS` = 30 vòng (`rounds`, kiểm tra ở END_TURN của người cuối cùng trong vòng) | xếp theo **tổng tài sản** giảm dần | `win` | tài sản giảm dần, hòa tài sản → ít phá sản hơn, rồi seat thấp hơn; người phá sản xếp cuối theo thứ tự phá sản đảo |
 | Hết 25 phút tính từ đầu ván (`time`) | như hết vòng | `win` | như hết vòng. Kết thúc ở **đầu lượt kế tiếp** sau khi hết giờ (không cắt giữa lượt): chỉ tính khi lượt đã chuyển sang seat khác (`isNewTurn`); nộp phạt / dùng thẻ ra tù rồi gieo, hay gieo lại khi ra đôi vẫn là lượt cũ. Bản chơi với máy đếm giờ ở client (`endByTime`); bản online server đếm |
 | 2 người, 1 người quit/forfeit | người còn lại thắng | `forfeit`/`timeout`/`disconnect` | engine quyết |
+| Mọi người còn lại cùng mất kết nối quá hạn (`time`, qua `OnEveryoneLeft`) | như hết vòng, không ai bị tính phá sản | `disconnect` | như hết vòng |
 
 `Tổng tài sản = cash + Σ price(đất sở hữu) + Σ cấp × houseCost`. Khách sạn (cấp 3) tính 3 × houseCost.
 

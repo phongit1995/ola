@@ -907,7 +907,10 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     closeNotice(notice: NoticeState) {
-      if (get().notice !== notice) return;
+      if (get().notice !== notice) {
+        set({ noticeQueue: get().noticeQueue.filter((queued) => queued !== notice) });
+        return;
+      }
       const [next = null, ...rest] = get().noticeQueue;
       set({ notice: next, noticeId: get().noticeId + 1, noticeQueue: rest });
     },

@@ -92,6 +92,13 @@ type QuitHandler interface {
 	OnPlayerQuit(state any, playerIdx int)
 }
 
+// EveryoneLeftHandler ends a match that lost every remaining player at once.
+// Without it the engine quits the seats one by one, which suits games where
+// the order does not decide the result.
+type EveryoneLeftHandler interface {
+	OnEveryoneLeft(state any)
+}
+
 // Ranker reports the final placement of every seat (finish order, best first)
 // for games that rank more than a single winner.
 type Ranker interface {

@@ -121,6 +121,15 @@ func (Logic) OnPlayerQuit(state any, playerIdx int) {
 	quitPlayer(s, playerIdx)
 }
 
+func (Logic) OnEveryoneLeft(state any) {
+	s, ok := state.(*State)
+	if !ok || s.Finished {
+		return
+	}
+	s.Steps = []Step{}
+	s.finish(EndTime)
+}
+
 func (Logic) Rankings(state any) []int {
 	s, ok := state.(*State)
 	if !ok {

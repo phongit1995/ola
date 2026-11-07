@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
 import { canSell } from '../logic/rules-hint';
@@ -7,10 +7,10 @@ import { levelLabel } from '../helpers/tiles';
 import { ModalHeading } from './ModalHeading';
 import { TyIcon } from './TyIcon';
 import { useDialogFocus } from './useDialogFocus';
-import { useTycoon } from '../store/useTycoon';
+import { useTycoon, type NoticeState } from '../store/useTycoon';
 
 export function DebtModal() {
-  const { view, players, you, cash, movePending, replaying, timerLeftMs, sendMove, showNotice } = useTycoon(
+  const { view, players, you, cash, movePending, replaying, timerLeftMs, sendMove, showNotice, closeNotice } = useTycoon(
     useShallow((s) => ({
       view: s.view,
       players: s.players,
@@ -21,12 +21,22 @@ export function DebtModal() {
       timerLeftMs: s.timerLeftMs,
       sendMove: s.sendMove,
       showNotice: s.showNotice,
+      closeNotice: s.closeNotice,
     })),
   );
   const titleId = useId();
   const ref = useDialogFocus<HTMLDivElement>();
-  if (!view || view.phase !== 'debt' || !view.debt || view.debt.by !== you) return null;
-  const debt = view.debt;
+  const confirmRef = useRef<NoticeState | null>(null);
+  const debt = view?.phase === 'debt' && view.debt?.by === you ? view.debt : null;
+  const debtKey = debt ? `${debt.by}:${debt.creditor}:${debt.amount}:${debt.reason}` : null;
+  useEffect(
+    () => () => {
+      if (confirmRef.current) closeNotice(confirmRef.current);
+      confirmRef.current = null;
+    },
+    [debtKey, closeNotice],
+  );
+  if (!view || !debt) return null;
   const myCash = cash[you] ?? view.players[you].cash;
   const busy = movePending || replaying;
   const creditor = debt.creditor >= 0 ? players[debt.creditor]?.name ?? '?' : 'ngân hàng';
@@ -73,16 +83,18 @@ export function DebtModal() {
             type="button"
             className="ty-btn ty-btn-danger"
             disabled={busy}
-            onClick={() =>
-              showNotice({
+            onClick={() => {
+              const confirm: NoticeState = {
                 kind: 'confirm',
                 tone: 'danger',
                 title: 'Tuyên bố phá sản',
                 body: 'Toàn bộ tài sản sẽ chuyển cho chủ nợ và bạn rời cuộc chơi. Chắc chứ?',
                 okLabel: 'Phá sản',
                 onOk: () => sendMove({ type: 'DECLARE_BANKRUPT' }),
-              })
-            }
+              };
+              confirmRef.current = confirm;
+              showNotice(confirm);
+            }}
           >
             Phá sản
           </button>

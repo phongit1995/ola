@@ -477,6 +477,111 @@ func TestQuitDuringDebtsAndLastPlayerWins(t *testing.T) {
 	}
 }
 
+func decodeRoundTrip(t *testing.T, s *State) *State {
+	t.Helper()
+	raw, err := json.Marshal(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := Logic{}.DecodeState(raw)
+	if err != nil {
+		t.Fatalf("state rejected: %v", err)
+	}
+	return decoded.(*State)
+}
+
+func TestBystanderQuitKeepsTheCardInPlay(t *testing.T) {
+	s := birthdayScenario()
+	Logic{}.OnPlayerQuit(s, 3)
+	if s.Turn != 0 || s.Phase != PhaseCard || s.Card == nil {
+		t.Fatalf("after bystander quit: turn %d phase %s card %+v", s.Turn, s.Phase, s.Card)
+	}
+	s = decodeRoundTrip(t, s)
+	s = play(t, s, 0, Move{Type: MoveCardAck})
+	if s.Card != nil || s.Debt == nil || s.Debt.By != 1 {
+		t.Fatalf("card did not resolve: card %+v debt %+v", s.Card, s.Debt)
+	}
+}
+
+func TestQuitOnOwnCardMovesToTheNextSeat(t *testing.T) {
+	s := birthdayScenario()
+	Logic{}.OnPlayerQuit(s, 0)
+	if s.Turn != 1 || s.Phase != PhaseRoll || s.Card != nil {
+		t.Fatalf("after drawer quit: turn %d phase %s card %+v", s.Turn, s.Phase, s.Card)
+	}
+}
+
+func TestMatchEndingDuringACardClearsTheCard(t *testing.T) {
+	s := testState(2)
+	s.Phase = PhaseCard
+	s.Card = &CardRef{Deck: DeckChest, ID: "cm07"}
+	Logic{}.OnPlayerQuit(s, 1)
+	if !s.Finished || s.Card != nil {
+		t.Fatalf("finished %v card %+v", s.Finished, s.Card)
+	}
+	decodeRoundTrip(t, s)
+}
+
+func TestBirthdayStopsCollectingOnceTheGameEnds(t *testing.T) {
+	s := play(t, birthdayInstantWinScenario(), 0, Move{Type: MoveCardAck})
+	if !s.Finished || *s.EndReason != EndAirports || s.Winner != 0 {
+		t.Fatalf("finished %v reason %v winner %d", s.Finished, s.EndReason, s.Winner)
+	}
+	if s.Players[2].Bankrupt || !slices.Equal(s.BankruptOrder, []int{1}) {
+		t.Fatalf("seat 2 was charged after the end: %+v order %v", s.Players[2], s.BankruptOrder)
+	}
+}
+
+func TestLastRoundBankruptcyStaysDecodable(t *testing.T) {
+	s := testState(3)
+	s.Round = MaxRounds
+	s.Turn = 2
+	s.Phase = PhaseDebt
+	s.Players[2].Cash = 0
+	s.Debt = &Debt{Creditor: -1, Amount: 500, By: 2, ReturnTo: 2, Reason: PayRent}
+	s = play(t, s, 2, Move{Type: MoveDeclareBankrupt})
+	if !s.Finished || *s.EndReason != EndRounds {
+		t.Fatalf("finished %v reason %v", s.Finished, s.EndReason)
+	}
+	decoded := decodeRoundTrip(t, s)
+	if got := (Logic{}).Rankings(decoded); len(got) != 3 || got[2] != 2 {
+		t.Fatalf("rankings = %v", got)
+	}
+	if (Logic{}).MoveCount(decoded) != s.MoveCount {
+		t.Fatalf("move count = %d", (Logic{}).MoveCount(decoded))
+	}
+}
+
+func TestTakeoverOwnerQuitOffersTheFreeTile(t *testing.T) {
+	s := takeoverScenario()
+	Logic{}.OnPlayerQuit(s, 1)
+	if s.Turn != 0 || s.Phase != PhaseDecide || s.Tiles[1].Owner != -1 {
+		t.Fatalf("after owner quit: turn %d phase %s tile %+v", s.Turn, s.Phase, s.Tiles[1])
+	}
+	s = play(t, s, 0, Move{Type: MoveBuy})
+	if s.Tiles[1].Owner != 0 || s.Phase != PhaseManage {
+		t.Fatalf("after buy: tile %+v phase %s", s.Tiles[1], s.Phase)
+	}
+}
+
+func TestEveryoneLeftRanksByWorth(t *testing.T) {
+	s := testState(3)
+	s.Players[0].Cash = 9000
+	s.Players[1].Cash = 1
+	s.Players[2].Cash = 500
+	Logic{}.OnEveryoneLeft(s)
+	over, winner := Logic{}.Result(s)
+	if !over || winner != 0 || *s.EndReason != EndTime {
+		t.Fatalf("over %v winner %d reason %v", over, winner, s.EndReason)
+	}
+	if got := (Logic{}).Rankings(s); !slices.Equal(got, []int{0, 2, 1}) {
+		t.Fatalf("rankings = %v", got)
+	}
+	if len(s.BankruptOrder) != 0 {
+		t.Fatalf("seats went bankrupt: %v", s.BankruptOrder)
+	}
+}
+
 func TestMovesAreRejectedWithPrefixedCodes(t *testing.T) {
 	s := testState(2)
 	_, err := Logic{}.Apply(s, 1, rawMove(t, Move{Type: MoveRoll}))
