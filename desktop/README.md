@@ -63,7 +63,7 @@ Bản build `dev` bị bỏ mục `publish` nên không nhận cập nhật từ
 ### Phát hành
 
 1. Chạy workflow Desktop với `environment = production`, nhập `version` mới (ví dụ `0.2.0`) và tick `publish`. Version phải cao hơn bản đã phát hành, trùng tag thì job `publish` báo lỗi. Để trống thì lấy từ `desktop/package.json`.
-2. Vào release nháp ở repo trên, kiểm tra đủ file (`latest.yml`, `latest-mac.yml`, `latest-linux.yml`, bộ cài, `.blockmap`) rồi bấm Publish. App chỉ thấy bản đã Publish.
+2. Ô `release_now` tick sẵn thì release lên thẳng và app người dùng nhận ngay. Muốn kiểm tra trước thì bỏ tick, rồi vào release nháp ở repo trên, kiểm tra đủ file (`latest.yml`, `latest-mac.yml`, `latest-linux.yml`, bộ cài, `.blockmap`) rồi bấm Publish. App chỉ thấy bản đã Publish.
 
 Version nhập ở workflow không được ghi lại vào `desktop/package.json`, trong khi `scripts/ota-release.sh` lấy `shell_version` từ file đó. Trước khi phát hành OTA phải sửa file đó khớp với version đang phát hành.
 

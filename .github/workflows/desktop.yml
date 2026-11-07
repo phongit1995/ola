@@ -18,6 +18,11 @@ on:
         required: true
         default: true
         type: boolean
+      release_now:
+        description: 'Phát hành luôn, app người dùng nhận ngay (bỏ tick thì giữ bản nháp)'
+        required: true
+        default: true
+        type: boolean
 
 concurrency:
   group: desktop-${{ github.ref }}-${{ inputs.environment }}
@@ -218,6 +223,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DESKTOP_RELEASE_TOKEN }}
           INPUT_VERSION: ${{ inputs.version }}
+          RELEASE_NOW: ${{ inputs.release_now }}
         run: |
           set -e
           REPO="$(awk '/^  owner:/{o=$2} /^  repo:/{r=$2} END{print o "/" r}' desktop/electron-builder.yml)"
@@ -228,12 +234,20 @@ jobs:
             exit 1
           fi
           ls -la release-files
+          DRAFT_FLAG="--draft"
+          if [ "$RELEASE_NOW" = "true" ]; then
+            DRAFT_FLAG=""
+          fi
           gh release create "$TAG" release-files/* \
             --repo "$REPO" \
-            --draft \
+            $DRAFT_FLAG \
             --title "Ola Chat ${VERSION}" \
             --notes "Build #${{ github.run_number }}, commit ${GITHUB_SHA:0:7}"
-          echo "Đã tạo bản nháp $TAG trên $REPO, kiểm tra rồi bấm Publish."
+          if [ -n "$DRAFT_FLAG" ]; then
+            echo "Đã tạo bản nháp $TAG trên $REPO, kiểm tra rồi bấm Publish."
+          else
+            echo "Đã phát hành $TAG trên $REPO."
+          fi
 
   notify:
     needs: build
