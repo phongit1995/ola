@@ -1729,7 +1729,7 @@
   "download": {
     "back": "‹ Quay lại",
     "title": "Tải ứng dụng Ola",
-    "subtitle": "Cài Ola trên điện thoại để nhận thông báo tin nhắn ngay lập tức, nghe gọi và chơi game mượt hơn.",
+    "subtitle": "Cài Ola trên điện thoại hoặc máy tính để nhận thông báo tin nhắn ngay lập tức, nghe gọi và chơi game mượt hơn.",
     "settingsRow": "Tải ứng dụng Ola",
     "fab": "Tải app Ola",
     "hideFab": "Ẩn nút tải app",
@@ -1741,7 +1741,7 @@
     "inAppTitle": "Hãy mở bằng Chrome hoặc Safari",
     "inAppMessage": "Trình duyệt bên trong Facebook, Messenger hay Zalo thường không mở được Google Play hoặc App Store. Bạn sao chép link rồi dán vào Chrome (Android) hoặc Safari (iPhone) để tải được app.",
     "openOnPhone": "Mở trang này trên điện thoại",
-    "openOnPhoneHint": "Bạn đang dùng máy tính. Nhập địa chỉ bên dưới vào trình duyệt trên điện thoại để tải app.",
+    "openOnPhoneHint": "Muốn cài trên điện thoại? Nhập địa chỉ bên dưới vào trình duyệt trên điện thoại.",
     "android": {
       "name": "Android",
       "channel": "Cài từ Google Play",
@@ -1765,6 +1765,44 @@
       ],
       "storeLinkLabel": "Link App Store"
     },
+    "desktop": {
+      "name": "Máy tính",
+      "channel": "Tải trực tiếp từ Ola",
+      "barLabel": "Máy tính:",
+      "windows": {
+        "name": "Windows",
+        "action": "Tải cho Windows",
+        "steps": [
+          "Nhấn “Tải cho Windows” và chờ tải xong file ola-chat.exe.",
+          "Mở file vừa tải. Nếu Windows hiện cảnh báo màu xanh, nhấn “Thêm thông tin” (More info) rồi “Vẫn chạy” (Run anyway).",
+          "Chờ cài xong, Ola tự mở. Đăng nhập bằng tài khoản của bạn."
+        ],
+        "note": "Chỉ cần tải một lần, những lần sau app tự cập nhật."
+      },
+      "mac": {
+        "name": "Mac (M1+)",
+        "action": "Tải cho Mac chip M1 trở lên",
+        "requirement": "Yêu cầu macOS {{version}} trở lên",
+        "steps": [
+          "Nhấn “Tải cho Mac chip M1 trở lên” và chờ tải xong file ola-chat.dmg.",
+          "Mở file vừa tải rồi kéo Ola Chat vào thư mục Applications.",
+          "Mở Ola Chat. Lần đầu nếu Mac báo không mở được, nhấn Xong, vào Cài đặt hệ thống → Quyền riêng tư & Bảo mật, kéo xuống rồi nhấn “Vẫn mở” (Open Anyway).",
+          "Đăng nhập bằng tài khoản của bạn."
+        ],
+        "note": "Bản này chỉ chạy trên Mac chip Apple (M1 trở lên), chưa chạy trên Mac chip Intel. Chỉ cần tải một lần, những lần sau app tự cập nhật."
+      },
+      "linux": {
+        "name": "Linux",
+        "action": "Tải AppImage (khuyên dùng)",
+        "debAction": "Tải .deb (Ubuntu, Debian)",
+        "steps": [
+          "Chọn bản AppImage, hoặc bản .deb nếu bạn dùng Ubuntu hay Debian.",
+          "AppImage: chạy chmod +x ola-chat.AppImage rồi mở file. Bản .deb: chạy sudo apt install ./ola-chat.deb.",
+          "Mở Ola và đăng nhập bằng tài khoản của bạn."
+        ],
+        "note": "Bản AppImage tự cập nhật. Bản .deb chỉ báo khi có bản mới, bạn tải lại ở trang này."
+      }
+    },
     "faqTitle": "Xử lý sự cố",
     "faq": [
       {
@@ -1785,7 +1823,7 @@
       },
       {
         "question": "Cập nhật app thế nào?",
-        "answer": "Android: Google Play tự cập nhật, hoặc bạn mở trang Ola Me trên Play rồi nhấn Cập nhật. iPhone: App Store tự cập nhật, hoặc bạn mở trang Ola Me trên App Store rồi nhấn Cập nhật."
+        "answer": "Android: Google Play tự cập nhật, hoặc bạn mở trang Ola Me trên Play rồi nhấn Cập nhật. iPhone: App Store tự cập nhật, hoặc bạn mở trang Ola Me trên App Store rồi nhấn Cập nhật. Máy tính: app tự cập nhật, riêng bản .deb trên Linux thì tải lại ở trang này."
       },
       {
         "question": "Cài app có mất dữ liệu tài khoản không?",
@@ -1793,7 +1831,7 @@
       }
     ],
     "safetyTitle": "Chỉ tải Ola từ nguồn chính thức",
-    "safety": "Ola chỉ phát hành qua Google Play (Android) và App Store (iPhone). Chúng tôi không bao giờ nhờ bạn cài file APK nhận từ tin nhắn lạ, nhóm Zalo hay Facebook — file từ nguồn khác có thể bị chèn mã độc để chiếm tài khoản của bạn.",
+    "safety": "Ola chỉ phát hành qua Google Play (Android), App Store (iPhone) và nút tải bản máy tính trên trang này. Chúng tôi không bao giờ nhờ bạn cài file nhận từ tin nhắn lạ, nhóm Zalo hay Facebook — file từ nguồn khác có thể bị chèn mã độc để chiếm tài khoản của bạn.",
     "useWeb": "Tiếp tục dùng bản web",
     "copiedToClipboard": "Đã sao chép"
   },

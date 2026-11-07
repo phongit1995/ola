@@ -131,6 +131,19 @@ export function PhoneIcon({ className = 'h-5 w-5' }: IconProps) {
   );
 }
 
+export function ComputerIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M20 18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2H1v2h22v-2h-3ZM4 6h16v10H4V6Z" />
+    </svg>
+  );
+}
+
 export function CloseIcon({ className = 'h-4 w-4' }: IconProps) {
   return (
     <svg

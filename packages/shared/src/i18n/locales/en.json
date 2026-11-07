@@ -1729,7 +1729,7 @@
   "download": {
     "back": "‹ Back",
     "title": "Get the Ola app",
-    "subtitle": "Install Ola on your phone for instant message alerts, voice calls and smoother games.",
+    "subtitle": "Install Ola on your phone or computer for instant message alerts, voice calls and smoother games.",
     "settingsRow": "Get the Ola app",
     "fab": "Get Ola app",
     "hideFab": "Hide the download button",
@@ -1741,7 +1741,7 @@
     "inAppTitle": "Please open in Chrome or Safari",
     "inAppMessage": "Browsers inside Facebook, Messenger or Zalo usually cannot open Google Play or the App Store. Copy the link and paste it into Chrome (Android) or Safari (iPhone) to get the app.",
     "openOnPhone": "Open this page on your phone",
-    "openOnPhoneHint": "You are on a computer. Type the address below into your phone browser to download the app.",
+    "openOnPhoneHint": "Want it on your phone? Type the address below into your phone browser.",
     "android": {
       "name": "Android",
       "channel": "Install from Google Play",
@@ -1765,6 +1765,44 @@
       ],
       "storeLinkLabel": "App Store link"
     },
+    "desktop": {
+      "name": "Computer",
+      "channel": "Download directly from Ola",
+      "barLabel": "Computer:",
+      "windows": {
+        "name": "Windows",
+        "action": "Download for Windows",
+        "steps": [
+          "Click “Download for Windows” and wait for ola-chat.exe to finish downloading.",
+          "Open the file. If Windows shows a blue warning, click “More info” and then “Run anyway”.",
+          "Ola opens by itself once installed. Sign in with your account."
+        ],
+        "note": "You only download once. The app updates itself after that."
+      },
+      "mac": {
+        "name": "Mac (M1+)",
+        "action": "Download for Mac with M1 or later",
+        "requirement": "Requires macOS {{version}} or later",
+        "steps": [
+          "Click “Download for Mac with M1 or later” and wait for ola-chat.dmg to finish downloading.",
+          "Open the file and drag Ola Chat into the Applications folder.",
+          "Open Ola Chat. If your Mac says it cannot be opened the first time, click Done, go to System Settings → Privacy & Security, scroll down and click “Open Anyway”.",
+          "Sign in with your account."
+        ],
+        "note": "This build runs only on Macs with Apple silicon (M1 or later), not on Intel Macs yet. You only download once. The app updates itself after that."
+      },
+      "linux": {
+        "name": "Linux",
+        "action": "Download AppImage (recommended)",
+        "debAction": "Download .deb (Ubuntu, Debian)",
+        "steps": [
+          "Choose the AppImage, or the .deb if you use Ubuntu or Debian.",
+          "AppImage: run chmod +x ola-chat.AppImage and open the file. .deb: run sudo apt install ./ola-chat.deb.",
+          "Open Ola and sign in with your account."
+        ],
+        "note": "The AppImage updates itself. The .deb only tells you when a new version is out, so download it again from this page."
+      }
+    },
     "faqTitle": "Troubleshooting",
     "faq": [
       {
@@ -1785,7 +1823,7 @@
       },
       {
         "question": "How do I update the app?",
-        "answer": "Android: Google Play updates it for you, or open the Ola Me listing on Play and tap Update. iPhone: the App Store updates it for you, or open the Ola Me listing on the App Store and tap Update."
+        "answer": "Android: Google Play updates it for you, or open the Ola Me listing on Play and tap Update. iPhone: the App Store updates it for you, or open the Ola Me listing on the App Store and tap Update. Computer: the app updates itself, except the Linux .deb, which you download again from this page."
       },
       {
         "question": "Will installing the app lose my account data?",
@@ -1793,7 +1831,7 @@
       }
     ],
     "safetyTitle": "Only get Ola from official sources",
-    "safety": "Ola ships only through Google Play (Android) and the App Store (iPhone). We will never ask you to install an APK sent in a stranger message, a Zalo group or on Facebook — files from other sources can be repackaged with malware to take over your account.",
+    "safety": "Ola ships only through Google Play (Android), the App Store (iPhone) and the computer download buttons on this page. We will never ask you to install a file sent in a stranger message, a Zalo group or on Facebook — files from other sources can be repackaged with malware to take over your account.",
     "useWeb": "Keep using the web version",
     "copiedToClipboard": "Copied"
   },
