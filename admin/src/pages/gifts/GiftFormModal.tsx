@@ -41,7 +41,7 @@ export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
         isActive: gift?.isActive ?? true,
         animation: gift?.animation ?? GIFT_ANIMATION_RANDOM,
         senderCharmPercent: gift?.senderCharmPercent ?? GIFT_SENDER_CHARM_PERCENT_DEFAULT,
-        announceEnabled: gift?.announceEnabled ?? false,
+        announceEnabled: gift?.announceEnabled ?? true,
       })
     }
   }, [open, gift, form])

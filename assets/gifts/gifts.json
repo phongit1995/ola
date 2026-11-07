@@ -6,140 +6,8 @@
   "pathsRelativeTo": "assets/gifts",
   "gifts": [
     {
-      "key": "11-moc-treo-kitty-keo-ngot",
-      "sortOrder": 1,
-      "name": "Móc Treo Kitty Kẹo Ngọt",
-      "nameEn": "Candy Kitty Charm",
-      "image": "icons/11-moc-treo-kitty-keo-ngot.png",
-      "icon": "icons/11-moc-treo-kitty-keo-ngot.png",
-      "animated": false,
-      "width": 240,
-      "height": 204,
-      "bytes": 16739,
-      "kenPrice": 10000,
-      "charmPoints": 10000,
-      "isActive": true,
-      "source": {
-        "app": "weplay",
-        "id": "1210026",
-        "price": 1,
-        "unit": "coin",
-        "originalName": "Móc Treo Kitty Kẹo Ngọt"
-      }
-    },
-    {
-      "key": "12-vuong-mien-thuy-than",
-      "sortOrder": 2,
-      "name": "Vương Miện Thuỷ Thần",
-      "nameEn": "Sea God Crown",
-      "image": "icons/12-vuong-mien-thuy-than.png",
-      "icon": "icons/12-vuong-mien-thuy-than.png",
-      "animated": false,
-      "width": 480,
-      "height": 408,
-      "bytes": 60711,
-      "kenPrice": 10000,
-      "charmPoints": 10000,
-      "isActive": true,
-      "source": {
-        "app": "weplay",
-        "id": "1210377",
-        "price": 1,
-        "unit": "coin",
-        "originalName": "Vương Miện Thuỷ Thần"
-      }
-    },
-    {
-      "key": "13-ca-heo-nho",
-      "sortOrder": 3,
-      "name": "Cá Heo Nhỏ",
-      "nameEn": "Little Dolphin",
-      "image": "icons/13-ca-heo-nho.png",
-      "icon": "icons/13-ca-heo-nho.png",
-      "animated": false,
-      "width": 240,
-      "height": 204,
-      "bytes": 15601,
-      "kenPrice": 10000,
-      "charmPoints": 10000,
-      "isActive": true,
-      "source": {
-        "app": "weplay",
-        "id": "1210378",
-        "price": 1,
-        "unit": "coin",
-        "originalName": "Cá Heo Nhỏ"
-      }
-    },
-    {
-      "key": "14-nhan-song-ngu",
-      "sortOrder": 4,
-      "name": "Nhẫn Song Ngư",
-      "nameEn": "Pisces Ring",
-      "image": "icons/14-nhan-song-ngu.png",
-      "icon": "icons/14-nhan-song-ngu.png",
-      "animated": false,
-      "width": 240,
-      "height": 204,
-      "bytes": 15460,
-      "kenPrice": 10000,
-      "charmPoints": 10000,
-      "isActive": true,
-      "source": {
-        "app": "weplay",
-        "id": "1210440",
-        "price": 1,
-        "unit": "coin",
-        "originalName": "Nhẫn Song Ngư"
-      }
-    },
-    {
-      "key": "21-nhip-dap-tinh-yeu",
-      "sortOrder": 5,
-      "name": "Nhịp Đập Tình Yêu",
-      "nameEn": "Heartbeat of Love",
-      "image": "icons/21-nhip-dap-tinh-yeu.png",
-      "icon": "icons/21-nhip-dap-tinh-yeu.png",
-      "animated": false,
-      "width": 480,
-      "height": 408,
-      "bytes": 80898,
-      "kenPrice": 10000,
-      "charmPoints": 10000,
-      "isActive": true,
-      "source": {
-        "app": "weplay",
-        "id": "1100750",
-        "price": 5,
-        "unit": "coin",
-        "originalName": "Nhịp Đập Tình Yêu"
-      }
-    },
-    {
-      "key": "16-xuc-sac-bay-mau",
-      "sortOrder": 6,
-      "name": "Xúc Sắc Bảy Màu",
-      "nameEn": "Rainbow Dice",
-      "image": "icons/16-xuc-sac-bay-mau.png",
-      "icon": "icons/16-xuc-sac-bay-mau.png",
-      "animated": false,
-      "width": 480,
-      "height": 408,
-      "bytes": 39255,
-      "kenPrice": 10000,
-      "charmPoints": 10000,
-      "isActive": true,
-      "source": {
-        "app": "weplay",
-        "id": "1212578",
-        "price": 10,
-        "unit": "coin",
-        "originalName": "Xúc Sắc Bảy Màu"
-      }
-    },
-    {
       "key": "28-like",
-      "sortOrder": 7,
+      "sortOrder": 1,
       "name": "Like",
       "nameEn": "Like",
       "image": "icons/28-like.png",
@@ -149,7 +17,7 @@
       "height": 408,
       "bytes": 93888,
       "kenPrice": 10000,
-      "charmPoints": 10000,
+      "charmPoints": 100,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -161,7 +29,7 @@
     },
     {
       "key": "29-yeu-cau",
-      "sortOrder": 8,
+      "sortOrder": 2,
       "name": "Yêu Cậu",
       "nameEn": "Love You",
       "image": "icons/29-yeu-cau.png",
@@ -171,7 +39,7 @@
       "height": 408,
       "bytes": 115886,
       "kenPrice": 10000,
-      "charmPoints": 10000,
+      "charmPoints": 100,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -182,30 +50,8 @@
       }
     },
     {
-      "key": "30-tang-hoa",
-      "sortOrder": 9,
-      "name": "Tặng Hoa",
-      "nameEn": "Flowers for You",
-      "image": "icons/30-tang-hoa.png",
-      "icon": "icons/30-tang-hoa.png",
-      "animated": false,
-      "width": 480,
-      "height": 408,
-      "bytes": 57387,
-      "kenPrice": 10000,
-      "charmPoints": 10000,
-      "isActive": true,
-      "source": {
-        "app": "weplay",
-        "id": "1205751",
-        "price": 10,
-        "unit": "coin",
-        "originalName": "Tặng Hoa"
-      }
-    },
-    {
       "key": "31-om-om",
-      "sortOrder": 10,
+      "sortOrder": 3,
       "name": "Ôm Ôm",
       "nameEn": "Hugs",
       "image": "icons/31-om-om.png",
@@ -215,7 +61,7 @@
       "height": 408,
       "bytes": 92655,
       "kenPrice": 10000,
-      "charmPoints": 10000,
+      "charmPoints": 100,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -226,8 +72,52 @@
       }
     },
     {
+      "key": "21-nhip-dap-tinh-yeu",
+      "sortOrder": 4,
+      "name": "Nhịp Đập Tình Yêu",
+      "nameEn": "Heartbeat of Love",
+      "image": "icons/21-nhip-dap-tinh-yeu.png",
+      "icon": "icons/21-nhip-dap-tinh-yeu.png",
+      "animated": false,
+      "width": 480,
+      "height": 408,
+      "bytes": 80898,
+      "kenPrice": 10000,
+      "charmPoints": 100,
+      "isActive": true,
+      "source": {
+        "app": "weplay",
+        "id": "1100750",
+        "price": 5,
+        "unit": "coin",
+        "originalName": "Nhịp Đập Tình Yêu"
+      }
+    },
+    {
+      "key": "30-tang-hoa",
+      "sortOrder": 5,
+      "name": "Tặng Hoa",
+      "nameEn": "Flowers for You",
+      "image": "icons/30-tang-hoa.png",
+      "icon": "icons/30-tang-hoa.png",
+      "animated": false,
+      "width": 480,
+      "height": 408,
+      "bytes": 57387,
+      "kenPrice": 10000,
+      "charmPoints": 100,
+      "isActive": true,
+      "source": {
+        "app": "weplay",
+        "id": "1205751",
+        "price": 10,
+        "unit": "coin",
+        "originalName": "Tặng Hoa"
+      }
+    },
+    {
       "key": "32-yayyy",
-      "sortOrder": 11,
+      "sortOrder": 6,
       "name": "Yayyy",
       "nameEn": "Yayyy",
       "image": "icons/32-yayyy.png",
@@ -237,7 +127,7 @@
       "height": 408,
       "bytes": 94997,
       "kenPrice": 10000,
-      "charmPoints": 10000,
+      "charmPoints": 100,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -249,7 +139,7 @@
     },
     {
       "key": "45-laleler",
-      "sortOrder": 12,
+      "sortOrder": 7,
       "name": "Laleler",
       "nameEn": "Tulips",
       "image": "icons/45-laleler.png",
@@ -259,7 +149,7 @@
       "height": 240,
       "bytes": 40856,
       "kenPrice": 10000,
-      "charmPoints": 10000,
+      "charmPoints": 100,
       "isActive": true,
       "source": {
         "app": "litmatch",
@@ -271,7 +161,7 @@
     },
     {
       "key": "02-momoda",
-      "sortOrder": 13,
+      "sortOrder": 8,
       "name": "Momoda",
       "nameEn": "Momoda",
       "image": "icons/02-momoda.png",
@@ -281,7 +171,7 @@
       "height": 204,
       "bytes": 22891,
       "kenPrice": 10000,
-      "charmPoints": 10000,
+      "charmPoints": 100,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -292,8 +182,162 @@
       }
     },
     {
-      "key": "25-thach-dau",
+      "key": "22-yeu-thich",
+      "sortOrder": 9,
+      "name": "Yêu Thích",
+      "nameEn": "Love It",
+      "image": "icons/22-yeu-thich.png",
+      "icon": "icons/22-yeu-thich.png",
+      "animated": false,
+      "width": 480,
+      "height": 408,
+      "bytes": 112823,
+      "kenPrice": 10000,
+      "charmPoints": 200,
+      "isActive": true,
+      "source": {
+        "app": "weplay",
+        "id": "1102559",
+        "price": 50,
+        "unit": "coin",
+        "originalName": "Yêu Thích"
+      }
+    },
+    {
+      "key": "18-ban-tim",
+      "sortOrder": 10,
+      "name": "Bắn Tim",
+      "nameEn": "Heart Shot",
+      "image": "icons/18-ban-tim.png",
+      "icon": "icons/18-ban-tim.png",
+      "animated": false,
+      "width": 240,
+      "height": 204,
+      "bytes": 27312,
+      "kenPrice": 10000,
+      "charmPoints": 200,
+      "isActive": true,
+      "source": {
+        "app": "weplay",
+        "id": "1002",
+        "price": 90,
+        "unit": "coin",
+        "originalName": "Bắn Tim"
+      }
+    },
+    {
+      "key": "11-moc-treo-kitty-keo-ngot",
+      "sortOrder": 11,
+      "name": "Móc Treo Kitty Kẹo Ngọt",
+      "nameEn": "Candy Kitty Charm",
+      "image": "icons/11-moc-treo-kitty-keo-ngot.png",
+      "icon": "icons/11-moc-treo-kitty-keo-ngot.png",
+      "animated": false,
+      "width": 240,
+      "height": 204,
+      "bytes": 16739,
+      "kenPrice": 20000,
+      "charmPoints": 100,
+      "isActive": true,
+      "source": {
+        "app": "weplay",
+        "id": "1210026",
+        "price": 1,
+        "unit": "coin",
+        "originalName": "Móc Treo Kitty Kẹo Ngọt"
+      }
+    },
+    {
+      "key": "12-vuong-mien-thuy-than",
+      "sortOrder": 12,
+      "name": "Vương Miện Thuỷ Thần",
+      "nameEn": "Sea God Crown",
+      "image": "icons/12-vuong-mien-thuy-than.png",
+      "icon": "icons/12-vuong-mien-thuy-than.png",
+      "animated": false,
+      "width": 480,
+      "height": 408,
+      "bytes": 60711,
+      "kenPrice": 20000,
+      "charmPoints": 100,
+      "isActive": true,
+      "source": {
+        "app": "weplay",
+        "id": "1210377",
+        "price": 1,
+        "unit": "coin",
+        "originalName": "Vương Miện Thuỷ Thần"
+      }
+    },
+    {
+      "key": "13-ca-heo-nho",
+      "sortOrder": 13,
+      "name": "Cá Heo Nhỏ",
+      "nameEn": "Little Dolphin",
+      "image": "icons/13-ca-heo-nho.png",
+      "icon": "icons/13-ca-heo-nho.png",
+      "animated": false,
+      "width": 240,
+      "height": 204,
+      "bytes": 15601,
+      "kenPrice": 20000,
+      "charmPoints": 100,
+      "isActive": true,
+      "source": {
+        "app": "weplay",
+        "id": "1210378",
+        "price": 1,
+        "unit": "coin",
+        "originalName": "Cá Heo Nhỏ"
+      }
+    },
+    {
+      "key": "14-nhan-song-ngu",
       "sortOrder": 14,
+      "name": "Nhẫn Song Ngư",
+      "nameEn": "Pisces Ring",
+      "image": "icons/14-nhan-song-ngu.png",
+      "icon": "icons/14-nhan-song-ngu.png",
+      "animated": false,
+      "width": 240,
+      "height": 204,
+      "bytes": 15460,
+      "kenPrice": 20000,
+      "charmPoints": 100,
+      "isActive": true,
+      "source": {
+        "app": "weplay",
+        "id": "1210440",
+        "price": 1,
+        "unit": "coin",
+        "originalName": "Nhẫn Song Ngư"
+      }
+    },
+    {
+      "key": "16-xuc-sac-bay-mau",
+      "sortOrder": 15,
+      "name": "Xúc Sắc Bảy Màu",
+      "nameEn": "Rainbow Dice",
+      "image": "icons/16-xuc-sac-bay-mau.png",
+      "icon": "icons/16-xuc-sac-bay-mau.png",
+      "animated": false,
+      "width": 480,
+      "height": 408,
+      "bytes": 39255,
+      "kenPrice": 20000,
+      "charmPoints": 100,
+      "isActive": true,
+      "source": {
+        "app": "weplay",
+        "id": "1212578",
+        "price": 10,
+        "unit": "coin",
+        "originalName": "Xúc Sắc Bảy Màu"
+      }
+    },
+    {
+      "key": "25-thach-dau",
+      "sortOrder": 16,
       "name": "Thạch Dâu",
       "nameEn": "Strawberry Jelly",
       "image": "icons/25-thach-dau.png",
@@ -303,7 +347,7 @@
       "height": 408,
       "bytes": 80161,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -315,7 +359,7 @@
     },
     {
       "key": "07-sao-mong-mo",
-      "sortOrder": 15,
+      "sortOrder": 17,
       "name": "Sao Mộng Mơ",
       "nameEn": "Dreamy Star",
       "image": "icons/07-sao-mong-mo.png",
@@ -325,7 +369,7 @@
       "height": 408,
       "bytes": 99191,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -336,30 +380,8 @@
       }
     },
     {
-      "key": "22-yeu-thich",
-      "sortOrder": 16,
-      "name": "Yêu Thích",
-      "nameEn": "Love It",
-      "image": "icons/22-yeu-thich.png",
-      "icon": "icons/22-yeu-thich.png",
-      "animated": false,
-      "width": 480,
-      "height": 408,
-      "bytes": 112823,
-      "kenPrice": 20000,
-      "charmPoints": 20000,
-      "isActive": true,
-      "source": {
-        "app": "weplay",
-        "id": "1102559",
-        "price": 50,
-        "unit": "coin",
-        "originalName": "Yêu Thích"
-      }
-    },
-    {
       "key": "24-fan-light",
-      "sortOrder": 17,
+      "sortOrder": 18,
       "name": "Fan Light",
       "nameEn": "Fan Light",
       "image": "icons/24-fan-light.png",
@@ -369,7 +391,7 @@
       "height": 408,
       "bytes": 154810,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -381,7 +403,7 @@
     },
     {
       "key": "08-lucky-box",
-      "sortOrder": 18,
+      "sortOrder": 19,
       "name": "Lucky Box",
       "nameEn": "Lucky Box",
       "image": "icons/08-lucky-box.png",
@@ -391,7 +413,7 @@
       "height": 204,
       "bytes": 45715,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -399,28 +421,6 @@
         "price": 88,
         "unit": "coin",
         "originalName": "Lucky Box"
-      }
-    },
-    {
-      "key": "18-ban-tim",
-      "sortOrder": 19,
-      "name": "Bắn Tim",
-      "nameEn": "Heart Shot",
-      "image": "icons/18-ban-tim.png",
-      "icon": "icons/18-ban-tim.png",
-      "animated": false,
-      "width": 240,
-      "height": 204,
-      "bytes": 27312,
-      "kenPrice": 20000,
-      "charmPoints": 20000,
-      "isActive": true,
-      "source": {
-        "app": "weplay",
-        "id": "1002",
-        "price": 90,
-        "unit": "coin",
-        "originalName": "Bắn Tim"
       }
     },
     {
@@ -435,7 +435,7 @@
       "height": 408,
       "bytes": 31096,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -457,7 +457,7 @@
       "height": 408,
       "bytes": 26419,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -479,7 +479,7 @@
       "height": 204,
       "bytes": 26103,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -501,7 +501,7 @@
       "height": 204,
       "bytes": 10873,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -523,7 +523,7 @@
       "height": 204,
       "bytes": 40054,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -545,7 +545,7 @@
       "height": 204,
       "bytes": 67159,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -567,7 +567,7 @@
       "height": 408,
       "bytes": 203235,
       "kenPrice": 20000,
-      "charmPoints": 20000,
+      "charmPoints": 200,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -578,8 +578,30 @@
       }
     },
     {
-      "key": "33-tin-nhan-rung-dong",
+      "key": "44-dua-hau-mua-he",
       "sortOrder": 27,
+      "name": "Dưa Hấu Mùa Hè",
+      "nameEn": "Summer Watermelon",
+      "image": "icons/44-dua-hau-mua-he.png",
+      "icon": "icons/44-dua-hau-mua-he.png",
+      "animated": false,
+      "width": 240,
+      "height": 240,
+      "bytes": 41799,
+      "kenPrice": 20000,
+      "charmPoints": 500,
+      "isActive": true,
+      "source": {
+        "app": "litmatch",
+        "id": "gift:6",
+        "price": 1999,
+        "unit": "diamond",
+        "originalName": "Dưa Hấu Mùa Hè"
+      }
+    },
+    {
+      "key": "33-tin-nhan-rung-dong",
+      "sortOrder": 28,
       "name": "Tin Nhắn Rung Động",
       "nameEn": "Heart-Flutter Message",
       "image": "icons/33-tin-nhan-rung-dong.png",
@@ -589,7 +611,7 @@
       "height": 408,
       "bytes": 145683,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -601,7 +623,7 @@
     },
     {
       "key": "05-hop-ngoi-sao",
-      "sortOrder": 28,
+      "sortOrder": 29,
       "name": "Hộp Ngôi Sao",
       "nameEn": "Star Box",
       "image": "icons/05-hop-ngoi-sao.png",
@@ -611,7 +633,7 @@
       "height": 204,
       "bytes": 68010,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -623,7 +645,7 @@
     },
     {
       "key": "34-tieu-ho-ly",
-      "sortOrder": 29,
+      "sortOrder": 30,
       "name": "Tiểu Hồ Ly",
       "nameEn": "Little Fox",
       "image": "icons/34-tieu-ho-ly.png",
@@ -633,7 +655,7 @@
       "height": 408,
       "bytes": 37243,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -645,7 +667,7 @@
     },
     {
       "key": "19-banh-sinh-nhat",
-      "sortOrder": 30,
+      "sortOrder": 31,
       "name": "Bánh Sinh Nhật",
       "nameEn": "Birthday Cake",
       "image": "icons/19-banh-sinh-nhat.png",
@@ -655,7 +677,7 @@
       "height": 204,
       "bytes": 49428,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -667,7 +689,7 @@
     },
     {
       "key": "27-cupid",
-      "sortOrder": 31,
+      "sortOrder": 32,
       "name": "Cupid",
       "nameEn": "Cupid",
       "image": "icons/27-cupid.png",
@@ -677,7 +699,7 @@
       "height": 408,
       "bytes": 26474,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -689,7 +711,7 @@
     },
     {
       "key": "26-dao-khong-lo",
-      "sortOrder": 32,
+      "sortOrder": 33,
       "name": "Đào Khổng Lồ",
       "nameEn": "Giant Peach",
       "image": "icons/26-dao-khong-lo.png",
@@ -699,7 +721,7 @@
       "height": 408,
       "bytes": 206749,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -711,7 +733,7 @@
     },
     {
       "key": "46-bo-hoa-hong",
-      "sortOrder": 33,
+      "sortOrder": 34,
       "name": "Bó Hoa Hồng",
       "nameEn": "Rose Bouquet",
       "image": "icons/46-bo-hoa-hong.png",
@@ -721,7 +743,7 @@
       "height": 240,
       "bytes": 64025,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "litmatch",
@@ -733,7 +755,7 @@
     },
     {
       "key": "01-dam-me-tu-hanh",
-      "sortOrder": 34,
+      "sortOrder": 35,
       "name": "Đam Mê Tu Hành",
       "nameEn": "Zen Cultivator",
       "image": "icons/01-dam-me-tu-hanh.png",
@@ -743,7 +765,7 @@
       "height": 408,
       "bytes": 45017,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -755,7 +777,7 @@
     },
     {
       "key": "10-phao-hoa-le-hoi",
-      "sortOrder": 35,
+      "sortOrder": 36,
       "name": "Pháo Hoa Lễ Hội",
       "nameEn": "Festival Fireworks",
       "image": "icons/10-phao-hoa-le-hoi.png",
@@ -765,7 +787,7 @@
       "height": 408,
       "bytes": 47242,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -773,28 +795,6 @@
         "price": 999,
         "unit": "coin",
         "originalName": "Pháo Hoa Lễ Hội"
-      }
-    },
-    {
-      "key": "44-dua-hau-mua-he",
-      "sortOrder": 36,
-      "name": "Dưa Hấu Mùa Hè",
-      "nameEn": "Summer Watermelon",
-      "image": "icons/44-dua-hau-mua-he.png",
-      "icon": "icons/44-dua-hau-mua-he.png",
-      "animated": false,
-      "width": 240,
-      "height": 240,
-      "bytes": 41799,
-      "kenPrice": 50000,
-      "charmPoints": 50000,
-      "isActive": true,
-      "source": {
-        "app": "litmatch",
-        "id": "gift:6",
-        "price": 1999,
-        "unit": "diamond",
-        "originalName": "Dưa Hấu Mùa Hè"
       }
     },
     {
@@ -809,7 +809,7 @@
       "height": 408,
       "bytes": 69350,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -831,7 +831,7 @@
       "height": 204,
       "bytes": 53534,
       "kenPrice": 50000,
-      "charmPoints": 50000,
+      "charmPoints": 500,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -855,7 +855,7 @@
       "frames": 54,
       "durationMs": 1980,
       "kenPrice": 200000,
-      "charmPoints": 200000,
+      "charmPoints": 2000,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -879,7 +879,7 @@
       "frames": 54,
       "durationMs": 1980,
       "kenPrice": 200000,
-      "charmPoints": 200000,
+      "charmPoints": 2000,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -903,7 +903,7 @@
       "frames": 54,
       "durationMs": 1980,
       "kenPrice": 200000,
-      "charmPoints": 200000,
+      "charmPoints": 2000,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -927,7 +927,7 @@
       "frames": 18,
       "durationMs": 1188,
       "kenPrice": 200000,
-      "charmPoints": 200000,
+      "charmPoints": 2000,
       "isActive": true,
       "source": {
         "app": "litmatch",
@@ -951,7 +951,7 @@
       "frames": 60,
       "durationMs": 1980,
       "kenPrice": 200000,
-      "charmPoints": 200000,
+      "charmPoints": 2000,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -975,7 +975,7 @@
       "frames": 30,
       "durationMs": 990,
       "kenPrice": 200000,
-      "charmPoints": 200000,
+      "charmPoints": 2000,
       "isActive": true,
       "source": {
         "app": "litmatch",
@@ -999,7 +999,7 @@
       "frames": 16,
       "durationMs": 1600,
       "kenPrice": 200000,
-      "charmPoints": 200000,
+      "charmPoints": 2000,
       "isActive": true,
       "source": {
         "app": "litmatch",
@@ -1023,7 +1023,7 @@
       "frames": 60,
       "durationMs": 1980,
       "kenPrice": 200000,
-      "charmPoints": 200000,
+      "charmPoints": 2000,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -1047,7 +1047,7 @@
       "frames": 30,
       "durationMs": 1980,
       "kenPrice": 500000,
-      "charmPoints": 500000,
+      "charmPoints": 5000,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -1071,7 +1071,7 @@
       "frames": 10,
       "durationMs": 1250,
       "kenPrice": 500000,
-      "charmPoints": 500000,
+      "charmPoints": 5000,
       "isActive": true,
       "source": {
         "app": "litmatch",
@@ -1095,7 +1095,7 @@
       "frames": 60,
       "durationMs": 1980,
       "kenPrice": 500000,
-      "charmPoints": 500000,
+      "charmPoints": 5000,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -1119,7 +1119,7 @@
       "frames": 30,
       "durationMs": 1980,
       "kenPrice": 500000,
-      "charmPoints": 500000,
+      "charmPoints": 5000,
       "isActive": true,
       "source": {
         "app": "weplay",
@@ -1143,7 +1143,7 @@
       "frames": 36,
       "durationMs": 1188,
       "kenPrice": 500000,
-      "charmPoints": 500000,
+      "charmPoints": 5000,
       "isActive": true,
       "source": {
         "app": "litmatch",
@@ -1167,7 +1167,7 @@
       "frames": 8,
       "durationMs": 1000,
       "kenPrice": 500000,
-      "charmPoints": 500000,
+      "charmPoints": 5000,
       "isActive": true,
       "source": {
         "app": "litmatch",
@@ -1191,7 +1191,7 @@
       "frames": 18,
       "durationMs": 1188,
       "kenPrice": 500000,
-      "charmPoints": 500000,
+      "charmPoints": 5000,
       "isActive": true,
       "source": {
         "app": "litmatch",
@@ -1215,7 +1215,7 @@
       "frames": 36,
       "durationMs": 1188,
       "kenPrice": 500000,
-      "charmPoints": 500000,
+      "charmPoints": 5000,
       "isActive": true,
       "source": {
         "app": "litmatch",
