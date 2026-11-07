@@ -116,7 +116,7 @@ jobs:
           name: ola-desktop-${{ inputs.environment }}-${{ matrix.platform }}
           path: artifacts/*
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1
 
       - uses: actions/upload-artifact@v4
         if: inputs.publish && inputs.environment == 'production'
@@ -131,7 +131,7 @@ jobs:
             desktop/release/*.AppImage
             desktop/release/*.deb
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
 
       - name: Upload lên Google Drive
         id: drive
