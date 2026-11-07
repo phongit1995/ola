@@ -627,7 +627,7 @@ func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string,
 		return "", errors.New("failed to send verification email")
 	}
 
-	s.logger.Infow("Verification code sent", "user_id", userID, "email", email)
+	s.logger.Infow("Verification code sent", "user_id", userID)
 	return verifyID, nil
 }
 
@@ -681,7 +681,7 @@ func (s *Service) ConfirmEmailVerification(userID uuid.UUID, verifyID, code stri
 		s.logger.Warnw("Failed to invalidate user cache after email verify", "user_id", userID, "error", err.Error())
 	}
 
-	s.logger.Infow("Email verified", "user_id", userID, "email", email)
+	s.logger.Infow("Email verified", "user_id", userID)
 
 	rewardDays := 0
 	if firstVerification && s.cfg.EmailVerifyVipRewardDays > 0 {

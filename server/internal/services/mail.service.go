@@ -107,7 +107,7 @@ func (s *MailService) send(ctx context.Context, toEmail, subject, html string) e
 		return fmt.Errorf("resend status %d", resp.StatusCode)
 	}
 
-	s.logger.Infow("Email sent", "to", toEmail, "subject", subject)
+	s.logger.Infow("Email sent", "subject", subject)
 	return nil
 }
 
