@@ -20,6 +20,8 @@ import { WordChainOverlay } from '../room/word-chain/WordChainOverlay';
 import { StoryOverlay } from '../story/StoryOverlay';
 import { useStoryOverlayStore } from '@/store/storyOverlayStore';
 import { useStoryConfigStore } from '@ola/shared/stores/story/storyConfigStore';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
+import { useMegaphoneConfigStore } from '@ola/shared/stores/megaphone/megaphoneConfigStore';
 import { AppOverlay } from '../apps/AppOverlay';
 import { ClanOverlayHost } from '../clan/ClanOverlayHost';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
@@ -96,6 +98,8 @@ export function HomePage() {
   useEffect(() => {
     void useChatStore.getState().loadConversations();
     void useStoryConfigStore.getState().load();
+    void useGiftCatalogStore.getState().loadSettings();
+    void useMegaphoneConfigStore.getState().load();
   }, []);
 
   useEffect(() => {

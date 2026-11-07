@@ -1,6 +1,9 @@
 package gift
 
-import "ola-chat-server/internal/utils"
+import (
+	"ola-chat-server/internal/modules/setting"
+	"ola-chat-server/internal/utils"
+)
 
 type GiftItem struct {
 	ID                 string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -14,17 +17,9 @@ type GiftItem struct {
 	AnnounceEnabled    bool   `json:"announceEnabled" example:"true"`
 }
 
-type GiftSettingsView struct {
-	Enabled         bool  `json:"enabled" example:"true"`
-	QuantityOptions []int `json:"quantityOptions"`
-	QuantityMax     int   `json:"quantityMax" example:"99"`
-	NoteMaxLength   int   `json:"noteMaxLength" example:"100"`
-	ConfirmOverKen  int   `json:"confirmOverKen" example:"1000"`
-}
-
 type GiftCatalogResponse struct {
-	Items    []GiftItem       `json:"items"`
-	Settings GiftSettingsView `json:"settings"`
+	Items    []GiftItem               `json:"items"`
+	Settings setting.GiftPublicConfig `json:"settings"`
 }
 
 type SendGiftRequest struct {

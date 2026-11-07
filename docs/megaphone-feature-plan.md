@@ -94,7 +94,7 @@ Khuôn module: `megaphone.router.go`, `.controller.go`, `.service.go`, `.reposit
 
 | Method | Path | Mô tả |
 |---|---|---|
-| GET | `/megaphones/config` | `{ enabled, kenPrice, maxLength, displaySeconds, cooldownSeconds, dailyLimit, todayCount, cooldownRemaining, queueWaitSeconds }` cho màn soạn. `queueWaitSeconds` = thời gian chờ dự kiến (4.4) |
+| GET | `/megaphones/config` | `{ enabled, kenPrice, maxLength, displaySeconds, cooldownSeconds, dailyLimit, todayCount, cooldownRemaining, queueWaitSeconds }` cho màn soạn. `queueWaitSeconds` = thời gian chờ dự kiến (4.4). `enabled` đã tính theo nền tảng người gọi. Phần chung (không có số của từng người) app nhận qua key `megaphone` của `GET /settings/app` lúc vừa vào |
 | GET | `/megaphones?cursor=` | Lịch sử 24 giờ cho màn Loa, chỉ `type = 'message'` đã phát (`first_played_at` khác `NULL`), mới nhất trước, keyset theo `(show_at, id)`, bỏ tin `removed`. **Không trả loa quà** |
 | POST | `/megaphones` | Phát loa (4.2), trả 201. Rate limit `PolicyMegaphoneSend` 6 lần/phút (đếm cả lượt bị từ chối) |
 

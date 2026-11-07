@@ -9,6 +9,7 @@ import type { Gift } from '../../types/api/gift.type';
 import type { GiftPicker, GiftPickerOptions, GiftPickerStep } from '../../types/client/gift.type';
 import { useAuthStore } from '../auth/authStore';
 import { useGiftAnimationStore } from './giftAnimationStore';
+import { selectMegaphoneEnabled, useMegaphoneConfigStore } from '../megaphone/megaphoneConfigStore';
 import { useGiftCatalogStore } from './giftCatalogStore';
 
 export type { GiftPicker, GiftPickerOptions } from '../../types/client/gift.type';
@@ -19,6 +20,7 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
   const loaded = useGiftCatalogStore((s) => s.loaded);
   const loadError = useGiftCatalogStore((s) => s.error);
   const loadCatalog = useGiftCatalogStore((s) => s.load);
+  const megaphoneEnabled = useMegaphoneConfigStore(selectMegaphoneEnabled);
   const balance = useAuthStore((s) => s.user?.ken ?? 0);
   const playAnimation = useGiftAnimationStore((s) => s.play);
 
@@ -42,7 +44,7 @@ export function useGiftPicker({ receiverId, source, onClose, onSent }: GiftPicke
   const affordable = selected != null && canAffordGift(balance, selected, quantity);
   const selectedName = selected != null ? giftDisplayName(selected, i18n.language) : '';
   const canSend = selected != null && affordable && !submitting && settings.enabled;
-  const canAnnounce = selected?.announceEnabled === true;
+  const canAnnounce = selected?.announceEnabled === true && megaphoneEnabled;
 
   function changeSelection(update: () => void) {
     update();

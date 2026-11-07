@@ -86,7 +86,7 @@ export function UserProfileScreen({
     applyCharm,
   } = useProfileActions(username);
   const giftsEnabled = useGiftCatalogStore(s => s.settings.enabled);
-  const loadGiftCatalog = useGiftCatalogStore(s => s.load);
+  const loadGiftSettings = useGiftCatalogStore(s => s.loadSettings);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -99,8 +99,8 @@ export function UserProfileScreen({
   const [giftWallKey, setGiftWallKey] = useState(0);
 
   useEffect(() => {
-    void loadGiftCatalog();
-  }, [loadGiftCatalog]);
+    void loadGiftSettings();
+  }, [loadGiftSettings]);
 
   const openViewer = (images: string[], index = 0) =>
     setViewer({ images, index });

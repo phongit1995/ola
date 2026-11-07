@@ -203,6 +203,22 @@ func (ctrl *Controller) momentConfigFor(client Client) (MomentConfigResponse, er
 	}, nil
 }
 
+func (ctrl *Controller) giftConfigFor(client Client) (GiftPublicConfig, error) {
+	cfg, err := ctrl.service.GetGift()
+	if err != nil {
+		return GiftPublicConfig{}, err
+	}
+	return cfg.PublicFor(client), nil
+}
+
+func (ctrl *Controller) megaphoneConfigFor(client Client) (MegaphonePublicConfig, error) {
+	cfg, err := ctrl.service.GetMegaphone()
+	if err != nil {
+		return MegaphonePublicConfig{}, err
+	}
+	return cfg.PublicFor(client), nil
+}
+
 // AppConfig godoc
 // @Summary      Gộp config hệ thống cho app trong một request
 // @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.

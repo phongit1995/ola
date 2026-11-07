@@ -1,3 +1,4 @@
+import { OPEN_PLATFORM_RULES } from '@/lib/platformRules'
 import type {
   ContentCheckReason,
   ContentFilterSetting,
@@ -11,6 +12,7 @@ export const CONTENT_FILTER_SETTING_KEY = 'content_filter'
 
 export const DEFAULT_MEGAPHONE_SETTING: MegaphoneSetting = {
   enabled: true,
+  platforms: OPEN_PLATFORM_RULES,
   kenPrice: 5000,
   maxLength: 80,
   displaySeconds: 12,

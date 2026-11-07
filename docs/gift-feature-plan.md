@@ -142,7 +142,7 @@ Response: `{ transactionId, kenBalance, receiverCharm, messageId? }`.
 ### 4.5 Admin
 
 - `internal/modules/admin/gift`: CRUD `/admin/gifts` (tên vi/en, ảnh qua admin upload, giá, charm, bật/tắt, thứ tự), xoá mềm; `GET /admin/gift-transactions` lọc theo user / khoảng ngày (`utils.ParseTimeRange`), dùng lại `admincommon.UserBriefOf`. Ghi audit log như các trang admin khác.
-- Setting `gift` trong `app_settings`: `{ enabled, quantityOptions: [1, 5, 10, 99], quantityMax: 99, noteMaxLength: 100, confirmOverKen: 1000 }`, trả kèm trong `GET /gifts` để client không hardcode.
+- Setting `gift` trong `app_settings`: `{ enabled, platforms, quantityOptions: [1, 5, 10, 99], quantityMax: 99, noteMaxLength: 100, confirmOverKen: 1000 }`. `enabled` là công tắc tổng, `platforms` bật/tắt theo web, Android, iOS và từng bản. App nhận qua key `gift` của `GET /settings/app` lúc vừa vào; `GET /gifts` vẫn trả kèm cho app cũ. Server trả `enabled` đã tính theo nền tảng người gọi, không lộ `platforms`.
 - Dashboard (tuỳ chọn): KEN thu từ quà hôm nay / tháng.
 
 ### 4.6 Test server

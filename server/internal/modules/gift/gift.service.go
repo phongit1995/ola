@@ -87,16 +87,6 @@ func ToGiftItem(g *models.Gift) GiftItem {
 	}
 }
 
-func toSettingsView(cfg setting.GiftConfig) GiftSettingsView {
-	return GiftSettingsView{
-		Enabled:         cfg.Enabled,
-		QuantityOptions: cfg.QuantityOptions,
-		QuantityMax:     cfg.QuantityMax,
-		NoteMaxLength:   cfg.NoteMaxLength,
-		ConfirmOverKen:  cfg.ConfirmOverKen,
-	}
-}
-
 func (s *Service) activeGifts() ([]GiftItem, error) {
 	var cached []GiftItem
 	if err := s.cache.Get(CacheKeyGiftCatalog, &cached); err == nil && cached != nil {
@@ -122,12 +112,12 @@ func (s *Service) InvalidateCatalog() {
 	}
 }
 
-func (s *Service) Catalog() (*GiftCatalogResponse, error) {
+func (s *Service) Catalog(client setting.Client) (*GiftCatalogResponse, error) {
 	items, err := s.activeGifts()
 	if err != nil {
 		return nil, err
 	}
-	return &GiftCatalogResponse{Items: items, Settings: toSettingsView(s.giftConfig())}, nil
+	return &GiftCatalogResponse{Items: items, Settings: s.giftConfig().PublicFor(client)}, nil
 }
 
 func giftPreview(giftName string, quantity int) string {
@@ -138,9 +128,9 @@ func sameRequest(existing *models.GiftTransaction, giftID, receiverID uuid.UUID,
 	return existing.GiftID == giftID && existing.ReceiverID == receiverID && existing.Quantity == quantity
 }
 
-func (s *Service) Send(senderID uuid.UUID, req SendGiftRequest) (*SendGiftResponse, error) {
+func (s *Service) Send(client setting.Client, senderID uuid.UUID, req SendGiftRequest) (*SendGiftResponse, error) {
 	cfg := s.giftConfig()
-	if !cfg.Enabled {
+	if !cfg.EnabledFor(client) {
 		return nil, ErrGiftDisabled
 	}
 	giftID, err := uuid.Parse(req.GiftID)
@@ -210,11 +200,11 @@ func (s *Service) Send(senderID uuid.UUID, req SendGiftRequest) (*SendGiftRespon
 
 	s.afterSend(gift, result)
 	resp := s.buildSendResponse(gift, &result.Transaction, result.SenderBalance, result.ReceiverCharm)
-	resp.Announced = s.announce(gift, &result.Transaction, req.Announce)
+	resp.Announced = s.announce(client, gift, &result.Transaction, req.Announce)
 	return resp, nil
 }
 
-func (s *Service) announce(gift *models.Gift, tx *models.GiftTransaction, requested bool) bool {
+func (s *Service) announce(client setting.Client, gift *models.Gift, tx *models.GiftTransaction, requested bool) bool {
 	if !requested || !gift.AnnounceEnabled {
 		return false
 	}
@@ -227,6 +217,7 @@ func (s *Service) announce(gift *models.Gift, tx *models.GiftTransaction, reques
 		return false
 	}
 	return s.megaphone.AnnounceGift(megaphone.GiftAnnouncement{
+		Client:        client,
 		TransactionID: tx.ID,
 		SenderID:      tx.SenderID,
 		ReceiverID:    tx.ReceiverID,

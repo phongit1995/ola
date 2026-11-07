@@ -44,6 +44,8 @@ export interface MegaphoneConfig {
   queueWaitSeconds: number;
 }
 
+export type MegaphoneAppConfig = Omit<MegaphoneConfig, 'todayCount' | 'cooldownRemaining' | 'queueWaitSeconds'>;
+
 export interface SendMegaphoneRequest {
   content: string;
   clientRequestId: string;

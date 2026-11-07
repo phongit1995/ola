@@ -9,6 +9,8 @@ import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useStoryConfigStore } from '@ola/shared/stores/story/storyConfigStore';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
+import { useMegaphoneConfigStore } from '@ola/shared/stores/megaphone/megaphoneConfigStore';
 import { useThemeStore } from '@ola/shared/stores/themeStore';
 import { themeOptionOf } from '@ola/shared/constants';
 import { imageSizeForHeight } from '@lib/chatSmiley';
@@ -189,10 +191,14 @@ function MainTabs() {
   const theme = useThemeStore((state) => state.theme);
   const storyEnabled = useStoryConfigStore((state) => state.enabled);
   const loadStoryConfig = useStoryConfigStore((state) => state.load);
+  const loadGiftSettings = useGiftCatalogStore((state) => state.loadSettings);
+  const loadMegaphoneConfig = useMegaphoneConfigStore((state) => state.load);
 
   useEffect(() => {
     void loadStoryConfig();
-  }, [loadStoryConfig]);
+    void loadGiftSettings();
+    void loadMegaphoneConfig();
+  }, [loadStoryConfig, loadGiftSettings, loadMegaphoneConfig]);
 
   return (
     <View style={{ flex: 1 }}>

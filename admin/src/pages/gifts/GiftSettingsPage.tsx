@@ -8,10 +8,12 @@ import {
   GIFT_SETTING_KEY,
 } from './constants'
 import { normalizeQuantityOptions } from './utils'
+import { PlatformRulesTable } from '@/components/PlatformRulesTable'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
 import { settingValue } from '@/lib/appSetting'
 import { kenNumberInputProps } from '@/lib/format'
+import { cleanPlatformRules } from '@/lib/platformRules'
 import type { GiftSetting } from '@/types'
 import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
 import { GIFT_SECTION_LINKS } from '@/pages/shop/sections'
@@ -46,6 +48,7 @@ export function GiftSettingsPage() {
   async function save(values: GiftSetting) {
     const payload: GiftSetting = {
       ...values,
+      platforms: cleanPlatformRules(values.platforms),
       quantityOptions: normalizeQuantityOptions(values.quantityOptions),
     }
     if (payload.quantityOptions.length === 0) {
@@ -75,9 +78,15 @@ export function GiftSettingsPage() {
           name="enabled"
           label="Bật tặng quà"
           valuePropName="checked"
-          extra="Tắt thì app ẩn nút tặng quà và server từ chối mọi lượt tặng. Tường quà và bảng xếp hạng vẫn xem được."
+          extra="Công tắc tổng: tắt thì mọi nền tảng ẩn nút tặng quà và server từ chối mọi lượt tặng. Tường quà và bảng xếp hạng vẫn xem được."
         >
           <Switch />
+        </Form.Item>
+        <Form.Item
+          label="Hiển thị theo nền tảng"
+          extra="Tắt nền tảng nào thì nền tảng đó ẩn nút tặng quà và server từ chối lượt tặng từ nền tảng đó. So theo tên bản (1.0.0), không tính build. App nhận khi mở lại app hoặc vào lại profile, chat, trang Quà."
+        >
+          <PlatformRulesTable name={['platforms']} />
         </Form.Item>
         <Form.Item
           name="quantityOptions"

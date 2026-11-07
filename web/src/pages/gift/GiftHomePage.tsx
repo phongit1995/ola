@@ -57,7 +57,7 @@ export function GiftHomePage({ onClose }: GiftHomePageProps) {
   const charm = useAuthStore((s) => s.user?.charm ?? 0);
   const refreshUser = useAuthStore((s) => s.refreshUser);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
-  const loadGiftCatalog = useGiftCatalogStore((s) => s.load);
+  const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [recipientOpen, setRecipientOpen] = useState(false);
@@ -68,8 +68,8 @@ export function GiftHomePage({ onClose }: GiftHomePageProps) {
 
   useEffect(() => {
     void refreshUser();
-    void loadGiftCatalog();
-  }, [refreshUser, loadGiftCatalog]);
+    void loadGiftSettings();
+  }, [refreshUser, loadGiftSettings]);
 
   function pickReceiver(picked: GiftReceiver) {
     setRecipientOpen(false);

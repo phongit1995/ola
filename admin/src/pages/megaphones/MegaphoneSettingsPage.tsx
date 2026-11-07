@@ -1,9 +1,11 @@
 import { App, Button, Card, Form, InputNumber, Space, Spin, Switch, Typography } from 'antd'
 import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
+import { PlatformRulesTable } from '@/components/PlatformRulesTable'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
 import { settingValue } from '@/lib/appSetting'
 import { kenNumberInputProps } from '@/lib/format'
+import { cleanPlatformRules } from '@/lib/platformRules'
 import type { MegaphoneSetting } from '@/types'
 import {
   DEFAULT_MEGAPHONE_SETTING,
@@ -74,7 +76,7 @@ export function MegaphoneSettingsPage() {
       return
     }
     try {
-      await putSetting.mutateAsync({ key: MEGAPHONE_SETTING_KEY, value: { ...values } })
+      await putSetting.mutateAsync({ key: MEGAPHONE_SETTING_KEY, value: { ...values, platforms: cleanPlatformRules(values.platforms) } })
       message.success('Đã lưu cài đặt loa')
     } catch (err) {
       message.error(errorMessage(err, 'Lưu thất bại'))
@@ -93,9 +95,15 @@ export function MegaphoneSettingsPage() {
           name="enabled"
           label="Bật loa"
           valuePropName="checked"
-          extra="Tắt thì server từ chối loa mới và ngừng phát, kể cả loa quà. Loa đã phát vẫn xem lại được."
+          extra="Công tắc tổng: tắt thì server từ chối loa mới và ngừng phát cho mọi nền tảng, kể cả loa quà. Loa đã phát vẫn xem lại được."
         >
           <Switch />
+        </Form.Item>
+        <Form.Item
+          label="Hiển thị theo nền tảng"
+          extra="Tắt nền tảng nào thì nền tảng đó không phát được loa và không hiện viên loa; các nền tảng khác vẫn chạy. App bản cũ chưa có phần này vẫn hiện viên loa, chỉ bị chặn phát. So theo tên bản (1.0.0), không tính build."
+        >
+          <PlatformRulesTable name={['platforms']} />
         </Form.Item>
         <Form.Item
           name="kenPrice"

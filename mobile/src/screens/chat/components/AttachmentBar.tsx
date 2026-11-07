@@ -162,7 +162,7 @@ export function AttachmentBar({
       }}
     >
       <View className="flex-row">
-        {ALL_TABS.map((tab) => {
+        {ALL_TABS.filter((tab) => tab !== 'gift' || onSendGift != null).map((tab) => {
           const isVoice = tab === 'voice';
           const active = !isVoice && tab !== 'gift' && tab === openTab;
           const disabled = isVoice && voiceDisabled;

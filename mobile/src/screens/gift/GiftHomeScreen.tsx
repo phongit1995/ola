@@ -49,15 +49,15 @@ export function GiftHomeScreen({ navigation }: Props) {
   const charm = useAuthStore((s) => s.user?.charm ?? 0);
   const refreshUser = useAuthStore((s) => s.refreshUser);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
-  const loadGiftCatalog = useGiftCatalogStore((s) => s.load);
+  const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const [recipientOpen, setRecipientOpen] = useState(false);
   const [receiver, setReceiver] = useState<GiftReceiver | null>(null);
   const pendingReceiverRef = useRef<GiftReceiver | null>(null);
 
   useEffect(() => {
     void refreshUser();
-    void loadGiftCatalog();
-  }, [refreshUser, loadGiftCatalog]);
+    void loadGiftSettings();
+  }, [refreshUser, loadGiftSettings]);
 
   const openPendingReceiver = useCallback(() => {
     const picked = pendingReceiverRef.current;

@@ -104,7 +104,7 @@ func (s *Service) cooldownRemaining(userID uuid.UUID, cooldown time.Duration, no
 	return last.Add(cooldown).Sub(now), nil
 }
 
-func (s *Service) Config(userID uuid.UUID) (*ConfigResponse, error) {
+func (s *Service) Config(client setting.Client, userID uuid.UUID) (*ConfigResponse, error) {
 	cfg := s.config()
 	now := time.Now().UTC()
 	today, err := s.repo.CountSentSince(userID, dayStart(now))
@@ -120,7 +120,7 @@ func (s *Service) Config(userID uuid.UUID) (*ConfigResponse, error) {
 		return nil, err
 	}
 	return &ConfigResponse{
-		Enabled:           cfg.Enabled,
+		Enabled:           cfg.EnabledFor(client),
 		KenPrice:          cfg.KenPrice,
 		MaxLength:         cfg.MaxLength,
 		DisplaySeconds:    cfg.DisplaySeconds,
@@ -151,7 +151,7 @@ func (s *Service) validateContent(raw string, maxLength int) (string, error) {
 	return "", ErrMegaphoneContentBlocked
 }
 
-func (s *Service) Send(senderID uuid.UUID, req SendRequest) (*SendResponse, error) {
+func (s *Service) Send(client setting.Client, senderID uuid.UUID, req SendRequest) (*SendResponse, error) {
 	clientRequestID := strings.TrimSpace(req.ClientRequestID)
 	normalized := contentfilter.NormalizeContent(req.Content)
 	if existing, err := s.repo.FindByClientRequest(senderID, clientRequestID); err != nil {
@@ -161,7 +161,7 @@ func (s *Service) Send(senderID uuid.UUID, req SendRequest) (*SendResponse, erro
 	}
 
 	cfg := s.config()
-	if !cfg.Enabled {
+	if !cfg.EnabledFor(client) {
 		return nil, ErrMegaphoneDisabled
 	}
 	content, err := s.validateContent(req.Content, cfg.MaxLength)
@@ -247,6 +247,7 @@ func (s *Service) enqueue(view megaphoneEvents.Megaphone, weight int) {
 }
 
 type GiftAnnouncement struct {
+	Client        setting.Client
 	TransactionID uuid.UUID
 	SenderID      uuid.UUID
 	ReceiverID    uuid.UUID
@@ -273,7 +274,7 @@ func senderName(sender megaphoneEvents.Sender) string {
 
 func (s *Service) AnnounceGift(in GiftAnnouncement) bool {
 	cfg := s.config()
-	if !cfg.Enabled {
+	if !cfg.EnabledFor(in.Client) {
 		return false
 	}
 	now := time.Now().UTC()

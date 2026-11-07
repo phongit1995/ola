@@ -23,6 +23,7 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import {
   imageUploadErrorText,
   isSameDay,
@@ -137,6 +138,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
+  const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
+  const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
   const pendingAudioRef = useRef<VoiceRecording | null>(null);
   const pendingAudioCleanupQueueRef = useRef<VoiceRecording[]>([]);
@@ -193,6 +196,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     setEditing(null);
     setHighlightedId(null);
   }
+
+  useEffect(() => {
+    void loadGiftSettings();
+  }, [loadGiftSettings]);
 
   useEffect(() => {
     const abandoned = pendingAudioCleanupQueueRef.current;
@@ -834,7 +841,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             }
             setTransferVipDaysOpen(true);
           }}
-          onSendGift={() => {
+          onSendGift={giftsEnabled ? () => {
             setOpenTab(null);
             if (peerId === '') {
               push('error', t('chat.actionError'));
@@ -842,7 +849,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             }
             Keyboard.dismiss();
             setGiftOpen(true);
-          }}
+          } : undefined}
         />
       )}
       </>

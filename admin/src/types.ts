@@ -2826,6 +2826,7 @@ export interface GiftTransactionListResult extends ListResult<AdminGiftTransacti
 
 export interface GiftSetting {
   enabled: boolean
+  platforms: PlatformRules
   quantityOptions: number[]
   quantityMax: number
   noteMaxLength: number
@@ -2834,6 +2835,7 @@ export interface GiftSetting {
 
 export interface MegaphoneSetting {
   enabled: boolean
+  platforms: PlatformRules
   kenPrice: number
   maxLength: number
   displaySeconds: number

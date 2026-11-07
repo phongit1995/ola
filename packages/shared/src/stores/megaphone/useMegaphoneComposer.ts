@@ -18,6 +18,7 @@ import type {
   MegaphoneComposerStep,
 } from '../../types/client/megaphone.type';
 import { setAuthUserKen, useAuthStore } from '../auth/authStore';
+import { useMegaphoneConfigStore } from './megaphoneConfigStore';
 import { useMegaphoneStore } from './megaphoneStore';
 
 export type { MegaphoneComposer, MegaphoneComposerOptions } from '../../types/client/megaphone.type';
@@ -33,6 +34,7 @@ interface LoadedConfig {
 
 export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptions): MegaphoneComposer {
   const balance = useAuthStore((s) => s.user?.ken ?? 0);
+  const appConfig = useMegaphoneConfigStore((s) => s.config);
   const [loaded, setLoaded] = useState<LoadedConfig | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [content, setContent] = useState('');
@@ -58,7 +60,7 @@ export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptio
     return () => clearTimeout(timer);
   }, [loadConfig]);
 
-  const config = loaded?.config ?? DEFAULT_MEGAPHONE_CONFIG;
+  const config = loaded?.config ?? { ...DEFAULT_MEGAPHONE_CONFIG, ...appConfig };
   const cooldownLeft = loaded != null ? Math.max(0, Math.ceil((loaded.cooldownUntil - now) / 1000)) : 0;
 
   useEffect(() => {

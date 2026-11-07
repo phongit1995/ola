@@ -68,6 +68,7 @@ import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 
 const HIGHLIGHT_DURATION_MS = 1500;
 
@@ -148,6 +149,8 @@ export function ChatConversationView({
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
+  const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
+  const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const [pendingAudio, setPendingAudio] = useState<{
     blob: Blob;
     duration: number;
@@ -186,6 +189,10 @@ export function ChatConversationView({
 
   const wallpaperStyle = useChatWallpaperStyle();
   const peerTyping = typingUsers.length > 0;
+
+  useEffect(() => {
+    void loadGiftSettings();
+  }, [loadGiftSettings]);
 
   useEffect(() => {
     const tick = () => setNow(Date.now());
@@ -819,7 +826,7 @@ export function ChatConversationView({
 
             {!voiceRecording && pendingAudio == null && (
               <AttachmentBar
-                tabs={['smiley', 'camera', 'photo', 'voice', 'gift', 'more']}
+                tabs={['smiley', 'camera', 'photo', 'voice', ...(giftsEnabled ? (['gift'] as const) : []), 'more']}
                 groupSmileyTabs
                 openTab={openTab}
                 onToggleTab={(tab) => {

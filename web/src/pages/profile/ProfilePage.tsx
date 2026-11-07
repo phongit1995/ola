@@ -73,7 +73,7 @@ export function ProfilePage({
   const [giftWallKey, setGiftWallKey] = useState(0);
   const [giftHistoryOpen, setGiftHistoryOpen] = useState(false);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
-  const loadGiftCatalog = useGiftCatalogStore((s) => s.load);
+  const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const scrollRef = useRef<HTMLDivElement>(null);
   const postsEndRef = useRef<HTMLDivElement>(null);
   const { hasMorePosts, loadingMorePosts } = secondary;
@@ -95,8 +95,8 @@ export function ProfilePage({
   }, [hasMorePosts, loadMorePosts, loadedPostCount]);
 
   useEffect(() => {
-    void loadGiftCatalog();
-  }, [loadGiftCatalog]);
+    void loadGiftSettings();
+  }, [loadGiftSettings]);
 
   const posts = secondary.posts.filter(
     (post) => !hiddenPostIds.includes(post.id)

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { REPORT_TARGET_TYPE } from '@ola/shared/constants';
 import { colorForName, megaphoneSenderName } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { selectMegaphoneEnabled, useMegaphoneConfigStore } from '@ola/shared/stores/megaphone/megaphoneConfigStore';
 import { useMegaphoneHistory } from '@ola/shared/stores/megaphone/useMegaphoneHistory';
 import type { Megaphone } from '@ola/shared/types';
 import { MEGAPHONE_IMAGE, MEGAPHONE_LINE } from '@components/megaphone/megaphoneAssets';
@@ -31,10 +32,15 @@ export function MegaphoneScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const userId = useAuthStore((s) => s.user?.id);
   const history = useMegaphoneHistory();
+  const megaphoneEnabled = useMegaphoneConfigStore(selectMegaphoneEnabled);
   const [composeOpen, setComposeOpen] = useState(false);
   const [menuTarget, setMenuTarget] = useState<Megaphone | null>(null);
   const [reportTarget, setReportTarget] = useState<Megaphone | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    void useMegaphoneConfigStore.getState().load();
+  }, []);
 
   function openProfile(megaphone: Megaphone) {
     navigation.navigate(ROOT_ROUTES.ProfileView, {
@@ -62,23 +68,25 @@ export function MegaphoneScreen({ navigation }: Props) {
 
   const header = (
     <>
-      <View
-        className="m-3 flex-row items-center gap-3 rounded-xl bg-ola-megaphone-soft p-3"
-        style={{ borderWidth: 1, borderColor: MEGAPHONE_LINE }}
-      >
-        <Image
-          source={MEGAPHONE_IMAGE}
-          style={{ width: HERO_IMAGE_SIZE, height: HERO_IMAGE_SIZE }}
-          resizeMode="contain"
-        />
-        <Text className="min-w-0 flex-1 text-base font-semibold text-ola-ink">{t('megaphone.composeTitle')}</Text>
-        <Pressable
-          onPress={() => setComposeOpen(true)}
-          className="rounded-full bg-ola-warning px-4 py-2 active:opacity-80"
+      {megaphoneEnabled && (
+        <View
+          className="m-3 flex-row items-center gap-3 rounded-xl bg-ola-megaphone-soft p-3"
+          style={{ borderWidth: 1, borderColor: MEGAPHONE_LINE }}
         >
-          <Text className="text-sm font-semibold text-white">{t('megaphone.compose')}</Text>
-        </Pressable>
-      </View>
+          <Image
+            source={MEGAPHONE_IMAGE}
+            style={{ width: HERO_IMAGE_SIZE, height: HERO_IMAGE_SIZE }}
+            resizeMode="contain"
+          />
+          <Text className="min-w-0 flex-1 text-base font-semibold text-ola-ink">{t('megaphone.composeTitle')}</Text>
+          <Pressable
+            onPress={() => setComposeOpen(true)}
+            className="rounded-full bg-ola-warning px-4 py-2 active:opacity-80"
+          >
+            <Text className="text-sm font-semibold text-white">{t('megaphone.compose')}</Text>
+          </Pressable>
+        </View>
+      )}
       <Text className="px-4 pt-1 pb-2 text-sm font-semibold text-ola-ink-soft">{t('megaphone.history')}</Text>
     </>
   );
