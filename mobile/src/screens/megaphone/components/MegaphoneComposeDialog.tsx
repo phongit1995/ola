@@ -1,4 +1,4 @@
-import { Image, Pressable, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { activeVipTypeId, formatKen } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
@@ -7,14 +7,10 @@ import type { SendMegaphoneResult } from '@ola/shared/types';
 import { GIFT_ASSETS } from '@components/gift/giftAssets';
 import { MEGAPHONE_IMAGE } from '@components/megaphone/megaphoneAssets';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { MegaphoneContentInput } from './MegaphoneContentInput';
 import { MegaphonePreview } from './MegaphonePreview';
 
 const KEN_ICON_STYLE = { width: 16, height: 16 };
-const INPUT_MIN_HEIGHT = 84;
-const INPUT_COLOR = 'rgba(0,0,0,0.87)';
-const INPUT_PLACEHOLDER_COLOR = 'rgba(0,0,0,0.38)';
-const INPUT_BORDER = 'rgba(0,0,0,0.12)';
-const ERROR_BORDER = '#e34545';
 
 interface MegaphoneComposeDialogProps {
   onClose: () => void;
@@ -76,32 +72,12 @@ function ComposeStep({ composer, onTopUp }: { composer: MegaphoneComposer; onTop
   return (
     <View className="gap-3 p-4">
       <Text className="text-sm text-ola-ink-soft">{t('megaphone.hint', { minutes: config.liveMinutes })}</Text>
-      <View>
-        <TextInput
-          value={composer.content}
-          onChangeText={composer.changeContent}
-          placeholder={t('megaphone.placeholder')}
-          placeholderTextColor={INPUT_PLACEHOLDER_COLOR}
-          multiline
-          autoFocus
-          textAlignVertical="top"
-          className="rounded px-3 pt-2 pb-6 text-sm"
-          style={{
-            minHeight: INPUT_MIN_HEIGHT,
-            color: INPUT_COLOR,
-            borderWidth: 1,
-            borderColor: composer.tooLong ? ERROR_BORDER : INPUT_BORDER,
-          }}
-        />
-        <Text
-          pointerEvents="none"
-          className={`absolute right-2 bottom-2 text-xs ${
-            composer.tooLong ? 'font-semibold text-ola-error' : 'text-ola-ink-faint'
-          }`}
-        >
-          {t('megaphone.remaining', { count: composer.length, max: config.maxLength })}
-        </Text>
-      </View>
+      <MegaphoneContentInput
+        value={composer.content}
+        tooLong={composer.tooLong}
+        counter={t('megaphone.remaining', { count: composer.length, max: config.maxLength })}
+        onChange={composer.changeContent}
+      />
       <Text className="text-xs text-ola-ink-faint">{t('megaphone.rules')}</Text>
       <Text className="text-center text-sm font-medium text-ola-megaphone-ink">{statusLine()}</Text>
       <View className="flex-row items-center justify-between rounded-lg bg-ola-surface px-3 py-2">

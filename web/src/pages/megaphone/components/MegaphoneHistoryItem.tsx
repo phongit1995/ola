@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Avatar, UserName } from '@components';
-import { colorForName, formatOlaTimeAgo, megaphoneSenderName } from '@lib';
+import { colorForName, formatOlaTimeAgo, megaphoneSenderName, SmileyText } from '@lib';
 import type { Megaphone } from '@app-types';
 
 interface MegaphoneHistoryItemProps {
@@ -43,7 +43,9 @@ export function MegaphoneHistoryItem({ megaphone, isMine, nowMs, onOpenProfile, 
             {formatOlaTimeAgo(megaphone.showAt, i18n.language, nowMs)}
           </span>
         </div>
-        <p className="mt-0.5 text-[15px] break-words text-black/87">{megaphone.content}</p>
+        <p className="mt-0.5 text-[15px] break-words text-black/87">
+          <SmileyText text={megaphone.content} />
+        </p>
       </div>
       {!isMine && (
         <button

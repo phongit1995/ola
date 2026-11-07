@@ -1,4 +1,5 @@
 import { VipBadge } from '@components';
+import { SmileyText } from '@lib';
 import megaphoneImage from '@/assets/images/member-megaphone.webp';
 
 interface MegaphonePreviewProps {
@@ -14,7 +15,9 @@ export function MegaphonePreview({ username, vipTypeId, content }: MegaphonePrev
       <VipBadge typeId={vipTypeId} className="h-6 w-6" />
       <p className="min-w-0 flex-1 text-sm break-words">
         <b className="font-semibold text-ola-megaphone-name">@{username}: </b>
-        <span className="text-black/87">{content}</span>
+        <span className="text-black/87">
+          <SmileyText text={content} />
+        </span>
       </p>
     </div>
   );

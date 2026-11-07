@@ -122,7 +122,7 @@ export function MegaphoneSettingsPage() {
         <Form.Item
           name="maxLength"
           label="Số ký tự tối đa"
-          extra="Emoji tính là 1 ký tự."
+          extra="Emoji điện thoại tính là 1 ký tự. Emoji của app tính theo độ dài mã, ví dụ [e:5] là 5 ký tự."
           rules={[{ required: true, message: 'Nhập số ký tự tối đa' }]}
         >
           <InputNumber min={1} max={MEGAPHONE_MAX_LENGTH_LIMIT} precision={0} style={{ width: '100%' }} />

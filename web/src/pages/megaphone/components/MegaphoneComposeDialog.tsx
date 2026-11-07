@@ -7,6 +7,7 @@ import kenIcon from '@/assets/icons/apps/ken.png';
 import megaphoneImage from '@/assets/images/member-megaphone.webp';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useAuthStore } from '@/store/authStore';
+import { MegaphoneContentInput } from './MegaphoneContentInput';
 import { MegaphonePreview } from './MegaphonePreview';
 
 interface MegaphoneComposeDialogProps {
@@ -101,27 +102,12 @@ export function MegaphoneComposeDialog({ onClose, onSent }: MegaphoneComposeDial
       ) : (
         <div className="flex flex-col gap-3 px-1 py-1">
           <p className="text-sm text-black/60">{t('megaphone.hint', { minutes: config.liveMinutes })}</p>
-          <div className="relative">
-            <textarea
-              value={composer.content}
-              rows={3}
-              autoFocus
-              onChange={(event) => composer.changeContent(event.target.value)}
-              placeholder={t('megaphone.placeholder')}
-              className={cn(
-                'w-full resize-none rounded border px-3 py-2 pb-6 text-sm text-black/87 outline-none',
-                composer.tooLong ? 'border-ola-error' : 'border-black/12 focus:border-ola-warning'
-              )}
-            />
-            <span
-              className={cn(
-                'pointer-events-none absolute right-2 bottom-2 text-xs',
-                composer.tooLong ? 'font-semibold text-ola-error' : 'text-black/40'
-              )}
-            >
-              {t('megaphone.remaining', { count: composer.length, max: config.maxLength })}
-            </span>
-          </div>
+          <MegaphoneContentInput
+            value={composer.content}
+            tooLong={composer.tooLong}
+            counter={t('megaphone.remaining', { count: composer.length, max: config.maxLength })}
+            onChange={composer.changeContent}
+          />
           <p className="text-xs text-black/45">{t('megaphone.rules')}</p>
           <p className="text-center text-sm font-medium text-ola-megaphone-ink">{statusLine()}</p>
           <div className="flex items-center justify-between rounded-lg bg-ola-surface px-3 py-2 text-sm">

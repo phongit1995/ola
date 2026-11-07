@@ -5,8 +5,10 @@ import { activeVipTypeId, giftDisplayName } from '@ola/shared/lib';
 import type { Megaphone } from '@ola/shared/types';
 import { CachedImage } from '@components/ui/CachedImage';
 import { VipBadge } from '@components/ui/VipBadge';
+import { SmileyText } from '@lib/richText';
 
 const GIFT_IMAGE_STYLE = { width: 20, height: 20 };
+const CONTENT_FONT_SIZE = 14;
 
 function MegaphoneUsername({ username }: { username: string }) {
   return <Text className="text-sm font-semibold text-ola-megaphone-name">@{username}</Text>;
@@ -40,7 +42,9 @@ export function MegaphoneText({ megaphone }: { megaphone: Megaphone }) {
       <VipBadge typeId={vipTypeId} size={20} />
       <MegaphoneUsername username={megaphone.sender.username} />
       <Text className="text-sm font-semibold text-ola-megaphone-name">:</Text>
-      <Text className="text-sm text-ola-ink">{megaphone.content}</Text>
+      <Text className="text-sm text-ola-ink">
+        <SmileyText text={megaphone.content} fontSize={CONTENT_FONT_SIZE} />
+      </Text>
     </>
   );
 }

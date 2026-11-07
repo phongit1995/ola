@@ -4,9 +4,11 @@ import { colorForName, formatOlaTimeAgo, megaphoneSenderName } from '@ola/shared
 import type { Megaphone } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { UserName } from '@components/ui/UserName';
+import { SmileyText } from '@lib/richText';
 
 const AVATAR_SIZE = 40;
 const MORE_ICON_SIZE = 20;
+const CONTENT_FONT_SIZE = 16;
 const moreIcon = require('@assets/icons/chat/ic_more.png');
 
 interface MegaphoneHistoryItemProps {
@@ -44,7 +46,9 @@ export function MegaphoneHistoryItem({ megaphone, isMine, nowMs, onOpenProfile, 
             {formatOlaTimeAgo(megaphone.showAt, i18n.language, nowMs)}
           </Text>
         </View>
-        <Text className="mt-0.5 text-base text-ola-ink">{megaphone.content}</Text>
+        <Text className="mt-0.5 text-base text-ola-ink">
+          <SmileyText text={megaphone.content} fontSize={CONTENT_FONT_SIZE} />
+        </Text>
       </View>
       {!isMine && (
         <Pressable
