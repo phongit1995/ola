@@ -66,10 +66,10 @@ func (c *Consumer) Start() error {
 		topics = append(topics, topic)
 	}
 
-	workerChans := make([]chan kafka.Message, c.workers)
+	workerChans := make([]chan workItem, c.workers)
 	doneChans := make([]chan struct{}, c.workers)
 	for i := 0; i < c.workers; i++ {
-		workerChans[i] = make(chan kafka.Message, 64)
+		workerChans[i] = make(chan workItem, 64)
 		doneChans[i] = make(chan struct{})
 		go c.worker(workerChans[i], doneChans[i], i)
 	}
@@ -90,7 +90,7 @@ func (c *Consumer) Start() error {
 	return nil
 }
 
-func (c *Consumer) runGroup(topics []string, workerChans []chan kafka.Message) {
+func (c *Consumer) runGroup(topics []string, workerChans []chan workItem) {
 	backoff := time.Second
 	const maxBackoff = 30 * time.Second
 
@@ -137,7 +137,7 @@ func (c *Consumer) runGroup(topics []string, workerChans []chan kafka.Message) {
 	}
 }
 
-func (c *Consumer) runGenerations(group *kafka.ConsumerGroup, workerChans []chan kafka.Message) error {
+func (c *Consumer) runGenerations(group *kafka.ConsumerGroup, workerChans []chan workItem) error {
 	for {
 		gen, err := group.Next(c.ctx)
 		if err != nil {
@@ -179,7 +179,7 @@ func (c *Consumer) fetchPartition(
 	topic string,
 	partition int,
 	offset int64,
-	workerChans []chan kafka.Message,
+	workerChans []chan workItem,
 	commits chan<- commitRequest,
 ) {
 	reader := kafka.NewReader(kafka.ReaderConfig{
@@ -203,30 +203,51 @@ func (c *Consumer) fetchPartition(
 
 	c.logger.Infow("Fetching partition", "topic", topic, "partition", partition, "offset", startOffset, "generation_id", gen.ID)
 
+	tracker := newOffsetTracker()
+	backoff := time.Second
+	const maxBackoff = 30 * time.Second
+
 	for {
 		msg, err := reader.ReadMessage(ctx)
 		if err != nil {
-			if errors.Is(err, ctx.Err()) || errors.Is(err, context.Canceled) || errors.Is(err, io.EOF) {
+			if ctx.Err() != nil || errors.Is(err, context.Canceled) || errors.Is(err, io.EOF) {
 				return
 			}
-			c.logger.Warnw("Read error, exiting partition fetcher",
-				"topic", topic, "partition", partition, "error", err)
-			return
+			c.logger.Warnw("Read error, retrying partition fetch",
+				"topic", topic, "partition", partition, "error", err, "backoff", backoff.String())
+			select {
+			case <-time.After(backoff):
+			case <-ctx.Done():
+				return
+			}
+			backoff = nextBackoff(backoff, maxBackoff)
+			continue
 		}
+		backoff = time.Second
 
-		idx := routeIndex(msg, c.workers)
-		select {
-		case workerChans[idx] <- msg:
-		case <-ctx.Done():
-			return
-		}
+		tracker.begin(msg.Offset)
+		item := workItem{msg: msg, ack: func() {
+			next, advanced := tracker.finish(msg.Offset)
+			if !advanced {
+				return
+			}
+			select {
+			case commits <- commitRequest{topic: topic, partition: partition, offset: next}:
+			case <-ctx.Done():
+			}
+		}}
 
 		select {
-		case commits <- commitRequest{topic: topic, partition: partition, offset: msg.Offset + 1}:
+		case workerChans[routeIndex(msg, c.workers)] <- item:
 		case <-ctx.Done():
 			return
 		}
 	}
+}
+
+type workItem struct {
+	msg kafka.Message
+	ack func()
 }
 
 type commitRequest struct {
@@ -280,23 +301,26 @@ func (c *Consumer) commitLoop(ctx context.Context, gen *kafka.Generation, commit
 	}
 }
 
-func (c *Consumer) worker(in <-chan kafka.Message, done chan<- struct{}, workerID int) {
+func (c *Consumer) worker(in <-chan workItem, done chan<- struct{}, workerID int) {
 	defer close(done)
 	c.logger.Debugw("Worker started", "worker_id", workerID)
 
-	for msg := range in {
-		handler, ok := c.handlers[msg.Topic]
+	for item := range in {
+		handler, ok := c.handlers[item.msg.Topic]
 		if !ok {
-			c.logger.Warnw("No handler for topic", "topic", msg.Topic, "worker_id", workerID)
+			c.logger.Warnw("No handler for topic", "topic", item.msg.Topic, "worker_id", workerID)
+			item.ack()
 			continue
 		}
-		c.processMessage(handler, msg, workerID)
+		if c.processMessage(handler, item.msg, workerID) {
+			item.ack()
+		}
 	}
 
 	c.logger.Debugw("Worker stopped", "worker_id", workerID)
 }
 
-func (c *Consumer) processMessage(handler MessageHandler, msg kafka.Message, workerID int) {
+func (c *Consumer) processMessage(handler MessageHandler, msg kafka.Message, workerID int) bool {
 	var lastErr error
 	backoff := 100 * time.Millisecond
 
@@ -306,7 +330,7 @@ func (c *Consumer) processMessage(handler MessageHandler, msg kafka.Message, wor
 		cancel()
 
 		if err == nil {
-			return
+			return true
 		}
 
 		lastErr = err
@@ -320,10 +344,14 @@ func (c *Consumer) processMessage(handler MessageHandler, msg kafka.Message, wor
 			select {
 			case <-time.After(backoff):
 			case <-c.ctx.Done():
-				return
+				return false
 			}
 			backoff *= 2
 		}
+	}
+
+	if c.ctx.Err() != nil {
+		return false
 	}
 
 	c.logger.Errorw("Handler failed after retries, sending to DLQ",
@@ -340,7 +368,9 @@ func (c *Consumer) processMessage(handler MessageHandler, msg kafka.Message, wor
 
 	if dlqErr != nil {
 		c.logger.Errorw("Failed to publish to DLQ", "topic", msg.Topic, "error", dlqErr)
+		return false
 	}
+	return true
 }
 
 func (c *Consumer) sleep(d time.Duration) bool {
