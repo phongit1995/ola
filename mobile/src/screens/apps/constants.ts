@@ -1,5 +1,4 @@
 import type { ParseKeys } from 'i18next';
-import { AVATAR_FRAMES } from '@ola/shared/lib/avatarFrame';
 import { GIFT_ASSETS } from '@components/gift/giftAssets';
 import { MEGAPHONE_IMAGE } from '@components/megaphone/megaphoneAssets';
 
@@ -22,12 +21,8 @@ export type AppItemAction =
   | 'support'
   | 'logout';
 
-const AVATAR_FRAME_MENU_ICON_URI = AVATAR_FRAMES[0]?.url;
-const AVATAR_FRAME_MENU_ICON = require('@assets/icons/apps/vip-crown.webp');
-
 export interface AppItem {
   icon: number;
-  iconUri?: string;
   titleKey: ParseKeys;
   action: AppItemAction;
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
@@ -68,8 +63,7 @@ export const PERSONAL_ITEMS: AppItem[] = [
     action: 'vip',
   },
   {
-    icon: AVATAR_FRAME_MENU_ICON,
-    iconUri: AVATAR_FRAME_MENU_ICON_URI,
+    icon: require('@assets/icons/apps/avatar-frame.webp'),
     titleKey: 'avatarFrame.storeTitle',
     action: 'avatar-frame-store',
   },

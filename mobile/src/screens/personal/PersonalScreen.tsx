@@ -218,7 +218,7 @@ export function PersonalScreen() {
           {items.map(item => (
             <PanelRow
               key={item.titleKey}
-              icon={item.iconUri != null ? { uri: item.iconUri } : item.icon}
+              icon={item.icon}
               title={t(item.titleKey)}
               subtitle={
                 item.subtitleKey != null ? t(item.subtitleKey) : undefined

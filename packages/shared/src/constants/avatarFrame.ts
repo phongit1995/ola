@@ -1,6 +1,5 @@
 import type { AvatarFrameHistoryTab, AvatarFramePrivacy } from '../types/api/avatarFrame.type';
 
-export const AVATAR_FRAME_BASE_URL = 'https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames';
 export const AVATAR_FRAME_SCALE = 1.2;
 export const AVATAR_FRAME_HOLE_RATIO = 0.66;
 export const AVATAR_FRAME_MIN_SLOT = 24;
