@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { vipName } from '@/lib/vipCatalog'
+import { avatarFrameName } from '@/pages/avatar-frames/utils'
 import type { GiftCodeCampaign, GiftCodeCampaignRequest, GiftCodeReward } from '@/types'
 import {
   GIFT_CODE_ALPHABET,
@@ -29,6 +30,7 @@ export function sampleGiftCode(prefix: string, length: number): string {
 export function rewardsText(rewards: GiftCodeReward[], withIconNames = false): string {
   const days = rewards.reduce((sum, r) => sum + (r.type === 'vip_days' ? r.days ?? 0 : 0), 0)
   const icons = rewards.filter((r) => r.type === 'vip_icon' && r.vipIconId)
+  const frames = rewards.filter((r) => r.type === 'avatar_frame' && r.frameId)
   const parts: string[] = []
   if (days > 0) parts.push(`${days} ngày VIP`)
   if (withIconNames) {
@@ -38,6 +40,13 @@ export function rewardsText(rewards: GiftCodeReward[], withIconNames = false): s
   } else if (icons.length > 1) {
     parts.push(`${icons.length} icon VIP`)
   }
+  if (withIconNames) {
+    frames.forEach((r) => parts.push(`khung ${avatarFrameName(r.frameId ?? '')}`))
+  } else if (frames.length === 1) {
+    parts.push('khung avatar')
+  } else if (frames.length > 1) {
+    parts.push(`${frames.length} khung avatar`)
+  }
   return parts.join(' và ')
 }
 
@@ -46,10 +55,21 @@ export function successMessagePreview(template: string, rewards: GiftCodeReward[
   return message.split(GIFT_CODE_REWARD_PLACEHOLDER).join(rewardsText(rewards))
 }
 
+function cleanReward(r: GiftCodeFormValues['rewards'][number]): GiftCodeReward[] {
+  switch (r.type) {
+    case 'vip_days':
+      return (r.days ?? 0) > 0 ? [{ type: r.type, days: r.days }] : []
+    case 'vip_icon':
+      return (r.vipIconId ?? 0) > 0 ? [{ type: r.type, vipIconId: r.vipIconId }] : []
+    case 'avatar_frame':
+      return r.frameId ? [{ type: r.type, frameId: r.frameId }] : []
+    default:
+      return []
+  }
+}
+
 export function cleanRewards(rewards: GiftCodeFormValues['rewards'] | undefined): GiftCodeReward[] {
-  return (rewards ?? [])
-    .filter((r) => (r.type === 'vip_days' ? (r.days ?? 0) > 0 : (r.vipIconId ?? 0) > 0))
-    .map((r) => (r.type === 'vip_days' ? { type: r.type, days: r.days } : { type: r.type, vipIconId: r.vipIconId }))
+  return (rewards ?? []).flatMap(cleanReward)
 }
 
 export function formToRequest(values: GiftCodeFormValues): GiftCodeCampaignRequest {
@@ -88,7 +108,7 @@ export function campaignToForm(campaign: GiftCodeCampaign, clone = false): GiftC
     codePrefix: campaign.codePrefix,
     codeLength: campaign.codeLength || GIFT_CODE_DEFAULT_LENGTH,
     totalUses: campaign.totalUses,
-    rewards: campaign.rewards.map((r) => ({ type: r.type, days: r.days, vipIconId: r.vipIconId })),
+    rewards: campaign.rewards.map((r) => ({ type: r.type, days: r.days, vipIconId: r.vipIconId, frameId: r.frameId })),
     successMessage: campaign.successMessage,
     sendNotification: campaign.sendNotification,
     minAccountAgeDays: campaign.minAccountAgeDays,

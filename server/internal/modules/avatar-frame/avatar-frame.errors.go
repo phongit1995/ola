@@ -14,6 +14,7 @@ var (
 	ErrReceiverOwns     = utils.NewHTTPErrorWithCode(http.StatusConflict, "receiver already owns this avatar frame", ErrorCodeReceiverOwns)
 	ErrNotOwned         = utils.NewHTTPErrorWithCode(http.StatusNotFound, "avatar frame not owned", ErrorCodeNotOwned)
 	ErrInUse            = utils.NewHTTPErrorWithCode(http.StatusConflict, "avatar frame is equipped", ErrorCodeInUse)
+	ErrNotTransferable  = utils.NewHTTPErrorWithCode(http.StatusForbidden, "avatar frame from a gift code cannot be transferred", ErrorCodeNotTransferable)
 	ErrVipRequired      = utils.NewHTTPErrorWithCode(http.StatusForbidden, "vip required to equip avatar frame", ErrorCodeVipRequired)
 	ErrInsufficientKen  = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "insufficient ken balance", ErrorCodeInsufficientKen)
 	ErrWrongPassword    = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "invalid password", ErrorCodeWrongPassword)

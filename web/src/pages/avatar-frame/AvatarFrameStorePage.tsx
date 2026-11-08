@@ -10,7 +10,7 @@ import {
   type ListOption,
 } from '@components';
 import { AVATAR_FRAME_PRIVACY_OPTIONS } from '@constants';
-import { avatarFramePrivacyLabelKey, toast } from '@lib';
+import { avatarFramePrivacyLabelKey, isAvatarFrameTransferable, toast } from '@lib';
 import type { OwnedAvatarFrame } from '@app-types';
 import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
 import { useAvatarFrameCollection } from '@ola/shared/stores/avatar-frame/useAvatarFrameCollection';
@@ -80,15 +80,19 @@ export function AvatarFrameStorePage({ onClose }: { onClose: () => void }) {
             label: t('avatarFrame.actionEquip'),
             onSelect: () => void requestEquip(frame.frameId),
           },
-      {
-        key: 'transfer',
-        label: (
-          <span className={frame.isEquipped ? 'text-black/38' : undefined}>
-            {t('avatarFrame.actionTransfer')}
-          </span>
-        ),
-        onSelect: () => requestTransfer(frame),
-      },
+      ...(isAvatarFrameTransferable(frame)
+        ? [
+            {
+              key: 'transfer',
+              label: (
+                <span className={frame.isEquipped ? 'text-black/38' : undefined}>
+                  {t('avatarFrame.actionTransfer')}
+                </span>
+              ),
+              onSelect: () => requestTransfer(frame),
+            },
+          ]
+        : []),
     ];
   }
 

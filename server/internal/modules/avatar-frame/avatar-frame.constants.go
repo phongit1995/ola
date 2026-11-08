@@ -17,6 +17,7 @@ const (
 	ErrorCodeReceiverOwns     = "AVATAR_FRAME_RECEIVER_OWNS"
 	ErrorCodeNotOwned         = "AVATAR_FRAME_NOT_OWNED"
 	ErrorCodeInUse            = "AVATAR_FRAME_IN_USE"
+	ErrorCodeNotTransferable  = "AVATAR_FRAME_NOT_TRANSFERABLE"
 	ErrorCodeVipRequired      = "AVATAR_FRAME_VIP_REQUIRED"
 	ErrorCodeInsufficientKen  = "AVATAR_FRAME_INSUFFICIENT_KEN"
 	ErrorCodeWrongPassword    = "AVATAR_FRAME_WRONG_PASSWORD"

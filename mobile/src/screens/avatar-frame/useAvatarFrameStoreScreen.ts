@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AVATAR_FRAME_PRIVACY_OPTIONS } from '@ola/shared/constants';
+import { isAvatarFrameTransferable } from '@ola/shared/lib';
 import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
 import { useAvatarFrameCollection } from '@ola/shared/stores/avatar-frame/useAvatarFrameCollection';
 import type { OwnedAvatarFrame } from '@ola/shared/types';
@@ -29,7 +30,9 @@ export function useAvatarFrameStoreScreen() {
             label: t('avatarFrame.actionEquip'),
             onSelect: () => void frames.requestEquip(frame.frameId),
           },
-      { key: 'transfer', label: t('avatarFrame.actionTransfer'), onSelect: () => frames.requestTransfer(frame) },
+      ...(isAvatarFrameTransferable(frame)
+        ? [{ key: 'transfer', label: t('avatarFrame.actionTransfer'), onSelect: () => frames.requestTransfer(frame) }]
+        : []),
     ];
   }
 

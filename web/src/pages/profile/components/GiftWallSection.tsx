@@ -47,7 +47,7 @@ export function GiftWallSection({
   }
 
   return (
-    <section className="mx-2 mt-2 rounded-lg bg-white px-3 py-3 shadow-sm">
+    <section className="mx-2 my-2 rounded-lg bg-white px-3 py-4 shadow-sm">
       <div className="flex items-center gap-2">
         <h3 className="text-base font-medium text-black/87">{t('gift.wall.title')}</h3>
         <span className="text-xs text-black/54">

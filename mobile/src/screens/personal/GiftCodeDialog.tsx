@@ -2,8 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Text, TextInput, View } from 'react-native';
 import { GIFT_CODE_MAX_LENGTH, GIFT_CODE_REWARD_TYPE } from '@ola/shared/constants';
 import { giftCodeRewardText, withAlpha } from '@ola/shared/lib';
+import { avatarFrameById } from '@ola/shared/lib/avatarFrame';
 import { useGiftCodeRedeem } from '@ola/shared/stores/gift-code/useGiftCodeRedeem';
 import type { GiftCodeReward } from '@ola/shared/types';
+import { CachedImage } from '@components/ui/CachedImage';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { VipIcon } from '@components/ui/VipIcon';
 import { DIVIDER, ERROR, TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
@@ -23,12 +25,15 @@ function RewardChip({ reward }: { reward: GiftCodeReward }) {
   const text = giftCodeRewardText(t, reward);
   if (text == null) return null;
   const isIcon = reward.type === GIFT_CODE_REWARD_TYPE.vipIcon && reward.vipIconId != null;
+  const frameUrl = reward.type === GIFT_CODE_REWARD_TYPE.avatarFrame ? avatarFrameById(reward.frameId)?.url : undefined;
   return (
     <View
       className="flex-row items-center gap-1.5 rounded-full py-1 pl-1.5 pr-3"
       style={{ backgroundColor: withAlpha(colors.primary, 0.12) }}
     >
-      {isIcon ? (
+      {frameUrl != null ? (
+        <CachedImage uri={frameUrl} style={{ width: 24, height: 24 }} resizeMode="contain" />
+      ) : isIcon ? (
         <VipIcon typeId={reward.vipIconId} size={24} />
       ) : (
         <Image source={vipCrownIcon} style={{ width: 24, height: 20 }} resizeMode="contain" />
@@ -132,9 +137,14 @@ export function GiftCodeDialog({ visible, onClose }: GiftCodeDialogProps) {
           </Text>
         )}
         {redeem.needsEmailVerify && (
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>
-            {t('giftCode.verifyGuide')}
-          </Text>
+          <>
+            <Text className="text-sm" style={{ color: ERROR }}>
+              {t('giftCode.errors.emailNotVerified')}
+            </Text>
+            <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>
+              {t('giftCode.verifyGuide')}
+            </Text>
+          </>
         )}
       </View>
     </Dialog>

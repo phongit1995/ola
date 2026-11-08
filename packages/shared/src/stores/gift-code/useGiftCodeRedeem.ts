@@ -11,6 +11,7 @@ import type {
   GiftCodeRedeemOptions,
 } from '../../types/client/giftCode.type';
 import { useAuthStore } from '../auth/authStore';
+import { useGiftCodeConfigStore } from './giftCodeConfigStore';
 
 export type { GiftCodeRedeem, GiftCodeRedeemOptions } from '../../types/client/giftCode.type';
 
@@ -19,6 +20,9 @@ export function useGiftCodeRedeem({ onRedeemed }: GiftCodeRedeemOptions = {}): G
   const [submitting, setSubmitting] = useState(false);
   const [failure, setFailure] = useState<GiftCodeFailure | null>(null);
   const [result, setResult] = useState<RedeemGiftCodeResult | null>(null);
+  const emailRequired = useGiftCodeConfigStore((s) => s.config?.requireEmailVerified ?? false);
+  const emailUnverified = useAuthStore((s) => s.user?.emailVerified === false);
+  const emailRejected = failure?.code === GIFT_CODE_EMAIL_NOT_VERIFIED_ERROR;
 
   const setCode = useCallback((value: string) => {
     setRawCode(normalizeGiftCodeInput(value));
@@ -57,8 +61,8 @@ export function useGiftCodeRedeem({ onRedeemed }: GiftCodeRedeemOptions = {}): G
     code,
     setCode,
     submitting,
-    error: failure?.text ?? null,
-    needsEmailVerify: failure?.code === GIFT_CODE_EMAIL_NOT_VERIFIED_ERROR,
+    error: emailRejected ? null : (failure?.text ?? null),
+    needsEmailVerify: emailRejected || (emailRequired && emailUnverified),
     result,
     canSubmit: code !== '' && !submitting,
     submit,

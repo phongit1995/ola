@@ -1,6 +1,7 @@
 import { Badge, Space, Tag } from 'antd'
 import { CrownOutlined } from '@ant-design/icons'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
+import { avatarFrameName, avatarFrameUrl } from '@/pages/avatar-frames/utils'
 import type { GiftCodeKind, GiftCodeReward, GiftCodeStatus } from '@/types'
 import { GIFT_CODE_KIND_META, GIFT_CODE_STATUS_META } from './constants'
 
@@ -13,6 +14,11 @@ export function GiftCodeRewardTags({ rewards }: { rewards: GiftCodeReward[] }) {
         reward.type === 'vip_days' ? (
           <Tag key={index} color="gold" icon={<CrownOutlined />} style={{ marginInlineEnd: 0 }}>
             {reward.days} ngày VIP
+          </Tag>
+        ) : reward.type === 'avatar_frame' ? (
+          <Tag key={index} color="cyan" style={{ marginInlineEnd: 0 }}>
+            <img src={avatarFrameUrl(reward.frameId ?? '')} alt="" style={ICON_STYLE} />
+            Khung {avatarFrameName(reward.frameId ?? '')}
           </Tag>
         ) : (
           <Tag key={index} color="purple" style={{ marginInlineEnd: 0 }}>

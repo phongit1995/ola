@@ -1523,6 +1523,7 @@
       "receiverOwns": "Người nhận đã có khung này",
       "notOwned": "Bạn không sở hữu khung này",
       "inUse": "Hãy tháo khung trước khi chuyển",
+      "notTransferable": "Khung từ mã quà tặng không chuyển được",
       "vipRequired": "Cần còn VIP để đeo khung",
       "insufficientKen": "Không đủ KEN",
       "wrongPassword": "Mật khẩu không đúng",
@@ -2693,6 +2694,7 @@
     "successButton": "Tuyệt vời",
     "rewardVipDays": "+{{count}} ngày VIP",
     "rewardVipIcon": "Icon VIP {{name}}",
+    "rewardAvatarFrame": "Khung avatar",
     "notTransferable": "Từ mã quà tặng, không chuyển được",
     "verifyGuide": "Cách xác thực: Cá nhân → Trang cá nhân → Email → Xác thực.",
     "errors": {
@@ -2709,6 +2711,7 @@
       "tooManyAttempts": "Bạn nhập sai quá nhiều lần, thử lại sau ít phút",
       "emailNotVerified": "Bạn cần xác thực email trước khi nhập mã quà tặng.",
       "deviceUnknown": "Không xác định được thiết bị của bạn. Hãy đăng xuất rồi đăng nhập lại để nhận quà.",
+      "frameOwned": "Bạn đã có khung avatar của mã này rồi",
       "rateLimited": "Bạn thao tác quá nhanh, thử lại sau ít phút",
       "failed": "Không nhận được quà, thử lại sau"
     }

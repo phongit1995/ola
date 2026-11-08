@@ -71,15 +71,18 @@ func PlatformAllowed(c *models.GiftCodeCampaign, platform string) bool {
 func RewardsText(rewards models.GiftCodeRewards) string {
 	days := 0
 	icons := 0
+	frames := 0
 	for _, r := range rewards {
 		switch r.Type {
 		case models.GiftCodeRewardVipDays:
 			days += r.Days
 		case models.GiftCodeRewardVipIcon:
 			icons++
+		case models.GiftCodeRewardAvatarFrame:
+			frames++
 		}
 	}
-	parts := make([]string, 0, 2)
+	parts := make([]string, 0, 3)
 	if days > 0 {
 		parts = append(parts, fmt.Sprintf("%d ngày VIP", days))
 	}
@@ -88,6 +91,12 @@ func RewardsText(rewards models.GiftCodeRewards) string {
 		parts = append(parts, "icon VIP")
 	case icons > 1:
 		parts = append(parts, fmt.Sprintf("%d icon VIP", icons))
+	}
+	switch {
+	case frames == 1:
+		parts = append(parts, "khung avatar")
+	case frames > 1:
+		parts = append(parts, fmt.Sprintf("%d khung avatar", frames))
 	}
 	return strings.Join(parts, RewardTextJoiner)
 }
