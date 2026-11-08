@@ -1,17 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { usePeerAvatarFrames } from '@ola/shared/stores/avatar-frame/usePeerAvatarFrames';
-import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
+import { AvatarFrameImage } from '@components/ui/AvatarFrameImage';
 import { Dialog } from '@components/ui/Dialog';
 import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
 import { TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { PEER_FRAME_AVATAR_SIZE } from '../constants';
+import { PEER_FRAME_THUMB_SIZE } from '../constants';
 
 interface PeerAvatarFrameStoreDialogProps {
   userId: string;
   name: string;
-  avatar?: string;
   onClose: () => void;
 }
 
@@ -25,7 +24,7 @@ function CenterNote({ children }: { children: string }) {
   );
 }
 
-export function PeerAvatarFrameStoreDialog({ userId, name, avatar, onClose }: PeerAvatarFrameStoreDialogProps) {
+export function PeerAvatarFrameStoreDialog({ userId, name, onClose }: PeerAvatarFrameStoreDialogProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const { store, loading, isPrivate, failed, hasMore, loadingMore, loadMore } = usePeerAvatarFrames(
@@ -64,13 +63,16 @@ export function PeerAvatarFrameStoreDialog({ userId, name, avatar, onClose }: Pe
                   className="items-center"
                   style={{ width: '33.333%', paddingTop: 10, paddingBottom: 6 }}
                 >
-                  <AvatarWithFrame
-                    name={name}
-                    uri={avatar}
-                    size={PEER_FRAME_AVATAR_SIZE}
-                    frameId={frame.frameId}
-                    showLoader={false}
-                  />
+                  <View
+                    style={{
+                      padding: 2,
+                      borderRadius: 6,
+                      borderWidth: 2,
+                      borderColor: frame.isEquipped ? colors.primary : 'transparent',
+                    }}
+                  >
+                    <AvatarFrameImage frameId={frame.frameId} size={PEER_FRAME_THUMB_SIZE} />
+                  </View>
                   <Text
                     numberOfLines={1}
                     className="mt-2 w-full text-center text-[11px]"

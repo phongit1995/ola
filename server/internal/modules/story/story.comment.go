@@ -50,11 +50,12 @@ func toCommentAuthor(user *models.User) *StoryCommentAuthor {
 		return nil
 	}
 	author := &StoryCommentAuthor{
-		ID:       user.ID.String(),
-		Username: user.Username,
-		FullName: user.FullName,
-		Avatar:   user.Avatar,
-		VipUsed:  user.VipUsed,
+		ID:            user.ID.String(),
+		Username:      user.Username,
+		FullName:      user.FullName,
+		Avatar:        user.Avatar,
+		VipUsed:       user.VipUsed,
+		AvatarFrameID: user.ActiveAvatarFrameID(time.Now()),
 	}
 	if user.VipEndTime != nil {
 		formatted := user.VipEndTime.UTC().Format(time.RFC3339)

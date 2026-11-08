@@ -6,6 +6,7 @@ export interface MegaphoneSender {
   gender?: string;
   vipUsed?: string | null;
   vipEndTime?: string | null;
+  avatarFrameId?: string | null;
 }
 
 export type MegaphoneType = 'message' | 'gift';

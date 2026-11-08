@@ -10,7 +10,7 @@ import { useGiftHistory } from '@ola/shared/stores/gift/useGiftHistory';
 import type { GiftHistoryItem } from '@ola/shared/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import type { RootStackParamList } from '@navigation/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CachedImage } from '@components/ui/CachedImage';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
@@ -54,14 +54,20 @@ export function GiftHistoryScreen({ navigation }: Props) {
   }
 
   function renderItem({ item }: { item: GiftHistoryItem }) {
-    const { fullName, username, avatar } = item.counterparty;
+    const { fullName, username, avatar, avatarFrameId } = item.counterparty;
     const name = fullName || username;
     const color = colorForName(name);
     const openUser = () => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: username, color });
     return (
       <View className="flex-row items-start gap-3 bg-white px-4 py-3">
         <Pressable onPress={openUser} className="active:opacity-70" accessibilityLabel={name}>
-          <Avatar name={name} uri={avatar} color={color} size={AVATAR_SIZE} />
+          <AvatarWithFrame
+            name={name}
+            uri={avatar}
+            color={color}
+            size={AVATAR_SIZE}
+            frameId={avatarFrameId}
+          />
           <View
             className="absolute items-center justify-center rounded-full"
             style={{

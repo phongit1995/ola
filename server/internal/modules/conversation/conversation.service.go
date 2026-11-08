@@ -138,11 +138,12 @@ func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uu
 				resp.Name = userDisplayName(u)
 				resp.Avatar = u.Avatar
 				resp.OtherUser = &OtherUserBrief{
-					ID:       otherUserID.String(),
-					Username: u.Username,
-					FullName: u.FullName,
-					Avatar:   u.Avatar,
-					Bio:      u.Bio,
+					ID:            otherUserID.String(),
+					Username:      u.Username,
+					FullName:      u.FullName,
+					Avatar:        u.Avatar,
+					Bio:           u.Bio,
+					AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 				}
 			}
 		}

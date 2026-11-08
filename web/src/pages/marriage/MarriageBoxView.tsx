@@ -7,6 +7,7 @@ import {
   DialogButton,
   VipAvatar,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useMarriageStore } from '@/store/marriageStore';
@@ -19,12 +20,25 @@ function FramedAvatar({
   color,
   src,
   size,
+  frameId,
 }: {
   name: string;
   color: string;
   src?: string;
   size: number;
+  frameId?: string | null;
 }) {
+  if (frameId) {
+    return (
+      <AvatarWithFrame
+        name={name}
+        color={color}
+        src={src}
+        size={size}
+        frameId={frameId}
+      />
+    );
+  }
   return (
     <span
       className="inline-block border-2 bg-white p-0.5"
@@ -45,6 +59,7 @@ export function MarriageBoxView() {
   const { t } = useTranslation();
   const meName = useAuthStore((s) => s.user?.username ?? t('home.guest'));
   const meAvatar = useAuthStore((s) => s.user?.avatar);
+  const meFrameId = useAuthStore((s) => s.user?.avatarFrameId);
   const spouse = useMarriageStore((s) => s.spouse);
   const marriedSince = useMarriageStore((s) => s.marriedSince);
   const diary = useMarriageStore((s) => s.diary);
@@ -104,6 +119,7 @@ export function MarriageBoxView() {
             color={colorForName(meName)}
             src={meAvatar}
             size={84}
+            frameId={meFrameId}
           />
           <span className="text-3xl text-ola-marriage">❤</span>
           <FramedAvatar
@@ -111,6 +127,7 @@ export function MarriageBoxView() {
             color={spouse.avatarColor}
             src={spouse.avatarUrl}
             size={84}
+            frameId={spouse.avatarFrameId}
           />
         </div>
         <p className="mt-3 text-base font-bold text-ola-marriage-deep">

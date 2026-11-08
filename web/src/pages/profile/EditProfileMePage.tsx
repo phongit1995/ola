@@ -15,6 +15,7 @@ import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar, ImageCropEditor, ImageCropOverlay } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import {
   AVATAR_ASPECT,
   COVER_ASPECT,
@@ -89,12 +90,19 @@ function EmailStatusIcon({
 
 interface AvatarPickerProps {
   avatar: string;
+  avatarFrameId?: string | null;
   nick: string;
   uploading: boolean;
   onPick: (file: File) => void;
 }
 
-function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
+function AvatarPicker({
+  avatar,
+  avatarFrameId,
+  nick,
+  uploading,
+  onPick,
+}: AvatarPickerProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
@@ -129,7 +137,15 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
         disabled={uploading}
         className="relative"
       >
-        {avatar ? (
+        {avatarFrameId ? (
+          <AvatarWithFrame
+            name={nick}
+            color={colorForName(nick)}
+            src={avatar || undefined}
+            size={96}
+            frameId={avatarFrameId}
+          />
+        ) : avatar ? (
           <img
             src={avatar}
             alt=""
@@ -416,6 +432,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
           <div className="-mt-12">
             <AvatarPicker
               avatar={avatar}
+              avatarFrameId={user?.avatarFrameId}
               nick={nick}
               uploading={uploading}
               onPick={uploadAvatar}

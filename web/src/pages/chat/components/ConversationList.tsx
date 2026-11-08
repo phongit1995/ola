@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import type { Conversation } from '@app-types';
 import { Avatar, PresenceBadge } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { createTimeFormatter, SmileyText } from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
@@ -154,7 +155,12 @@ function ConversationRow({
           className="flex min-w-0 flex-1 items-center gap-4 text-left"
         >
           <span className="relative shrink-0">
-            <Avatar name={view.name} color={view.color} src={view.avatar} />
+            <AvatarWithFrame
+              name={view.name}
+              color={view.color}
+              src={view.avatar}
+              frameId={view.avatarFrameId}
+            />
             {view.online && (
               <PresenceBadge className="absolute right-0 bottom-0" />
             )}

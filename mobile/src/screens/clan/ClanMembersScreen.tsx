@@ -11,7 +11,7 @@ import {
 import { ClanService } from '@ola/shared/services';
 import type { Clan, ClanMember } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
@@ -192,11 +192,12 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                   onPress={() => username !== '' && openProfile(username)}
                   className="min-w-0 flex-1 flex-row items-center gap-3"
                 >
-                  <Avatar
+                  <AvatarWithFrame
                     name={username}
                     uri={item.user?.avatar !== '' ? item.user?.avatar : undefined}
                     color={colorForName(username)}
                     size={40}
+                    frameId={item.user?.avatarFrameId}
                   />
                   <View className="min-w-0 flex-1">
                     <View className="flex-row items-center gap-1.5">

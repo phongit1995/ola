@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import {
-  Avatar,
   CharmIcon,
   FullScreenOverlay,
   ScreenHeader,
   Spinner,
   UserName,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { GIFT_HISTORY_DIRECTION, GIFT_HISTORY_TABS } from '@constants';
 import { useGiftHistory } from '@ola/shared/stores/gift/useGiftHistory';
 import {
@@ -92,7 +92,8 @@ export function GiftHistoryPage({
         ) : (
           <ul className="divide-y divide-black/6 bg-white">
             {items.map((item) => {
-              const { fullName, username, avatar } = item.counterparty;
+              const { fullName, username, avatar, avatarFrameId } =
+                item.counterparty;
               const name = fullName || username;
               return (
                 <li key={item.id} className="flex items-start gap-3 px-4 py-3">
@@ -103,11 +104,12 @@ export function GiftHistoryPage({
                     aria-label={name}
                     className="relative shrink-0 rounded-full active:opacity-70"
                   >
-                    <Avatar
+                    <AvatarWithFrame
                       name={name}
                       src={avatar}
                       color={colorForName(name)}
                       size={44}
+                      frameId={avatarFrameId}
                     />
                     <span
                       aria-hidden="true"

@@ -89,12 +89,13 @@ type ChapterResponse struct {
 }
 
 type StoryCommentAuthor struct {
-	ID         string  `json:"id"`
-	Username   string  `json:"username"`
-	FullName   string  `json:"fullName,omitempty"`
-	Avatar     string  `json:"avatar,omitempty"`
-	VipUsed    *string `json:"vipUsed,omitempty"`
-	VipEndTime *string `json:"vipEndTime,omitempty"`
+	ID            string  `json:"id"`
+	Username      string  `json:"username"`
+	FullName      string  `json:"fullName,omitempty"`
+	Avatar        string  `json:"avatar,omitempty"`
+	VipUsed       *string `json:"vipUsed,omitempty"`
+	VipEndTime    *string `json:"vipEndTime,omitempty"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty"`
 }
 
 type StoryCommentReply struct {

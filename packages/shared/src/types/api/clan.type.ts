@@ -9,6 +9,7 @@ export interface ClanUser {
   username: string;
   fullName?: string;
   avatar?: string;
+  avatarFrameId?: string | null;
 }
 
 export interface Clan {

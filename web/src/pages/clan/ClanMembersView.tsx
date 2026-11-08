@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Avatar,
   ConfirmDialog,
   FullScreenOverlay,
   ListOptionDialog,
@@ -10,6 +9,7 @@ import {
   UserName,
   type ListOption,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CLAN_ROLE } from '@constants';
 import {
   clanErrorText,
@@ -192,7 +192,7 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
                     }
                     className="flex min-w-0 flex-1 items-center gap-3 text-left"
                   >
-                    <Avatar
+                    <AvatarWithFrame
                       name={username}
                       src={
                         member.user?.avatar !== ''
@@ -201,6 +201,7 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
                       }
                       color={colorForName(username)}
                       size={40}
+                      frameId={member.user?.avatarFrameId}
                     />
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-1.5">

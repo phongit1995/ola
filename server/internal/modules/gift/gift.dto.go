@@ -62,13 +62,14 @@ type GiftMessageMetadata struct {
 }
 
 type GiftUserBrief struct {
-	ID         string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Username   string  `json:"username" example:"minh"`
-	FullName   string  `json:"fullName,omitempty" example:"Minh"`
-	Avatar     string  `json:"avatar,omitempty" example:"https://cdn.ola.vn/a.png"`
-	Gender     string  `json:"gender,omitempty" example:"female"`
-	VipUsed    *string `json:"vipUsed,omitempty"`
-	VipEndTime *string `json:"vipEndTime,omitempty"`
+	ID            string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Username      string  `json:"username" example:"minh"`
+	FullName      string  `json:"fullName,omitempty" example:"Minh"`
+	Avatar        string  `json:"avatar,omitempty" example:"https://cdn.ola.vn/a.png"`
+	Gender        string  `json:"gender,omitempty" example:"female"`
+	VipUsed       *string `json:"vipUsed,omitempty"`
+	VipEndTime    *string `json:"vipEndTime,omitempty"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty" example:"001"`
 }
 
 type GiftWallItem struct {

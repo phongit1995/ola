@@ -97,6 +97,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     conversation,
     title,
     peerAvatar,
+    peerAvatarFrameId,
     myId,
     peerId,
     peerProfile,
@@ -546,6 +547,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         title={title}
         subtitle={subtitle}
         avatar={peerAvatar}
+        avatarFrameId={peerAvatarFrameId}
         right={
           blockStatus === RELATIONSHIP_STATUS.friend ? <ChatCallButtons /> : null
         }
@@ -597,7 +599,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             </>
           }
           ListFooterComponent={
-            typingUsers.length > 0 ? <TypingIndicator name={title} avatar={peerAvatar} /> : null
+            typingUsers.length > 0 ? <TypingIndicator name={title} avatar={peerAvatar} avatarFrameId={peerAvatarFrameId} /> : null
           }
           renderItem={({ item, index }) => {
             const prev = messages[index - 1];
@@ -633,6 +635,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   highlighted={item.id === highlightedId}
                   peerName={title}
                   peerAvatar={peerAvatar}
+                  peerAvatarFrameId={peerAvatarFrameId}
                   timeLabel={timeFormatter(item.createdAt)}
                   onLongPress={(anchor) => {
                     suspendRef.current = true;

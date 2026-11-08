@@ -2,7 +2,7 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colorForName, formatOlaTimeAgo, megaphoneSenderName } from '@ola/shared/lib';
 import type { Megaphone } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { UserName } from '@components/ui/UserName';
 import { SmileyText } from '@lib/richText';
 
@@ -30,7 +30,13 @@ export function MegaphoneHistoryItem({ megaphone, isMine, nowMs, onOpenProfile, 
         onPress={() => onOpenProfile(megaphone)}
         className="active:opacity-70"
       >
-        <Avatar name={name} uri={megaphone.sender.avatar} color={colorForName(name)} size={AVATAR_SIZE} />
+        <AvatarWithFrame
+          name={name}
+          uri={megaphone.sender.avatar}
+          color={colorForName(name)}
+          size={AVATAR_SIZE}
+          frameId={megaphone.sender.avatarFrameId}
+        />
       </Pressable>
       <View className="min-w-0 flex-1">
         <View className="flex-row items-center gap-1">

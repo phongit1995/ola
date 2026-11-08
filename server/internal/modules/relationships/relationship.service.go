@@ -764,25 +764,27 @@ func (s *Service) buildRelationshipResponse(rel *models.Relationship) *Relations
 
 	if rel.Requester != nil {
 		response.Requester = &UserInfo{
-			ID:         rel.Requester.ID.String(),
-			Username:   rel.Requester.Username,
-			Email:      rel.Requester.Email,
-			Avatar:     rel.Requester.Avatar,
-			FullName:   rel.Requester.FullName,
-			VipUsed:    rel.Requester.VipUsed,
-			VipEndTime: formatVipEndTime(rel.Requester.VipEndTime),
+			ID:            rel.Requester.ID.String(),
+			Username:      rel.Requester.Username,
+			Email:         rel.Requester.Email,
+			Avatar:        rel.Requester.Avatar,
+			FullName:      rel.Requester.FullName,
+			VipUsed:       rel.Requester.VipUsed,
+			VipEndTime:    formatVipEndTime(rel.Requester.VipEndTime),
+			AvatarFrameID: rel.Requester.ActiveAvatarFrameID(time.Now()),
 		}
 	}
 
 	if rel.Addressee != nil {
 		response.Addressee = &UserInfo{
-			ID:         rel.Addressee.ID.String(),
-			Username:   rel.Addressee.Username,
-			Email:      rel.Addressee.Email,
-			Avatar:     rel.Addressee.Avatar,
-			FullName:   rel.Addressee.FullName,
-			VipUsed:    rel.Addressee.VipUsed,
-			VipEndTime: formatVipEndTime(rel.Addressee.VipEndTime),
+			ID:            rel.Addressee.ID.String(),
+			Username:      rel.Addressee.Username,
+			Email:         rel.Addressee.Email,
+			Avatar:        rel.Addressee.Avatar,
+			FullName:      rel.Addressee.FullName,
+			VipUsed:       rel.Addressee.VipUsed,
+			VipEndTime:    formatVipEndTime(rel.Addressee.VipEndTime),
+			AvatarFrameID: rel.Addressee.ActiveAvatarFrameID(time.Now()),
 		}
 	}
 

@@ -6,7 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { MOMENT_FADE_MS, MOMENT_STATUS, MOMENT_TURN_SHADE, MOMENT_TYPE } from '@ola/shared/constants';
 import { colorForName, momentMedia, momentNoticeKey } from '@ola/shared/lib';
 import type { Moment, MomentAuthor, MomentMyComment, ReactionType } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { MOMENT_ASPECT_RATIO, MOMENT_TURN_PERSPECTIVE } from '../constants';
 import { MomentBackdrop, MomentCanvas, type MomentCanvasSize } from './MomentCanvas';
 import { MomentCommentBar } from './MomentCommentBar';
@@ -255,11 +255,12 @@ export function MomentViewerFace({
             onPress={onOpenProfile}
             style={styles.author}
           >
-            <Avatar
+            <AvatarWithFrame
               name={author.username}
               color={colorForName(author.username)}
               uri={author.avatar ?? undefined}
               size={36}
+              frameId={author.avatarFrameId}
             />
             <View pointerEvents="none" style={{ flex: 1, minWidth: 0 }}>
               <Text numberOfLines={1} style={{ color: '#ffffff', fontSize: 14, fontWeight: '600' }}>

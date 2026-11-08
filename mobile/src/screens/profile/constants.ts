@@ -18,7 +18,7 @@ export const FOLLOW_PAGE_SIZE = 10;
 
 export const PEER_VIP_PAGE_SIZE = 100;
 
-export const PEER_FRAME_AVATAR_SIZE = 52;
+export const PEER_FRAME_THUMB_SIZE = 56;
 
 export const POSTS_PAGE_SIZE = 30;
 

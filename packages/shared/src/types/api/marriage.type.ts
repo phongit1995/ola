@@ -3,6 +3,7 @@ export interface MarriageUserBrief {
   username: string;
   fullName?: string;
   avatar?: string;
+  avatarFrameId?: string | null;
 }
 
 export interface MarriageStatusResult {

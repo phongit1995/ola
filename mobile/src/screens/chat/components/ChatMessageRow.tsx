@@ -12,6 +12,7 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import type { MessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CachedImage } from '@components/ui/CachedImage';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
@@ -192,6 +193,7 @@ interface ChatMessageRowProps {
   highlighted?: boolean;
   peerName: string;
   peerAvatar?: string;
+  peerAvatarFrameId?: string | null;
   timeLabel: string;
   onLongPress: (anchor: AnchorRect) => void;
   onResend: (id: string) => void;
@@ -357,6 +359,7 @@ export function ChatMessageRow({
   highlighted = false,
   peerName,
   peerAvatar,
+  peerAvatarFrameId,
   timeLabel,
   onLongPress,
   onResend,
@@ -394,7 +397,7 @@ export function ChatMessageRow({
         {!fromMe &&
           (showAvatar ? (
             <Pressable className="self-start" onPress={onOpenProfile} disabled={onOpenProfile == null}>
-              <Avatar name={peerName} uri={peerAvatar} size={32} />
+              <AvatarWithFrame name={peerName} uri={peerAvatar} size={32} frameId={peerAvatarFrameId} />
             </Pressable>
           ) : (
             <View style={{ width: 32 }} />

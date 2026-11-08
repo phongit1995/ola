@@ -16,7 +16,7 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useGiftLeaderboard } from '@ola/shared/stores/gift/useGiftLeaderboard';
 import type { GiftLeaderboardEntry, GiftLeaderboardType } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { GIFT_ASSETS } from '@components/gift/giftAssets';
@@ -133,17 +133,18 @@ function PodiumSlot({
               width: ringSize,
               height: ringSize,
               borderRadius: ringSize / 2,
-              borderWidth: 3,
+              borderWidth: entry.user.avatarFrameId ? 0 : 3,
               borderColor: slot.ring,
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <Avatar
+            <AvatarWithFrame
               name={name}
               uri={entry.user.avatar}
               color={colorForName(name)}
               size={slot.avatarSize}
+              frameId={entry.user.avatarFrameId}
             />
           </View>
         )}
@@ -268,7 +269,13 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
                   <Text className="text-center text-sm font-semibold" style={styles.rowRank}>
                     {entry.rank}
                   </Text>
-                  <Avatar name={name} uri={entry.user.avatar} color={colorForName(name)} size={36} />
+                  <AvatarWithFrame
+                    name={name}
+                    uri={entry.user.avatar}
+                    color={colorForName(name)}
+                    size={36}
+                    frameId={entry.user.avatarFrameId}
+                  />
                   <View className="min-w-0 flex-1">
                     <UserName
                       name={`@${entry.user.username}`}
@@ -315,7 +322,13 @@ export function GiftLeaderboardScreen({ navigation }: Props) {
               {board.me.rank > 0 ? board.me.rank : '—'}
             </Text>
           )}
-          <Avatar name={myName} uri={me?.avatar} color={colorForName(myName)} size={36} />
+          <AvatarWithFrame
+            name={myName}
+            uri={me?.avatar}
+            color={colorForName(myName)}
+            size={36}
+            frameId={me?.avatarFrameId}
+          />
           <View className="min-w-0 flex-1">
             <UserName
               name={`@${me?.username ?? ''}`}

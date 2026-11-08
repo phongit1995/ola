@@ -10,6 +10,7 @@ export interface RelationshipUserInfo {
   fullName?: string;
   vipUsed?: string | null;
   vipEndTime?: string | null;
+  avatarFrameId?: string | null;
 }
 
 export interface Relationship {

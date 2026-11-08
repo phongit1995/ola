@@ -5,7 +5,7 @@ import { activeVipTypeId, colorForName, storyCommentAuthorName } from '@ola/shar
 import { REPORT_TARGET_TYPE } from '@ola/shared/constants';
 import type { StoryComment } from '@ola/shared/types';
 import { renderRichText } from '@lib/richText';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { VipBadge } from '@components/ui/VipBadge';
@@ -79,11 +79,12 @@ function StoryCommentItemComponent({
       className="flex-row gap-2.5 bg-white px-4 py-3"
       style={{ borderTopWidth: 1, borderTopColor: ROW_SEPARATOR }}
     >
-      <Avatar
+      <AvatarWithFrame
         name={name}
         uri={author?.avatar}
         color={colorForName(name)}
         size={AVATAR_SIZE}
+        frameId={author?.avatarFrameId}
       />
       <View className="min-w-0 flex-1">
         <View className="min-w-0 flex-row items-center gap-1">

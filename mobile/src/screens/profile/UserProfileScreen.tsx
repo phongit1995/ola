@@ -318,7 +318,6 @@ export function UserProfileScreen({
         <PeerAvatarFrameStoreDialog
           userId={profile.id}
           name={profile.username}
-          avatar={profile.avatar ?? undefined}
           onClose={() => setFrameStoreOpen(false)}
         />
       )}

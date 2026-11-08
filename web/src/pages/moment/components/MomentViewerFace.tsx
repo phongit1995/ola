@@ -1,6 +1,6 @@
 import { useMemo, useState, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import {
   MOMENT_FADE_MS,
   MOMENT_STATUS,
@@ -169,11 +169,12 @@ export function MomentViewerFace({
             onClick={onOpenProfile}
             className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2 text-left disabled:pointer-events-none"
           >
-            <Avatar
+            <AvatarWithFrame
               name={author.username}
               color={colorForName(author.username)}
               src={author.avatar ?? undefined}
               size={36}
+              frameId={author.avatarFrameId}
             />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold">

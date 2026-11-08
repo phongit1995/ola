@@ -405,12 +405,13 @@ func (s *Service) userBriefs(ids []uuid.UUID) map[uuid.UUID]GiftUserBrief {
 			continue
 		}
 		brief := GiftUserBrief{
-			ID:       id.String(),
-			Username: u.Username,
-			FullName: u.FullName,
-			Avatar:   u.Avatar,
-			Gender:   u.Gender,
-			VipUsed:  u.VipUsed,
+			ID:            id.String(),
+			Username:      u.Username,
+			FullName:      u.FullName,
+			Avatar:        u.Avatar,
+			Gender:        u.Gender,
+			VipUsed:       u.VipUsed,
+			AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 		}
 		if u.VipEndTime != nil {
 			end := u.VipEndTime.UTC().Format(time.RFC3339)

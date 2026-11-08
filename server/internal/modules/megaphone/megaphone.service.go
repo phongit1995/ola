@@ -331,12 +331,13 @@ func (s *Service) senders(ids []uuid.UUID) map[uuid.UUID]megaphoneEvents.Sender 
 			continue
 		}
 		sender := megaphoneEvents.Sender{
-			ID:       id.String(),
-			Username: u.Username,
-			FullName: u.FullName,
-			Avatar:   u.Avatar,
-			Gender:   u.Gender,
-			VipUsed:  u.VipUsed,
+			ID:            id.String(),
+			Username:      u.Username,
+			FullName:      u.FullName,
+			Avatar:        u.Avatar,
+			Gender:        u.Gender,
+			VipUsed:       u.VipUsed,
+			AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 		}
 		if u.VipEndTime != nil {
 			end := u.VipEndTime.UTC().Format(time.RFC3339)

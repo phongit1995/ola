@@ -1,6 +1,7 @@
 import { useRef, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { MESSAGE_STATUS } from '@constants';
 import { useLongPress } from '@hooks';
 import {
@@ -20,6 +21,7 @@ interface MessageRowProps {
   name: string;
   color: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   isLastOwn: boolean;
   seen: boolean;
   highlighted?: boolean;
@@ -38,6 +40,7 @@ export function MessageRow({
   name,
   color,
   avatar,
+  avatarFrameId,
   isLastOwn,
   seen,
   highlighted = false,
@@ -102,11 +105,23 @@ export function MessageRow({
                 onClick={onOpenProfile}
                 className="shrink-0 self-start"
               >
-                <Avatar name={name} color={color} src={avatar} size={32} />
+                <AvatarWithFrame
+                  name={name}
+                  color={color}
+                  src={avatar}
+                  size={32}
+                  frameId={avatarFrameId}
+                />
               </button>
             ) : (
               <span className="shrink-0 self-start">
-                <Avatar name={name} color={color} src={avatar} size={32} />
+                <AvatarWithFrame
+                  name={name}
+                  color={color}
+                  src={avatar}
+                  size={32}
+                  frameId={avatarFrameId}
+                />
               </span>
             )
           ) : (

@@ -88,6 +88,13 @@ API cho user, tất cả qua `RequireAuth()`:
   | Tác giả bài Me, người bình luận, người thích | `me/me.dto.go`, `me/me.repository.go` |
   | Khách ghé thăm, thông báo Me | `user.service.go` (visitors), module thông báo Me |
   | Khoảnh khắc | `moment.dto.go` |
+  | Bảng xếp hạng quà, lịch sử quà | `gift/gift.dto.go`, `gift/gift.service.go` |
+  | Lịch sử loa | `domain/megaphone/megaphone.dto.go`, `megaphone/megaphone.service.go` |
+  | Bình luận truyện | `story/story.dto.go`, `story/story.comment.go` |
+  | Box kết hôn | `marriage/marriage.dto.go`, `marriage/marriage.service.go`, `marriage/marriage.repository.go` |
+  | Danh sách hội thoại, header chat | `conversation/conversation.dto.go`, `conversation/conversation.service.go` |
+  | Lời mời kết bạn | `relationships/relationship.dto.go`, `relationships/relationship.service.go` |
+  | Thành viên clan | `clan/clan.dto.go`, `clan/clan.service.go` |
 
   Các truy vấn `Select` cột lẻ (như danh sách người thích `me.repository.go`) phải thêm `avatar_frame_id` và `vip_end_time`.
 - Quyền xem Kho khung: tách logic của `canSeeVipStore` (`user.service.go:449`) thành hàm chung nhận mức quyền, dùng cho cả Kho VIP và Kho khung. Đọc và ghi mức quyền theo `GetVipStorePrivacy`, `SetVipStorePrivacy` trong `vip.repository.go`. `GET /user-settings` trả thêm `avatarFrameStorePrivacy`.
@@ -112,7 +119,7 @@ UI `admin/src`:
 - Đường dẫn API trong `config/api.ts`, service `services/avatarFrame.service.ts`, kiểu trong `types/api/avatarFrame.type.ts`.
 - Thêm `avatarFrameId?: string | null` vào các kiểu user liên quan (`types/api/user.type.ts`, kiểu bài/bình luận Me, moment), `canViewAvatarFrameStore: boolean` cạnh `canViewVipStore`, `avatarFrameStorePrivacy` vào kiểu user setting.
 - Service có `getPeerStore(userId)` và `setPrivacy(privacy)` như `VipService.setPrivacy`.
-- Helper `avatarFrameLayout(slot)` trả kích thước khung và avatar theo tỉ lệ 1,2 và 0,66 để web và mobile dùng chung.
+- Helper `avatarFrameLayout(slot)` trả kích thước khung và avatar theo tỉ lệ 1,2 và 0,75 để web và mobile dùng chung.
 - Hàm map lỗi (giống `lib/vipPurchase.ts`): thiếu KEN, đã sở hữu, người nhận đã có, hết VIP, khung đang đeo, sai mật khẩu.
 - i18n khối `avatarFrame` trong `i18n/locales/{vi,en}.json`, nhãn `ken.historyScreen.types.AVATAR_FRAME` cùng mục trong `constants/ken.ts`, chữ cho hai loại thông báo mới.
 
@@ -120,6 +127,7 @@ UI `admin/src`:
 
 - Component `AvatarWithFrame` riêng cho mỗi nền tảng (web `shared/components/ui`, mobile `components/ui`): nhận `src`, `name`, `size`, `frameId`; giữ nguyên chỗ cũ, thu avatar vào trong, khung đè lên. `frameId` null, hoặc id không có trong `AVATAR_FRAMES` (khung đã bỏ khỏi danh mục), thì hiển thị y như `Avatar` cũ.
 - Thay `Avatar` bằng `AvatarWithFrame` ở các chỗ trong Me: tác giả bài, bình luận, ô nhập bình luận, menu trái/phải, người thích, khách ghé thăm, thông báo, khay khoảnh khắc. Bỏ qua chỗ avatar 18px.
+- Ngoài Me, khung còn hiện ở: trang hồ sơ, bảng xếp hạng quà, lịch sử quà, lịch sử loa, bình luận truyện, bình luận và màn xem khoảnh khắc, box kết hôn, avatar trong chat 1-1, danh sách hội thoại, header chat, lời mời kết bạn, thành viên clan, màn Thông tin cá nhân. Chỗ đang vuông giữ nguyên; box kết hôn chỉ tròn khi có khung.
 - Màn "Mua và tặng khung", mở từ màn "Khung avatar": lưới khung kèm giá, nút mua và nút tặng (nhập username và mật khẩu như `BuyVipPage` chế độ tặng), xác nhận trừ KEN, cập nhật số dư (đặt số dư từ response rồi `refreshUser`). Hết VIP vẫn mua được nhưng hiện ghi chú cần VIP để đeo.
 - Màn "Khung avatar", là dòng duy nhất của tính năng trong menu Cá nhân (giống Kho VIP): có dòng "Mua và tặng khung", lưới khung đã có, chạm để đeo hoặc tháo, xem trước trên avatar của mình, nút chuyển (chọn người nhận và nhập mật khẩu), chọn quyền xem kho (mọi người, bạn bè, chỉ mình tôi) như `VipStorePage`. Hết VIP thì nút đeo dẫn sang mua VIP.
 - Trang hồ sơ người khác: nút "Kho khung" cạnh nút Kho VIP (`web/src/pages/profile/components/ProfileCard.tsx`), chỉ hiện khi `canViewAvatarFrameStore`; mở hộp thoại xem kho theo `PeerVipStoreDialog` (web và mobile).

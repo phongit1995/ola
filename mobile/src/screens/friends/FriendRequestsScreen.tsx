@@ -15,7 +15,7 @@ import { RelationshipService } from '@ola/shared/services';
 import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { Relationship } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { UserName } from '@components/ui/UserName';
@@ -108,10 +108,11 @@ export function FriendRequestsScreen() {
                   borderBottomColor: 'rgba(0,0,0,0.12)',
                 }}
               >
-                <Avatar
+                <AvatarWithFrame
                   name={name}
                   uri={requester?.avatar ?? undefined}
                   size={56}
+                  frameId={requester?.avatarFrameId}
                 />
                 <View className="min-w-0 flex-1">
                   <View className="flex-row items-center gap-1">

@@ -30,6 +30,7 @@ import type { Conversation } from '@ola/shared/types';
 import type { MainTabParamList, RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { useAppTypography } from '@components/AppFontProvider';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
@@ -220,7 +221,7 @@ function ConversationRow({
         }}
       >
         <View className="shrink-0">
-          <Avatar name={name} uri={avatarUri} />
+          <AvatarWithFrame name={name} uri={avatarUri} frameId={conversation.otherUser?.avatarFrameId} />
           {online && (
             <View className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-ola-primary" style={{ borderWidth: 2, borderColor: '#fff' }} />
           )}

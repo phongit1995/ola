@@ -25,6 +25,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CachedImage, CachedImageBackground } from '@components/ui/CachedImage';
 import { AVATAR_OUTPUT, COVER_OUTPUT, pickCroppedImage, pickValidatedCroppedImage } from '@lib/imagePicker';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
@@ -241,7 +242,14 @@ export function EditProfileScreen({ navigation }: Props) {
 
             <View className="-mt-12 mb-4 items-center">
               <Pressable onPress={() => void pickAvatar()} disabled={uploading} className="relative">
-                {avatar !== '' ? (
+                {user?.avatarFrameId ? (
+                  <AvatarWithFrame
+                    name={nick}
+                    uri={avatar !== '' ? avatar : undefined}
+                    size={96}
+                    frameId={user.avatarFrameId}
+                  />
+                ) : avatar !== '' ? (
                   <CachedImage
                     uri={avatar}
                     style={{ width: 96, height: 96, borderRadius: 48, borderWidth: 4, borderColor: '#fff' }}
