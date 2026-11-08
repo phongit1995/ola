@@ -2593,7 +2593,6 @@
     "wall": {
       "title": "Tường quà",
       "totalGifts": "{{value}} món quà",
-      "empty": "Chưa nhận được món quà nào",
       "leaderboard": "Bảng xếp hạng",
       "history": "Lịch sử quà"
     },

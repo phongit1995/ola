@@ -8,7 +8,7 @@ import type { GiftWallItem } from '@ola/shared/types';
 import { CachedImage } from '@components/ui/CachedImage';
 import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { CARD_SHADOW, GIFT_WALL_COLUMNS, GIFT_WALL_IMAGE_STYLE, GIFT_WALL_PREVIEW_ROWS } from '../constants';
 
 interface GiftWallSectionProps {
@@ -74,11 +74,7 @@ export function GiftWallSection({
         )}
       </View>
 
-      {wall.items.length === 0 ? (
-        <Text className="py-4 text-center text-sm" style={{ color: TEXT_FAINT }}>
-          {t('gift.wall.empty')}
-        </Text>
-      ) : (
+      {wall.items.length > 0 && (
         <View className="mt-2 flex-row flex-wrap">
           {items.map((item) => {
             const name = giftDisplayName(item.gift, i18n.language);

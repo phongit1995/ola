@@ -2593,7 +2593,6 @@
     "wall": {
       "title": "Gift wall",
       "totalGifts": "{{value}} gifts",
-      "empty": "No gifts received yet",
       "leaderboard": "Leaderboard",
       "history": "Gift history"
     },

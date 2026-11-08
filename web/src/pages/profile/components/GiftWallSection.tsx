@@ -74,9 +74,7 @@ export function GiftWallSection({
         )}
       </div>
 
-      {wall.items.length === 0 ? (
-        <p className="py-4 text-center text-sm text-black/45">{t('gift.wall.empty')}</p>
-      ) : (
+      {wall.items.length > 0 && (
         <ul className={`mt-2 grid ${GIFT_WALL_GRID_CLASS[columns]} gap-x-1 gap-y-2`}>
           {items.map((item) => (
             <li key={item.gift.id}>
