@@ -10,6 +10,7 @@ const (
 
 	HeaderPlatform   = "X-Platform"
 	HeaderAppVersion = "X-App-Version"
+	PlatformWeb      = "web"
 	PlatformAndroid  = "android"
 	PlatformIOS      = "ios"
 

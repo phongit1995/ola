@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { VipService } from '@ola/shared/services';
-import { vipName } from '@ola/shared/lib';
+import { isVipIconTransferable, vipName } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { VipIconInstance, VipStoreResult } from '@ola/shared/types';
@@ -191,7 +191,9 @@ export function useVipStoreScreen() {
       onSelect: () => toggleLock(icon),
     });
     if (!icon.isLocked) {
-      options.push({ key: 'transfer', label: t('vip.actionTransfer'), onSelect: onTransfer });
+      if (isVipIconTransferable(icon)) {
+        options.push({ key: 'transfer', label: t('vip.actionTransfer'), onSelect: onTransfer });
+      }
       options.push({
         key: 'delete',
         label: t('vip.actionDelete'),

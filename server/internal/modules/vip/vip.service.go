@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -27,6 +29,7 @@ var (
 	ErrVipNotFound        = errors.New("vip icon not found")
 	ErrVipNotOwned        = errors.New("vip does not belong to you")
 	ErrVipLocked          = errors.New("vip is locked")
+	ErrVipNotTransferable = utils.NewHTTPErrorWithCode(http.StatusForbidden, "vip icon from a gift code cannot be transferred", ErrorCodeVipNotTransferable)
 	ErrVipInUse           = errors.New("vip is in use")
 	ErrWrongPassword      = errors.New("invalid transfer password")
 	ErrVipExpired         = errors.New("vip membership expired")
@@ -341,6 +344,9 @@ func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID, password stri
 	item, err := s.ownedInstance(userID, instanceID)
 	if err != nil {
 		return err
+	}
+	if item.Source == IconSourceGiftCode {
+		return ErrVipNotTransferable
 	}
 	if item.IsLocked {
 		return ErrVipLocked

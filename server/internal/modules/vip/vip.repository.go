@@ -13,9 +13,12 @@ import (
 )
 
 const (
-	PurchaseSourcePackage = "package"
-	PurchaseSourceIcon    = "icon"
-	PurchaseSourceGift    = "gift"
+	PurchaseSourcePackage  = "package"
+	PurchaseSourceIcon     = "icon"
+	PurchaseSourceGift     = "gift"
+	PurchaseSourceGiftCode = "gift_code"
+
+	IconSourceGiftCode = "gift_code"
 
 	iconPurchaseNameFormat = "VIP #%d"
 
@@ -696,39 +699,82 @@ func (r *Repository) Purchase(userID uuid.UUID, pkg *models.VipPackage) (*models
 }
 
 func (r *Repository) GrantDays(userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {
-	var purchase models.VipPurchase
-
+	var purchase *models.VipPurchase
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		var u models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
-			return err
-		}
-
-		base := time.Now()
-		if u.VipEndTime != nil && u.VipEndTime.After(base) {
-			base = *u.VipEndTime
-		}
-		newEnd := base.Add(time.Duration(days) * 24 * time.Hour)
-
-		if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("vip_end_time", newEnd).Error; err != nil {
-			return err
-		}
-
-		purchase = models.VipPurchase{
-			UserID:          userID,
-			PackageName:     name,
-			Days:            days,
-			KenPrice:        0,
-			KenBalanceAfter: u.Ken,
-			VipEndTimeAfter: newEnd,
-			Source:          source,
-		}
-		return tx.Create(&purchase).Error
+		var err error
+		purchase, err = GrantDaysTx(tx, userID, days, source, name)
+		return err
 	})
 	if err != nil {
 		return nil, err
 	}
+	return purchase, nil
+}
+
+func GrantDaysTx(tx *gorm.DB, userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {
+	var u models.User
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+
+	base := time.Now()
+	if u.VipEndTime != nil && u.VipEndTime.After(base) {
+		base = *u.VipEndTime
+	}
+	newEnd := base.Add(time.Duration(days) * 24 * time.Hour)
+
+	if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("vip_end_time", newEnd).Error; err != nil {
+		return nil, err
+	}
+
+	purchase := models.VipPurchase{
+		UserID:          userID,
+		PackageName:     name,
+		Days:            days,
+		KenPrice:        0,
+		KenBalanceAfter: u.Ken,
+		VipEndTimeAfter: newEnd,
+		Source:          source,
+	}
+	if err := tx.Create(&purchase).Error; err != nil {
+		return nil, err
+	}
 	return &purchase, nil
+}
+
+func GrantIconTx(tx *gorm.DB, userID uuid.UUID, vipTypeID int16, iconSource, purchaseSource string) (*models.UserVipIcon, error) {
+	var u models.User
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+
+	icon := models.UserVipIcon{
+		UserID:     userID,
+		VipIconID:  vipTypeID,
+		Source:     iconSource,
+		AcquiredAt: time.Now(),
+	}
+	if err := tx.Create(&icon).Error; err != nil {
+		return nil, err
+	}
+
+	endAfter := time.Now()
+	if u.VipEndTime != nil {
+		endAfter = *u.VipEndTime
+	}
+	purchase := models.VipPurchase{
+		UserID:          userID,
+		PackageName:     IconPurchaseName(vipTypeID),
+		Days:            0,
+		KenPrice:        0,
+		KenBalanceAfter: u.Ken,
+		VipEndTimeAfter: endAfter,
+		Source:          purchaseSource,
+	}
+	if err := tx.Create(&purchase).Error; err != nil {
+		return nil, err
+	}
+	return &icon, nil
 }
 
 func (r *Repository) DeductDays(userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {

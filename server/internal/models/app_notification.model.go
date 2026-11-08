@@ -21,6 +21,7 @@ const (
 	AppNotificationGiftReceived     = "gift_received"
 	AppNotificationKenReceived      = "ken_received"
 	AppNotificationVipReceived      = "vip_received"
+	AppNotificationGiftCode         = "gift_code"
 )
 
 type AppNotification struct {

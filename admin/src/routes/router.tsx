@@ -18,6 +18,11 @@ import { GiftSettingsPage } from '@/pages/gifts/GiftSettingsPage'
 import { MegaphonesPage } from '@/pages/megaphones/MegaphonesPage'
 import { MegaphoneSettingsPage } from '@/pages/megaphones/MegaphoneSettingsPage'
 import { BannedWordsPage } from '@/pages/megaphones/BannedWordsPage'
+import { GiftCodesPage } from '@/pages/gift-codes/GiftCodesPage'
+import { GiftCodeFormPage } from '@/pages/gift-codes/GiftCodeFormPage'
+import { GiftCodeDetailPage } from '@/pages/gift-codes/GiftCodeDetailPage'
+import { GiftCodeAttemptsPage } from '@/pages/gift-codes/GiftCodeAttemptsPage'
+import { GiftCodeSettingsPage } from '@/pages/gift-codes/GiftCodeSettingsPage'
 import { EggRewardsPage } from '@/pages/games/egg/EggRewardsPage'
 import { EggStatsPage } from '@/pages/games/egg/EggStatsPage'
 import { WheelRewardsPage } from '@/pages/games/wheel/WheelRewardsPage'
@@ -79,6 +84,12 @@ export const router = createBrowserRouter([
       { path: 'megaphones', element: <MegaphonesPage /> },
       { path: 'megaphones/settings', element: <MegaphoneSettingsPage /> },
       { path: 'megaphones/banned-words', element: <BannedWordsPage /> },
+      { path: 'gift-codes', element: <GiftCodesPage /> },
+      { path: 'gift-codes/new', element: <GiftCodeFormPage /> },
+      { path: 'gift-codes/attempts', element: <GiftCodeAttemptsPage /> },
+      { path: 'gift-codes/settings', element: <GiftCodeSettingsPage /> },
+      { path: 'gift-codes/:id', element: <GiftCodeDetailPage /> },
+      { path: 'gift-codes/:id/edit', element: <GiftCodeFormPage /> },
       { path: 'games/egg', element: <EggRewardsPage /> },
       { path: 'games/egg/stats', element: <EggStatsPage /> },
       { path: 'games/wheel', element: <WheelRewardsPage /> },

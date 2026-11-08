@@ -16,6 +16,7 @@ import (
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/modules/gift"
+	giftcode "ola-chat-server/internal/modules/gift-code"
 	"ola-chat-server/internal/modules/health"
 	"ola-chat-server/internal/modules/ken"
 	"ola-chat-server/internal/modules/kenchest"
@@ -102,6 +103,7 @@ func NewContainer(opts ...dig.Option) (*dig.Container, error) {
 		gift.Provider,
 		contentfilter.Provider,
 		megaphone.Provider,
+		giftcode.Provider,
 		marriage.Provider,
 		marriagediary.Provider,
 		pen.Provider,

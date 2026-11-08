@@ -209,6 +209,9 @@ export const API_PATH = {
     transfer: '/ken/transfer',
     transactions: '/ken/transactions',
   },
+  giftCodes: {
+    redeem: '/gift-codes/redeem',
+  },
   megaphones: {
     base: '/megaphones',
     config: '/megaphones/config',

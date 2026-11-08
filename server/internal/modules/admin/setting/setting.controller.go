@@ -274,6 +274,15 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateMomentMediaPurgeValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyGiftCode:
+		kept, err := ctrl.service.KeepStoredPlatforms(setting.KeyGiftCode, value)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		if err := setting.ValidateGiftCodeValue(kept); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+		return kept, nil
 	case setting.KeyModeration:
 		if err := setting.ValidateModerationValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())

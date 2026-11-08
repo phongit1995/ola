@@ -28,3 +28,4 @@ export * from './moment';
 export * from './wordChain';
 export * from './gift';
 export * from './megaphone';
+export * from './giftCode';

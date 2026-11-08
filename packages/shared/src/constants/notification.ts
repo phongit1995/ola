@@ -9,11 +9,13 @@ export const APP_NOTIFICATION_TYPE = {
   giftReceived: 'gift_received',
   kenReceived: 'ken_received',
   vipReceived: 'vip_received',
+  giftCode: 'gift_code',
 } as const satisfies Record<string, AppNotificationType>;
 
 const SYSTEM_NOTICE_TYPES: ReadonlySet<string> = new Set([
   APP_NOTIFICATION_TYPE.contentViolation,
   APP_NOTIFICATION_TYPE.reportResolved,
+  APP_NOTIFICATION_TYPE.giftCode,
 ]);
 
 export function isSystemNotice(type: string): boolean {

@@ -11,6 +11,7 @@ export type AppItemAction =
   | 'vip'
   | 'ken'
   | 'gifts'
+  | 'gift-code'
   | 'megaphone'
   | 'media'
   | 'social'
@@ -70,6 +71,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
     icon: GIFT_ASSETS.icon,
     titleKey: 'home.apps.gifts',
     action: 'gifts',
+  },
+  {
+    icon: require('@assets/icons/apps/gift-code.webp'),
+    titleKey: 'giftCode.menuTitle',
+    action: 'gift-code',
   },
   {
     icon: MEGAPHONE_IMAGE,

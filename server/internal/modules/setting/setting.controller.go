@@ -4,16 +4,25 @@ import (
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
 type Controller struct {
-	service *Service
-	logger  *zap.SugaredLogger
+	service   *Service
+	giftCodes GiftCodeActivity
+	logger    *zap.SugaredLogger
 }
 
-func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
-	return &Controller{service: service, logger: logger.Named("[setting_controller]")}
+type ControllerParams struct {
+	dig.In
+	Service   *Service
+	GiftCodes GiftCodeActivity `optional:"true"`
+	Logger    *zap.SugaredLogger
+}
+
+func NewController(p ControllerParams) *Controller {
+	return &Controller{service: p.Service, giftCodes: p.GiftCodes, logger: p.Logger.Named("[setting_controller]")}
 }
 
 // TopupConfig godoc
@@ -211,6 +220,22 @@ func (ctrl *Controller) giftConfigFor(client Client) (GiftPublicConfig, error) {
 	return cfg.PublicFor(client), nil
 }
 
+func (ctrl *Controller) giftCodeConfigFor(client Client) (GiftCodePublicConfig, error) {
+	cfg, err := ctrl.service.GetGiftCode()
+	if err != nil {
+		return GiftCodePublicConfig{}, err
+	}
+	enabled := cfg.EnabledFor(client)
+	if enabled && ctrl.giftCodes != nil {
+		running, err := ctrl.giftCodes.HasRunningCampaign(client.ResolvedPlatform())
+		if err != nil {
+			return GiftCodePublicConfig{}, err
+		}
+		enabled = running
+	}
+	return GiftCodePublicConfig{Enabled: enabled, RequireEmailVerified: cfg.RequireEmailVerified}, nil
+}
+
 func (ctrl *Controller) megaphoneConfigFor(client Client) (MegaphonePublicConfig, error) {
 	cfg, err := ctrl.service.GetMegaphone()
 	if err != nil {
@@ -221,7 +246,7 @@ func (ctrl *Controller) megaphoneConfigFor(client Client) (MegaphonePublicConfig
 
 // AppConfig godoc
 // @Summary      Gộp config hệ thống cho app trong một request
-// @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
+// @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment, gift, megaphone, giftCode; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
 // @Description  Gửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.
 // @Tags         settings
 // @Produce      json

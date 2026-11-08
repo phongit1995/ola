@@ -16,6 +16,7 @@ import iconSupport from '@/assets/icons/apps/support.png';
 import iconLogout from '@/assets/icons/apps/logout.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconGift from '@/assets/icons/apps/gift.webp';
+import iconGiftCode from '@/assets/icons/apps/gift-code.webp';
 import iconMegaphone from '@/assets/images/member-megaphone.webp';
 import iconSocial from '@/assets/icons/social/social-menu-light.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
@@ -27,7 +28,7 @@ export interface AppItem {
   titleKey: ParseKeys;
   app?: AppOverlayKind;
   overlay?: 'pen' | 'egg' | 'wheel';
-  action?: 'logout' | 'social' | 'remove-account' | 'support';
+  action?: 'logout' | 'social' | 'remove-account' | 'support' | 'gift-code';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -55,6 +56,7 @@ export const PERSONAL_ITEMS: AppItem[] = [
   { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
   { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
   { icon: iconGift, titleKey: 'home.apps.gifts', app: 'gifts' },
+  { icon: iconGiftCode, titleKey: 'giftCode.menuTitle', action: 'gift-code' },
   { icon: iconMegaphone, titleKey: 'megaphone.menuTitle', app: 'megaphone' },
   { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
   { icon: iconSocial, titleKey: 'home.apps.social', action: 'social' },

@@ -11,6 +11,7 @@ import (
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	admingamematch "ola-chat-server/internal/modules/admin/game-match"
 	admingift "ola-chat-server/internal/modules/admin/gift"
+	admingiftcode "ola-chat-server/internal/modules/admin/gift-code"
 	adminken "ola-chat-server/internal/modules/admin/ken"
 	adminkenchest "ola-chat-server/internal/modules/admin/kenchest"
 	adminmarriage "ola-chat-server/internal/modules/admin/marriage"
@@ -48,6 +49,7 @@ func Provider(c *dig.Container) error {
 		adminclan.Provider,
 		adminupload.Provider,
 		adminvip.Provider,
+		admingiftcode.Provider,
 		adminegg.Provider,
 		adminwheel.Provider,
 		adminken.Provider,

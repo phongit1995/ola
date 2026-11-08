@@ -7,6 +7,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatKen } from '@ola/shared/lib';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import {
+  selectGiftCodeEnabled,
+  useGiftCodeConfigStore,
+} from '@ola/shared/stores/gift-code/giftCodeConfigStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -16,6 +20,8 @@ import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
 import { SupportDialog } from '../apps/SupportDialog';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
+import { GiftCodeDialog } from './GiftCodeDialog';
+import { useGiftCodeConfigSync } from './useGiftCodeConfigSync';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
 
@@ -76,6 +82,13 @@ export function PersonalScreen() {
   const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [giftCodeOpen, setGiftCodeOpen] = useState(false);
+  const giftCodeEnabled = useGiftCodeConfigStore(selectGiftCodeEnabled);
+  const items = PERSONAL_ITEMS.filter(
+    item => item.action !== 'gift-code' || giftCodeEnabled,
+  );
+
+  useGiftCodeConfigSync();
 
   function handleOpen(item: AppItem) {
     if (item.action === 'logout') {
@@ -104,6 +117,10 @@ export function PersonalScreen() {
     }
     if (item.action === 'gifts') {
       navigation.navigate(ROOT_ROUTES.GiftHome);
+      return;
+    }
+    if (item.action === 'gift-code') {
+      setGiftCodeOpen(true);
       return;
     }
     if (item.action === 'megaphone') {
@@ -183,7 +200,7 @@ export function PersonalScreen() {
       <View className="flex-1">
         <LobbyWallpaper />
         <ScrollView className="flex-1">
-          {PERSONAL_ITEMS.map(item => (
+          {items.map(item => (
             <PanelRow
               key={item.titleKey}
               icon={item.icon}
@@ -227,6 +244,10 @@ export function PersonalScreen() {
       <SupportDialog
         visible={supportOpen}
         onClose={() => setSupportOpen(false)}
+      />
+      <GiftCodeDialog
+        visible={giftCodeOpen}
+        onClose={() => setGiftCodeOpen(false)}
       />
     </View>
   );

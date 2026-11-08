@@ -11,6 +11,7 @@ export type * from './friends.type';
 export type * from './kenHistory.type';
 export type * from './gift.type';
 export type * from './megaphone.type';
+export type * from './giftCode.type';
 export type * from './kenTreasure.type';
 export type * from './marriage.type';
 export type * from './mediaViewer.type';

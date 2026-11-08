@@ -1360,6 +1360,7 @@
         "egg": "Đập trứng",
         "wheel": "Vòng quay",
         "admin": "Hệ thống tặng",
+        "gift_code": "Mã quà tặng",
         "other": "Khác"
       }
     },
@@ -2604,6 +2605,37 @@
       "insufficientKen": "Bạn không đủ KEN để phát loa",
       "rateLimited": "Bạn phát quá nhanh, thử lại sau ít phút",
       "failed": "Phát loa thất bại, thử lại sau"
+    }
+  },
+  "giftCode": {
+    "menuTitle": "Nhập mã quà tặng",
+    "title": "Nhập mã quà tặng",
+    "hint": "Nhập mã bạn nhận được từ sự kiện của Ola để nhận quà.",
+    "placeholder": "Ví dụ: TET2027",
+    "submit": "Nhận quà",
+    "cancel": "Huỷ",
+    "successTitle": "Nhận quà thành công",
+    "successButton": "Tuyệt vời",
+    "rewardVipDays": "+{{count}} ngày VIP",
+    "rewardVipIcon": "Icon VIP {{name}}",
+    "notTransferable": "Từ mã quà tặng, không chuyển được",
+    "verifyGuide": "Cách xác thực: Cá nhân → Trang cá nhân → Email → Xác thực.",
+    "errors": {
+      "empty": "Bạn chưa nhập mã",
+      "invalid": "Mã không hợp lệ hoặc đã hết hạn",
+      "notStarted": "Mã chưa đến thời gian sử dụng",
+      "expired": "Mã đã hết hạn",
+      "soldOut": "Mã đã hết lượt nhận",
+      "used": "Mã này đã có người sử dụng",
+      "alreadyRedeemed": "Bạn đã nhận quà của mã này rồi",
+      "deviceRedeemed": "Thiết bị này đã nhận quà của mã này rồi",
+      "accountTooNew": "Tài khoản của bạn chưa đủ thời gian để dùng mã này",
+      "platformNotAllowed": "Mã này không dùng được trên thiết bị này",
+      "tooManyAttempts": "Bạn nhập sai quá nhiều lần, thử lại sau ít phút",
+      "emailNotVerified": "Bạn cần xác thực email trước khi nhập mã quà tặng.",
+      "deviceUnknown": "Không xác định được thiết bị của bạn. Hãy đăng xuất rồi đăng nhập lại để nhận quà.",
+      "rateLimited": "Bạn thao tác quá nhanh, thử lại sau ít phút",
+      "failed": "Không nhận được quà, thử lại sau"
     }
   }
 }

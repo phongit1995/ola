@@ -12,6 +12,7 @@ import (
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/modules/gift"
+	giftcode "ola-chat-server/internal/modules/gift-code"
 	"ola-chat-server/internal/modules/health"
 	"ola-chat-server/internal/modules/ken"
 	"ola-chat-server/internal/modules/kenchest"
@@ -76,6 +77,7 @@ func CreateServer(
 	kenChestRouter *kenchest.Router,
 	giftRouter *gift.Router,
 	megaphoneRouter *megaphone.Router,
+	giftCodeRouter *giftcode.Router,
 	marriageRouter *marriage.Router,
 	marriageDiaryRouter *marriagediary.Router,
 	penRouter *pen.Router,
@@ -146,6 +148,7 @@ func CreateServer(
 		kenChestRouter.Setup(api)
 		giftRouter.Setup(api)
 		megaphoneRouter.Setup(api)
+		giftCodeRouter.Setup(api)
 		marriageRouter.Setup(api)
 		marriageDiaryRouter.Setup(api)
 		penRouter.Setup(api)

@@ -1,5 +1,6 @@
 import type { ChatBotType } from '../client/chatBot.type';
 import type { GiftSettings } from './gift.type';
+import type { GiftCodeAppConfig } from './giftCode.type';
 import type { MegaphoneAppConfig } from './megaphone.type';
 
 export type MessagePrivacy = 'all' | 'friends';
@@ -90,6 +91,7 @@ export interface AppConfigs {
   moment: MomentConfigResult;
   gift: GiftSettings;
   megaphone: MegaphoneAppConfig;
+  giftCode: GiftCodeAppConfig;
 }
 
 export interface AppUpdateResult {

@@ -1360,6 +1360,7 @@
         "egg": "Egg game",
         "wheel": "Lucky wheel",
         "admin": "System reward",
+        "gift_code": "Gift code",
         "other": "Other"
       }
     },
@@ -2604,6 +2605,37 @@
       "insufficientKen": "You don't have enough KEN to broadcast",
       "rateLimited": "Too fast, try again in a few minutes",
       "failed": "Broadcast failed, try again later"
+    }
+  },
+  "giftCode": {
+    "menuTitle": "Redeem gift code",
+    "title": "Redeem gift code",
+    "hint": "Enter the code you got from an Ola event to claim your gift.",
+    "placeholder": "e.g. TET2027",
+    "submit": "Redeem",
+    "cancel": "Cancel",
+    "successTitle": "Gift received",
+    "successButton": "Awesome",
+    "rewardVipDays": "+{{count}} VIP days",
+    "rewardVipIcon": "VIP icon {{name}}",
+    "notTransferable": "From a gift code, cannot be transferred",
+    "verifyGuide": "How to verify: Personal → Profile → Email → Verify.",
+    "errors": {
+      "empty": "Please enter a code",
+      "invalid": "This code is invalid or has expired",
+      "notStarted": "This code is not active yet",
+      "expired": "This code has expired",
+      "soldOut": "This code has no uses left",
+      "used": "This code has already been used",
+      "alreadyRedeemed": "You already claimed this gift",
+      "deviceRedeemed": "This device already claimed this gift",
+      "accountTooNew": "Your account is too new for this code",
+      "platformNotAllowed": "This code is not available on this device",
+      "tooManyAttempts": "Too many wrong codes, try again in a few minutes",
+      "emailNotVerified": "You need to verify your email before redeeming gift codes.",
+      "deviceUnknown": "We could not identify your device. Sign out and sign in again to redeem.",
+      "rateLimited": "You are going too fast, try again in a few minutes",
+      "failed": "Could not claim the gift, try again later"
     }
   }
 }

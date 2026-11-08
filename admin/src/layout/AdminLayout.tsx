@@ -24,6 +24,7 @@ import {
   RocketOutlined,
   SettingOutlined,
   SoundOutlined,
+  TagsOutlined,
   ShopOutlined,
   PictureOutlined,
   ReadOutlined,
@@ -79,6 +80,7 @@ const MENU_ITEMS = [
       { key: '/vip-packages', icon: <CrownOutlined />, label: 'VIP' },
       { key: '/gifts', icon: <GiftOutlined />, label: 'Quà tặng' },
       { key: '/megaphones', icon: <SoundOutlined />, label: 'Loa' },
+      { key: '/gift-codes', icon: <TagsOutlined />, label: 'Mã quà tặng' },
     ],
   },
   {
@@ -125,7 +127,7 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
   return children ? children.map((child) => child.key) : [item.key]
 })
 
-const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones']
+const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones', '/gift-codes']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
   '/games/matches': '/games/mini-game',
@@ -154,6 +156,10 @@ const PAGE_TITLES: Record<string, string> = {
   '/megaphones': 'Danh sách loa',
   '/megaphones/banned-words': 'Từ cấm',
   '/megaphones/settings': 'Cài đặt loa',
+  '/gift-codes': 'Mã quà tặng',
+  '/gift-codes/new': 'Tạo đợt mã quà tặng',
+  '/gift-codes/attempts': 'Nhập mã lỗi',
+  '/gift-codes/settings': 'Cài đặt mã quà tặng',
   '/games/egg': 'Đập trứng',
   '/games/egg/stats': 'Thống kê trứng',
   '/games/wheel': 'Vòng quay may mắn',

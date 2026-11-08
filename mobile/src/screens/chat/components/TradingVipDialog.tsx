@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { VIP_TRANSFER_BLOCKED_ERROR } from '@ola/shared/constants';
-import { toApiError, vipName } from '@ola/shared/lib';
+import { isVipIconTransferable, toApiError, vipName } from '@ola/shared/lib';
 import { VipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { VipIconInstance } from '@ola/shared/types';
@@ -39,7 +39,13 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
     setLoading(true);
     VipService.store({ limit: TRADING_VIP_PAGE_SIZE })
       .then((res) => {
-        if (active) setVips(res.items.filter((item) => !item.isUsing && !item.isLocked));
+        if (active) {
+          setVips(
+            res.items.filter(
+              (item) => !item.isUsing && !item.isLocked && isVipIconTransferable(item),
+            ),
+          );
+        }
       })
       .catch(() => undefined)
       .finally(() => {

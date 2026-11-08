@@ -5,7 +5,8 @@ export type AppNotificationType =
   | 'report_resolved'
   | 'gift_received'
   | 'ken_received'
-  | 'vip_received';
+  | 'vip_received'
+  | 'gift_code';
 
 export interface AppNotificationActor {
   id: string;

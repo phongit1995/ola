@@ -10,7 +10,7 @@ import {
   VipIcon,
   type ListOption,
 } from '@components';
-import { formatDateDMY, vipName } from '@lib';
+import { formatDateDMY, isVipIconTransferable, vipName } from '@lib';
 import { VipService } from '@services';
 import type { VipIconInstance, VipStoreResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
@@ -89,11 +89,15 @@ function VipRow({
           rounded
           alt={vipName(icon.typeId)}
         />
-        <div className="ml-2 flex flex-col justify-center">
+        <div className="ml-2 flex min-w-0 flex-col justify-center">
           <span className="text-base text-black/87">
             {vipName(icon.typeId)}
           </span>
-          <span className="mt-0.5 text-xs text-black/54">{t(stateKey)}</span>
+          <span className="mt-0.5 truncate text-xs text-black/54">
+            {t(stateKey)}
+            {!isVipIconTransferable(icon) &&
+              ` · ${t('giftCode.notTransferable')}`}
+          </span>
         </div>
       </div>
       <div className="mx-4 h-px bg-black/12" />
@@ -297,11 +301,13 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
       onSelect: () => toggleLock(icon),
     });
     if (!icon.isLocked) {
-      options.push({
-        key: 'transfer',
-        label: t('vip.actionTransfer'),
-        onSelect: () => pushOverlay('vipBuy', 'give'),
-      });
+      if (isVipIconTransferable(icon)) {
+        options.push({
+          key: 'transfer',
+          label: t('vip.actionTransfer'),
+          onSelect: () => pushOverlay('vipBuy', 'give'),
+        });
+      }
       options.push({
         key: 'delete',
         label: t('vip.actionDelete'),
