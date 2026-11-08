@@ -64,7 +64,7 @@ export function GiftCodeSettingsPage() {
       <Form<GiftCodeSetting> layout="vertical" initialValues={current} onFinish={save}>
         <Form.Item
           label="Hiển thị theo nền tảng"
-          extra="Tắt nền tảng nào thì nền tảng đó ẩn mục Nhập mã quà tặng và server từ chối lượt nhập từ nền tảng đó. So theo tên bản (1.0.0), không tính build. Mục chỉ hiện khi còn đợt mã đang chạy cho nền tảng đó."
+          extra="Tắt nền tảng nào thì nền tảng đó ẩn mục Nhập mã quà tặng và server từ chối lượt nhập từ nền tảng đó. So theo tên bản (1.0.0), không tính build."
         >
           <PlatformRulesTable name={['platforms']} />
         </Form.Item>

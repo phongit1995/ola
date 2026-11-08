@@ -109,7 +109,6 @@ func (s *Service) Create(adminID uuid.UUID, req *CampaignRequest) (*CampaignItem
 	if err != nil {
 		return nil, mapCodeConflict(err)
 	}
-	s.invalidateStatus()
 	return s.Get(campaign.ID)
 }
 
@@ -171,7 +170,6 @@ func (s *Service) Update(adminID, id uuid.UUID, req *CampaignRequest) (*Campaign
 	if err != nil {
 		return nil, mapCodeConflict(err)
 	}
-	s.invalidateStatus()
 	return s.Get(id)
 }
 
@@ -183,7 +181,6 @@ func (s *Service) SetEnabled(adminID, id uuid.UUID, enabled bool) (*CampaignItem
 	if !found {
 		return nil, ErrCampaignNotFound
 	}
-	s.invalidateStatus()
 	return s.Get(id)
 }
 
@@ -218,7 +215,6 @@ func (s *Service) GenerateCodes(adminID, id uuid.UUID, count int) (*GenerateCode
 	if err != nil {
 		return nil, err
 	}
-	s.invalidateStatus()
 	return &resp, nil
 }
 
@@ -532,12 +528,6 @@ func (s *Service) toItems(campaigns []models.GiftCodeCampaign, now time.Time) ([
 		out = append(out, item)
 	}
 	return out, nil
-}
-
-func (s *Service) invalidateStatus() {
-	if err := s.cache.DeletePattern(fmt.Sprintf(giftcode.CacheKeyGiftCodeStatus, "*")); err != nil {
-		s.logger.Warnw("Failed to clear gift code status cache", "error", err.Error())
-	}
 }
 
 func (s *Service) countKeys(pattern string) int64 {

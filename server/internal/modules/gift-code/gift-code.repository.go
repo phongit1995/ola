@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
-	"ola-chat-server/internal/modules/setting"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -37,26 +36,6 @@ func (r *Repository) SessionDevice(sessionID uuid.UUID) (string, string, error) 
 		return "", "", err
 	}
 	return s.DeviceID, s.DeviceName, nil
-}
-
-func (r *Repository) HasActiveCampaign(platform string, now time.Time) (bool, error) {
-	column := "allow_web"
-	switch platform {
-	case setting.PlatformAndroid:
-		column = "allow_android"
-	case setting.PlatformIOS:
-		column = "allow_ios"
-	}
-	var count int64
-	err := r.db.Model(&models.GiftCodeCampaign{}).
-		Where("enabled = ?", true).
-		Where(column+" = ?", true).
-		Where("(starts_at IS NULL OR starts_at <= ?)", now).
-		Where("ends_at > ?", now).
-		Where("used_count < total_uses").
-		Limit(1).
-		Count(&count).Error
-	return count > 0, err
 }
 
 func (r *Repository) RecordAttempt(a *models.GiftCodeAttempt) error {

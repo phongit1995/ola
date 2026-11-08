@@ -21,10 +21,6 @@ type GiftCodePublicConfig struct {
 	RequireEmailVerified bool `json:"requireEmailVerified" example:"true"`
 }
 
-type GiftCodeActivity interface {
-	HasRunningCampaign(platform string) (bool, error)
-}
-
 func DefaultGiftCodeConfig() GiftCodeConfig {
 	return GiftCodeConfig{
 		Enabled:              true,

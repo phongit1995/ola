@@ -4,25 +4,16 @@ import (
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
 type Controller struct {
-	service   *Service
-	giftCodes GiftCodeActivity
-	logger    *zap.SugaredLogger
+	service *Service
+	logger  *zap.SugaredLogger
 }
 
-type ControllerParams struct {
-	dig.In
-	Service   *Service
-	GiftCodes GiftCodeActivity `optional:"true"`
-	Logger    *zap.SugaredLogger
-}
-
-func NewController(p ControllerParams) *Controller {
-	return &Controller{service: p.Service, giftCodes: p.GiftCodes, logger: p.Logger.Named("[setting_controller]")}
+func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
+	return &Controller{service: service, logger: logger.Named("[setting_controller]")}
 }
 
 // TopupConfig godoc
@@ -225,15 +216,7 @@ func (ctrl *Controller) giftCodeConfigFor(client Client) (GiftCodePublicConfig, 
 	if err != nil {
 		return GiftCodePublicConfig{}, err
 	}
-	enabled := cfg.EnabledFor(client)
-	if enabled && ctrl.giftCodes != nil {
-		running, err := ctrl.giftCodes.HasRunningCampaign(client.ResolvedPlatform())
-		if err != nil {
-			return GiftCodePublicConfig{}, err
-		}
-		enabled = running
-	}
-	return GiftCodePublicConfig{Enabled: enabled, RequireEmailVerified: cfg.RequireEmailVerified}, nil
+	return GiftCodePublicConfig{Enabled: cfg.EnabledFor(client), RequireEmailVerified: cfg.RequireEmailVerified}, nil
 }
 
 func (ctrl *Controller) megaphoneConfigFor(client Client) (MegaphonePublicConfig, error) {

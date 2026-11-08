@@ -40,10 +40,7 @@ const (
 	CacheKeyGiftCodeFailDevice  = "GIFTCODE:FAIL:DEVICE:%s"
 	CacheKeyGiftCodeBlockUser   = "GIFTCODE:BLOCK:USER:%s"
 	CacheKeyGiftCodeBlockDevice = "GIFTCODE:BLOCK:DEVICE:%s"
-	CacheKeyGiftCodeStatus      = "GIFTCODE:RUNNING:%s"
 	CacheKeyGiftCodeCleanupLock = "GIFTCODE:CLEANUP:LOCK"
-
-	CacheTTLGiftCodeStatus = time.Minute
 
 	FailWindow    = time.Minute
 	FailLimit     = 5

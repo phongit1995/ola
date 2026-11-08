@@ -21,10 +21,6 @@ type RedeemResponse struct {
 	Rewards []RewardItem `json:"rewards"`
 }
 
-type runningStatus struct {
-	Running bool `json:"running"`
-}
-
 type RedeemInput struct {
 	UserID    uuid.UUID
 	SessionID uuid.UUID

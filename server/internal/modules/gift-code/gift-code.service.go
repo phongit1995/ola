@@ -56,22 +56,6 @@ type redeemContext struct {
 	needsEmail bool
 }
 
-func (s *Service) HasRunningCampaign(platform string) (bool, error) {
-	key := fmt.Sprintf(CacheKeyGiftCodeStatus, platform)
-	var cached runningStatus
-	if err := s.cache.Get(key, &cached); err == nil {
-		return cached.Running, nil
-	}
-	running, err := s.repo.HasActiveCampaign(platform, s.now())
-	if err != nil {
-		return false, err
-	}
-	if err := s.cache.Set(key, runningStatus{Running: running}, CacheTTLGiftCodeStatus); err != nil {
-		s.logger.Warnw("Failed to cache gift code status", "error", err.Error())
-	}
-	return running, nil
-}
-
 func (s *Service) Redeem(in RedeemInput) (*RedeemResponse, error) {
 	cfg := s.loadConfig()
 	if !cfg.EnabledFor(in.Client) {
