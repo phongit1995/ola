@@ -9,8 +9,7 @@ import femaleIcon from '@/assets/icons/profile/ic_indicate_female.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import vipStoreIcon from '@/assets/icons/me/icon_vip.webp';
-import { AvatarFrameThumb } from '../../avatar-frame/components/AvatarFrameThumb';
-import { STORE_ICON_FRAME_ID } from '../../avatar-frame/constants';
+import avatarFrameStoreIcon from '@/assets/icons/profile/ic_avatar_frame_store.webp';
 import {
   Avatar,
   CharmIcon,
@@ -30,8 +29,6 @@ import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
-
-const PROFILE_STORE_ICON_SIZE = 20;
 
 interface ProfileCardProps {
   userId: string;
@@ -394,9 +391,10 @@ export function ProfileCard({
             onClick={onViewAvatarFrameStore}
             className="mt-2 ml-4 flex items-center gap-1 text-xs text-ola-primary-darker active:opacity-70"
           >
-            <AvatarFrameThumb
-              frameId={STORE_ICON_FRAME_ID}
-              size={PROFILE_STORE_ICON_SIZE}
+            <img
+              src={avatarFrameStoreIcon}
+              alt=""
+              className="h-4 w-auto shrink-0 object-contain"
             />
             {t('avatarFrame.openStore')}
           </button>

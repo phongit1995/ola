@@ -1465,7 +1465,7 @@
     "storeTitle": "Avatar frames",
     "storeOf": "@{{name}}'S FRAMES",
     "storePrivate": "This frame collection is private",
-    "openStore": "Frame collection",
+    "openStore": "Avatar frame collection",
     "empty": "No frames yet",
     "shopEmpty": "No frames for sale yet",
     "price": "{{price}} KEN",

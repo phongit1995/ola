@@ -1,6 +1,5 @@
 import type { AvatarFrameHistoryTone } from '@lib';
 
-export const STORE_ICON_FRAME_ID = '004';
 export const FRAME_TILE_AVATAR_SIZE = 72;
 export const FRAME_PREVIEW_AVATAR_SIZE = 120;
 export const FRAME_THUMB_SIZE = 40;
