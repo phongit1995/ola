@@ -2,7 +2,9 @@ export const FRAME_GRID_COLUMNS = 3;
 
 export const FRAME_CARD_AVATAR_SIZE = 72;
 
-export const FRAME_PREVIEW_SIZE = 120;
+export const FRAME_SELECT_AVATAR_SIZE = 40;
+
+export const FRAME_PICKER_MAX_HEIGHT = 420;
 
 export const FRAME_STORE_PREVIEW_SIZE = 96;
 

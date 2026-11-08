@@ -79,7 +79,7 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
     <FullScreenOverlay>
       <ScreenHeader title={t('ken.title')} onBack={onClose} />
 
-      <div className="flex-1 overflow-y-auto bg-[#ececec] pt-2 pb-4">
+      <div className="flex-1 overflow-y-auto bg-ola-surface-dim pt-2 pb-4">
         {showLowKenWarning && (
           <p className="mx-2 mb-2 rounded-sm border border-black/12 bg-white px-3 py-2.5 text-xs text-ola-error">
             {t('ken.lowWarning')}

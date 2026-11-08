@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import {
   toast,
   formatKen,
-  colorForName,
   vipBuyErrorText,
   vipConfirmMessage,
   vipPackageLabel,
@@ -18,17 +16,15 @@ import {
   Dialog,
   ConfirmDialog,
   ListOptionDialog,
-  UserRow,
   VipIcon,
 } from '@components';
 import type { ListOption } from '@components';
-import { VipService, UserService } from '@services';
-import type {
-  VipIconCatalogItem,
-  VipPackageItem,
-  UserSearchResult,
-} from '@app-types';
+import { VipService } from '@services';
+import type { VipIconCatalogItem, VipPackageItem } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
+import { ReceiverField } from './components/ReceiverField';
+import { SelectChevron } from './components/SelectChevron';
+import { useReceiverSearch } from './useReceiverSearch';
 
 const MOCK_KEN_BALANCE = 12_345;
 const DEFAULT_VIP_ID = 4;
@@ -54,19 +50,6 @@ const MODE_TAB = {
   giveDays: 'vip.buy.modeGiveDays',
   extend: 'vip.buy.modeExtend',
 } as const;
-
-function ChevronIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-5 w-5 text-black/40"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M7 10l5 5 5-5z" />
-    </svg>
-  );
-}
 
 interface PickerItem {
   key: string;
@@ -146,15 +129,9 @@ export function BuyVipPage({
   const [selectedVipId, setSelectedVipId] = useState(DEFAULT_VIP_ID);
   const [selectedShopId, setSelectedShopId] = useState('');
   const [selectedPackageId, setSelectedPackageId] = useState('');
-  const [receiver, setReceiver] = useState('');
-  const [receiverUser, setReceiverUser] = useState<UserSearchResult | null>(
-    null
-  );
-  const [receiverQuery, setReceiverQuery] = useState('');
-  const [receiverResults, setReceiverResults] = useState<UserSearchResult[]>(
-    []
-  );
-  const [receiverSearching, setReceiverSearching] = useState(false);
+  const receiverSearch = useReceiverSearch();
+  const { receiverUser } = receiverSearch;
+  const receiver = receiverUser?.username ?? '';
   const [vipPickerOpen, setVipPickerOpen] = useState(false);
   const [packagePickerOpen, setPackagePickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -196,24 +173,6 @@ export function BuyVipPage({
     };
   }, []);
 
-  const runReceiverSearch = useDebouncedCallback((value: string) => {
-    if (value === '') {
-      setReceiverResults([]);
-      setReceiverSearching(false);
-      return;
-    }
-    setReceiverSearching(true);
-    UserService.search(value, 30)
-      .then((res) => setReceiverResults(res.users))
-      .catch(() => setReceiverResults([]))
-      .finally(() => setReceiverSearching(false));
-  }, 350);
-
-  function handleReceiverQueryChange(value: string) {
-    setReceiverQuery(value);
-    runReceiverSearch(value.trim());
-  }
-
   const isBuyIcon = mode === 'buy';
   const isExtend = mode === 'extend';
   const isGiftIcon = mode === 'give';
@@ -247,20 +206,8 @@ export function BuyVipPage({
     setSelectedShopId(item.key);
   }
 
-  function pickReceiver(user: UserSearchResult) {
-    runReceiverSearch.cancel();
-    setReceiverUser(user);
-    setReceiver(user.username);
-    setReceiverQuery('');
-    setReceiverResults([]);
-  }
-
   function clearReceiver() {
-    runReceiverSearch.cancel();
-    setReceiverUser(null);
-    setReceiver('');
-    setReceiverQuery('');
-    setReceiverResults([]);
+    receiverSearch.clearReceiver();
     setGiftPassword('');
   }
 
@@ -426,7 +373,7 @@ export function BuyVipPage({
     <FullScreenOverlay>
       <ScreenHeader title={t(MODE_TITLE[mode])} onBack={onClose} />
 
-      <div className="flex-1 overflow-y-auto bg-[#ececec] pb-6">
+      <div className="flex-1 overflow-y-auto bg-ola-surface-dim pb-6">
         <div className="flex gap-1 bg-white px-2 py-2">
           {MODE_ORDER.map((item) => (
             <button
@@ -456,79 +403,15 @@ export function BuyVipPage({
         </div>
 
         {showReceiver && (
-          <div className="mt-2 bg-white px-4 py-3">
-            <span className="text-xs text-black/54">
-              {t('vip.buy.receiverLabel')}
-            </span>
-            {receiverUser != null ? (
-              <div className="mt-1 flex items-center rounded border border-black/12 pr-1 pl-2">
-                <div className="min-w-0 flex-1">
-                  <UserRow
-                    name={receiverUser.fullName || receiverUser.username}
-                    username={receiverUser.username}
-                    avatar={receiverUser.avatar}
-                    color={colorForName(receiverUser.username)}
-                    online={receiverUser.isOnline}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={clearReceiver}
-                  aria-label={t('common.cancel')}
-                  className="ml-1 shrink-0 rounded-full p-1.5 text-black/40 active:bg-black/5"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.29l6.3 6.3 6.3-6.3z" />
-                  </svg>
-                </button>
-              </div>
-            ) : (
-              <>
-                <input
-                  type="text"
-                  value={receiverQuery}
-                  onChange={(event) =>
-                    handleReceiverQueryChange(event.target.value)
-                  }
-                  placeholder={t('vip.buy.receiverHint')}
-                  className="mt-1 w-full rounded border border-black/12 bg-white px-3 py-2 text-sm text-black/87 outline-none placeholder:text-black/38 focus:border-ola-primary"
-                />
-                {receiverQuery.trim() !== '' && (
-                  <div className="mt-2 max-h-56 overflow-y-auto rounded border border-black/12">
-                    {receiverSearching ? (
-                      <p className="py-3 text-center text-sm text-black/54">
-                        {t('common.loading')}
-                      </p>
-                    ) : receiverResults.length === 0 ? (
-                      <p className="py-3 text-center text-sm text-black/54">
-                        {t('chat.composeSearchEmpty')}
-                      </p>
-                    ) : (
-                      <ul className="divide-y divide-black/8 px-2">
-                        {receiverResults.map((item) => (
-                          <li key={item.id}>
-                            <UserRow
-                              name={item.fullName || item.username}
-                              username={item.username}
-                              avatar={item.avatar}
-                              color={colorForName(item.username)}
-                              online={item.isOnline}
-                              onClick={() => pickReceiver(item)}
-                            />
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          <ReceiverField
+            receiverUser={receiverUser}
+            receiverQuery={receiverSearch.receiverQuery}
+            receiverResults={receiverSearch.receiverResults}
+            receiverSearching={receiverSearch.receiverSearching}
+            onChangeQuery={receiverSearch.setReceiverQuery}
+            onPick={receiverSearch.pickReceiver}
+            onClear={clearReceiver}
+          />
         )}
 
         {showVipSelect && (
@@ -551,7 +434,7 @@ export function BuyVipPage({
                   {formatKen(selectedShopItem.kenPrice)} KEN
                 </span>
               )}
-              <ChevronIcon />
+              <SelectChevron />
             </button>
           </div>
         )}
@@ -571,7 +454,7 @@ export function BuyVipPage({
                   ? vipPackageLabel(t, selectedPackage)
                   : t('vip.buy.packagesEmpty')}
               </span>
-              <ChevronIcon />
+              <SelectChevron />
             </button>
           </div>
         )}

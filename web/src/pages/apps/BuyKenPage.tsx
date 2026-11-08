@@ -156,7 +156,7 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
     <FullScreenOverlay>
       <ScreenHeader title={t('ken.buy.title')} onBack={onClose} />
 
-      <div className="flex-1 overflow-y-auto bg-[#ececec] pb-6">
+      <div className="flex-1 overflow-y-auto bg-ola-surface-dim pb-6">
         <div className="m-2 flex items-center rounded-sm border border-black/12 bg-white px-3 py-2.5">
           <span className="text-sm text-black/54">{t('ken.buy.balance')}</span>
           <span className="ml-2 flex-1 text-lg font-bold text-ola-primary-ink">

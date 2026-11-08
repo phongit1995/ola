@@ -3,6 +3,7 @@ import type { AvatarFrameHistoryTone } from '@lib';
 export const FRAME_TILE_AVATAR_SIZE = 72;
 export const FRAME_PREVIEW_AVATAR_SIZE = 120;
 export const FRAME_THUMB_SIZE = 40;
+export const FRAME_SELECT_AVATAR_SIZE = 40;
 export const LOAD_MORE_THRESHOLD_PX = 300;
 export const PEER_FRAME_THUMB_SIZE = 56;
 

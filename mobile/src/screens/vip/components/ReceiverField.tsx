@@ -67,7 +67,7 @@ export function ReceiverField({
                   {t('chat.composeSearchEmpty')}
                 </Text>
               ) : (
-                <ScrollView keyboardShouldPersistTaps="handled" className="px-2">
+                <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" className="px-2">
                   {receiverResults.map((item, index) => (
                     <View
                       key={item.id}
