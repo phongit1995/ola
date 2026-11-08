@@ -36,6 +36,7 @@ Mục tiêu: user mua khung bằng KEN trong Cửa hàng, tặng hoặc chuyển
 | Số bản mỗi user | Một bản mỗi khung, khoá `UNIQUE (user_id, frame_id)`. Mua lặp, tặng hoặc chuyển cho người đã có khung đó đều bị từ chối. |
 | Điều kiện đeo | Phải còn VIP. Hết VIP vẫn mua và nhận khung được, khung vẫn nằm trong kho; khung đang đeo không hiện nữa và hiện lại khi gia hạn VIP. Đổi khung không bị trừ ngày VIP. |
 | Bản đầu tiên | Mua, kho, đeo, tặng, chuyển nhượng, phần quản lý admin. Chưa làm khung từ trứng hoặc vòng quay. |
+| Khung từ mã quà tặng | Admin chọn bất kỳ khung nào trong danh mục làm quà của đợt mã (loại `avatar_frame`), không cần khung đang bán. Khung nhận từ mã không chuyển được (nguồn `gift_code`), giống icon VIP từ mã. Người đã có khung thì chỉ nhận các quà còn lại; mã không còn quà nào để nhận thì bị từ chối (`GIFT_CODE_FRAME_OWNED`) và không mất lượt. |
 | Quyền xem Kho khung | Giống Kho VIP: user chọn ai được xem kho khung của mình (mọi người, bạn bè, chỉ mình tôi). Khung đang đeo vẫn hiện với mọi người. |
 
 ### Lưu ở đâu
@@ -51,7 +52,7 @@ Mục tiêu: user mua khung bằng KEN trong Cửa hàng, tặng hoặc chuyển
 ### 1. Database (1 migration, version lớn hơn mọi môi trường, ví dụ `20261108000001_add_avatar_frames`)
 
 - `avatar_frame_shop_items`: `id`, `frame_id varchar(8)`, `ken_price int`, `is_active bool`, `sort_order int`, timestamps, `deleted_at`. Unique `frame_id WHERE deleted_at IS NULL`. Server không có danh mục JSON nên dùng bảng này để kiểm tra `frame_id`: user chỉ mua và tặng được khung `is_active`. Admin chọn khung từ danh mục JSON ở giao diện, server chỉ kiểm tra định dạng id (3 chữ số).
-- `user_avatar_frames`: `id`, `user_id`, `frame_id varchar(8)`, `source varchar(20)` (purchase/gift/transfer), `acquired_at`, `deleted_at`. Unique `(user_id, frame_id) WHERE deleted_at IS NULL`.
+- `user_avatar_frames`: `id`, `user_id`, `frame_id varchar(8)`, `source varchar(20)` (purchase/gift/transfer/gift_code), `acquired_at`, `deleted_at`. Unique `(user_id, frame_id) WHERE deleted_at IS NULL`.
 - `avatar_frame_purchases`: `user_id` (người trả KEN), `recipient_user_id` (người nhận khi tặng, null khi tự mua), `shop_item_id`, `frame_id`, `ken_price`, `ken_balance_after`, `source` (purchase/gift), `created_at`. Không dùng chung `vip_purchases` vì bảng đó gắn với ngày VIP.
 - `avatar_frame_transfers`: `from_user_id`, `to_user_id`, `frame_id`, `created_at`, index theo từng user.
 - `users.avatar_frame_id varchar(8) NULL`: khung đang đeo. Hết VIP vẫn giữ giá trị để gia hạn là hiện lại.
