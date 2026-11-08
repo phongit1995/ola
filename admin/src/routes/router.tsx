@@ -30,7 +30,6 @@ import { KenTransfersPage } from '@/pages/ken-transfers/KenTransfersPage'
 import { MiniGamePage } from '@/pages/games/mini-game/MiniGamePage'
 import { PostsPage } from '@/pages/posts/PostsPage'
 import { ReportsPage } from '@/pages/reports/ReportsPage'
-import { PushCampaignPage } from '@/pages/settings/PushCampaignPage'
 import { ChatBotSettingsPage } from '@/pages/settings/ChatBotSettingsPage'
 import { AppUpdateSettingsPage } from '@/pages/settings/AppUpdateSettingsPage'
 import { TopupSettingsPage } from '@/pages/topup/TopupSettingsPage'
@@ -103,7 +102,7 @@ export const router = createBrowserRouter([
       { path: 'settings/username-change', element: <UsernameChangeSettingsPage /> },
       { path: 'settings/announcements', element: <AnnouncementPage /> },
       { path: 'settings/notification', element: <NotificationSettingsPage /> },
-      { path: 'settings/push-campaigns', element: <PushCampaignPage /> },
+      { path: 'settings/push-campaigns', element: <Navigate to="/settings/notification" replace /> },
       { path: 'settings/chat-bot', element: <ChatBotSettingsPage /> },
       { path: 'settings/app-update', element: <AppUpdateSettingsPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },

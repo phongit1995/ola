@@ -22,7 +22,6 @@ import {
   NotificationOutlined,
   PlayCircleOutlined,
   RocketOutlined,
-  SendOutlined,
   SettingOutlined,
   SoundOutlined,
   ShopOutlined,
@@ -114,7 +113,6 @@ const MENU_ITEMS = [
       { key: '/settings/username-change', icon: <EditOutlined />, label: 'Đổi nickname' },
       { key: '/settings/announcements', icon: <NotificationOutlined />, label: 'Thông báo banner' },
       { key: '/settings/notification', icon: <BellOutlined />, label: 'Thông báo' },
-      { key: '/settings/push-campaigns', icon: <SendOutlined />, label: 'Gửi push' },
       { key: '/settings/chat-bot', icon: <RobotOutlined />, label: 'Chat-bot' },
       { key: '/settings/app-update', icon: <CloudDownloadOutlined />, label: 'Cập nhật ứng dụng' },
     ],
@@ -131,6 +129,7 @@ const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
   '/games/matches': '/games/mini-game',
+  '/settings/push-campaigns': '/settings/notification',
   '/vip-shop': '/vip-packages',
   '/vip-purchases': '/vip-packages',
   '/vip-transfers': '/vip-packages',
@@ -174,8 +173,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/settings/topup': 'Cài đặt nạp KEN',
   '/settings/username-change': 'Cài đặt đổi nickname',
   '/settings/announcements': 'Thông báo banner',
-  '/settings/notification': 'Cài đặt thông báo',
-  '/settings/push-campaigns': 'Gửi push thông báo',
+  '/settings/notification': 'Thông báo',
   '/settings/chat-bot': 'Cài đặt chat-bot',
   '/settings/app-update': 'Cập nhật ứng dụng',
   [REPORTS_PATH]: REPORTS_LABEL,
