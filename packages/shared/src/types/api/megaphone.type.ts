@@ -6,6 +6,7 @@ export interface MegaphoneSender {
   gender?: string;
   vipUsed?: string | null;
   vipEndTime?: string | null;
+  avatarFrameId?: string | null;
 }
 
 export type MegaphoneType = 'message' | 'gift';
@@ -43,6 +44,8 @@ export interface MegaphoneConfig {
   cooldownRemaining: number;
   queueWaitSeconds: number;
 }
+
+export type MegaphoneAppConfig = Omit<MegaphoneConfig, 'todayCount' | 'cooldownRemaining' | 'queueWaitSeconds'>;
 
 export interface SendMegaphoneRequest {
   content: string;

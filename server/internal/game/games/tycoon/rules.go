@@ -473,6 +473,9 @@ func (s *State) applyCard(seat int, card Card) {
 		s.pay(seat, -1, levels*card.Amount, PayRepair, "")
 	case EffectCollectEach:
 		for _, other := range s.activeSeats() {
+			if s.Finished {
+				break
+			}
 			if other != seat {
 				s.pay(other, seat, card.Amount, PayBirthday, "")
 			}
@@ -630,7 +633,9 @@ func (s *State) bankrupt(seat, creditor int) {
 		}
 	}
 	s.PendingDebts = pending
-	s.Card = nil
+	if s.Turn == seat {
+		s.Card = nil
+	}
 	if len(s.activeSeats()) <= 1 {
 		s.finish(EndLast)
 		return
@@ -644,6 +649,10 @@ func (s *State) bankrupt(seat, creditor int) {
 	}
 	if s.Turn == seat {
 		s.advanceTurn()
+		return
+	}
+	if s.Phase == PhaseTakeover && s.Tiles[s.Players[s.Turn].Pos].Owner < 0 {
+		s.Phase = PhaseDecide
 	}
 }
 
@@ -682,6 +691,7 @@ func (s *State) finish(reason string) {
 	}
 	s.Finished = true
 	s.EndReason = &reason
+	s.Card = nil
 	ranked := s.rankings()
 	worth := make([]int, len(ranked))
 	for i, seat := range ranked {

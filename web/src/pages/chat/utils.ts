@@ -58,6 +58,7 @@ export function toConversationView(
     username: conversation.otherUser?.username ?? '',
     title: conversationHeaderTitle(conversation),
     avatar: conversation.otherUser?.avatar ?? conversation.avatar,
+    avatarFrameId: conversation.otherUser?.avatarFrameId,
     color: name ? colorForName(name) : DEFAULT_AVATAR_COLOR,
     preview: isSticker ? '' : lastText,
     previewIsSticker: isSticker,

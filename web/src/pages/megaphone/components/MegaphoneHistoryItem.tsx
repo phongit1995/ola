@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Avatar, UserName } from '@components';
-import { colorForName, formatOlaTimeAgo, megaphoneSenderName } from '@lib';
+import { UserName } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
+import { colorForName, formatOlaTimeAgo, megaphoneSenderName, SmileyText } from '@lib';
 import type { Megaphone } from '@app-types';
 
 interface MegaphoneHistoryItemProps {
@@ -23,7 +24,13 @@ export function MegaphoneHistoryItem({ megaphone, isMine, nowMs, onOpenProfile, 
         onClick={() => onOpenProfile(megaphone)}
         className="shrink-0"
       >
-        <Avatar name={name} src={megaphone.sender.avatar} color={colorForName(name)} size={40} />
+        <AvatarWithFrame
+          name={name}
+          src={megaphone.sender.avatar}
+          color={colorForName(name)}
+          size={40}
+          frameId={megaphone.sender.avatarFrameId}
+        />
       </button>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1">
@@ -43,7 +50,9 @@ export function MegaphoneHistoryItem({ megaphone, isMine, nowMs, onOpenProfile, 
             {formatOlaTimeAgo(megaphone.showAt, i18n.language, nowMs)}
           </span>
         </div>
-        <p className="mt-0.5 text-[15px] break-words text-black/87">{megaphone.content}</p>
+        <p className="mt-0.5 text-[15px] break-words text-black/87">
+          <SmileyText text={megaphone.content} />
+        </p>
       </div>
       {!isMine && (
         <button

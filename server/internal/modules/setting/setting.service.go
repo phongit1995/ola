@@ -330,11 +330,11 @@ func (s *Service) GetTopup() (TopupConfig, error) {
 	return cfg, err
 }
 
-func (s *Service) KeepStoredTopupPlatforms(value models.JSONB) (models.JSONB, error) {
+func (s *Service) KeepStoredPlatforms(key string, value models.JSONB) (models.JSONB, error) {
 	if _, ok := value["platforms"]; ok {
 		return value, nil
 	}
-	current, err := s.repo.Get(KeyTopup)
+	current, err := s.repo.Get(key)
 	if err != nil {
 		return nil, err
 	}

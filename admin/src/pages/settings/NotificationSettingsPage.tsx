@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   App,
@@ -6,14 +6,16 @@ import {
   Card,
   Descriptions,
   Input,
+  Space,
   Spin,
   Switch,
   Tabs,
   Tag,
+  Tooltip,
   Typography,
   Upload,
 } from 'antd'
-import { InboxOutlined, SaveOutlined } from '@ant-design/icons'
+import { InboxOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { errorMessage } from '@/lib/apiError'
 import type { AppSetting, PushFirebaseSettingStatus, PushNotificationSetting } from '@/types'
@@ -26,6 +28,8 @@ import {
   TOGGLE_KEY,
 } from './constants'
 import { MailSettingsCard } from './MailSettingsCard'
+import { PushComposeModal } from './PushComposeModal'
+import { PushHistoryCard } from './PushHistoryCard'
 import { parseServiceAccount } from './utils'
 
 type TabKey = (typeof NOTIFICATION_TAB_KEYS)[number]
@@ -42,22 +46,24 @@ export function NotificationSettingsPage() {
     setSearchParams(key === NOTIFICATION_DEFAULT_TAB ? {} : { tab: key }, { replace: true })
   }
 
-  if (isLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 64 }}>
-        <Spin />
-      </div>
-    )
-  }
-
-  if (isError) {
-    return (
-      <Card title="Cài đặt thông báo" style={{ maxWidth: 680 }}>
-        <Typography.Text type="danger">
-          Không tải được cấu hình hiện tại. Tải lại trang trước khi chỉnh sửa để tránh ghi đè nhầm.
-        </Typography.Text>
-      </Card>
-    )
+  function settingsTab(content: ReactNode) {
+    if (isLoading) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 64 }}>
+          <Spin />
+        </div>
+      )
+    }
+    if (isError) {
+      return (
+        <Card style={{ maxWidth: 680 }}>
+          <Typography.Text type="danger">
+            Không tải được cấu hình hiện tại. Tải lại trang trước khi chỉnh sửa để tránh ghi đè nhầm.
+          </Typography.Text>
+        </Card>
+      )
+    }
+    return content
   }
 
   return (
@@ -69,19 +75,59 @@ export function NotificationSettingsPage() {
         {
           key: 'push',
           label: 'Thông báo đẩy (FCM)',
-          children: <PushSettingsCard settings={settings} />,
+          children: settingsTab(<PushTab settings={settings} />),
         },
         {
           key: 'email',
           label: 'Email (Resend)',
-          children: <MailSettingsCard setting={settings?.find((item) => item.key === MAIL_KEY)} />,
+          children: settingsTab(
+            <MailSettingsCard setting={settings?.find((item) => item.key === MAIL_KEY)} />,
+          ),
         },
       ]}
     />
   )
 }
 
-function PushSettingsCard({ settings }: { settings?: AppSetting[] }) {
+function isPushReady(settings?: AppSetting[]): boolean {
+  const status = settings?.find((item) => item.key === CREDENTIAL_KEY)?.value as
+    | PushFirebaseSettingStatus
+    | null
+    | undefined
+  const toggle = settings?.find((item) => item.key === TOGGLE_KEY)?.value as
+    | PushNotificationSetting
+    | undefined
+  return status?.configured === true && toggle?.enabled === true
+}
+
+function PushTab({ settings }: { settings?: AppSetting[] }) {
+  const [composeOpen, setComposeOpen] = useState(false)
+  const ready = isPushReady(settings)
+
+  return (
+    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <PushSettingsCard
+        settings={settings}
+        extra={
+          <Tooltip title={ready ? undefined : 'Bật công tắc và lưu service account trước khi gửi'}>
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              disabled={!ready}
+              onClick={() => setComposeOpen(true)}
+            >
+              Gửi push
+            </Button>
+          </Tooltip>
+        }
+      />
+      <PushHistoryCard />
+      <PushComposeModal open={composeOpen && ready} onClose={() => setComposeOpen(false)} />
+    </Space>
+  )
+}
+
+function PushSettingsCard({ settings, extra }: { settings?: AppSetting[]; extra?: ReactNode }) {
   const { message } = App.useApp()
   const putSetting = usePutAppSetting()
   const [pasted, setPasted] = useState('')
@@ -118,7 +164,7 @@ function PushSettingsCard({ settings }: { settings?: AppSetting[] }) {
   }
 
   return (
-    <Card style={{ maxWidth: 680 }}>
+    <Card title="Cấu hình FCM" extra={extra} style={{ maxWidth: 680 }}>
       <Typography.Paragraph type="secondary">
         Push chỉ được gửi khi công tắc bên dưới đang bật VÀ đã upload service account JSON của
         Firebase (Project settings → Service accounts → Generate new private key). Key được mã hoá

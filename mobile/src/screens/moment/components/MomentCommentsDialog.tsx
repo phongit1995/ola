@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { colorForName, createTimeAgoFormatter } from '@ola/shared/lib';
 import { MomentService } from '@ola/shared/services';
 import { useMomentUserPages } from '@ola/shared/stores/moment/useMomentUserPages';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { UserListDialog } from '@components/ui/UserListDialog';
 import { SmileyText } from '@lib/richText';
 import { MomentListMoreButton } from './MomentListMoreButton';
@@ -53,11 +53,12 @@ export function MomentCommentsDialog({
       {[
         ...items.map(({ id, user, content, createdAt }) => (
           <View key={id} className="flex-row gap-3 py-2">
-            <Avatar
+            <AvatarWithFrame
               name={user.username}
               uri={user.avatar ?? undefined}
               color={colorForName(user.username)}
               size={40}
+              frameId={user.avatarFrameId}
             />
             <View className="min-w-0 flex-1">
               <View className="flex-row items-baseline gap-2">

@@ -1,11 +1,13 @@
 import { GIFT_ANIMATION_RANDOM } from '@ola/shared/constants'
 import type { GiftAnimationSetting } from '@ola/shared/types'
+import { OPEN_PLATFORM_RULES } from '@/lib/platformRules'
 import type { GiftSetting } from '@/types'
 
 export const GIFT_SETTING_KEY = 'gift'
 
 export const DEFAULT_GIFT_SETTING: GiftSetting = {
   enabled: true,
+  platforms: OPEN_PLATFORM_RULES,
   quantityOptions: [1, 5, 10, 99],
   quantityMax: 99,
   noteMaxLength: 100,

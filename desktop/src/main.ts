@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, Menu, protocol, session, shell, net } from
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { startAppUpdater } from './appUpdater';
 import { checkForOtaUpdate, resolveWebDist, rollbackToBundled } from './updater';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -19,6 +20,17 @@ const BUNDLED_DIST = path.join(__dirname, '..', 'dist');
 if (process.env.OLA_DESKTOP_USERDATA) {
   app.setPath('userData', process.env.OLA_DESKTOP_USERDATA);
 }
+
+if (!IS_SMOKE && !app.requestSingleInstanceLock()) {
+  app.exit(0);
+}
+
+app.on('second-instance', () => {
+  const win = BrowserWindow.getAllWindows()[0];
+  if (win == null) return;
+  if (win.isMinimized()) win.restore();
+  win.focus();
+});
 
 // dist đang phục vụ: bundle OTA ở userData nếu có, không thì dist trong asar.
 let activeWebDist = BUNDLED_DIST;
@@ -195,7 +207,10 @@ app.whenReady().then(() => {
   setupSession(session.defaultSession);
   createWindow();
 
-  if (!IS_DEV) void checkForOtaUpdate(activeOtaVersion);
+  if (!IS_DEV) {
+    void checkForOtaUpdate(activeOtaVersion);
+    startAppUpdater();
+  }
 
   if (IS_SMOKE) {
     setTimeout(async () => {

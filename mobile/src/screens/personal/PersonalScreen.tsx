@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View, type ImageSourcePropType } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import DeviceInfo from 'react-native-device-info';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatKen } from '@ola/shared/lib';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import {
+  selectGiftCodeEnabled,
+  useGiftCodeConfigStore,
+} from '@ola/shared/stores/gift-code/giftCodeConfigStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -16,18 +21,29 @@ import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
 import { SupportDialog } from '../apps/SupportDialog';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
+import { GiftCodeDialog } from './GiftCodeDialog';
+import { useGiftCodeConfigSync } from './useGiftCodeConfigSync';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
+const APP_VERSION_LABEL = `v${DeviceInfo.getVersion()} (${DeviceInfo.getBuildNumber()})`;
 
 interface PanelRowProps {
-  icon: number;
+  icon: ImageSourcePropType;
   title: string;
   subtitle?: string;
   badge?: number;
+  trailing?: string;
   onPress: () => void;
 }
 
-function PanelRow({ icon, title, subtitle, badge, onPress }: PanelRowProps) {
+function PanelRow({
+  icon,
+  title,
+  subtitle,
+  badge,
+  trailing,
+  onPress,
+}: PanelRowProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -60,6 +76,11 @@ function PanelRow({ icon, title, subtitle, badge, onPress }: PanelRowProps) {
           </Text>
         </View>
       )}
+      {trailing != null && (
+        <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.38)' }}>
+          {trailing}
+        </Text>
+      )}
     </Pressable>
   );
 }
@@ -76,6 +97,13 @@ export function PersonalScreen() {
   const [removeAccountOpen, setRemoveAccountOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [giftCodeOpen, setGiftCodeOpen] = useState(false);
+  const giftCodeEnabled = useGiftCodeConfigStore(selectGiftCodeEnabled);
+  const items = PERSONAL_ITEMS.filter(
+    item => item.action !== 'gift-code' || giftCodeEnabled,
+  );
+
+  useGiftCodeConfigSync();
 
   function handleOpen(item: AppItem) {
     if (item.action === 'logout') {
@@ -98,12 +126,20 @@ export function PersonalScreen() {
       navigation.navigate(ROOT_ROUTES.VipStore);
       return;
     }
+    if (item.action === 'avatar-frame-store') {
+      navigation.navigate(ROOT_ROUTES.AvatarFrameStore);
+      return;
+    }
     if (item.action === 'ken') {
       navigation.navigate(ROOT_ROUTES.KenStore);
       return;
     }
     if (item.action === 'gifts') {
       navigation.navigate(ROOT_ROUTES.GiftHome);
+      return;
+    }
+    if (item.action === 'gift-code') {
+      setGiftCodeOpen(true);
       return;
     }
     if (item.action === 'megaphone') {
@@ -124,10 +160,6 @@ export function PersonalScreen() {
     }
     if (item.action === 'settings') {
       navigation.navigate(ROOT_ROUTES.Settings);
-      return;
-    }
-    if (item.action === 'app-lock') {
-      navigation.navigate(ROOT_ROUTES.AppLock);
       return;
     }
     push('info', t('chat.comingSoon'));
@@ -183,7 +215,7 @@ export function PersonalScreen() {
       <View className="flex-1">
         <LobbyWallpaper />
         <ScrollView className="flex-1">
-          {PERSONAL_ITEMS.map(item => (
+          {items.map(item => (
             <PanelRow
               key={item.titleKey}
               icon={item.icon}
@@ -192,6 +224,9 @@ export function PersonalScreen() {
                 item.subtitleKey != null ? t(item.subtitleKey) : undefined
               }
               badge={item.action === 'notifications' ? notifUnread : undefined}
+              trailing={
+                item.action === 'logout' ? APP_VERSION_LABEL : undefined
+              }
               onPress={() => handleOpen(item)}
             />
           ))}
@@ -227,6 +262,10 @@ export function PersonalScreen() {
       <SupportDialog
         visible={supportOpen}
         onClose={() => setSupportOpen(false)}
+      />
+      <GiftCodeDialog
+        visible={giftCodeOpen}
+        onClose={() => setGiftCodeOpen(false)}
       />
     </View>
   );

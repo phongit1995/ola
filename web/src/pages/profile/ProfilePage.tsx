@@ -24,6 +24,7 @@ import { ProfileMediaStore } from './components/ProfileMediaStore';
 import { ProfileFollowing } from './components/ProfileFollowing';
 import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { PeerVipStoreDialog } from './components/PeerVipStoreDialog';
+import { PeerAvatarFrameStoreDialog } from './components/PeerAvatarFrameStoreDialog';
 import { GiftWallSection } from './components/GiftWallSection';
 import { GiftHistoryPage } from '../gift/GiftHistoryPage';
 import { EditProfileMePage } from './EditProfileMePage';
@@ -69,11 +70,12 @@ export function ProfilePage({
   const [composerOpen, setComposerOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState(false);
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
+  const [frameStoreOpen, setFrameStoreOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftWallKey, setGiftWallKey] = useState(0);
   const [giftHistoryOpen, setGiftHistoryOpen] = useState(false);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
-  const loadGiftCatalog = useGiftCatalogStore((s) => s.load);
+  const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const scrollRef = useRef<HTMLDivElement>(null);
   const postsEndRef = useRef<HTMLDivElement>(null);
   const { hasMorePosts, loadingMorePosts } = secondary;
@@ -95,8 +97,8 @@ export function ProfilePage({
   }, [hasMorePosts, loadMorePosts, loadedPostCount]);
 
   useEffect(() => {
-    void loadGiftCatalog();
-  }, [loadGiftCatalog]);
+    void loadGiftSettings();
+  }, [loadGiftSettings]);
 
   const posts = secondary.posts.filter(
     (post) => !hiddenPostIds.includes(post.id)
@@ -127,6 +129,7 @@ export function ProfilePage({
           onPostMe={() => setComposerOpen(true)}
           onUpdateInfo={() => setEditOpen(true)}
           onViewVipStore={() => setVipStoreOpen(true)}
+          onViewAvatarFrameStore={() => setFrameStoreOpen(true)}
           onOpenUser={(nick) =>
             onOpenFriend({ name: nick, color: colorForName(nick) })
           }
@@ -218,6 +221,14 @@ export function ProfilePage({
           userId={userId}
           name={profile.username}
           onClose={() => setVipStoreOpen(false)}
+        />
+      )}
+
+      {frameStoreOpen && (
+        <PeerAvatarFrameStoreDialog
+          userId={userId}
+          name={profile.username}
+          onClose={() => setFrameStoreOpen(false)}
         />
       )}
 

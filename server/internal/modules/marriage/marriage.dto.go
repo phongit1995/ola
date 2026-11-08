@@ -32,10 +32,11 @@ type ProposalListResponse struct {
 }
 
 type SpouseInfo struct {
-	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username string `json:"username" example:"jane_doe"`
-	FullName string `json:"fullName,omitempty" example:"Jane Doe"`
-	Avatar   string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	ID            string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username      string  `json:"username" example:"jane_doe"`
+	FullName      string  `json:"fullName,omitempty" example:"Jane Doe"`
+	Avatar        string  `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty" example:"001"`
 }
 
 type MarriageStatusResponse struct {

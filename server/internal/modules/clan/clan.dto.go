@@ -27,10 +27,11 @@ type PinRequest struct {
 }
 
 type ClanUserResponse struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
+	ID            string  `json:"id"`
+	Username      string  `json:"username"`
+	FullName      string  `json:"fullName,omitempty"`
+	Avatar        string  `json:"avatar,omitempty"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty"`
 }
 
 type ClanResponse struct {

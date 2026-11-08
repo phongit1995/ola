@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useListOrder } from '@/hooks/useListOrder'
+import { vipName } from '@/lib/vipCatalog'
 import { AdminVipService } from '@/services/adminVip.service'
-import type { CreateVipShopItemRequest, UpdateVipShopItemRequest } from '@/types'
+import type { CreateVipShopItemRequest, UpdateVipShopItemRequest, VipShopItem } from '@/types'
 
 const VIP_SHOP_KEY = 'admin-vip-shop'
 
@@ -8,6 +10,16 @@ export function useVipShopItems() {
   return useQuery({
     queryKey: [VIP_SHOP_KEY],
     queryFn: () => AdminVipService.listShopItems(),
+  })
+}
+
+export function useVipShopOrder(items: VipShopItem[]) {
+  return useListOrder({
+    items,
+    queryKey: [VIP_SHOP_KEY],
+    orderKey: 'sortOrder',
+    reorder: AdminVipService.reorderShopItems,
+    nameOf: (item) => vipName(item.vipTypeId),
   })
 }
 

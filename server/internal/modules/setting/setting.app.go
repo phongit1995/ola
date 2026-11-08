@@ -10,8 +10,9 @@ import (
 )
 
 // Keys of GET /settings/app. A key's payload is the same as its standalone endpoint, so clients can
-// switch over without remapping. Renaming a key or changing the meaning of an existing field breaks
-// released apps; add a new field or key instead.
+// switch over without remapping; gift and megaphone are the exceptions, their catalog and per-user
+// counters stay on /gifts and /megaphones/config. Renaming a key or changing the meaning of an existing
+// field breaks released apps; add a new field or key instead.
 const (
 	AppConfigKeyTopup          = "topup"
 	AppConfigKeyUsernameChange = "usernameChange"
@@ -19,6 +20,9 @@ const (
 	AppConfigKeyStory          = "story"
 	AppConfigKeyChatBot        = "chatBot"
 	AppConfigKeyMoment         = "moment"
+	AppConfigKeyGift           = "gift"
+	AppConfigKeyMegaphone      = "megaphone"
+	AppConfigKeyGiftCode       = "giftCode"
 )
 
 type appConfigSource struct {
@@ -34,6 +38,9 @@ func (ctrl *Controller) appConfigSources() []appConfigSource {
 		{AppConfigKeyStory, func(client Client) (interface{}, error) { return ctrl.storyConfigFor(client) }},
 		{AppConfigKeyChatBot, func(client Client) (interface{}, error) { return ctrl.chatBotConfigFor(client) }},
 		{AppConfigKeyMoment, func(client Client) (interface{}, error) { return ctrl.momentConfigFor(client) }},
+		{AppConfigKeyGift, func(client Client) (interface{}, error) { return ctrl.giftConfigFor(client) }},
+		{AppConfigKeyMegaphone, func(client Client) (interface{}, error) { return ctrl.megaphoneConfigFor(client) }},
+		{AppConfigKeyGiftCode, func(client Client) (interface{}, error) { return ctrl.giftCodeConfigFor(client) }},
 	}
 }
 

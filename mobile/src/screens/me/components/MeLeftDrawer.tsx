@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Animated, BackHandler, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 
 const personalIcon = require('@assets/icons/me/ic_drawer_personal.png');
@@ -24,6 +24,7 @@ const WIDTH = 240;
 interface MeLeftDrawerProps {
   displayName: string;
   avatarUrl?: string;
+  avatarFrameId?: string | null;
   coverUrl?: string;
   showMoment: boolean;
   onClose: () => void;
@@ -35,6 +36,7 @@ interface MeLeftDrawerProps {
 export function MeLeftDrawer({
   displayName,
   avatarUrl,
+  avatarFrameId,
   coverUrl,
   showMoment,
   onClose,
@@ -102,7 +104,12 @@ export function MeLeftDrawer({
                 <Rect width="100%" height="100%" fill="url(#me-drawer-cover-shade)" />
               </Svg>
               <View className="flex-row items-center gap-2 px-2 pb-2 pt-8">
-                <Avatar name={displayName} uri={avatarUrl} size={40} />
+                <AvatarWithFrame
+                  name={displayName}
+                  uri={avatarUrl}
+                  size={40}
+                  frameId={avatarFrameId}
+                />
                 <Text numberOfLines={1} className="flex-1 text-base font-medium text-white">
                   {displayName}
                 </Text>

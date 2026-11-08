@@ -1,6 +1,7 @@
 export const KEN_TYPE_LABEL: Record<string, string> = {
   VIP_PACKAGE: 'Mua gói VIP',
   VIP_ICON: 'Mua VIP icon',
+  AVATAR_FRAME: 'Mua khung avatar',
   ADMIN_DEDUCT: 'Admin trừ',
   ADMIN_GRANT: 'Admin cộng',
   REWARD: 'Thưởng',

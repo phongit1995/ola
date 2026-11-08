@@ -9,12 +9,21 @@ files:
   - package.json
 asar: true
 npmRebuild: false
+artifactName: OlaChat-${version}-${os}-${arch}.${ext}
+
+publish:
+  provider: github
+  owner: dactiennguyen
+  repo: ola-release
 
 mac:
   category: public.app-category.social-networking
   target:
-    - dmg
-    - zip
+    - target: dmg
+      arch: universal
+    - target: zip
+      arch: universal
+  identity: '-'
   hardenedRuntime: true
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
@@ -28,6 +37,7 @@ win:
     - nsis
 nsis:
   oneClick: true
+  artifactName: OlaChat-Setup-${version}.${ext}
   # Gỡ app là xoá sạch %APPDATA%\Ola Chat (localStorage/token/cache) — người
   # dùng gỡ-cài-lại sẽ phải đăng nhập lại.
   deleteAppDataOnUninstall: true

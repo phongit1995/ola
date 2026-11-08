@@ -5,6 +5,7 @@ import { colorForName } from '@ola/shared/lib';
 import type { PostAuthor, PostComment } from '@ola/shared/types';
 import { renderRichText } from '@lib/richText';
 import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { useAppTypography } from '@components/AppFontProvider';
@@ -80,7 +81,12 @@ function MeCommentItemComponent({
         style={{ elevation: 1, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } }}
       >
         <Pressable onPress={() => onOpenProfile?.(name, color)}>
-          <Avatar name={name} uri={comment.author?.avatar ?? undefined} size={36} />
+          <AvatarWithFrame
+            name={name}
+            uri={comment.author?.avatar ?? undefined}
+            size={36}
+            frameId={comment.author?.avatarFrameId}
+          />
         </Pressable>
         <View className="min-w-0 flex-1">
           <View className="flex-row items-center gap-2">

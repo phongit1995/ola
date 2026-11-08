@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FullScreenOverlay, ImageCropOverlay, ScreenHeader } from '@components';
+import {
+  ChevronRightIcon,
+  FullScreenOverlay,
+  ImageCropOverlay,
+  ScreenHeader,
+} from '@components';
 import { MIN_IMAGE_SOURCE, THEME_OPTIONS, WALLPAPER_ASPECT } from '@constants';
 import { compressImageForUpload, imageUploadErrorText, toast, validatedImageObjectUrl } from '@lib';
 import { UserService, VipService } from '@services';
@@ -68,19 +73,6 @@ function AppDownloadIcon() {
       aria-hidden="true"
     >
       <path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-5 w-5"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41Z" />
     </svg>
   );
 }

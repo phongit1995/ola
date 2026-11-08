@@ -238,10 +238,11 @@ func statusFromUser(u *models.User, marriedAt *time.Time) *MarriageStatusRespons
 
 func toSpouseInfo(u *models.User) *SpouseInfo {
 	return &SpouseInfo{
-		ID:       u.ID.String(),
-		Username: u.Username,
-		FullName: u.FullName,
-		Avatar:   u.Avatar,
+		ID:            u.ID.String(),
+		Username:      u.Username,
+		FullName:      u.FullName,
+		Avatar:        u.Avatar,
+		AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 	}
 }
 

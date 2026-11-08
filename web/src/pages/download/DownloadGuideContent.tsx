@@ -1,22 +1,28 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { toast } from '@lib';
-import { useDevicePlatform } from '@hooks';
+import { DESKTOP_OS_LIST, useDevicePlatform, type DesktopOs } from '@hooks';
 import { AndroidGuide } from './AndroidGuide';
+import { DesktopGuide } from './DesktopGuide';
 import { IosGuide } from './IosGuide';
 import { DownloadFaq } from './DownloadFaq';
 import { PlatformTabs, type GuidePlatform } from './PlatformTabs';
 import { copyToClipboard } from './copyToClipboard';
 import { CopyIcon, PhoneIcon, ShieldIcon, WarningIcon } from './platformIcons';
 
+function requestedDesktopOs(value: string | null): DesktopOs | null {
+  return DESKTOP_OS_LIST.find((os) => os === value) ?? null;
+}
+
 export function DownloadGuideContent() {
   const { t } = useTranslation();
-  const { platform, isInAppBrowser } = useDevicePlatform();
-  const detected: GuidePlatform | null =
-    platform === 'desktop' ? null : platform;
+  const { platform, desktopOs, isInAppBrowser } = useDevicePlatform();
+  const [searchParams] = useSearchParams();
+  const requestedOs = requestedDesktopOs(searchParams.get('os'));
   const [activeTab, setActiveTab] = useState<GuidePlatform>(
-    detected ?? 'android'
+    requestedOs ? 'desktop' : platform
   );
   const pageUrl = `${window.location.origin}${ROUTES.downloadApp}`;
 
@@ -51,13 +57,20 @@ export function DownloadGuideContent() {
       <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
         <PlatformTabs
           active={activeTab}
-          detected={detected}
+          detected={platform}
           onChange={setActiveTab}
         />
-        {activeTab === 'android' ? (
-          <AndroidGuide isCurrentDevice={detected === 'android'} />
-        ) : (
-          <IosGuide isCurrentDevice={detected === 'ios'} />
+        {activeTab === 'android' && (
+          <AndroidGuide isCurrentDevice={platform === 'android'} />
+        )}
+        {activeTab === 'ios' && (
+          <IosGuide isCurrentDevice={platform === 'ios'} />
+        )}
+        {activeTab === 'desktop' && (
+          <DesktopGuide
+            currentOs={platform === 'desktop' ? desktopOs : null}
+            initialOs={requestedOs ?? desktopOs}
+          />
         )}
       </section>
 

@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { AndroidIcon, AppleIcon } from './platformIcons';
+import type { DevicePlatform } from '@hooks';
+import { AndroidIcon, AppleIcon, ComputerIcon } from './platformIcons';
 
-export type GuidePlatform = 'android' | 'ios';
+export type GuidePlatform = DevicePlatform;
 
 interface PlatformTabsProps {
   active: GuidePlatform;
-  detected: GuidePlatform | null;
+  detected: GuidePlatform;
   onChange: (platform: GuidePlatform) => void;
 }
 
@@ -23,6 +24,7 @@ export function PlatformTabs({
   }[] = [
     { key: 'android', label: t('download.android.name'), icon: AndroidIcon },
     { key: 'ios', label: t('download.ios.name'), icon: AppleIcon },
+    { key: 'desktop', label: t('download.desktop.name'), icon: ComputerIcon },
   ];
   const orderedTabs = [...tabs].sort(
     (a, b) => Number(b.key === detected) - Number(a.key === detected)

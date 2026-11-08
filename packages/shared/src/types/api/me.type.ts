@@ -37,6 +37,7 @@ export interface PostAuthor {
   username: string;
   fullName?: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   isFriend?: boolean;
   isSelf?: boolean;
   relationship?: { status: RelationshipStatus; requestId?: string };

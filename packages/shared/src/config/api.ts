@@ -192,6 +192,18 @@ export const API_PATH = {
     history: '/vip/history',
     transfers: '/vip/transfers',
   },
+  avatarFrame: {
+    shop: '/avatar-frames/shop',
+    buy: '/avatar-frames/buy',
+    gift: '/avatar-frames/gift',
+    mine: '/avatar-frames/mine',
+    equip: '/avatar-frames/equip',
+    transfer: (frameId: string) => `/avatar-frames/mine/${frameId}/transfer`,
+    userStore: (userId: string) => `/avatar-frames/users/${userId}/store`,
+    storePrivacy: '/avatar-frames/store/privacy',
+    history: '/avatar-frames/history',
+    transfers: '/avatar-frames/transfers',
+  },
   egg: {
     packs: '/egg/packs',
     gifts: (id: string) => `/egg/packs/${id}/gifts`,
@@ -208,6 +220,9 @@ export const API_PATH = {
   ken: {
     transfer: '/ken/transfer',
     transactions: '/ken/transactions',
+  },
+  giftCodes: {
+    redeem: '/gift-codes/redeem',
   },
   megaphones: {
     base: '/megaphones',

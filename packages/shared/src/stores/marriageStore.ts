@@ -29,6 +29,7 @@ function mapSpouse(s: MarriageUserBrief): Spouse {
     name: s.fullName && s.fullName !== '' ? s.fullName : s.username,
     avatarColor: colorForName(s.username),
     avatarUrl: s.avatar,
+    avatarFrameId: s.avatarFrameId,
   };
 }
 

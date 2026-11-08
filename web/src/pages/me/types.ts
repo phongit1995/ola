@@ -10,6 +10,7 @@ export interface MePost {
   author: string;
   fullName: string;
   avatar: string | null;
+  avatarFrameId?: string | null;
   color: string;
   time: string;
   createdAt?: string;

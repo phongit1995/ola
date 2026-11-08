@@ -20,6 +20,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		gifts.GET("", r.controller.List)
 		gifts.POST("", r.controller.Create)
 		gifts.GET("/transactions", r.controller.ListTransactions)
+		gifts.PUT("/order", r.controller.Reorder)
 		gifts.PATCH("/:id", r.controller.Update)
 		gifts.DELETE("/:id", r.controller.Delete)
 	}

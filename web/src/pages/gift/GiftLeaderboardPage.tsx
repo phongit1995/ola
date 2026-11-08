@@ -5,13 +5,13 @@ import rankBadge1 from '@/assets/icons/gift/gift-rank-1.webp';
 import rankBadge2 from '@/assets/icons/gift/gift-rank-2.webp';
 import rankBadge3 from '@/assets/icons/gift/gift-rank-3.webp';
 import {
-  Avatar,
   CharmIcon,
   FullScreenOverlay,
   ScreenHeader,
   Spinner,
   UserName,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import {
   GIFT_LEADERBOARD_PERIOD_LABEL,
   GIFT_LEADERBOARD_PERIODS,
@@ -97,12 +97,19 @@ function PodiumSlot({
             style={{ width: slot.avatarSize, height: slot.avatarSize }}
           />
         ) : (
-          <span className={cn('rounded-full ring-3', slot.ring)}>
-            <Avatar
+          <span
+            className={cn(
+              'rounded-full',
+              !entry.user.avatarFrameId && 'ring-3',
+              !entry.user.avatarFrameId && slot.ring
+            )}
+          >
+            <AvatarWithFrame
               name={name}
               src={entry.user.avatar}
               color={colorForName(name)}
               size={slot.avatarSize}
+              frameId={entry.user.avatarFrameId}
             />
           </span>
         )}
@@ -248,11 +255,12 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
                     <span className="w-6 text-center text-sm font-semibold text-black/45">
                       {entry.rank}
                     </span>
-                    <Avatar
+                    <AvatarWithFrame
                       name={name}
                       src={entry.user.avatar}
                       color={colorForName(name)}
                       size={36}
+                      frameId={entry.user.avatarFrameId}
                     />
                     <span className="flex min-w-0 flex-1">
                       <UserName
@@ -288,11 +296,12 @@ export function GiftLeaderboardPage({ onClose, z }: GiftLeaderboardPageProps) {
               '—'
             )}
           </span>
-          <Avatar
+          <AvatarWithFrame
             name={myName}
             src={me?.avatar}
             color={colorForName(myName)}
             size={36}
+            frameId={me?.avatarFrameId}
           />
           <span className="min-w-0 flex-1">
             <UserName

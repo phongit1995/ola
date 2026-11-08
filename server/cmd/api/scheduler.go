@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	giftcode "ola-chat-server/internal/modules/gift-code"
 	"ola-chat-server/internal/modules/kenchest"
 	"ola-chat-server/internal/modules/megaphone"
 	"ola-chat-server/internal/modules/moment"
@@ -20,6 +21,7 @@ type Schedulers struct {
 	RookiesCrawler  *story.RookiesCrawler
 	MomentCleaner   *moment.Cleaner
 	MomentProcessor *moment.Processor
+	GiftCodeCleaner *giftcode.Cleaner
 }
 
 func (s Schedulers) Start(ctx context.Context) {
@@ -29,6 +31,7 @@ func (s Schedulers) Start(ctx context.Context) {
 	s.RookiesCrawler.Start(ctx)
 	s.MomentCleaner.Start(ctx)
 	s.MomentProcessor.Start(ctx)
+	s.GiftCodeCleaner.Start(ctx)
 }
 
 func (s Schedulers) Wait(ctx context.Context) {

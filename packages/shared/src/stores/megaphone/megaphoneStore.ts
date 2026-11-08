@@ -5,6 +5,7 @@ import { sharedPersistStorage } from '../../platform/persistStorage';
 import type { MegaphoneState, PersistedMegaphoneState } from '../../types/client/megaphone.type';
 import { registerOnLogout } from '../auth/authStore';
 import { useRoomFilterStore } from '../room/roomFilterStore';
+import { selectMegaphoneEnabled, useMegaphoneConfigStore } from './megaphoneConfigStore';
 
 export const useMegaphoneStore = create<MegaphoneState>()(
   persist(
@@ -13,6 +14,7 @@ export const useMegaphoneStore = create<MegaphoneState>()(
       removedIds: {},
       seenIds: {},
       play: (megaphone) => {
+        if (!selectMegaphoneEnabled(useMegaphoneConfigStore.getState())) return;
         const { seenIds, removedIds } = get();
         if (seenIds[megaphone.id] != null || removedIds[megaphone.id] != null) return;
         if (useRoomFilterStore.getState().blockedUserIds.includes(megaphone.sender.id)) return;

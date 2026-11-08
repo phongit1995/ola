@@ -5,6 +5,7 @@ export interface Spouse {
   name: string;
   avatarColor: string;
   avatarUrl?: string;
+  avatarFrameId?: string | null;
 }
 
 export interface DiaryEntry {

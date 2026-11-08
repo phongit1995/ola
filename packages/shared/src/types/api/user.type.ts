@@ -33,11 +33,13 @@ export interface PublicProfile {
   charm?: number;
   vipUsed?: string | null;
   vipEndTime?: string | null;
+  avatarFrameId?: string | null;
   followerCount: number;
   followingCount: number;
   canViewInterested: boolean;
   canViewVipStore: boolean;
   canViewGiftWall?: boolean;
+  canViewAvatarFrameStore?: boolean;
   antiCount: number;
   isOnline: boolean;
   lastActiveAt?: string;
@@ -63,6 +65,7 @@ export interface UserSearchResult {
   requestId?: string;
   vipUsed?: string;
   vipEndTime?: string;
+  avatarFrameId?: string | null;
 }
 
 export interface SearchUsersResult {
@@ -108,6 +111,7 @@ export interface VisitorUser {
   avatar?: string;
   vipUsed?: string;
   vipEndTime?: string;
+  avatarFrameId?: string | null;
   viewedAt: string;
   isOnline: boolean;
   relationship?: {

@@ -9,6 +9,8 @@ import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useStoryConfigStore } from '@ola/shared/stores/story/storyConfigStore';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
+import { useMegaphoneConfigStore } from '@ola/shared/stores/megaphone/megaphoneConfigStore';
 import { useThemeStore } from '@ola/shared/stores/themeStore';
 import { themeOptionOf } from '@ola/shared/constants';
 import { imageSizeForHeight } from '@lib/chatSmiley';
@@ -50,6 +52,8 @@ import { ProfileViewScreen } from '@screens/profile/ProfileViewScreen';
 import { EditProfileScreen } from '@screens/profile/EditProfileScreen';
 import { VipStoreScreen } from '@screens/vip/VipStoreScreen';
 import { BuyVipScreen } from '@screens/vip/BuyVipScreen';
+import { AvatarFrameShopScreen } from '@screens/avatar-frame/AvatarFrameShopScreen';
+import { AvatarFrameStoreScreen } from '@screens/avatar-frame/AvatarFrameStoreScreen';
 import { KenStoreScreen } from '@screens/ken/KenStoreScreen';
 import { BuyKenScreen } from '@screens/ken/BuyKenScreen';
 import { MediaStoreScreen } from '@screens/media/MediaStoreScreen';
@@ -59,7 +63,6 @@ import { GiftHistoryScreen } from '@screens/gift/GiftHistoryScreen';
 import { MegaphoneScreen } from '@screens/megaphone/MegaphoneScreen';
 import { NotificationsScreen } from '@screens/apps/NotificationsScreen';
 import { SettingsScreen } from '@screens/settings/SettingsScreen';
-import { AppLockScreen } from '@screens/settings/AppLockScreen';
 import { PenGameScreen } from '@screens/games/pen/PenGameScreen';
 import { SpinWheelGameScreen } from '@screens/games/spin-wheel/SpinWheelGameScreen';
 import { EggGameScreen } from '@screens/games/egg/EggGameScreen';
@@ -189,10 +192,14 @@ function MainTabs() {
   const theme = useThemeStore((state) => state.theme);
   const storyEnabled = useStoryConfigStore((state) => state.enabled);
   const loadStoryConfig = useStoryConfigStore((state) => state.load);
+  const loadGiftSettings = useGiftCatalogStore((state) => state.loadSettings);
+  const loadMegaphoneConfig = useMegaphoneConfigStore((state) => state.load);
 
   useEffect(() => {
     void loadStoryConfig();
-  }, [loadStoryConfig]);
+    void loadGiftSettings();
+    void loadMegaphoneConfig();
+  }, [loadStoryConfig, loadGiftSettings, loadMegaphoneConfig]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -320,6 +327,8 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.EditProfile} component={EditProfileScreen} />
       <RootStack.Screen name={ROOT_ROUTES.VipStore} component={VipStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.BuyVip} component={BuyVipScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.AvatarFrameShop} component={AvatarFrameShopScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.AvatarFrameStore} component={AvatarFrameStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.KenStore} component={KenStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.BuyKen} component={BuyKenScreen} />
       <RootStack.Screen name={ROOT_ROUTES.MediaStore} component={MediaStoreScreen} />
@@ -329,7 +338,6 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.Megaphone} component={MegaphoneScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Notifications} component={NotificationsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Settings} component={SettingsScreen} />
-      <RootStack.Screen name={ROOT_ROUTES.AppLock} component={AppLockScreen} />
       <RootStack.Screen name={ROOT_ROUTES.PenGame} component={PenGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.SpinWheel} component={SpinWheelGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EggGame} component={EggGameScreen} />

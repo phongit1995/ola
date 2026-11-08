@@ -5,7 +5,9 @@ export type AppNotificationType =
   | 'report_resolved'
   | 'gift_received'
   | 'ken_received'
-  | 'vip_received';
+  | 'vip_received'
+  | 'avatar_frame_received'
+  | 'gift_code';
 
 export interface AppNotificationActor {
   id: string;
@@ -29,6 +31,7 @@ export interface AppNotificationTransfer {
   amount?: number;
   vipTypeId?: number;
   days?: number;
+  frameId?: string;
 }
 
 export interface AppNotificationListResult {

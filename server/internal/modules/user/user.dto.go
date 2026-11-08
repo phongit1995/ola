@@ -16,6 +16,7 @@ type UserProfileResponse struct {
 	Ken            int                    `json:"ken" example:"0"`
 	VipUsed        *string                `json:"vipUsed" example:"gold"`
 	VipEndTime     *string                `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
+	AvatarFrameID  *string                `json:"avatarFrameId" example:"001"`
 	FollowerCount  int                    `json:"followerCount" example:"0"`
 	FollowingCount int                    `json:"followingCount" example:"0"`
 	Spouse         *SpouseInfo            `json:"spouse,omitempty"`
@@ -54,16 +55,17 @@ type UpdateProfileRequest struct {
 }
 
 type UserSearchResult struct {
-	ID           string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username     string  `json:"username" example:"john_doe"`
-	FullName     string  `json:"fullName,omitempty" example:"John Doe"`
-	Avatar       string  `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-	Bio          string  `json:"bio,omitempty" example:"Software developer"`
-	IsOnline     bool    `json:"isOnline" example:"true"`
-	Relationship string  `json:"relationship,omitempty" example:"friend"`
-	RequestID    string  `json:"requestId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
-	VipUsed      *string `json:"vipUsed,omitempty" example:"gold"`
-	VipEndTime   *string `json:"vipEndTime,omitempty" example:"2026-12-31T00:00:00Z"`
+	ID            string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username      string  `json:"username" example:"john_doe"`
+	FullName      string  `json:"fullName,omitempty" example:"John Doe"`
+	Avatar        string  `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	Bio           string  `json:"bio,omitempty" example:"Software developer"`
+	IsOnline      bool    `json:"isOnline" example:"true"`
+	Relationship  string  `json:"relationship,omitempty" example:"friend"`
+	RequestID     string  `json:"requestId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
+	VipUsed       *string `json:"vipUsed,omitempty" example:"gold"`
+	VipEndTime    *string `json:"vipEndTime,omitempty" example:"2026-12-31T00:00:00Z"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty" example:"001"`
 }
 
 type SearchUsersResponse struct {
@@ -81,32 +83,34 @@ type UploadAvatarResponse struct {
 }
 
 type UserPublicProfileResponse struct {
-	ID                string            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username          string            `json:"username" example:"john_doe"`
-	FullName          string            `json:"fullName,omitempty" example:"John Doe"`
-	Avatar            string            `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-	CoverPhoto        string            `json:"coverPhoto,omitempty" example:"https://example.com/cover.jpg"`
-	BioImage          *string           `json:"bioImage,omitempty" example:"https://example.com/bio.jpg"`
-	Bio               string            `json:"bio,omitempty" example:"Software developer"`
-	Gender            string            `json:"gender" example:"male"`
-	DateOfBirth       string            `json:"dateOfBirth,omitempty" example:"1990-01-01"`
-	Spouse            *SpouseInfo       `json:"spouse,omitempty"`
-	Verified          bool              `json:"verified" example:"false"`
-	EmailVerified     bool              `json:"emailVerified" example:"false"`
-	Kisses            int               `json:"kisses" example:"0"`
-	Charm             int               `json:"charm" example:"0"`
-	VipUsed           *string           `json:"vipUsed" example:"gold"`
-	VipEndTime        *string           `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
-	FollowerCount     int               `json:"followerCount" example:"0"`
-	FollowingCount    int               `json:"followingCount" example:"0"`
-	CanViewInterested bool              `json:"canViewInterested" example:"true"`
-	CanViewVipStore   bool              `json:"canViewVipStore" example:"true"`
-	CanViewGiftWall   bool              `json:"canViewGiftWall" example:"true"`
-	AntiCount         int               `json:"antiCount" example:"0"`
-	IsOnline          bool              `json:"isOnline" example:"true"`
-	LastActiveAt      string            `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`
-	CreatedAt         string            `json:"createdAt" example:"2024-01-01T00:00:00Z"`
-	Relationship      *RelationshipInfo `json:"relationship,omitempty"`
+	ID                      string            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username                string            `json:"username" example:"john_doe"`
+	FullName                string            `json:"fullName,omitempty" example:"John Doe"`
+	Avatar                  string            `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	CoverPhoto              string            `json:"coverPhoto,omitempty" example:"https://example.com/cover.jpg"`
+	BioImage                *string           `json:"bioImage,omitempty" example:"https://example.com/bio.jpg"`
+	Bio                     string            `json:"bio,omitempty" example:"Software developer"`
+	Gender                  string            `json:"gender" example:"male"`
+	DateOfBirth             string            `json:"dateOfBirth,omitempty" example:"1990-01-01"`
+	Spouse                  *SpouseInfo       `json:"spouse,omitempty"`
+	Verified                bool              `json:"verified" example:"false"`
+	EmailVerified           bool              `json:"emailVerified" example:"false"`
+	Kisses                  int               `json:"kisses" example:"0"`
+	Charm                   int               `json:"charm" example:"0"`
+	VipUsed                 *string           `json:"vipUsed" example:"gold"`
+	VipEndTime              *string           `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
+	AvatarFrameID           *string           `json:"avatarFrameId" example:"001"`
+	FollowerCount           int               `json:"followerCount" example:"0"`
+	FollowingCount          int               `json:"followingCount" example:"0"`
+	CanViewInterested       bool              `json:"canViewInterested" example:"true"`
+	CanViewVipStore         bool              `json:"canViewVipStore" example:"true"`
+	CanViewGiftWall         bool              `json:"canViewGiftWall" example:"true"`
+	CanViewAvatarFrameStore bool              `json:"canViewAvatarFrameStore" example:"true"`
+	AntiCount               int               `json:"antiCount" example:"0"`
+	IsOnline                bool              `json:"isOnline" example:"true"`
+	LastActiveAt            string            `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`
+	CreatedAt               string            `json:"createdAt" example:"2024-01-01T00:00:00Z"`
+	Relationship            *RelationshipInfo `json:"relationship,omitempty"`
 }
 
 type KissResponse struct {
@@ -141,15 +145,16 @@ type FollowListQuery struct {
 }
 
 type VisitorUser struct {
-	ID           string            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username     string            `json:"username" example:"john_doe"`
-	FullName     string            `json:"fullName,omitempty" example:"John Doe"`
-	Avatar       string            `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-	VipUsed      *string           `json:"vipUsed,omitempty" example:"gold"`
-	VipEndTime   *string           `json:"vipEndTime,omitempty" example:"2026-12-31T00:00:00Z"`
-	ViewedAt     string            `json:"viewedAt" example:"2024-01-15T10:30:00Z"`
-	IsOnline     bool              `json:"isOnline" example:"true"`
-	Relationship *RelationshipInfo `json:"relationship,omitempty"`
+	ID            string            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username      string            `json:"username" example:"john_doe"`
+	FullName      string            `json:"fullName,omitempty" example:"John Doe"`
+	Avatar        string            `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	VipUsed       *string           `json:"vipUsed,omitempty" example:"gold"`
+	VipEndTime    *string           `json:"vipEndTime,omitempty" example:"2026-12-31T00:00:00Z"`
+	AvatarFrameID *string           `json:"avatarFrameId,omitempty" example:"001"`
+	ViewedAt      string            `json:"viewedAt" example:"2024-01-15T10:30:00Z"`
+	IsOnline      bool              `json:"isOnline" example:"true"`
+	Relationship  *RelationshipInfo `json:"relationship,omitempty"`
 }
 
 type VisitorListResponse struct {

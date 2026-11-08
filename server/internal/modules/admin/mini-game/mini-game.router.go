@@ -19,6 +19,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	{
 		games.GET("", r.controller.List)
 		games.POST("", r.controller.Create)
+		games.PUT("/order", r.controller.Reorder)
 		games.PATCH("/:id", r.controller.Update)
 		games.DELETE("/:id", r.controller.Delete)
 	}

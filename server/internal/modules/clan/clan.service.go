@@ -738,10 +738,11 @@ func toClanUserResponse(u *models.User) *ClanUserResponse {
 		return nil
 	}
 	return &ClanUserResponse{
-		ID:       u.ID.String(),
-		Username: u.Username,
-		FullName: u.FullName,
-		Avatar:   u.Avatar,
+		ID:            u.ID.String(),
+		Username:      u.Username,
+		FullName:      u.FullName,
+		Avatar:        u.Avatar,
+		AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 	}
 }
 

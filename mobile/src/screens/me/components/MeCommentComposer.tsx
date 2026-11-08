@@ -5,7 +5,7 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '@screens/room/components/SmileyKulPanel';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 
 const smileyIcon = require('@assets/icons/chat/ic_smiley.png');
 const smileyIconActive = require('@assets/icons/chat/ic_smiley_selected.png');
@@ -82,7 +82,12 @@ export const MeCommentComposer = forwardRef<MeCommentComposerHandle, MeCommentCo
         className="flex-row items-end gap-2 bg-white px-3 py-2"
         style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}
       >
-        <Avatar name={myName} uri={me?.avatar ?? undefined} size={36} />
+        <AvatarWithFrame
+          name={myName}
+          uri={me?.avatar ?? undefined}
+          size={36}
+          frameId={me?.avatarFrameId}
+        />
         <View
           className="flex-1 rounded-2xl"
           style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}

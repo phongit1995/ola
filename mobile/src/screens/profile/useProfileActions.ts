@@ -74,6 +74,7 @@ export function useProfileActions(username: string) {
             fullName: data.fullName,
             avatar: data.avatar,
             vipTypeId: activeVipTypeId(data.vipUsed, data.vipEndTime),
+            avatarFrameId: data.avatarFrameId ?? null,
           });
         }
         const canView = data.canViewInterested !== false;

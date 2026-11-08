@@ -26,6 +26,7 @@ export function mapPublicProfile(
     color: deps.seedColor !== '' ? deps.seedColor : colorForName(data.username),
     coverColor: DEFAULT_COVER_COLOR,
     avatar: data.avatar,
+    avatarFrameId: data.avatarFrameId ?? null,
     coverPhoto: data.coverPhoto,
     verified: data.verified,
     emailVerified: data.emailVerified === true,
@@ -46,6 +47,7 @@ export function mapPublicProfile(
     isSelf: data.relationship?.status === 'self',
     canViewVipStore: data.canViewVipStore !== false,
     canViewGiftWall: data.canViewGiftWall !== false,
+    canViewAvatarFrameStore: data.canViewAvatarFrameStore === true,
   };
 }
 

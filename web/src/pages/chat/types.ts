@@ -97,6 +97,7 @@ export interface ConversationView {
   username: string;
   title: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   color: string;
   preview: string;
   previewIsSticker: boolean;

@@ -5,6 +5,7 @@ import type { ViolationState } from './types'
 export const KEN_TX_TYPE: Record<string, string> = {
   VIP_PACKAGE: 'Mua gói VIP',
   VIP_ICON: 'Mua VIP icon',
+  AVATAR_FRAME: 'Mua khung avatar',
   ADMIN_GRANT: 'Admin cộng',
   ADMIN_DEDUCT: 'Admin trừ',
   REWARD: 'Phần thưởng',
@@ -52,6 +53,7 @@ export const VIP_HISTORY_SOURCE_META: Record<string, { label: string; color: str
   admin: { label: 'Admin cấp', color: 'gold' },
   gift: { label: 'Được tặng', color: 'green' },
   email_verify: { label: 'Xác thực email', color: 'cyan' },
+  gift_code: { label: 'Mã quà tặng', color: 'magenta' },
 }
 
 export const VIP_ICON_SOURCE_LABEL: Record<string, string> = {
@@ -60,6 +62,7 @@ export const VIP_ICON_SOURCE_LABEL: Record<string, string> = {
   transfer: 'Nhận chuyển',
   gift: 'Tặng',
   admin: 'Admin',
+  gift_code: 'Mã quà tặng',
 }
 
 export const LOCK_REASON_VIOLATIONS = 'violations'

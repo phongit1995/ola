@@ -14,6 +14,7 @@ export interface ConversationOtherUser {
   bio?: string;
   isOnline: boolean;
   lastActiveAt?: string;
+  avatarFrameId?: string | null;
 }
 
 export interface Conversation {

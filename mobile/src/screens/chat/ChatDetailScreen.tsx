@@ -23,6 +23,7 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import {
   imageUploadErrorText,
   isSameDay,
@@ -96,6 +97,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     conversation,
     title,
     peerAvatar,
+    peerAvatarFrameId,
     myId,
     peerId,
     peerProfile,
@@ -137,6 +139,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
+  const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
+  const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
   const pendingAudioRef = useRef<VoiceRecording | null>(null);
   const pendingAudioCleanupQueueRef = useRef<VoiceRecording[]>([]);
@@ -193,6 +197,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     setEditing(null);
     setHighlightedId(null);
   }
+
+  useEffect(() => {
+    void loadGiftSettings();
+  }, [loadGiftSettings]);
 
   useEffect(() => {
     const abandoned = pendingAudioCleanupQueueRef.current;
@@ -539,6 +547,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         title={title}
         subtitle={subtitle}
         avatar={peerAvatar}
+        avatarFrameId={peerAvatarFrameId}
         right={
           blockStatus === RELATIONSHIP_STATUS.friend ? <ChatCallButtons /> : null
         }
@@ -590,7 +599,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             </>
           }
           ListFooterComponent={
-            typingUsers.length > 0 ? <TypingIndicator name={title} avatar={peerAvatar} /> : null
+            typingUsers.length > 0 ? <TypingIndicator name={title} avatar={peerAvatar} avatarFrameId={peerAvatarFrameId} /> : null
           }
           renderItem={({ item, index }) => {
             const prev = messages[index - 1];
@@ -626,6 +635,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   highlighted={item.id === highlightedId}
                   peerName={title}
                   peerAvatar={peerAvatar}
+                  peerAvatarFrameId={peerAvatarFrameId}
                   timeLabel={timeFormatter(item.createdAt)}
                   onLongPress={(anchor) => {
                     suspendRef.current = true;
@@ -834,7 +844,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             }
             setTransferVipDaysOpen(true);
           }}
-          onSendGift={() => {
+          onSendGift={giftsEnabled ? () => {
             setOpenTab(null);
             if (peerId === '') {
               push('error', t('chat.actionError'));
@@ -842,7 +852,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             }
             Keyboard.dismiss();
             setGiftOpen(true);
-          }}
+          } : undefined}
         />
       )}
       </>

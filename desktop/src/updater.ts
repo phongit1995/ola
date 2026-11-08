@@ -15,6 +15,7 @@ const RELEASES_URL =
 
 interface OtaState {
   current: number;
+  shellVersion?: string;
 }
 
 interface ReleaseBody {
@@ -44,7 +45,9 @@ function bundleDir(version: number): string {
 export function readOtaState(): OtaState {
   try {
     const raw = JSON.parse(fs.readFileSync(statePath(), 'utf8')) as Partial<OtaState>;
-    if (typeof raw.current === 'number' && raw.current > 0) return { current: raw.current };
+    if (typeof raw.current === 'number' && raw.current > 0 && raw.shellVersion === app.getVersion()) {
+      return { current: raw.current };
+    }
   } catch {
     // chưa từng OTA hoặc state hỏng → coi như đang chạy bundle đóng gói sẵn
   }
@@ -123,7 +126,7 @@ async function install(version: number, zip: Buffer, expectedSha256: string): Pr
   }
 
   const previous = readOtaState().current;
-  fs.writeFileSync(statePath(), JSON.stringify({ current: version }));
+  fs.writeFileSync(statePath(), JSON.stringify({ current: version, shellVersion: app.getVersion() }));
 
   // Chỉ giữ bundle mới + bundle đang chạy (lỡ cần rollback tay), dọn phần còn lại.
   const keep = new Set([String(version), String(previous)]);

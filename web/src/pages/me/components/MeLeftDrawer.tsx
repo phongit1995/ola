@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { DEFAULT_AVATAR_COLOR } from '@lib';
 import personalIcon from '@/assets/icons/me/ic_drawer_personal.png';
 import marriageIcon from '@/assets/icons/me/header/ic_header_marriage.png';
@@ -19,6 +19,7 @@ import { CLOSE_ANIMATION_MS } from '../constants';
 interface MeLeftDrawerProps {
   displayName: string;
   avatarUrl?: string;
+  avatarFrameId?: string | null;
   coverUrl?: string;
   showMoment: boolean;
   onClose: () => void;
@@ -37,6 +38,7 @@ interface DrawerItem {
 export function MeLeftDrawer({
   displayName,
   avatarUrl,
+  avatarFrameId,
   coverUrl,
   showMoment,
   onClose,
@@ -124,11 +126,12 @@ export function MeLeftDrawer({
           className="relative h-28 shrink-0 bg-ola-primary-dark bg-cover bg-center text-left"
         >
           <span className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-linear-to-t from-black/70 to-transparent px-2 pb-2 pt-8">
-            <Avatar
+            <AvatarWithFrame
               name={displayName}
               src={avatarUrl}
               color={DEFAULT_AVATAR_COLOR}
               size={40}
+              frameId={avatarFrameId}
             />
             <span className="min-w-0 flex-1 truncate text-base font-medium text-white">
               {displayName}

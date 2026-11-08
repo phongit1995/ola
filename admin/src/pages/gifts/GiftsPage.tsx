@@ -7,17 +7,22 @@ import {
   Select,
   Space,
   Switch,
-  Table,
   Typography,
   type TableColumnsType,
 } from 'antd'
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+} from '@ant-design/icons'
 import { GiftFormModal } from './GiftFormModal'
-import { useDeleteGift, useGifts, useUpdateGift } from './useGiftQueries'
+import { useDeleteGift, useGiftOrder, useGifts, useUpdateGift } from './useGiftQueries'
 import { GiftAnimationPreview, type GiftPreview } from './GiftAnimationPreview'
 import { GIFT_ANIMATION_OPTIONS } from './constants'
 import { GIFT_ANIMATION_RANDOM } from '@ola/shared/constants'
 import { pickGiftAnimation, toGiftAnimationSetting } from '@ola/shared/lib'
+import { MoveToTopButton, RenumberButton } from '@/components/ListOrderButtons'
+import { SortableTable } from '@/components/SortableTable'
 import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
 import { GIFT_SECTION_LINKS } from '@/pages/shop/sections'
 import { errorMessage } from '@/lib/apiError'
@@ -43,6 +48,7 @@ export function GiftsPage() {
   const updateGift = useUpdateGift()
   const deleteGift = useDeleteGift()
   const gifts = data ?? []
+  const order = useGiftOrder(gifts)
   const closePreview = useCallback(() => setPreview(null), [])
 
   function openCreate() {
@@ -223,9 +229,14 @@ export function GiftsPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 140,
+      width: 180,
       render: (_, gift) => (
         <Space>
+          <MoveToTopButton
+            name={gift.name}
+            disabled={order.isFirst(gift) || order.saving}
+            onClick={() => order.moveToTop(gift)}
+          />
           <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(gift)}>
             Sửa
           </Button>
@@ -239,25 +250,35 @@ export function GiftsPage() {
     <Card
       title={<ShopSectionNav links={GIFT_SECTION_LINKS} />}
       extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          Thêm quà
-        </Button>
+        <Space>
+          <RenumberButton disabled={order.numbered || order.saving} onClick={order.renumber} />
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            Thêm quà
+          </Button>
+        </Space>
       }
     >
       <Typography.Paragraph type="secondary">
         Quà người dùng tặng nhau trong chat 1-1 và trang cá nhân. Người tặng trả KEN, người nhận
         được sức hút và quà hiện trên tường quà (không nhận KEN).
       </Typography.Paragraph>
-      <Table<AdminGift>
-        rowKey="id"
+      <SortableTable<AdminGift>
+        items={gifts}
         columns={columns}
-        dataSource={gifts}
         loading={isFetching}
-        scroll={{ x: 1000 }}
-        pagination={{ pageSize: 50, showTotal: (total) => `${total} món quà` }}
+        scroll={{ x: 1090 }}
+        pagination={false}
+        footer={() => `${gifts.length} món quà. Kéo biểu tượng đầu dòng để đổi thứ tự.`}
         locale={{ emptyText: 'Chưa có quà nào, bấm "Thêm quà" để tạo' }}
+        reorderDisabled={order.saving}
+        onReorder={order.save}
       />
-      <GiftFormModal open={formOpen} gift={editing} onClose={() => setFormOpen(false)} />
+      <GiftFormModal
+        open={formOpen}
+        gift={editing}
+        nextPosition={order.nextPosition}
+        onClose={() => setFormOpen(false)}
+      />
       {preview != null && (
         <GiftAnimationPreview preview={preview} onClose={closePreview} />
       )}

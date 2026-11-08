@@ -1,15 +1,16 @@
 import { View } from 'react-native';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 
 interface TypingIndicatorProps {
   name: string;
   avatar?: string;
+  avatarFrameId?: string | null;
 }
 
-export function TypingIndicator({ name, avatar }: TypingIndicatorProps) {
+export function TypingIndicator({ name, avatar, avatarFrameId }: TypingIndicatorProps) {
   return (
     <View className="mt-1 flex-row items-end gap-1 px-3">
-      <Avatar name={name} uri={avatar} size={32} />
+      <AvatarWithFrame name={name} uri={avatar} size={32} frameId={avatarFrameId} />
       <View
         className="flex-row items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-3 py-3"
         style={{

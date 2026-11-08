@@ -5,6 +5,7 @@ import iconNotify from '@/assets/icons/apps/notify.png';
 // import iconGame from '@/assets/icons/apps/game.png';
 import iconPersonal from '@/assets/icons/apps/personal.png';
 import iconVip from '@/assets/icons/apps/vip-crown.webp';
+import iconAvatarFrame from '@/assets/icons/apps/avatar-frame.webp';
 import iconKen from '@/assets/icons/apps/ken.png';
 // import iconAdme from '@/assets/icons/apps/adme.png';
 import iconMedia from '@/assets/icons/apps/media.png';
@@ -16,6 +17,7 @@ import iconSupport from '@/assets/icons/apps/support.png';
 import iconLogout from '@/assets/icons/apps/logout.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconGift from '@/assets/icons/apps/gift.webp';
+import iconGiftCode from '@/assets/icons/apps/gift-code.webp';
 import iconMegaphone from '@/assets/images/member-megaphone.webp';
 import iconSocial from '@/assets/icons/social/social-menu-light.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
@@ -27,7 +29,7 @@ export interface AppItem {
   titleKey: ParseKeys;
   app?: AppOverlayKind;
   overlay?: 'pen' | 'egg' | 'wheel';
-  action?: 'logout' | 'social' | 'remove-account' | 'support';
+  action?: 'logout' | 'social' | 'remove-account' | 'support' | 'gift-code';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -53,11 +55,17 @@ export const PERSONAL_ITEMS: AppItem[] = [
   },
   { icon: iconPersonal, titleKey: 'home.apps.profile', app: 'profile' },
   { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
+  {
+    icon: iconAvatarFrame,
+    titleKey: 'avatarFrame.storeTitle',
+    app: 'avatarFrameStore',
+  },
   { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
   { icon: iconGift, titleKey: 'home.apps.gifts', app: 'gifts' },
   { icon: iconMegaphone, titleKey: 'megaphone.menuTitle', app: 'megaphone' },
   { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
   { icon: iconSocial, titleKey: 'home.apps.social', action: 'social' },
+  { icon: iconGiftCode, titleKey: 'giftCode.menuTitle', action: 'gift-code' },
   { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },
   {
     icon: iconRemoveAccount,

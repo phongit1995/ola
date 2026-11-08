@@ -32,6 +32,8 @@ export type RootStackParamList = {
   [ROOT_ROUTES.EditProfile]: undefined;
   [ROOT_ROUTES.VipStore]: undefined;
   [ROOT_ROUTES.BuyVip]: { mode?: BuyVipMode } | undefined;
+  [ROOT_ROUTES.AvatarFrameShop]: undefined;
+  [ROOT_ROUTES.AvatarFrameStore]: undefined;
   [ROOT_ROUTES.KenStore]: undefined;
   [ROOT_ROUTES.BuyKen]: undefined;
   [ROOT_ROUTES.MediaStore]: undefined;
@@ -41,7 +43,6 @@ export type RootStackParamList = {
   [ROOT_ROUTES.Megaphone]: undefined;
   [ROOT_ROUTES.Notifications]: undefined;
   [ROOT_ROUTES.Settings]: undefined;
-  [ROOT_ROUTES.AppLock]: undefined;
   [ROOT_ROUTES.PenGame]: undefined;
   [ROOT_ROUTES.SpinWheel]: undefined;
   [ROOT_ROUTES.EggGame]: undefined;

@@ -1,7 +1,6 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Avatar,
   ConfirmDialog,
   ListOptionDialog,
   ReportDialog,
@@ -9,6 +8,7 @@ import {
   VipBadge,
   type ListOption,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import {
   activeVipTypeId,
   colorForName,
@@ -75,11 +75,12 @@ function StoryCommentItemComponent({
       className="flex gap-2.5 py-3 pr-2 pl-4"
       style={{ borderTop: `1px solid ${palette.border}` }}
     >
-      <Avatar
+      <AvatarWithFrame
         name={name}
         src={author?.avatar}
         color={colorForName(name)}
         size={36}
+        frameId={author?.avatarFrameId}
       />
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-1">

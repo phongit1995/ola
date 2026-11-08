@@ -121,3 +121,34 @@ func TestValidateContentFilterValue(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateMegaphoneValuePlatforms(t *testing.T) {
+	value := validMegaphoneValue()
+	value["platforms"] = platformsValue(false)
+	if err := ValidateMegaphoneValue(value); err != nil {
+		t.Fatalf("expected valid, got %v", err)
+	}
+
+	value["platforms"] = map[string]interface{}{"ios": map[string]interface{}{"enabled": false}}
+	if err := ValidateMegaphoneValue(value); err == nil {
+		t.Fatal("expected incomplete platforms to be rejected")
+	}
+}
+
+func TestMegaphonePublicConfigFollowsPlatform(t *testing.T) {
+	cfg := DefaultMegaphoneConfig()
+	cfg.Platforms.IOS.Enabled = false
+
+	if cfg.PublicFor(Client{Platform: PlatformIOS, AppVersion: "1.0.0"}).Enabled {
+		t.Fatal("ios must be off")
+	}
+	public := cfg.PublicFor(Client{Platform: PlatformAndroid, AppVersion: "1.0.0"})
+	if !public.Enabled || public.KenPrice != cfg.KenPrice || public.DailyLimit != cfg.DailyLimit {
+		t.Fatalf("unexpected public config: %+v", public)
+	}
+
+	cfg.Enabled = false
+	if cfg.PublicFor(Client{Platform: PlatformAndroid, AppVersion: "1.0.0"}).Enabled {
+		t.Fatal("master switch off must win")
+	}
+}

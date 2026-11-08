@@ -29,6 +29,7 @@ const SOURCE_KEYS = [
   'egg',
   'wheel',
   'admin',
+  'gift_code',
 ] as const;
 
 type SourceKey = (typeof SOURCE_KEYS)[number];

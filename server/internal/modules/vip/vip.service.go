@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -27,6 +29,7 @@ var (
 	ErrVipNotFound        = errors.New("vip icon not found")
 	ErrVipNotOwned        = errors.New("vip does not belong to you")
 	ErrVipLocked          = errors.New("vip is locked")
+	ErrVipNotTransferable = utils.NewHTTPErrorWithCode(http.StatusForbidden, "vip icon from a gift code cannot be transferred", ErrorCodeVipNotTransferable)
 	ErrVipInUse           = errors.New("vip is in use")
 	ErrWrongPassword      = errors.New("invalid transfer password")
 	ErrVipExpired         = errors.New("vip membership expired")
@@ -342,6 +345,9 @@ func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID, password stri
 	if err != nil {
 		return err
 	}
+	if item.Source == IconSourceGiftCode {
+		return ErrVipNotTransferable
+	}
 	if item.IsLocked {
 		return ErrVipLocked
 	}
@@ -453,15 +459,20 @@ func (s *Service) CreateShopItem(req CreateShopItemRequest) (*ShopItem, error) {
 	if req.IsActive != nil {
 		item.IsActive = *req.IsActive
 	}
-	if err := s.repo.CreateShopItem(item); err != nil {
+	if err := s.repo.CreateShopItemAt(item, req.SortOrder); err != nil {
 		return nil, err
 	}
 	out := toShopItem(item)
 	return &out, nil
 }
 
+func (s *Service) ReorderShopItems(ids []uuid.UUID) error {
+	return s.repo.ReorderShopItems(ids)
+}
+
 func (s *Service) UpdateShopItem(id uuid.UUID, req UpdateShopItemRequest) (*ShopItem, error) {
-	if _, err := s.repo.FindShopItem(id); err != nil {
+	current, err := s.repo.FindShopItem(id)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrShopItemNotFound
 		}
@@ -475,13 +486,13 @@ func (s *Service) UpdateShopItem(id uuid.UUID, req UpdateShopItemRequest) (*Shop
 	if req.IsActive != nil {
 		fields["is_active"] = *req.IsActive
 	}
-	if req.SortOrder != nil {
-		fields["sort_order"] = *req.SortOrder
+	if req.SortOrder != nil && *req.SortOrder != current.SortOrder {
+		err = s.repo.UpdateShopItemAt(id, fields, *req.SortOrder)
+	} else if len(fields) > 0 {
+		err = s.repo.UpdateShopItem(id, fields)
 	}
-	if len(fields) > 0 {
-		if err := s.repo.UpdateShopItem(id, fields); err != nil {
-			return nil, err
-		}
+	if err != nil {
+		return nil, err
 	}
 
 	item, err := s.repo.FindShopItem(id)
@@ -818,7 +829,7 @@ func (s *Service) CreatePackage(req CreatePackageRequest) (*PackageItem, error) 
 	if req.IsActive != nil {
 		pkg.IsActive = *req.IsActive
 	}
-	if err := s.repo.CreatePackage(pkg); err != nil {
+	if err := s.repo.CreatePackageAt(pkg, req.SortOrder); err != nil {
 		return nil, err
 	}
 	s.invalidatePackages()
@@ -826,8 +837,17 @@ func (s *Service) CreatePackage(req CreatePackageRequest) (*PackageItem, error) 
 	return &item, nil
 }
 
+func (s *Service) ReorderPackages(ids []uuid.UUID) error {
+	if err := s.repo.ReorderPackages(ids); err != nil {
+		return err
+	}
+	s.invalidatePackages()
+	return nil
+}
+
 func (s *Service) UpdatePackage(id uuid.UUID, req UpdatePackageRequest) (*PackageItem, error) {
-	if _, err := s.repo.FindPackage(id); err != nil {
+	current, err := s.repo.FindPackage(id)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrPackageNotFound
 		}
@@ -847,13 +867,13 @@ func (s *Service) UpdatePackage(id uuid.UUID, req UpdatePackageRequest) (*Packag
 	if req.IsActive != nil {
 		fields["is_active"] = *req.IsActive
 	}
-	if req.SortOrder != nil {
-		fields["sort_order"] = *req.SortOrder
+	if req.SortOrder != nil && *req.SortOrder != current.SortOrder {
+		err = s.repo.UpdatePackageAt(id, fields, *req.SortOrder)
+	} else if len(fields) > 0 {
+		err = s.repo.UpdatePackage(id, fields)
 	}
-	if len(fields) > 0 {
-		if err := s.repo.UpdatePackage(id, fields); err != nil {
-			return nil, err
-		}
+	if err != nil {
+		return nil, err
 	}
 	s.invalidatePackages()
 

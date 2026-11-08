@@ -7,9 +7,16 @@ const MS_PER_SECOND = 1000;
 const TRACK_OFFSCREEN = 'translateX(100vw)';
 const PILL_EXPAND_MS = 1100;
 const MARQUEE_MIN_MS = 1000;
+const IMAGE_WAIT_MAX_MS = 1000;
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+async function waitForImages(element: HTMLElement): Promise<void> {
+  const images = Array.from(element.querySelectorAll('img'));
+  const timeout = new Promise((resolve) => window.setTimeout(resolve, IMAGE_WAIT_MAX_MS));
+  await Promise.race([Promise.allSettled(images.map((image) => image.decode())), timeout]);
 }
 
 export function useMegaphoneMarquee({ id, displaySeconds }: Pick<Megaphone, 'id' | 'displaySeconds'>) {
@@ -32,10 +39,12 @@ export function useMegaphoneMarquee({ id, displaySeconds }: Pick<Megaphone, 'id'
 
   useEffect(() => () => animationRef.current?.cancel(), []);
 
-  function startMarquee() {
+  async function startMarquee() {
     const clip = clipRef.current;
     const track = trackRef.current;
     if (clip == null || track == null || prefersReducedMotion()) return;
+    await waitForImages(track);
+    if (trackRef.current !== track) return;
     const animation = track.animate(
       [
         { transform: `translateX(${clip.clientWidth}px)` },

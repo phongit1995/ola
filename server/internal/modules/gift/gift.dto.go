@@ -1,6 +1,9 @@
 package gift
 
-import "ola-chat-server/internal/utils"
+import (
+	"ola-chat-server/internal/modules/setting"
+	"ola-chat-server/internal/utils"
+)
 
 type GiftItem struct {
 	ID                 string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -14,17 +17,9 @@ type GiftItem struct {
 	AnnounceEnabled    bool   `json:"announceEnabled" example:"true"`
 }
 
-type GiftSettingsView struct {
-	Enabled         bool  `json:"enabled" example:"true"`
-	QuantityOptions []int `json:"quantityOptions"`
-	QuantityMax     int   `json:"quantityMax" example:"99"`
-	NoteMaxLength   int   `json:"noteMaxLength" example:"100"`
-	ConfirmOverKen  int   `json:"confirmOverKen" example:"1000"`
-}
-
 type GiftCatalogResponse struct {
-	Items    []GiftItem       `json:"items"`
-	Settings GiftSettingsView `json:"settings"`
+	Items    []GiftItem               `json:"items"`
+	Settings setting.GiftPublicConfig `json:"settings"`
 }
 
 type SendGiftRequest struct {
@@ -67,13 +62,14 @@ type GiftMessageMetadata struct {
 }
 
 type GiftUserBrief struct {
-	ID         string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Username   string  `json:"username" example:"minh"`
-	FullName   string  `json:"fullName,omitempty" example:"Minh"`
-	Avatar     string  `json:"avatar,omitempty" example:"https://cdn.ola.vn/a.png"`
-	Gender     string  `json:"gender,omitempty" example:"female"`
-	VipUsed    *string `json:"vipUsed,omitempty"`
-	VipEndTime *string `json:"vipEndTime,omitempty"`
+	ID            string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Username      string  `json:"username" example:"minh"`
+	FullName      string  `json:"fullName,omitempty" example:"Minh"`
+	Avatar        string  `json:"avatar,omitempty" example:"https://cdn.ola.vn/a.png"`
+	Gender        string  `json:"gender,omitempty" example:"female"`
+	VipUsed       *string `json:"vipUsed,omitempty"`
+	VipEndTime    *string `json:"vipEndTime,omitempty"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty" example:"001"`
 }
 
 type GiftWallItem struct {

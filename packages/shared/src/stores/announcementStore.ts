@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { sharedPersistStorage } from '../platform/persistStorage';
 import { AnnouncementService } from '../services/announcement.service';
+import type { Announcement } from '../types/api/announcement.type';
 import type {
   AnnouncementState,
   PersistedAnnouncementState,
@@ -15,6 +16,7 @@ export const useAnnouncementStore = create<AnnouncementState>()(
       detailOpen: false,
       hidden: false,
       dismissedId: null,
+      feedDismissedId: null,
 
       load: async () => {
         if (get().loading) return;
@@ -34,13 +36,17 @@ export const useAnnouncementStore = create<AnnouncementState>()(
         const current = get().announcement;
         if (current != null) set({ dismissedId: current.id, detailOpen: false });
       },
+      dismissFromFeed: () => {
+        const current = get().announcement;
+        if (current != null) set({ feedDismissedId: current.id });
+      },
       reset: () =>
         set({ announcement: null, loading: false, detailOpen: false, hidden: false }),
     }),
     {
       name: 'ola.announcement',
       storage: sharedPersistStorage<PersistedAnnouncementState>(),
-      partialize: (state) => ({ dismissedId: state.dismissedId }),
+      partialize: (state) => ({ dismissedId: state.dismissedId, feedDismissedId: state.feedDismissedId }),
     }
   )
 );
@@ -49,4 +55,14 @@ export function selectVisibleAnnouncement(state: AnnouncementState) {
   const { announcement, dismissedId, hidden } = state;
   if (announcement == null || hidden || announcement.id === dismissedId) return null;
   return announcement;
+}
+
+export function selectFeedAnnouncement(state: AnnouncementState) {
+  const { announcement, feedDismissedId } = state;
+  if (announcement == null || announcement.id === feedDismissedId) return null;
+  return announcement;
+}
+
+export function announcementPublishedAt(announcement: Announcement): string {
+  return announcement.startsAt ?? announcement.createdAt;
 }

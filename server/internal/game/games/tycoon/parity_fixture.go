@@ -127,6 +127,8 @@ func parityScenarios() []parityScenario {
 		{name: "birthday-drawer-quits", state: birthdayScenario(), quitFirst: 0},
 		{name: "forced-jail-fine-debt", state: forcedJailFineScenario(), quitFirst: -1},
 		{name: "bankrupt-transfer-wins", state: bankruptTransferScenario(), quitFirst: -1},
+		{name: "takeover-owner-quits", state: takeoverScenario(), quitFirst: 1},
+		{name: "birthday-instant-win", state: birthdayInstantWinScenario(), quitFirst: -1},
 	}
 }
 
@@ -175,6 +177,35 @@ func bankruptTransferScenario() *State {
 	s.Turn = 1
 	s.Phase = PhaseDebt
 	s.Debt = &Debt{Creditor: 0, Amount: 500, By: 1, ReturnTo: 1, Reason: PayRent}
+	return s
+}
+
+func takeoverScenario() *State {
+	s := newState(29, 3)
+	s.Phase = PhaseTakeover
+	s.Players[0].Pos = 1
+	s.Tiles[1] = TileState{Owner: 1}
+	return s
+}
+
+func birthdayInstantWinScenario() *State {
+	s := newState(31, 3)
+	s.Phase = PhaseCard
+	s.Card = &CardRef{Deck: DeckChest, ID: "cm07"}
+	s.Players[0].Pos = 2
+	stations := 0
+	for idx, tile := range Board {
+		if tile.Kind != KindStation {
+			continue
+		}
+		s.Tiles[idx].Owner = 0
+		if stations == 0 {
+			s.Tiles[idx].Owner = 1
+		}
+		stations++
+	}
+	s.Players[1].Cash = 0
+	s.Players[2].Cash = 0
 	return s
 }
 

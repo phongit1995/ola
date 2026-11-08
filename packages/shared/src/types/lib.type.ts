@@ -65,6 +65,23 @@ export type MegaphoneErrorKey =
   | 'megaphone.errors.rateLimited'
   | 'megaphone.errors.failed';
 
+export type GiftCodeErrorKey =
+  | 'giftCode.errors.empty'
+  | 'giftCode.errors.invalid'
+  | 'giftCode.errors.notStarted'
+  | 'giftCode.errors.expired'
+  | 'giftCode.errors.soldOut'
+  | 'giftCode.errors.used'
+  | 'giftCode.errors.alreadyRedeemed'
+  | 'giftCode.errors.deviceRedeemed'
+  | 'giftCode.errors.accountTooNew'
+  | 'giftCode.errors.platformNotAllowed'
+  | 'giftCode.errors.tooManyAttempts'
+  | 'giftCode.errors.emailNotVerified'
+  | 'giftCode.errors.deviceUnknown'
+  | 'giftCode.errors.rateLimited'
+  | 'giftCode.errors.failed';
+
 export type CallMessageStatus = 'ended' | 'missed' | 'declined';
 
 export interface MessageMetadata {
@@ -82,6 +99,13 @@ export interface MessageMetadata {
 export interface VipCatalogEntry {
   id: number;
   name: string;
+}
+
+export interface AvatarFrame {
+  id: string;
+  name: string;
+  file: string;
+  url: string;
 }
 
 export interface VietQrImageParams {

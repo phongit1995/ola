@@ -63,6 +63,12 @@ export function formatClockHM(iso?: string): string {
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+export function formatCompactDateTime(iso: string, nowMs: number = Date.now()): string {
+  const date = dayjs(iso);
+  if (!date.isValid()) return '';
+  return date.format(date.isSame(nowMs, 'year') ? 'DD/MM HH:mm' : 'DD/MM/YYYY HH:mm');
+}
+
 export function isSameDay(a: string, b: string): boolean {
   const da = new Date(a);
   const db = new Date(b);

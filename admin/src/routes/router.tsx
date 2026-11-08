@@ -18,6 +18,14 @@ import { GiftSettingsPage } from '@/pages/gifts/GiftSettingsPage'
 import { MegaphonesPage } from '@/pages/megaphones/MegaphonesPage'
 import { MegaphoneSettingsPage } from '@/pages/megaphones/MegaphoneSettingsPage'
 import { BannedWordsPage } from '@/pages/megaphones/BannedWordsPage'
+import { AvatarFrameShopPage } from '@/pages/avatar-frames/AvatarFrameShopPage'
+import { AvatarFramePurchasesPage } from '@/pages/avatar-frames/AvatarFramePurchasesPage'
+import { AvatarFrameTransfersPage } from '@/pages/avatar-frames/AvatarFrameTransfersPage'
+import { GiftCodesPage } from '@/pages/gift-codes/GiftCodesPage'
+import { GiftCodeFormPage } from '@/pages/gift-codes/GiftCodeFormPage'
+import { GiftCodeDetailPage } from '@/pages/gift-codes/GiftCodeDetailPage'
+import { GiftCodeAttemptsPage } from '@/pages/gift-codes/GiftCodeAttemptsPage'
+import { GiftCodeSettingsPage } from '@/pages/gift-codes/GiftCodeSettingsPage'
 import { EggRewardsPage } from '@/pages/games/egg/EggRewardsPage'
 import { EggStatsPage } from '@/pages/games/egg/EggStatsPage'
 import { WheelRewardsPage } from '@/pages/games/wheel/WheelRewardsPage'
@@ -30,7 +38,6 @@ import { KenTransfersPage } from '@/pages/ken-transfers/KenTransfersPage'
 import { MiniGamePage } from '@/pages/games/mini-game/MiniGamePage'
 import { PostsPage } from '@/pages/posts/PostsPage'
 import { ReportsPage } from '@/pages/reports/ReportsPage'
-import { PushCampaignPage } from '@/pages/settings/PushCampaignPage'
 import { ChatBotSettingsPage } from '@/pages/settings/ChatBotSettingsPage'
 import { AppUpdateSettingsPage } from '@/pages/settings/AppUpdateSettingsPage'
 import { TopupSettingsPage } from '@/pages/topup/TopupSettingsPage'
@@ -80,6 +87,15 @@ export const router = createBrowserRouter([
       { path: 'megaphones', element: <MegaphonesPage /> },
       { path: 'megaphones/settings', element: <MegaphoneSettingsPage /> },
       { path: 'megaphones/banned-words', element: <BannedWordsPage /> },
+      { path: 'avatar-frames', element: <AvatarFrameShopPage /> },
+      { path: 'avatar-frames/purchases', element: <AvatarFramePurchasesPage /> },
+      { path: 'avatar-frames/transfers', element: <AvatarFrameTransfersPage /> },
+      { path: 'gift-codes', element: <GiftCodesPage /> },
+      { path: 'gift-codes/new', element: <GiftCodeFormPage /> },
+      { path: 'gift-codes/attempts', element: <GiftCodeAttemptsPage /> },
+      { path: 'gift-codes/settings', element: <GiftCodeSettingsPage /> },
+      { path: 'gift-codes/:id', element: <GiftCodeDetailPage /> },
+      { path: 'gift-codes/:id/edit', element: <GiftCodeFormPage /> },
       { path: 'games/egg', element: <EggRewardsPage /> },
       { path: 'games/egg/stats', element: <EggStatsPage /> },
       { path: 'games/wheel', element: <WheelRewardsPage /> },
@@ -103,7 +119,7 @@ export const router = createBrowserRouter([
       { path: 'settings/username-change', element: <UsernameChangeSettingsPage /> },
       { path: 'settings/announcements', element: <AnnouncementPage /> },
       { path: 'settings/notification', element: <NotificationSettingsPage /> },
-      { path: 'settings/push-campaigns', element: <PushCampaignPage /> },
+      { path: 'settings/push-campaigns', element: <Navigate to="/settings/notification" replace /> },
       { path: 'settings/chat-bot', element: <ChatBotSettingsPage /> },
       { path: 'settings/app-update', element: <AppUpdateSettingsPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },

@@ -29,6 +29,7 @@ export function ActiveConversationOverlay() {
         title={view.title}
         color={view.color}
         avatar={view.avatar}
+        avatarFrameId={view.avatarFrameId}
         online={
           live?.isOnline ??
           peerProfile?.isOnline ??

@@ -101,11 +101,13 @@ export function Segmented<T extends string>({
 }
 
 export function SettingRow({
+  icon,
   label,
   hint,
   last,
   children,
 }: {
+  icon?: ImageSourcePropType;
   label: string;
   hint?: string;
   last?: boolean;
@@ -116,6 +118,9 @@ export function SettingRow({
       className="flex-row items-center justify-between gap-3 px-4 py-3"
       style={last === true ? undefined : { borderBottomWidth: 1, borderBottomColor: ROW_BORDER }}
     >
+      {icon != null && (
+        <Image source={icon} style={{ width: 32, height: 32, borderRadius: 8 }} resizeMode="contain" />
+      )}
       <View className="min-w-0 flex-1">
         <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.8)' }}>
           {label}

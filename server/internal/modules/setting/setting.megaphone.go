@@ -48,6 +48,7 @@ type MegaphoneGiftTier struct {
 
 type MegaphoneConfig struct {
 	Enabled           bool                `json:"enabled"`
+	Platforms         PlatformRules       `json:"platforms"`
 	KenPrice          int                 `json:"kenPrice"`
 	MaxLength         int                 `json:"maxLength"`
 	DisplaySeconds    int                 `json:"displaySeconds"`
@@ -60,9 +61,20 @@ type MegaphoneConfig struct {
 	GiftTiers         []MegaphoneGiftTier `json:"giftTiers"`
 }
 
+type MegaphonePublicConfig struct {
+	Enabled         bool `json:"enabled"`
+	KenPrice        int  `json:"kenPrice"`
+	MaxLength       int  `json:"maxLength"`
+	DisplaySeconds  int  `json:"displaySeconds"`
+	LiveMinutes     int  `json:"liveMinutes"`
+	CooldownSeconds int  `json:"cooldownSeconds"`
+	DailyLimit      int  `json:"dailyLimit"`
+}
+
 func DefaultMegaphoneConfig() MegaphoneConfig {
 	return MegaphoneConfig{
 		Enabled:           true,
+		Platforms:         OpenPlatformRules(),
 		KenPrice:          megaphoneKenPriceDefault,
 		MaxLength:         megaphoneMaxLengthDefault,
 		DisplaySeconds:    megaphoneDisplaySecondsDefault,
@@ -77,6 +89,22 @@ func DefaultMegaphoneConfig() MegaphoneConfig {
 			{MinKen: 1000, Weight: 3},
 			{MinKen: 20000, Weight: 6},
 		},
+	}
+}
+
+func (c MegaphoneConfig) EnabledFor(client Client) bool {
+	return c.Enabled && c.Platforms.EnabledForClient(client)
+}
+
+func (c MegaphoneConfig) PublicFor(client Client) MegaphonePublicConfig {
+	return MegaphonePublicConfig{
+		Enabled:         c.EnabledFor(client),
+		KenPrice:        c.KenPrice,
+		MaxLength:       c.MaxLength,
+		DisplaySeconds:  c.DisplaySeconds,
+		LiveMinutes:     c.LiveMinutes,
+		CooldownSeconds: c.CooldownSeconds,
+		DailyLimit:      c.DailyLimit,
 	}
 }
 
@@ -121,6 +149,7 @@ func (s *Service) GetMegaphone() (MegaphoneConfig, error) {
 		s.logger.Warnw("Invalid megaphone config in app_settings, using default", "value", cfg)
 		return DefaultMegaphoneConfig(), err
 	}
+	cfg.Platforms = cfg.Platforms.normalized()
 	return cfg, err
 }
 
@@ -183,6 +212,7 @@ func ValidateMegaphoneValue(value models.JSONB) error {
 	}
 	var cfg struct {
 		Enabled           *bool               `json:"enabled"`
+		Platforms         *platformRulesInput `json:"platforms"`
 		KenPrice          *int                `json:"kenPrice"`
 		MaxLength         *int                `json:"maxLength"`
 		DisplaySeconds    *int                `json:"displaySeconds"`
@@ -203,6 +233,11 @@ func ValidateMegaphoneValue(value models.JSONB) error {
 		cfg.CooldownSeconds == nil || cfg.DailyLimit == nil || cfg.LiveMinutes == nil || cfg.GapSeconds == nil ||
 		cfg.RepeatBaseSeconds == nil || cfg.MessageWeight == nil || cfg.GiftTiers == nil {
 		return errors.New("cấu hình loa cần đủ enabled, kenPrice, maxLength, displaySeconds, cooldownSeconds, dailyLimit, liveMinutes, gapSeconds, repeatBaseSeconds, messageWeight, giftTiers")
+	}
+	if cfg.Platforms != nil {
+		if err := cfg.Platforms.validate(); err != nil {
+			return err
+		}
 	}
 	return validateMegaphoneConfig(MegaphoneConfig{
 		Enabled:           *cfg.Enabled,

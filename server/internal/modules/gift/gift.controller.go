@@ -1,6 +1,7 @@
 package gift
 
 import (
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Success      200  {object}  GiftCatalogSuccessResponse
 // @Router       /gifts [get]
 func (ctrl *Controller) Catalog(c *gin.Context) (interface{}, error) {
-	resp, err := ctrl.service.Catalog()
+	resp, err := ctrl.service.Catalog(setting.ClientFrom(c))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -54,7 +55,7 @@ func (ctrl *Controller) Send(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.Send(userID, *req)
+	resp, err := ctrl.service.Send(setting.ClientFrom(c), userID, *req)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

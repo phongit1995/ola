@@ -19,6 +19,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
+import { AppLockSection } from './AppLockSection';
 import {
   ROW_BORDER,
   SectionIcon,
@@ -298,7 +299,9 @@ export function SettingsScreen({ navigation }: Props) {
           </SettingRow>
         </SettingsCard>
 
-        <SettingsCard icon={<SectionIcon src={iconNotification} />} index={2} title={t('settings.notificationTitle')}>
+        <AppLockSection index={2} />
+
+        <SettingsCard icon={<SectionIcon src={iconNotification} />} index={3} title={t('settings.notificationTitle')}>
           <SettingRow label={t('settings.notifMessage')}>
             <ToggleSwitch on={draft.notifMessage} onChange={() => setField('notifMessage', !draft.notifMessage)} />
           </SettingRow>
@@ -313,7 +316,7 @@ export function SettingsScreen({ navigation }: Props) {
           </SettingRow>
         </SettingsCard>
 
-        <SettingsCard icon={<SectionIcon src={iconAppearance} />} index={3} title={t('settings.appearanceTitle')}>
+        <SettingsCard icon={<SectionIcon src={iconAppearance} />} index={4} title={t('settings.appearanceTitle')}>
           <SettingRow label={t('settings.theme')}>
             <ThemeSwatches value={themeDraft} onChange={setThemeDraft} />
           </SettingRow>
@@ -378,7 +381,7 @@ export function SettingsScreen({ navigation }: Props) {
           </SettingRow>
         </SettingsCard>
 
-        <SettingsCard icon={<SectionIcon src={iconPrivacy} />} index={4} title={t('settings.aboutTitle')}>
+        <SettingsCard icon={<SectionIcon src={iconPrivacy} />} index={5} title={t('settings.aboutTitle')}>
           <Pressable
             accessibilityRole="button"
             onPress={() => navigation.navigate(ROOT_ROUTES.Terms)}

@@ -722,6 +722,7 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 		models.AppNotificationGiftReceived,
 		models.AppNotificationKenReceived,
 		models.AppNotificationVipReceived,
+		models.AppNotificationGiftCode,
 	} {
 		c := buildAppNotifContent("n1", "Hoa", ntype, "", 0)
 		if c.Body == "" || c.Channel != PushChannelSystem {
@@ -729,6 +730,9 @@ func TestBuildAppNotifContentAllTypes(t *testing.T) {
 		}
 	}
 
+	if c := buildAppNotifContent("n1", "", models.AppNotificationGiftCode, "Bạn nhận được 7 ngày VIP.", 0); c.Title != fallbackTitle || c.Body != "Mã quà tặng: Bạn nhận được 7 ngày VIP." {
+		t.Fatalf("unexpected gift code push: %+v", c)
+	}
 	if c := buildAppNotifContent("n1", "Hoa", models.AppNotificationFriendRequest, "", 0); c.Title != "Hoa" {
 		t.Fatalf("expected actor title, got %q", c.Title)
 	}

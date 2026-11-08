@@ -230,16 +230,17 @@ func (s *Service) SearchUsers(query string, limit int, currentUserID uuid.UUID) 
 	for _, user := range users {
 		rel := relMap[user.ID]
 		results = append(results, UserSearchResult{
-			ID:           user.ID.String(),
-			Username:     user.Username,
-			FullName:     user.FullName,
-			Avatar:       user.Avatar,
-			Bio:          user.Bio,
-			IsOnline:     presenceMap[user.ID.String()].IsOnline,
-			Relationship: rel.status,
-			RequestID:    rel.requestID,
-			VipUsed:      user.VipUsed,
-			VipEndTime:   formatOptionalTime(user.VipEndTime),
+			ID:            user.ID.String(),
+			Username:      user.Username,
+			FullName:      user.FullName,
+			Avatar:        user.Avatar,
+			Bio:           user.Bio,
+			IsOnline:      presenceMap[user.ID.String()].IsOnline,
+			Relationship:  rel.status,
+			RequestID:     rel.requestID,
+			VipUsed:       user.VipUsed,
+			VipEndTime:    formatOptionalTime(user.VipEndTime),
+			AvatarFrameID: user.ActiveAvatarFrameID(time.Now()),
 		})
 	}
 
@@ -375,13 +376,14 @@ func (s *Service) GetMyVisitors(meID uuid.UUID, cursor string, limit int) (*Visi
 		ids[i] = row.ID.String()
 		otherIDs[i] = row.ID
 		items[i] = VisitorUser{
-			ID:         row.ID.String(),
-			Username:   row.Username,
-			FullName:   row.FullName,
-			Avatar:     row.Avatar,
-			VipUsed:    row.VipUsed,
-			VipEndTime: formatOptionalTime(row.VipEndTime),
-			ViewedAt:   row.ViewedAt.Format(time.RFC3339),
+			ID:            row.ID.String(),
+			Username:      row.Username,
+			FullName:      row.FullName,
+			Avatar:        row.Avatar,
+			VipUsed:       row.VipUsed,
+			VipEndTime:    formatOptionalTime(row.VipEndTime),
+			AvatarFrameID: (&models.User{AvatarFrameID: row.AvatarFrameID, VipEndTime: row.VipEndTime}).ActiveAvatarFrameID(time.Now()),
+			ViewedAt:      row.ViewedAt.Format(time.RFC3339),
 		}
 	}
 
@@ -446,39 +448,35 @@ func (s *Service) canSeeInterested(callerID, ownerID uuid.UUID) bool {
 	return settings.ShowInterested
 }
 
-func (s *Service) canSeeVipStore(callerID, ownerID uuid.UUID, rel *RelationshipInfo) bool {
-	if callerID == ownerID {
-		return true
-	}
-	settings, err := s.userSettingSvc.GetSettings(ownerID)
-	if err != nil {
-		return true
-	}
-	switch settings.VipStorePrivacy {
-	case 2:
-		return false
-	case 1:
-		return rel != nil && rel.Status == RelationshipStatusFriend
-	default:
-		return true
-	}
+type storeVisibility struct {
+	vipStore         bool
+	giftWall         bool
+	avatarFrameStore bool
 }
 
-func (s *Service) canSeeGiftWall(callerID, ownerID uuid.UUID, rel *RelationshipInfo) bool {
-	if callerID == ownerID {
-		return true
-	}
-	settings, err := s.userSettingSvc.GetSettings(ownerID)
-	if err != nil {
-		return true
-	}
-	switch settings.GiftWallPrivacy {
+func privacyAllows(privacy int16, rel *RelationshipInfo) bool {
+	switch privacy {
 	case models.SettingGiftWallPrivacyOnlyMe:
 		return false
 	case models.SettingGiftWallPrivacyFriends:
 		return rel != nil && rel.Status == RelationshipStatusFriend
 	default:
 		return true
+	}
+}
+
+func (s *Service) resolveStoreVisibility(callerID, ownerID uuid.UUID, rel *RelationshipInfo) storeVisibility {
+	if callerID == ownerID {
+		return storeVisibility{vipStore: true, giftWall: true, avatarFrameStore: true}
+	}
+	settings, err := s.userSettingSvc.GetSettings(ownerID)
+	if err != nil {
+		return storeVisibility{vipStore: true, giftWall: true, avatarFrameStore: true}
+	}
+	return storeVisibility{
+		vipStore:         privacyAllows(settings.VipStorePrivacy, rel),
+		giftWall:         privacyAllows(settings.GiftWallPrivacy, rel),
+		avatarFrameStore: privacyAllows(settings.AvatarFrameStorePrivacy, rel),
 	}
 }
 
@@ -501,6 +499,7 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		Charm:          user.Charm,
 		VipUsed:        user.VipUsed,
 		VipEndTime:     formatOptionalTime(user.VipEndTime),
+		AvatarFrameID:  user.ActiveAvatarFrameID(time.Now()),
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
 		AntiCount:      user.AntiCount,
@@ -524,8 +523,10 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		response.FollowingCount = 0
 	}
 
-	response.CanViewVipStore = s.canSeeVipStore(callerID, user.ID, response.Relationship)
-	response.CanViewGiftWall = s.canSeeGiftWall(callerID, user.ID, response.Relationship)
+	visibility := s.resolveStoreVisibility(callerID, user.ID, response.Relationship)
+	response.CanViewVipStore = visibility.vipStore
+	response.CanViewGiftWall = visibility.giftWall
+	response.CanViewAvatarFrameStore = visibility.avatarFrameStore
 
 	return response
 }
@@ -780,6 +781,7 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 		CustomInfo:     user.CustomInfo,
 		Ken:            user.Ken,
 		VipUsed:        user.VipUsed,
+		AvatarFrameID:  user.ActiveAvatarFrameID(time.Now()),
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
 		CoverPhoto:     user.CoverPhoto,

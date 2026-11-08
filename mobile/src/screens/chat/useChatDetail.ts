@@ -65,6 +65,8 @@ export function useChatDetail(conversationId: string | null | undefined) {
     '';
   const peerAvatar =
     conversation?.otherUser?.avatar ?? draftRecipient?.avatar ?? peerProfile?.avatar;
+  const peerAvatarFrameId =
+    peerProfile != null ? peerProfile.avatarFrameId : conversation?.otherUser?.avatarFrameId;
   const myId = currentUserId();
   const timeFormatter = formatClockHM;
   const dateFormatter = useMemo(
@@ -142,6 +144,7 @@ export function useChatDetail(conversationId: string | null | undefined) {
     conversation,
     title,
     peerAvatar,
+    peerAvatarFrameId,
     myId,
     peerId,
     peerProfile,

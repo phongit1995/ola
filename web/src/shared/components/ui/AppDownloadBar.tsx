@@ -2,8 +2,19 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ANALYTICS_EVENT, APP_DOWNLOAD, ROUTES } from '@constants';
 import { trackEvent } from '@config';
-import { useDevicePlatform } from '@hooks';
-import { AppleIcon, GooglePlayIcon } from './StoreIcons';
+import { DESKTOP_OS_LIST, useDevicePlatform } from '@hooks';
+import {
+  AppleIcon,
+  GooglePlayIcon,
+  LinuxIcon,
+  WindowsIcon,
+} from './StoreIcons';
+
+const DESKTOP_OS_ICONS = {
+  windows: WindowsIcon,
+  mac: AppleIcon,
+  linux: LinuxIcon,
+};
 
 interface AppDownloadBarProps {
   className?: string;
@@ -11,7 +22,7 @@ interface AppDownloadBarProps {
 
 export function AppDownloadBar({ className = '' }: AppDownloadBarProps) {
   const { t } = useTranslation();
-  const { platform } = useDevicePlatform();
+  const { platform, isDesktopApp } = useDevicePlatform();
   const stores = [
     {
       platform: 'android',
@@ -57,6 +68,26 @@ export function AppDownloadBar({ className = '' }: AppDownloadBarProps) {
       >
         {t('download.loginLink')}
       </Link>
+      {platform === 'desktop' && !isDesktopApp && (
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
+          <span className="text-xs font-medium text-ola-on-primary/85">
+            {t('download.desktop.barLabel')}
+          </span>
+          {DESKTOP_OS_LIST.map((os) => {
+            const Icon = DESKTOP_OS_ICONS[os];
+            return (
+              <Link
+                key={os}
+                to={`${ROUTES.downloadApp}?os=${os}`}
+                className="flex h-7 items-center gap-1.5 rounded-full bg-white/20 px-2.5 text-xs font-semibold text-ola-on-primary ring-1 ring-white/25 transition hover:bg-white/30 active:scale-95"
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {t(`download.desktop.${os}.name`)}
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

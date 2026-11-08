@@ -11,6 +11,8 @@ import {
   toast,
   colorForName,
   createTimeFormatter,
+  avatarFrameNotificationText,
+  isAvatarFrameNotification,
   isTransferNotification,
   transferNotificationContent,
   vipIconUrl,
@@ -28,6 +30,7 @@ import { MarriageService, RelationshipService } from '@services';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useFriendsStore } from '@/store/friendsStore';
 import { useMarriageStore } from '@/store/marriageStore';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 import type { AppNotification } from '@app-types';
 import icAddSmall from '@/assets/icons/notify/ic_action_add_small.png';
 import icFriend from '@/assets/icons/notify/ic_notification_add_friend.png';
@@ -36,6 +39,9 @@ import icGift from '@/assets/games/egg/ic_gift.png';
 import icKen from '@/assets/icons/apps/ken.png';
 import icVip from '@/assets/icons/apps/vip-crown.webp';
 import olaLogo from '@/assets/images/ola-logo.png';
+import { AvatarFrameThumb } from '../avatar-frame/components/AvatarFrameThumb';
+
+const NOTIFICATION_FRAME_BADGE_SIZE = 24;
 
 const KIND_CONFIG: Record<string, { icon: string; messageKey: ParseKeys }> = {
   friend_request: { icon: icFriend, messageKey: 'notify.msg_friend' },
@@ -88,6 +94,7 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
   const markAllRead = useAppNotificationStore((s) => s.markAllRead);
   const removeLocal = useAppNotificationStore((s) => s.removeLocal);
   const hide = useAppNotificationStore((s) => s.hide);
+  const pushOverlay = useAppOverlayStore((s) => s.push);
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [proposalAction, setProposalAction] = useState<ProposalAction>(null);
@@ -228,7 +235,15 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
               const transfer = transferNotificationContent(t, item);
               const message =
                 transfer?.text ??
+                avatarFrameNotificationText(t, item) ??
                 (config != null ? t(config.messageKey) : item.preview ?? '');
+              const frameNotification = isAvatarFrameNotification(item.type);
+              const receivedFrameId = frameNotification
+                ? item.transfer?.frameId
+                : undefined;
+              const openTarget = frameNotification
+                ? () => pushOverlay('avatarFrameStore')
+                : undefined;
               const badge = transfer?.badge;
               const badgeIsVipIcon =
                 badge?.kind === 'vip' && badge.vipTypeId != null;
@@ -239,7 +254,12 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                 item.preview !== '';
               return (
                 <li key={item.id} className="bg-white/80">
-                  <div className="flex min-h-[72px] items-start p-4">
+                  <div
+                    onClick={openTarget}
+                    className={`flex min-h-[72px] items-start p-4 ${
+                      openTarget != null ? 'cursor-pointer active:bg-black/5' : ''
+                    }`}
+                  >
                     {system ? (
                       <SystemAvatar />
                     ) : (
@@ -272,6 +292,12 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                       </div>
                       <p className="mt-1 flex items-center gap-1 text-sm leading-snug text-black/87">
                         <span className="min-w-0">{message}</span>
+                        {receivedFrameId != null && receivedFrameId !== '' && (
+                          <AvatarFrameThumb
+                            frameId={receivedFrameId}
+                            size={NOTIFICATION_FRAME_BADGE_SIZE}
+                          />
+                        )}
                         {badge != null && (
                           <img
                             src={

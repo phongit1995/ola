@@ -78,6 +78,27 @@ func (ctrl *Controller) Update(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
+// Reorder godoc
+// @Summary      Lưu thứ tự toàn bộ quà (admin), gán lại thành 1..N theo danh sách gửi lên
+// @Tags         admin-gifts
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body utils.ReorderRequest true "Toàn bộ id quà theo thứ tự mới"
+// @Success      200  {object}  map[string]string
+// @Failure      409  {object}  utils.APIError
+// @Router       /admin/gifts/order [put]
+func (ctrl *Controller) Reorder(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[utils.ReorderRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.Reorder(req.IDs); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"message": "order updated"}, nil
+}
+
 // Delete godoc
 // @Summary      Xoá quà (admin, xoá mềm — tường quà và lịch sử vẫn giữ)
 // @Tags         admin-gifts

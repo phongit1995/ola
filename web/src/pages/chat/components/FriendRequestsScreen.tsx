@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActionButton,
-  Avatar,
   FullScreenOverlay,
   ScreenHeader,
   Spinner,
   UserName,
   VipIcon,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { activeVipTypeId, colorForName, createTimeFormatter } from '@lib';
 import type { Relationship } from '@app-types';
 
@@ -79,19 +79,13 @@ export function FriendRequestsScreen({
                   key={relationship.id}
                   className="flex items-center gap-3 border-b border-black/12 bg-white/80 px-4 py-3"
                 >
-                  {requester?.avatar ? (
-                    <img
-                      src={requester.avatar}
-                      alt=""
-                      className="h-14 w-14 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <Avatar
-                      name={name}
-                      color={colorForName(requester?.id ?? name)}
-                      size={56}
-                    />
-                  )}
+                  <AvatarWithFrame
+                    name={name}
+                    color={colorForName(requester?.id ?? name)}
+                    src={requester?.avatar || undefined}
+                    size={56}
+                    frameId={requester?.avatarFrameId}
+                  />
                   <div className="min-w-0 flex-1">
                     <span className="flex min-w-0 items-center gap-1">
                       {vipTypeId != null && (

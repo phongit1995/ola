@@ -39,6 +39,8 @@ import type {
 } from '@/types'
 import { useVipPurchases, useVipPurchaseStats } from './useVipPurchaseQueries'
 import { PURCHASE_KIND_META, PURCHASE_MODE_META } from './constants'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { VIP_SECTION_LINKS } from '@/pages/shop/sections'
 
 function VipItemCell({
   kind,
@@ -202,6 +204,7 @@ export function VipPurchasesPage() {
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <ShopSectionNav links={VIP_SECTION_LINKS} />
       <Row gutter={[16, 16]}>
         <Col xs={12} md={8} xxl={4}>
           <Card>

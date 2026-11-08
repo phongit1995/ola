@@ -45,7 +45,7 @@ function MegaphonePill({ megaphone }: { megaphone: Megaphone }) {
   return (
     <div
       onAnimationEnd={(event) => {
-        if (event.animationName === 'ola-banner-expand') startMarquee();
+        if (event.animationName === 'ola-banner-expand') void startMarquee();
       }}
       className="mx-auto flex h-9 max-w-xs animate-ola-banner-expand items-center gap-1 overflow-hidden rounded-full bg-white pr-1 pl-3 shadow-[0_4px_14px_rgba(0,0,0,0.22)] ring-1 ring-black/10"
     >

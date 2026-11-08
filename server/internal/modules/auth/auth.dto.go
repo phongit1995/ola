@@ -48,6 +48,7 @@ type UserResponse struct {
 	Ken            int                    `json:"ken" example:"0"`
 	VipUsed        *string                `json:"vipUsed" example:"gold"`
 	VipEndTime     *string                `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
+	AvatarFrameID  *string                `json:"avatarFrameId" example:"001"`
 	FollowerCount  int                    `json:"followerCount" example:"0"`
 	FollowingCount int                    `json:"followingCount" example:"0"`
 }

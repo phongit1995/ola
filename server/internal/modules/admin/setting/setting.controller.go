@@ -204,7 +204,7 @@ func (ctrl *Controller) PutMany(c *gin.Context) (interface{}, error) {
 func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSONB, error) {
 	switch key {
 	case setting.KeyTopup:
-		kept, err := ctrl.service.KeepStoredTopupPlatforms(value)
+		kept, err := ctrl.service.KeepStoredPlatforms(setting.KeyTopup, value)
 		if err != nil {
 			return nil, utils.ServiceError(err)
 		}
@@ -241,13 +241,23 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
 	case setting.KeyGift:
-		if err := setting.ValidateGiftValue(value); err != nil {
+		kept, err := ctrl.service.KeepStoredPlatforms(setting.KeyGift, value)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		if err := setting.ValidateGiftValue(kept); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+		return kept, nil
 	case setting.KeyMegaphone:
-		if err := setting.ValidateMegaphoneValue(value); err != nil {
+		kept, err := ctrl.service.KeepStoredPlatforms(setting.KeyMegaphone, value)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		if err := setting.ValidateMegaphoneValue(kept); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+		return kept, nil
 	case setting.KeyContentFilter:
 		if err := setting.ValidateContentFilterValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
@@ -264,6 +274,15 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateMomentMediaPurgeValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyGiftCode:
+		kept, err := ctrl.service.KeepStoredPlatforms(setting.KeyGiftCode, value)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		if err := setting.ValidateGiftCodeValue(kept); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+		return kept, nil
 	case setting.KeyModeration:
 		if err := setting.ValidateModerationValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())

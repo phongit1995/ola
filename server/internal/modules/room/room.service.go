@@ -136,7 +136,7 @@ func (s *Service) Create(adminID uuid.UUID, req *CreateRoomRequest) (*RoomRespon
 		VipMinMembers: req.VipMinMembers,
 		CreatedBy:     adminID,
 	}
-	if err := s.repo.Create(room); err != nil {
+	if err := s.repo.CreateAt(room, req.Index); err != nil {
 		return nil, err
 	}
 	s.logger.Infow("Room created", "room_id", room.ID, "admin_id", adminID)
@@ -160,9 +160,6 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, req *UpdateRoomReque
 	if req.MaxMembers != nil {
 		room.MaxMembers = *req.MaxMembers
 	}
-	if req.Index != nil {
-		room.Index = *req.Index
-	}
 	if req.Enabled != nil {
 		room.Enabled = *req.Enabled
 	}
@@ -172,11 +169,20 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, req *UpdateRoomReque
 	if req.VipMinMembers != nil {
 		room.VipMinMembers = *req.VipMinMembers
 	}
-	if err := s.repo.Save(room); err != nil {
+	if req.Index != nil && *req.Index != room.Index {
+		err = s.repo.SaveAt(room, *req.Index)
+	} else {
+		err = s.repo.SaveKeepingPosition(room)
+	}
+	if err != nil {
 		return nil, err
 	}
 	count, _ := s.wsServer.GetRoomPresence().MemberCount(ctx, room.ID.String())
 	return toRoomResponse(room, count), nil
+}
+
+func (s *Service) Reorder(ids []uuid.UUID) error {
+	return s.repo.Reorder(ids)
 }
 
 func (s *Service) Delete(id uuid.UUID) error {

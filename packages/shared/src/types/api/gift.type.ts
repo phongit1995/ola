@@ -95,6 +95,7 @@ export interface GiftUserBrief {
   gender?: string;
   vipUsed?: string | null;
   vipEndTime?: string | null;
+  avatarFrameId?: string | null;
 }
 
 export interface GiftWallItem {

@@ -1,6 +1,7 @@
 package megaphone
 
 import (
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +30,7 @@ func (ctrl *Controller) Config(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.Config(userID)
+	resp, err := ctrl.service.Config(setting.ClientFrom(c), userID)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -77,7 +78,7 @@ func (ctrl *Controller) Send(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.Send(userID, *req)
+	resp, err := ctrl.service.Send(setting.ClientFrom(c), userID, *req)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

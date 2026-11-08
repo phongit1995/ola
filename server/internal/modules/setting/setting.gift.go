@@ -22,20 +22,44 @@ const (
 )
 
 type GiftConfig struct {
-	Enabled         bool  `json:"enabled"`
+	Enabled         bool          `json:"enabled"`
+	Platforms       PlatformRules `json:"platforms"`
+	QuantityOptions []int         `json:"quantityOptions"`
+	QuantityMax     int           `json:"quantityMax"`
+	NoteMaxLength   int           `json:"noteMaxLength"`
+	ConfirmOverKen  int           `json:"confirmOverKen"`
+}
+
+type GiftPublicConfig struct {
+	Enabled         bool  `json:"enabled" example:"true"`
 	QuantityOptions []int `json:"quantityOptions"`
-	QuantityMax     int   `json:"quantityMax"`
-	NoteMaxLength   int   `json:"noteMaxLength"`
-	ConfirmOverKen  int   `json:"confirmOverKen"`
+	QuantityMax     int   `json:"quantityMax" example:"99"`
+	NoteMaxLength   int   `json:"noteMaxLength" example:"100"`
+	ConfirmOverKen  int   `json:"confirmOverKen" example:"1000"`
 }
 
 func DefaultGiftConfig() GiftConfig {
 	return GiftConfig{
 		Enabled:         true,
+		Platforms:       OpenPlatformRules(),
 		QuantityOptions: []int{1, 5, 10, 99},
 		QuantityMax:     giftQuantityMaxDefault,
 		NoteMaxLength:   giftNoteMaxLengthDefault,
 		ConfirmOverKen:  giftConfirmOverDefault,
+	}
+}
+
+func (c GiftConfig) EnabledFor(client Client) bool {
+	return c.Enabled && c.Platforms.EnabledForClient(client)
+}
+
+func (c GiftConfig) PublicFor(client Client) GiftPublicConfig {
+	return GiftPublicConfig{
+		Enabled:         c.EnabledFor(client),
+		QuantityOptions: c.QuantityOptions,
+		QuantityMax:     c.QuantityMax,
+		NoteMaxLength:   c.NoteMaxLength,
+		ConfirmOverKen:  c.ConfirmOverKen,
 	}
 }
 
@@ -46,6 +70,7 @@ func (s *Service) GetGift() (GiftConfig, error) {
 		s.logger.Warnw("Invalid gift config in app_settings, using default", "value", cfg)
 		return DefaultGiftConfig(), err
 	}
+	cfg.Platforms = cfg.Platforms.normalized()
 	return cfg, err
 }
 
@@ -82,11 +107,12 @@ func ValidateGiftValue(value models.JSONB) error {
 		return errors.New("invalid gift config")
 	}
 	var cfg struct {
-		Enabled         *bool `json:"enabled"`
-		QuantityOptions []int `json:"quantityOptions"`
-		QuantityMax     *int  `json:"quantityMax"`
-		NoteMaxLength   *int  `json:"noteMaxLength"`
-		ConfirmOverKen  *int  `json:"confirmOverKen"`
+		Enabled         *bool               `json:"enabled"`
+		Platforms       *platformRulesInput `json:"platforms"`
+		QuantityOptions []int               `json:"quantityOptions"`
+		QuantityMax     *int                `json:"quantityMax"`
+		NoteMaxLength   *int                `json:"noteMaxLength"`
+		ConfirmOverKen  *int                `json:"confirmOverKen"`
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()
@@ -95,6 +121,11 @@ func ValidateGiftValue(value models.JSONB) error {
 	}
 	if cfg.Enabled == nil || cfg.QuantityMax == nil || cfg.NoteMaxLength == nil || cfg.ConfirmOverKen == nil {
 		return errors.New("cấu hình quà tặng cần đủ enabled, quantityOptions, quantityMax, noteMaxLength, confirmOverKen")
+	}
+	if cfg.Platforms != nil {
+		if err := cfg.Platforms.validate(); err != nil {
+			return err
+		}
 	}
 	return validateGiftConfig(GiftConfig{
 		Enabled:         *cfg.Enabled,

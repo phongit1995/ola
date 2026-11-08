@@ -7,6 +7,7 @@ export const KEN_TREASURE_OPEN_ANIMATION_MS = 1_000;
 export const KEN_TX_META = {
   VIP_PACKAGE: { icon: '👑', labelKey: 'ken.historyScreen.types.VIP_PACKAGE' },
   VIP_ICON: { icon: '👑', labelKey: 'ken.historyScreen.types.VIP_ICON' },
+  AVATAR_FRAME: { icon: '🖼️', labelKey: 'ken.historyScreen.types.AVATAR_FRAME' },
   ADMIN_GRANT: { icon: '➕', labelKey: 'ken.historyScreen.types.ADMIN_GRANT' },
   ADMIN_DEDUCT: {
     icon: '➖',

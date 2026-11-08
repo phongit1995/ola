@@ -1,6 +1,7 @@
 package setting
 
 import (
+	"encoding/json"
 	"testing"
 
 	"ola-chat-server/internal/models"
@@ -45,6 +46,74 @@ func TestValidateGiftValueRejectsBadConfig(t *testing.T) {
 		mutate(v)
 		if err := ValidateGiftValue(v); err == nil {
 			t.Fatalf("%s: expected error", name)
+		}
+	}
+}
+
+func platformsValue(iosEnabled bool, iosVersions ...interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"web":     map[string]interface{}{"enabled": true, "disableVersions": []interface{}{}},
+		"android": map[string]interface{}{"enabled": true, "disableVersions": []interface{}{}},
+		"ios":     map[string]interface{}{"enabled": iosEnabled, "disableVersions": iosVersions},
+	}
+}
+
+func TestValidateGiftValuePlatforms(t *testing.T) {
+	value := validGiftValue()
+	value["platforms"] = platformsValue(false)
+	if err := ValidateGiftValue(value); err != nil {
+		t.Fatalf("expected valid, got %v", err)
+	}
+
+	value["platforms"] = map[string]interface{}{"web": map[string]interface{}{"enabled": true}}
+	if err := ValidateGiftValue(value); err == nil {
+		t.Fatal("expected incomplete platforms to be rejected")
+	}
+
+	value["platforms"] = platformsValue(true, "not-a-version")
+	if err := ValidateGiftValue(value); err == nil {
+		t.Fatal("expected a bad version to be rejected")
+	}
+}
+
+func TestGiftEnabledForFollowsPlatformAndMasterSwitch(t *testing.T) {
+	cfg := DefaultGiftConfig()
+	cfg.Platforms.IOS.Enabled = false
+	cfg.Platforms.Android.DisableVersions = []string{"1.2.0"}
+
+	cases := []struct {
+		name   string
+		client Client
+		want   bool
+	}{
+		{"web", Client{Platform: "web"}, true},
+		{"ios off", Client{Platform: PlatformIOS, AppVersion: "1.2.0"}, false},
+		{"android other build", Client{Platform: PlatformAndroid, AppVersion: "1.3.0"}, true},
+		{"android disabled build", Client{Platform: PlatformAndroid, AppVersion: "1.2.0 (45)"}, false},
+	}
+	for _, tc := range cases {
+		if got := cfg.EnabledFor(tc.client); got != tc.want {
+			t.Fatalf("%s: enabled = %v, want %v", tc.name, got, tc.want)
+		}
+		if got := cfg.PublicFor(tc.client).Enabled; got != tc.want {
+			t.Fatalf("%s: public enabled = %v, want %v", tc.name, got, tc.want)
+		}
+	}
+
+	cfg.Enabled = false
+	if cfg.EnabledFor(Client{Platform: "web"}) {
+		t.Fatal("master switch off must win over an open platform")
+	}
+}
+
+func TestStoredGiftWithoutPlatformsStaysOpen(t *testing.T) {
+	cfg := DefaultGiftConfig()
+	if err := json.Unmarshal([]byte(`{"enabled":true,"quantityOptions":[1],"quantityMax":9,"noteMaxLength":10,"confirmOverKen":5}`), &cfg); err != nil {
+		t.Fatal(err)
+	}
+	for _, platform := range []string{"web", PlatformAndroid, PlatformIOS} {
+		if !cfg.EnabledFor(Client{Platform: platform, AppVersion: "1.0.0"}) {
+			t.Fatalf("%s must stay enabled for a row saved before platforms existed", platform)
 		}
 	}
 }

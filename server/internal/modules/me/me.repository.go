@@ -330,11 +330,17 @@ func (r *Repository) DisableAllByClanAuthor(clanID, authorID uuid.UUID) error {
 }
 
 type LikerRow struct {
-	ID       uuid.UUID `gorm:"column:id"`
-	Username string    `gorm:"column:username"`
-	FullName string    `gorm:"column:full_name"`
-	Avatar   string    `gorm:"column:avatar"`
-	IsFriend bool      `gorm:"column:is_friend"`
+	ID            uuid.UUID  `gorm:"column:id"`
+	Username      string     `gorm:"column:username"`
+	FullName      string     `gorm:"column:full_name"`
+	Avatar        string     `gorm:"column:avatar"`
+	AvatarFrameID *string    `gorm:"column:avatar_frame_id"`
+	VipEndTime    *time.Time `gorm:"column:vip_end_time"`
+	IsFriend      bool       `gorm:"column:is_friend"`
+}
+
+func (row LikerRow) activeAvatarFrameID() *string {
+	return (&models.User{AvatarFrameID: row.AvatarFrameID, VipEndTime: row.VipEndTime}).ActiveAvatarFrameID(time.Now())
 }
 
 const likerFriendExists = `EXISTS (
@@ -356,7 +362,7 @@ func (r *Repository) ListLikers(viewerID, postID uuid.UUID, limit, offset int) (
 
 	var rows []LikerRow
 	if err := base.
-		Select("users.id, users.username, users.full_name, users.avatar, "+likerFriendExists,
+		Select("users.id, users.username, users.full_name, users.avatar, users.avatar_frame_id, users.vip_end_time, "+likerFriendExists,
 			models.RelationshipStatusAccepted, viewerID, viewerID).
 		Order("me_reactions.created_at DESC").
 		Limit(limit).Offset(offset).
@@ -703,7 +709,7 @@ func (r *Repository) ListCommentLikers(viewerID, commentID uuid.UUID, limit, off
 
 	var rows []LikerRow
 	if err := base.
-		Select("users.id, users.username, users.full_name, users.avatar, "+likerFriendExists,
+		Select("users.id, users.username, users.full_name, users.avatar, users.avatar_frame_id, users.vip_end_time, "+likerFriendExists,
 			models.RelationshipStatusAccepted, viewerID, viewerID).
 		Order("me_comment_likes.created_at DESC").
 		Limit(limit).Offset(offset).

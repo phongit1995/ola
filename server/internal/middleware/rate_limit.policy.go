@@ -16,17 +16,18 @@ func perWindow(requests int, window time.Duration) redis_rate.Limit {
 }
 
 var (
-	PolicyKiss          = RateLimitPolicy{Name: "kiss", Limit: perWindow(3, 2*time.Second)}
-	PolicyChatMessage   = RateLimitPolicy{Name: "chat_message", Limit: perWindow(3, 2*time.Second)}
-	PolicyRoomMessage   = RateLimitPolicy{Name: "room_message", Limit: perWindow(3, 2*time.Second)}
-	PolicyLogin         = RateLimitPolicy{Name: "login", Limit: perWindow(10, time.Minute)}
-	PolicyAdminLogin    = RateLimitPolicy{Name: "admin_login", Limit: perWindow(5, time.Minute)}
-	PolicyWheelSpin     = RateLimitPolicy{Name: "wheel_spin", Limit: perWindow(1, 3*time.Second)}
-	PolicyCallStart     = RateLimitPolicy{Name: "call_start", Limit: perWindow(1, 3*time.Second)}
-	PolicyChatBot       = RateLimitPolicy{Name: "chat_bot", Limit: perWindow(10, time.Minute)}
-	PolicyReport        = RateLimitPolicy{Name: "report", Limit: perWindow(20, time.Hour)}
-	PolicyGiftSend      = RateLimitPolicy{Name: "gift_send", Limit: perWindow(20, time.Minute)}
-	PolicyMegaphoneSend = RateLimitPolicy{Name: "megaphone_send", Limit: perWindow(6, time.Minute)}
+	PolicyKiss           = RateLimitPolicy{Name: "kiss", Limit: perWindow(3, 2*time.Second)}
+	PolicyChatMessage    = RateLimitPolicy{Name: "chat_message", Limit: perWindow(3, 2*time.Second)}
+	PolicyRoomMessage    = RateLimitPolicy{Name: "room_message", Limit: perWindow(3, 2*time.Second)}
+	PolicyLogin          = RateLimitPolicy{Name: "login", Limit: perWindow(10, time.Minute)}
+	PolicyAdminLogin     = RateLimitPolicy{Name: "admin_login", Limit: perWindow(5, time.Minute)}
+	PolicyWheelSpin      = RateLimitPolicy{Name: "wheel_spin", Limit: perWindow(1, 3*time.Second)}
+	PolicyCallStart      = RateLimitPolicy{Name: "call_start", Limit: perWindow(1, 3*time.Second)}
+	PolicyChatBot        = RateLimitPolicy{Name: "chat_bot", Limit: perWindow(10, time.Minute)}
+	PolicyReport         = RateLimitPolicy{Name: "report", Limit: perWindow(20, time.Hour)}
+	PolicyGiftSend       = RateLimitPolicy{Name: "gift_send", Limit: perWindow(20, time.Minute)}
+	PolicyMegaphoneSend  = RateLimitPolicy{Name: "megaphone_send", Limit: perWindow(6, time.Minute)}
+	PolicyGiftCodeRedeem = RateLimitPolicy{Name: "gift_code_redeem", Limit: perWindow(10, time.Minute)}
 
 	PolicyStoryChapter = RateLimitPolicy{Name: "story_chapter", Limit: perWindow(60, time.Minute)}
 

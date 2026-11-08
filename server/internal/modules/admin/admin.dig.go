@@ -5,12 +5,14 @@ import (
 	adminannouncement "ola-chat-server/internal/modules/admin/announcement"
 	adminaudit "ola-chat-server/internal/modules/admin/audit"
 	adminauth "ola-chat-server/internal/modules/admin/auth"
+	adminavatarframe "ola-chat-server/internal/modules/admin/avatar-frame"
 	adminclan "ola-chat-server/internal/modules/admin/clan"
 	adminconversation "ola-chat-server/internal/modules/admin/conversation"
 	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	admingamematch "ola-chat-server/internal/modules/admin/game-match"
 	admingift "ola-chat-server/internal/modules/admin/gift"
+	admingiftcode "ola-chat-server/internal/modules/admin/gift-code"
 	adminken "ola-chat-server/internal/modules/admin/ken"
 	adminkenchest "ola-chat-server/internal/modules/admin/kenchest"
 	adminmarriage "ola-chat-server/internal/modules/admin/marriage"
@@ -48,6 +50,8 @@ func Provider(c *dig.Container) error {
 		adminclan.Provider,
 		adminupload.Provider,
 		adminvip.Provider,
+		adminavatarframe.Provider,
+		admingiftcode.Provider,
 		adminegg.Provider,
 		adminwheel.Provider,
 		adminken.Provider,

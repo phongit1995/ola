@@ -13,6 +13,8 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+const giftSortOrderColumn = "sort_order"
+
 type Repository struct {
 	db *gorm.DB
 }
@@ -76,12 +78,8 @@ func (r *Repository) FindByID(id uuid.UUID) (*models.Gift, error) {
 	return &item, nil
 }
 
-func (r *Repository) Create(item *models.Gift) error {
-	return r.db.Create(item).Error
-}
-
-func (r *Repository) Save(item *models.Gift) error {
-	return r.db.Save(item).Error
+func (r *Repository) SaveKeepingPosition(item *models.Gift) error {
+	return r.db.Omit(giftSortOrderColumn).Save(item).Error
 }
 
 func (r *Repository) Delete(id uuid.UUID) error {

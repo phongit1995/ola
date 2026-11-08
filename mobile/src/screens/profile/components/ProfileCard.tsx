@@ -16,6 +16,7 @@ import { VipAvatar } from '@components/ui/VipAvatar';
 import { DIVIDER } from '@constants';
 import { CARD_SHADOW, DEFAULT_COVER_COLOR } from '../constants';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { RelationButtons } from './RelationButtons';
 import { GENDER } from '@ola/shared/constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
@@ -29,7 +30,30 @@ const femaleIcon = require('@assets/icons/profile/ic_indicate_female.png');
 const marriageIcon = require('@assets/icons/profile/ic_profile_marriage.png');
 const birthdayIcon = require('@assets/icons/profile/ic_profile_birthday.png');
 const vipStoreIcon = require('@assets/icons/me/icon_vip.webp');
+const avatarFrameStoreIcon = require('@assets/icons/profile/ic_avatar_frame_store.webp');
 const cameraIcon = require('@assets/icons/profile/ic_action_camera.png');
+
+const PROFILE_AVATAR_SIZE = 96;
+const AVATAR_RING_STYLE = {
+  padding: 2,
+  borderRadius: PROFILE_AVATAR_SIZE,
+  backgroundColor: '#ffffff',
+  shadowColor: '#000000',
+  shadowOpacity: 0.3,
+  shadowRadius: 3,
+  shadowOffset: { width: 0, height: 1 },
+  elevation: 3,
+};
+const COUPLE_AVATAR_STYLE = {
+  padding: 1,
+  paddingBottom: 2,
+  backgroundColor: '#ffffff',
+  shadowColor: '#000000',
+  shadowOpacity: 0.3,
+  shadowRadius: 3,
+  shadowOffset: { width: 0, height: 1 },
+  elevation: 3,
+};
 
 interface ProfileCardProps {
   profile: PublicProfile;
@@ -45,6 +69,7 @@ interface ProfileCardProps {
   onKiss: () => void;
   onOpenFollowers: () => void;
   onOpenVipStore: () => void;
+  onOpenAvatarFrameStore: () => void;
   onFriendAction: () => void;
   onToggleFollow: () => void;
   onUnblock: () => void;
@@ -102,6 +127,7 @@ export function ProfileCard({
   onKiss,
   onOpenFollowers,
   onOpenVipStore,
+  onOpenAvatarFrameStore,
   onFriendAction,
   onToggleFollow,
   onUnblock,
@@ -129,6 +155,38 @@ export function ProfileCard({
       profile.spouse!.username,
       colorForName(profile.spouse!.username),
     );
+
+  const married = profile.spouse != null;
+  const ownAvatar = (
+    <View style={married || profile.avatarFrameId ? undefined : AVATAR_RING_STYLE}>
+      {married ? (
+        <Avatar
+          name={nick}
+          uri={profile.avatar ?? undefined}
+          size={PROFILE_AVATAR_SIZE}
+          rounded={false}
+        />
+      ) : (
+        <AvatarWithFrame
+          name={nick}
+          uri={profile.avatar ?? undefined}
+          size={PROFILE_AVATAR_SIZE}
+          frameId={profile.avatarFrameId}
+        />
+      )}
+      {uploadingAvatar && (
+        <View
+          className="absolute inset-0 items-center justify-center"
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.3)',
+            borderRadius: married ? 0 : PROFILE_AVATAR_SIZE,
+          }}
+        >
+          <Text className="text-sm text-white">{t('common.loading')}</Text>
+        </View>
+      )}
+    </View>
+  );
 
   return (
     <View className="mb-2 bg-white" style={CARD_SHADOW}>
@@ -177,49 +235,18 @@ export function ProfileCard({
           className="absolute bottom-0 left-0 right-0 items-center"
           pointerEvents="box-none"
         >
-          <View
-            className="flex-row gap-1 bg-white"
-            style={{
-              padding: 1,
-              paddingBottom: 2,
-              shadowColor: '#000',
-              shadowOpacity: 0.3,
-              shadowRadius: 3,
-              shadowOffset: { width: 0, height: 1 },
-              elevation: 3,
-            }}
-          >
+          <View className="flex-row items-end gap-1" style={married ? COUPLE_AVATAR_STYLE : undefined}>
             {profile.avatar != null && profile.avatar !== '' ? (
-              <Pressable onPress={() => openViewer([profile.avatar!])}>
-                <Avatar name={nick} uri={profile.avatar} size={96} rounded={false} />
-                {uploadingAvatar && (
-                  <View
-                    className="absolute inset-0 items-center justify-center"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                  >
-                    <Text className="text-sm text-white">{t('common.loading')}</Text>
-                  </View>
-                )}
-              </Pressable>
+              <Pressable onPress={() => openViewer([profile.avatar!])}>{ownAvatar}</Pressable>
             ) : (
-              <View>
-                <Avatar name={nick} size={96} rounded={false} />
-                {uploadingAvatar && (
-                  <View
-                    className="absolute inset-0 items-center justify-center"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                  >
-                    <Text className="text-sm text-white">{t('common.loading')}</Text>
-                  </View>
-                )}
-              </View>
+              ownAvatar
             )}
             {profile.spouse != null && (
               <Pressable onPress={openSpouse}>
                 <Avatar
                   name={profile.spouse.username}
                   uri={profile.spouse.avatar ?? undefined}
-                  size={96}
+                  size={PROFILE_AVATAR_SIZE}
                   rounded={false}
                 />
               </Pressable>
@@ -361,6 +388,21 @@ export function ProfileCard({
             />
             <Text className="text-xs" style={{ color: colors.primaryDarker }}>
               {t('profile.viewVipStore')}
+            </Text>
+          </Pressable>
+        )}
+        {profile.canViewAvatarFrameStore === true && (
+          <Pressable
+            onPress={onOpenAvatarFrameStore}
+            className="ml-4 mt-2 flex-row items-center gap-1 active:opacity-70"
+          >
+            <Image
+              source={avatarFrameStoreIcon}
+              style={{ width: 16, height: 16 }}
+              resizeMode="contain"
+            />
+            <Text className="text-xs" style={{ color: colors.primaryDarker }}>
+              {t('avatarFrame.openStore')}
             </Text>
           </Pressable>
         )}

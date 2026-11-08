@@ -22,7 +22,7 @@ export function GiftWallSection({
   userId,
   isSelf,
   refreshKey,
-  columns = 5,
+  columns = 4,
   onOpenHistory,
 }: GiftWallSectionProps) {
   const { t, i18n } = useTranslation();
@@ -74,9 +74,7 @@ export function GiftWallSection({
         )}
       </div>
 
-      {wall.items.length === 0 ? (
-        <p className="py-4 text-center text-sm text-black/45">{t('gift.wall.empty')}</p>
-      ) : (
+      {wall.items.length > 0 && (
         <ul className={`mt-2 grid ${GIFT_WALL_GRID_CLASS[columns]} gap-x-1 gap-y-2`}>
           {items.map((item) => (
             <li key={item.gift.id}>
@@ -90,13 +88,13 @@ export function GiftWallSection({
                     src={item.gift.imageUrl}
                     alt={giftDisplayName(item.gift, i18n.language)}
                     loading="lazy"
-                    className="h-11 w-11 object-contain"
+                    className="h-16 w-16 object-contain"
                   />
                   <span className="absolute -right-2 -bottom-1 rounded-full bg-ola-accent px-1 text-[10px] leading-4 font-bold text-white">
                     {t('gift.quantityTimes', { count: item.quantity })}
                   </span>
                 </span>
-                <span className="mt-1 w-full truncate text-center text-[11px] text-black/54">
+                <span className="mt-1 w-full truncate text-center text-xs text-black/54">
                   {giftDisplayName(item.gift, i18n.language)}
                 </span>
               </button>

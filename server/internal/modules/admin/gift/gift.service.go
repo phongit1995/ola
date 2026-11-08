@@ -71,12 +71,11 @@ func (s *Service) Create(req CreateGiftRequest) (*GiftItem, error) {
 		KenPrice:           req.KenPrice,
 		CharmPoints:        req.CharmPoints,
 		IsActive:           active,
-		SortOrder:          req.SortOrder,
 		Animation:          animation,
 		SenderCharmPercent: senderCharmPercent,
 		AnnounceEnabled:    req.AnnounceEnabled,
 	}
-	if err := s.giftRepo.Create(g); err != nil {
+	if err := s.repo.SaveGiftAtPosition(g, req.SortOrder, true); err != nil {
 		return nil, err
 	}
 	s.giftSvc.InvalidateCatalog()
@@ -107,9 +106,6 @@ func (s *Service) Update(id uuid.UUID, req UpdateGiftRequest) (*GiftItem, error)
 	if req.IsActive != nil {
 		g.IsActive = *req.IsActive
 	}
-	if req.SortOrder != nil {
-		g.SortOrder = *req.SortOrder
-	}
 	if req.Animation != nil {
 		g.Animation = *req.Animation
 	}
@@ -122,12 +118,25 @@ func (s *Service) Update(id uuid.UUID, req UpdateGiftRequest) (*GiftItem, error)
 	if g.Name == "" {
 		return nil, ErrGiftNameRequired
 	}
-	if err := s.giftRepo.Save(g); err != nil {
+	if req.SortOrder != nil && *req.SortOrder != g.SortOrder {
+		err = s.repo.SaveGiftAtPosition(g, *req.SortOrder, false)
+	} else {
+		err = s.giftRepo.SaveKeepingPosition(g)
+	}
+	if err != nil {
 		return nil, err
 	}
 	s.giftSvc.InvalidateCatalog()
 	item := toGiftItem(g)
 	return &item, nil
+}
+
+func (s *Service) Reorder(ids []uuid.UUID) error {
+	if err := s.repo.ReorderGifts(ids); err != nil {
+		return err
+	}
+	s.giftSvc.InvalidateCatalog()
+	return nil
 }
 
 func (s *Service) Delete(id uuid.UUID) error {

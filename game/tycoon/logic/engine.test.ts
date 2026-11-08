@@ -540,4 +540,56 @@ describe('tycoon festival, travel and tax', () => {
     s.players[0].pos = 24;
     expect(botMove(withPhase(s, 'travel'), 0)).toEqual({ type: 'TRAVEL', tile: 26 });
   });
+
+  describe('bankruptcy edge cases', () => {
+    function cardPhase(players: number): GameState {
+      return { ...newGame(11, players), phase: 'card', card: { deck: 'chest', id: 'cm07' } };
+    }
+
+    it('keeps the card in play when a bystander quits', () => {
+      const s = quitPlayer(cardPhase(3), 2);
+      expect(s.turn).toBe(0);
+      expect(s.phase).toBe('card');
+      expect(s.card).not.toBeNull();
+      expect(play(s, 0, { type: 'CARD_ACK' }).card).toBeNull();
+    });
+
+    it('moves on when the drawer quits on their own card', () => {
+      const s = quitPlayer(cardPhase(3), 0);
+      expect(s.turn).toBe(1);
+      expect(s.phase).toBe('roll');
+      expect(s.card).toBeNull();
+    });
+
+    it('clears the card when the match ends', () => {
+      const s = quitPlayer(cardPhase(2), 1);
+      expect(s.finished).toBe(true);
+      expect(s.card).toBeNull();
+    });
+
+    it('stops the birthday collection once the game ends', () => {
+      const s = cardPhase(3);
+      const stations = BOARD.flatMap((tile, idx) => (tile.kind === 'station' ? [idx] : []));
+      stations.forEach((idx, i) => {
+        s.tiles[idx].owner = i === 0 ? 1 : 0;
+      });
+      s.players[1].cash = 0;
+      s.players[2].cash = 0;
+      const next = play(s, 0, { type: 'CARD_ACK' });
+      expect(next.finished).toBe(true);
+      expect(next.endReason).toBe('airports');
+      expect(next.players[2].bankrupt).toBe(false);
+      expect(next.bankruptOrder).toEqual([1]);
+    });
+
+    it('offers the free tile when a takeover owner quits', () => {
+      const s = { ...newGame(29, 3), phase: 'takeover' as const };
+      s.players[0].pos = 1;
+      s.tiles[1].owner = 1;
+      const next = quitPlayer(s, 1);
+      expect(next.turn).toBe(0);
+      expect(next.phase).toBe('decide');
+      expect(play(next, 0, { type: 'BUY' }).tiles[1].owner).toBe(0);
+    });
+  });
 });

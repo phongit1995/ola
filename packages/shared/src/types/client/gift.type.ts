@@ -19,6 +19,7 @@ export interface GiftCatalogState {
   loading: boolean;
   error: boolean;
   load: (force?: boolean) => Promise<void>;
+  loadSettings: () => Promise<void>;
   reset: () => void;
 }
 

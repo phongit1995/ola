@@ -30,3 +30,5 @@ export * from './story.service';
 export * from './wordChain.service';
 export * from './gift.service';
 export * from './megaphone.service';
+export * from './giftCode.service';
+export * from './avatarFrame.service';

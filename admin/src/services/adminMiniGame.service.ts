@@ -24,6 +24,11 @@ export const AdminMiniGameService = {
     return data.data
   },
 
+  async reorder(ids: string[]): Promise<MessageResult> {
+    const { data } = await http.put<ApiResponse<MessageResult>>('/admin/mini-games/order', { ids })
+    return data.data
+  },
+
   async remove(id: string): Promise<MessageResult> {
     const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/mini-games/${id}`)
     return data.data

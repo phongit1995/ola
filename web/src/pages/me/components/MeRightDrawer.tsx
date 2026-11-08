@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import {
-  Avatar,
   ConfirmDialog,
   SearchIcon,
   Spinner,
   VipIcon,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { activeVipTypeId, colorForName, toast } from '@lib';
 import { UserService } from '@services';
 import { useMeLocalStore } from '@/store/meLocalStore';
@@ -53,6 +53,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
             fullName: user.fullName,
             avatar: user.avatar,
             vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime),
+            avatarFrameId: user.avatarFrameId ?? null,
           }))
         )
       )
@@ -191,11 +192,12 @@ function MeProfileRow({ profile, onOpen }: MeProfileRowProps) {
       onClick={() => onOpen(profile)}
       className="flex h-12 w-full items-center gap-2 px-2 text-left hover:bg-ola-primary-light"
     >
-      <Avatar
+      <AvatarWithFrame
         name={title}
         color={colorForName(profile.username)}
         src={profile.avatar}
         size={32}
+        frameId={profile.avatarFrameId}
       />
       <span className="flex min-w-0 flex-1 flex-col justify-center">
         <span className="flex min-w-0 items-center gap-1">

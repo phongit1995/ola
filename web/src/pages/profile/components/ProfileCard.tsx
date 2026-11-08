@@ -9,6 +9,8 @@ import femaleIcon from '@/assets/icons/profile/ic_indicate_female.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import vipStoreIcon from '@/assets/icons/me/icon_vip.webp';
+import avatarFrameStoreIcon from '@/assets/icons/profile/ic_avatar_frame_store.webp';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import {
   Avatar,
   CharmIcon,
@@ -29,6 +31,14 @@ import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
 
+const PROFILE_AVATAR_SIZE = 96;
+const AVATAR_RING_CLASS =
+  'block rounded-full bg-white p-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]';
+const SINGLE_AVATAR_CLASS =
+  'absolute -bottom-12 left-1/2 flex -translate-x-1/2 items-end gap-1';
+const COUPLE_AVATAR_CLASS =
+  'absolute -bottom-12 left-1/2 flex -translate-x-1/2 gap-1 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]';
+
 interface ProfileCardProps {
   userId: string;
   profile: UserProfile;
@@ -37,6 +47,7 @@ interface ProfileCardProps {
   onPostMe: () => void;
   onUpdateInfo: () => void;
   onViewVipStore: () => void;
+  onViewAvatarFrameStore: () => void;
   onOpenUser?: (nick: string) => void;
   onOpenFollowers?: () => void;
   onSendGift?: () => void;
@@ -60,6 +71,7 @@ export function ProfileCard({
   onPostMe,
   onUpdateInfo,
   onViewVipStore,
+  onViewAvatarFrameStore,
   onOpenUser,
   onOpenFollowers,
   onSendGift,
@@ -131,6 +143,27 @@ export function ProfileCard({
     clearAvatarCrop();
   }
 
+  const married = profile.spouse != null;
+  const ownAvatar = married ? (
+    <Avatar
+      name={profile.nick}
+      color={profile.color}
+      size={PROFILE_AVATAR_SIZE}
+      src={profile.avatar}
+      rounded={false}
+    />
+  ) : (
+    <span className={profile.avatarFrameId ? 'block' : AVATAR_RING_CLASS}>
+      <AvatarWithFrame
+        name={profile.nick}
+        color={profile.color}
+        size={PROFILE_AVATAR_SIZE}
+        src={profile.avatar}
+        frameId={profile.avatarFrameId}
+      />
+    </span>
+  );
+
   return (
     <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
       <div
@@ -179,30 +212,18 @@ export function ProfileCard({
             )}
           </>
         )}
-        <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 gap-1 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+        <div className={married ? COUPLE_AVATAR_CLASS : SINGLE_AVATAR_CLASS}>
           {profile.avatar ? (
             <button
               type="button"
               aria-label={t('profile.viewImage')}
               onClick={() => openViewer([profile.avatar!])}
-              className="leading-none"
+              className={married ? 'leading-none' : 'rounded-full leading-none'}
             >
-              <Avatar
-                name={profile.nick}
-                color={profile.color}
-                size={96}
-                src={profile.avatar}
-                rounded={false}
-              />
+              {ownAvatar}
             </button>
           ) : (
-            <Avatar
-              name={profile.nick}
-              color={profile.color}
-              size={96}
-              src={profile.avatar}
-              rounded={false}
-            />
+            ownAvatar
           )}
           {profile.spouse ? (
             <button
@@ -215,7 +236,7 @@ export function ProfileCard({
               <Avatar
                 name={profile.spouse.nick}
                 color={colorForName(profile.spouse.nick)}
-                size={96}
+                size={PROFILE_AVATAR_SIZE}
                 src={profile.spouse.avatar}
                 rounded={false}
               />
@@ -380,6 +401,20 @@ export function ProfileCard({
               className="h-4 w-auto shrink-0 object-contain"
             />
             {t('profile.viewVipStore')}
+          </button>
+        )}
+        {profile.canViewAvatarFrameStore && (
+          <button
+            type="button"
+            onClick={onViewAvatarFrameStore}
+            className="mt-2 ml-4 flex items-center gap-1 text-xs text-ola-primary-darker active:opacity-70"
+          >
+            <img
+              src={avatarFrameStoreIcon}
+              alt=""
+              className="h-4 w-auto shrink-0 object-contain"
+            />
+            {t('avatarFrame.openStore')}
           </button>
         )}
       </div>

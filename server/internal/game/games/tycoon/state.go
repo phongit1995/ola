@@ -268,7 +268,7 @@ func validateState(s *State) error {
 	if err := validateDeck(s.ChestDeck, len(chestCards)); err != nil {
 		return fmt.Errorf("chest deck: %w", err)
 	}
-	if (s.Phase == PhaseDebt) != (s.Debt != nil) {
+	if !s.Finished && (s.Phase == PhaseDebt) != (s.Debt != nil) {
 		return errors.New("debt does not match phase")
 	}
 	if s.Debt != nil {
@@ -281,7 +281,7 @@ func validateState(s *State) error {
 			return err
 		}
 	}
-	if (s.Phase == PhaseCard) != (s.Card != nil) {
+	if !s.Finished && (s.Phase == PhaseCard) != (s.Card != nil) {
 		return errors.New("card does not match phase")
 	}
 	if s.Card != nil && cardIndex(*s.Card) < 0 {

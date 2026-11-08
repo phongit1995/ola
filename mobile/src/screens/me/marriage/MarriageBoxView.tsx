@@ -6,6 +6,7 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { DiaryEntry } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { VipAvatar } from '@components/ui/VipAvatar';
@@ -18,12 +19,17 @@ function FramedAvatar({
   color,
   src,
   size,
+  frameId,
 }: {
   name: string;
   color: string;
   src?: string;
   size: number;
+  frameId?: string | null;
 }) {
+  if (frameId != null && frameId !== '') {
+    return <AvatarWithFrame name={name} color={color} uri={src} size={size} frameId={frameId} />;
+  }
   return (
     <View className="bg-white" style={{ borderWidth: 2, borderColor: color, padding: 2 }}>
       <Avatar name={name} color={color} uri={src} size={size} rounded={false} />
@@ -41,6 +47,7 @@ export function MarriageBoxView() {
   const { t } = useTranslation();
   const meName = useAuthStore((s) => s.user?.username ?? t('home.guest'));
   const meAvatar = useAuthStore((s) => s.user?.avatar);
+  const meFrameId = useAuthStore((s) => s.user?.avatarFrameId);
   const spouse = useMarriageStore((s) => s.spouse);
   const marriedSince = useMarriageStore((s) => s.marriedSince);
   const diary = useMarriageStore((s) => s.diary);
@@ -100,13 +107,20 @@ export function MarriageBoxView() {
           style={StyleSheet.absoluteFill}
         />
         <View className="flex-row items-center" style={{ gap: 12 }}>
-          <FramedAvatar name={meName} color={colorForName(meName)} src={meAvatar} size={84} />
+          <FramedAvatar
+            name={meName}
+            color={colorForName(meName)}
+            src={meAvatar}
+            size={84}
+            frameId={meFrameId}
+          />
           <Text style={{ fontSize: 30, color: '#ff4d7d' }}>❤</Text>
           <FramedAvatar
             name={spouse.name}
             color={spouse.avatarColor}
             src={spouse.avatarUrl}
             size={84}
+            frameId={spouse.avatarFrameId}
           />
         </View>
         <Text className="mt-3 text-base font-bold" style={{ color: '#c2185b' }}>

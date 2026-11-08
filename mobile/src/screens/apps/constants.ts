@@ -9,13 +9,14 @@ export type AppItemAction =
   | 'wheel'
   | 'profile'
   | 'vip'
+  | 'avatar-frame-store'
   | 'ken'
   | 'gifts'
+  | 'gift-code'
   | 'megaphone'
   | 'media'
   | 'social'
   | 'settings'
-  | 'app-lock'
   | 'remove-account'
   | 'support'
   | 'logout';
@@ -62,6 +63,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
     action: 'vip',
   },
   {
+    icon: require('@assets/icons/apps/avatar-frame.webp'),
+    titleKey: 'avatarFrame.storeTitle',
+    action: 'avatar-frame-store',
+  },
+  {
     icon: require('@assets/icons/apps/ken.png'),
     titleKey: 'home.apps.ken',
     action: 'ken',
@@ -87,14 +93,14 @@ export const PERSONAL_ITEMS: AppItem[] = [
     action: 'social',
   },
   {
+    icon: require('@assets/icons/apps/gift-code.webp'),
+    titleKey: 'giftCode.menuTitle',
+    action: 'gift-code',
+  },
+  {
     icon: require('@assets/icons/apps/setting.png'),
     titleKey: 'home.apps.settings',
     action: 'settings',
-  },
-  {
-    icon: require('@assets/icons/apps/app-lock.png'),
-    titleKey: 'home.apps.appLock',
-    action: 'app-lock',
   },
   {
     icon: require('@assets/icons/apps/delete-account.png'),

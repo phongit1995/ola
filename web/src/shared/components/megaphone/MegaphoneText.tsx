@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { MEGAPHONE_TYPE } from '@constants';
-import { activeVipTypeId, giftDisplayName } from '@lib';
+import { activeVipTypeId, giftDisplayName, SmileyText } from '@lib';
 import type { Megaphone } from '@app-types';
 import { VipBadge } from '../ui/VipBadge';
 
@@ -32,7 +32,9 @@ export function MegaphoneText({ megaphone }: { megaphone: Megaphone }) {
       <VipBadge typeId={vipTypeId} className="h-5 w-5" />
       <MegaphoneUsername username={megaphone.sender.username} />
       <span className="font-semibold text-ola-megaphone-name">:</span>
-      <span className="text-black/87">{megaphone.content}</span>
+      <span className="text-black/87">
+        <SmileyText text={megaphone.content} />
+      </span>
     </>
   );
 }

@@ -46,6 +46,7 @@ type User struct {
 	VipUsed           *string    `gorm:"type:varchar(50)"`
 	VipUsedInstanceID *uuid.UUID `gorm:"type:uuid"`
 	VipEndTime        *time.Time
+	AvatarFrameID     *string    `gorm:"type:varchar(8)"`
 	FollowerCount     int        `gorm:"not null;default:0"`
 	FollowingCount    int        `gorm:"not null;default:0"`
 	AntiCount         int        `gorm:"not null;default:0"`
@@ -69,4 +70,11 @@ type User struct {
 
 func (u *User) HasActiveVip(now time.Time) bool {
 	return u != nil && u.VipEndTime != nil && u.VipEndTime.After(now)
+}
+
+func (u *User) ActiveAvatarFrameID(now time.Time) *string {
+	if u == nil || u.AvatarFrameID == nil || *u.AvatarFrameID == "" || !u.HasActiveVip(now) {
+		return nil
+	}
+	return u.AvatarFrameID
 }

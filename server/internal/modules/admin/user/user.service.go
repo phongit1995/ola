@@ -6,6 +6,7 @@ import (
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/moderation"
+	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/services"
@@ -32,16 +33,18 @@ type Service struct {
 	vipService *vip.Service
 	vipRepo    *vip.Repository
 	moderation *moderation.Service
+	sessions   *session.Service
 	logger     *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *services.CacheService, vipService *vip.Service, vipRepo *vip.Repository, moderationService *moderation.Service, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *services.CacheService, vipService *vip.Service, vipRepo *vip.Repository, moderationService *moderation.Service, sessions *session.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:       repo,
 		cache:      cache,
 		vipService: vipService,
 		vipRepo:    vipRepo,
 		moderation: moderationService,
+		sessions:   sessions,
 		logger:     logger.Named("[admin_user_service]"),
 	}
 }
@@ -372,6 +375,13 @@ func (s *Service) Delete(id uuid.UUID) error {
 
 	if err := s.repo.SoftDelete(id); err != nil {
 		return err
+	}
+
+	if err := s.cache.Delete(fmt.Sprintf(user.CacheKeyUserProfile, id.String())); err != nil {
+		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
+	}
+	if _, err := s.sessions.RevokeAllForBannedUser(id); err != nil {
+		s.logger.Errorw("Failed to revoke sessions of deleted user", "user_id", id, "error", err.Error())
 	}
 
 	s.logger.Infow("Admin deleted user", "user_id", id)

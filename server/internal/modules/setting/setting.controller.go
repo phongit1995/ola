@@ -203,9 +203,33 @@ func (ctrl *Controller) momentConfigFor(client Client) (MomentConfigResponse, er
 	}, nil
 }
 
+func (ctrl *Controller) giftConfigFor(client Client) (GiftPublicConfig, error) {
+	cfg, err := ctrl.service.GetGift()
+	if err != nil {
+		return GiftPublicConfig{}, err
+	}
+	return cfg.PublicFor(client), nil
+}
+
+func (ctrl *Controller) giftCodeConfigFor(client Client) (GiftCodePublicConfig, error) {
+	cfg, err := ctrl.service.GetGiftCode()
+	if err != nil {
+		return GiftCodePublicConfig{}, err
+	}
+	return GiftCodePublicConfig{Enabled: cfg.EnabledFor(client), RequireEmailVerified: cfg.RequireEmailVerified}, nil
+}
+
+func (ctrl *Controller) megaphoneConfigFor(client Client) (MegaphonePublicConfig, error) {
+	cfg, err := ctrl.service.GetMegaphone()
+	if err != nil {
+		return MegaphonePublicConfig{}, err
+	}
+	return cfg.PublicFor(client), nil
+}
+
 // AppConfig godoc
 // @Summary      Gộp config hệ thống cho app trong một request
-// @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
+// @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment, gift, megaphone, giftCode; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
 // @Description  Gửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.
 // @Tags         settings
 // @Produce      json

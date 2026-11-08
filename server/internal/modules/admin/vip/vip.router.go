@@ -19,6 +19,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	{
 		vip.POST("/packages", r.controller.CreatePackage)
 		vip.GET("/packages", r.controller.ListPackages)
+		vip.PUT("/packages/order", r.controller.ReorderPackages)
 		vip.PATCH("/packages/:id", r.controller.UpdatePackage)
 		vip.DELETE("/packages/:id", r.controller.DeletePackage)
 		vip.GET("/history", r.controller.ListHistory)
@@ -27,6 +28,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		vip.GET("/transfers", r.controller.ListTransfers)
 		vip.GET("/shop", r.controller.ListShopItems)
 		vip.POST("/shop", r.controller.CreateShopItem)
+		vip.PUT("/shop/order", r.controller.ReorderShopItems)
 		vip.PATCH("/shop/:id", r.controller.UpdateShopItem)
 		vip.DELETE("/shop/:id", r.controller.DeleteShopItem)
 	}

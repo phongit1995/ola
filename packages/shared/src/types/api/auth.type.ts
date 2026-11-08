@@ -24,6 +24,7 @@ export interface AuthUser {
   ken?: number;
   vipUsed?: string | null;
   vipEndTime?: string | null;
+  avatarFrameId?: string | null;
   followerCount?: number;
   followingCount?: number;
   kisses?: number;

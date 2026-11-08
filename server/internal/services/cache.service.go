@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -11,6 +12,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
+
+var ErrCacheMiss = errors.New("key not found")
 
 type CacheService struct {
 	client *redis.Client
@@ -60,7 +63,7 @@ func (s *CacheService) Set(key string, value interface{}, expiration time.Durati
 func (s *CacheService) Get(key string, dest interface{}) error {
 	data, err := s.client.Get(s.ctx, key).Bytes()
 	if err == redis.Nil {
-		return fmt.Errorf("key not found")
+		return ErrCacheMiss
 	}
 	if err != nil {
 		return err

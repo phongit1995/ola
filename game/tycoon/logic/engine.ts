@@ -420,6 +420,7 @@ function applyCard(s: GameState, seat: number, card: CardData | undefined): void
     }
     case 'collectEach':
       for (const other of activeSeats(s)) {
+        if (s.finished) break;
         if (other !== seat) pay(s, other, seat, card.amount ?? BIRTHDAY_GIFT, 'birthday');
       }
       return;
@@ -551,7 +552,7 @@ export function bankrupt(s: GameState, seat: number, creditor: number): void {
   s.bankruptOrder.push(seat);
   push(s, { kind: 'bankrupt', by: seat, creditor: toCreditor ? creditor : -1, tiles });
   s.pendingDebts = s.pendingDebts.filter((d) => d.by !== seat);
-  s.card = null;
+  if (s.turn === seat) s.card = null;
   if (activeSeats(s).length <= 1) {
     finish(s, 'last');
     return;
@@ -561,7 +562,11 @@ export function bankrupt(s: GameState, seat: number, creditor: number): void {
     resolveDebt(s);
     return;
   }
-  if (s.turn === seat) advanceTurn(s);
+  if (s.turn === seat) {
+    advanceTurn(s);
+    return;
+  }
+  if (s.phase === 'takeover' && s.tiles[s.players[s.turn].pos].owner < 0) s.phase = 'decide';
 }
 
 function advanceTurn(s: GameState): void {
@@ -590,6 +595,7 @@ function finish(s: GameState, reason: EndReason): void {
   if (s.finished) return;
   s.finished = true;
   s.endReason = reason;
+  s.card = null;
   const ranked = rankings(s);
   push(s, { kind: 'finish', by: -1, rankings: ranked, worth: ranked.map((seat) => worth(s, seat)), end: reason });
 }

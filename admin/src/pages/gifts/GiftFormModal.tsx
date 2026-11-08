@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { App, Button, Form, Image, Input, InputNumber, Modal, Select, Space, Switch, Upload } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import { useCreateGift, useUpdateGift } from './useGiftQueries'
+import { PositionField } from '@/components/PositionField'
 import { GIFT_ANIMATION_OPTIONS, GIFT_KEN_PRICE_MAX, GIFT_SENDER_CHARM_PERCENT_DEFAULT } from './constants'
 import { GIFT_ANIMATION_RANDOM } from '@ola/shared/constants'
 import { AdminUploadService } from '@/services/adminUpload.service'
@@ -12,6 +13,7 @@ import type { AdminGift, CreateGiftRequest } from '@/types'
 interface GiftFormModalProps {
   open: boolean
   gift: AdminGift | null
+  nextPosition: number
   onClose: () => void
 }
 
@@ -19,7 +21,7 @@ type GiftFormValues = Required<CreateGiftRequest>
 
 const GIFT_IMAGE_PREVIEW_SIZE = 96
 
-export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
+export function GiftFormModal({ open, gift, nextPosition, onClose }: GiftFormModalProps) {
   const { message } = App.useApp()
   const [form] = Form.useForm<GiftFormValues>()
   const createGift = useCreateGift()
@@ -37,14 +39,14 @@ export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
         imageUrl: gift?.imageUrl ?? '',
         kenPrice: gift?.kenPrice ?? 10,
         charmPoints: gift?.charmPoints ?? 10,
-        sortOrder: gift?.sortOrder ?? 0,
+        sortOrder: gift?.sortOrder ?? nextPosition,
         isActive: gift?.isActive ?? true,
         animation: gift?.animation ?? GIFT_ANIMATION_RANDOM,
         senderCharmPercent: gift?.senderCharmPercent ?? GIFT_SENDER_CHARM_PERCENT_DEFAULT,
-        announceEnabled: gift?.announceEnabled ?? false,
+        announceEnabled: gift?.announceEnabled ?? true,
       })
     }
-  }, [open, gift, form])
+  }, [open, gift, nextPosition, form])
 
   async function handleUpload(file: File) {
     setUploading(true)
@@ -194,13 +196,7 @@ export function GiftFormModal({ open, gift, onClose }: GiftFormModalProps) {
           <Switch />
         </Form.Item>
         <Space.Compact block>
-          <Form.Item
-            name="sortOrder"
-            label="Thứ tự (nhỏ hiện trước)"
-            style={{ flex: 1, marginRight: 12 }}
-          >
-            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
-          </Form.Item>
+          <PositionField style={{ flex: 1, marginRight: 12 }} />
           <Form.Item name="isActive" label="Đang bán" valuePropName="checked" style={{ flex: 1 }}>
             <Switch />
           </Form.Item>

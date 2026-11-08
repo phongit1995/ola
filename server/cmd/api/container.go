@@ -9,6 +9,7 @@ import (
 	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/announcement"
 	"ola-chat-server/internal/modules/auth"
+	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	"ola-chat-server/internal/modules/call"
 	chatbot "ola-chat-server/internal/modules/chat-bot"
 	"ola-chat-server/internal/modules/clan"
@@ -16,6 +17,7 @@ import (
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/modules/gift"
+	giftcode "ola-chat-server/internal/modules/gift-code"
 	"ola-chat-server/internal/modules/health"
 	"ola-chat-server/internal/modules/ken"
 	"ola-chat-server/internal/modules/kenchest"
@@ -95,6 +97,7 @@ func NewContainer(opts ...dig.Option) (*dig.Container, error) {
 		me.Provider,
 		clan.Provider,
 		vip.Provider,
+		avatarframe.Provider,
 		ken.Provider,
 		egg.Provider,
 		wheel.Provider,
@@ -102,6 +105,7 @@ func NewContainer(opts ...dig.Option) (*dig.Container, error) {
 		gift.Provider,
 		contentfilter.Provider,
 		megaphone.Provider,
+		giftcode.Provider,
 		marriage.Provider,
 		marriagediary.Provider,
 		pen.Provider,

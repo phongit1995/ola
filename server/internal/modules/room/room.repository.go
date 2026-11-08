@@ -5,10 +5,18 @@ import (
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+var roomOrder = utils.OrderedList{
+	Model:    &models.Room{},
+	Table:    "rooms",
+	Column:   "index",
+	OrderSQL: `"index" ASC, created_at DESC`,
+}
 
 type Repository struct {
 	db *gorm.DB
@@ -18,12 +26,8 @@ func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) Create(room *models.Room) error {
-	return r.db.Create(room).Error
-}
-
-func (r *Repository) Save(room *models.Room) error {
-	return r.db.Save(room).Error
+func (r *Repository) SaveKeepingPosition(room *models.Room) error {
+	return r.db.Omit(roomOrder.Column).Save(room).Error
 }
 
 func (r *Repository) GetByID(id uuid.UUID) (*models.Room, error) {
@@ -53,6 +57,32 @@ func (r *Repository) list(query string, limit, offset int, onlyEnabled bool) ([]
 		return nil, 0, err
 	}
 	return rooms, total, nil
+}
+
+func (r *Repository) Reorder(ids []uuid.UUID) error {
+	return roomOrder.Reorder(r.db, ids)
+}
+
+func (r *Repository) CreateAt(room *models.Room, position int) error {
+	placed, err := roomOrder.PlaceOne(r.db, position, &room.ID, func(tx *gorm.DB) error {
+		return tx.Create(room).Error
+	})
+	if err != nil {
+		return err
+	}
+	room.Index = placed
+	return nil
+}
+
+func (r *Repository) SaveAt(room *models.Room, position int) error {
+	placed, err := roomOrder.PlaceOne(r.db, position, &room.ID, func(tx *gorm.DB) error {
+		return tx.Save(room).Error
+	})
+	if err != nil {
+		return err
+	}
+	room.Index = placed
+	return nil
 }
 
 func (r *Repository) ListPublic(query string, limit, offset int) ([]*models.Room, int64, error) {

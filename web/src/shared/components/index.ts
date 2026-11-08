@@ -3,6 +3,7 @@ export * from './ui/KenBalanceBadge';
 export * from './ui/Avatar';
 export * from './ui/ScreenHeader';
 export * from './ui/Spinner';
+export * from './ui/ChevronRightIcon';
 export * from './ui/SearchIcon';
 export * from './ui/DateSeparator';
 export * from './ui/PullToRefresh';

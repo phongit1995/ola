@@ -2,6 +2,7 @@ package conversation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"ola-chat-server/internal/constants"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
@@ -124,21 +125,25 @@ func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uu
 	if conv.ConversationType == constants.ConversationTypeDirect && conv.OtherUserID != nil {
 		if otherUserID, err := uuid.Parse(conv.OtherUserID.String()); err == nil {
 			u := users[otherUserID]
+			var lookupErr error
 			if u == nil {
-				u, _ = s.userCache.GetUserCache(otherUserID, true)
+				u, lookupErr = s.userCache.GetUserCache(otherUserID, true)
 			}
 			if u == nil {
-				s.logger.Warnw("buildConversationResponse: failed to fetch other user",
-					"conversation_id", conv.ConversationID, "other_user_id", otherUserID)
+				if lookupErr != nil && !errors.Is(lookupErr, gorm.ErrRecordNotFound) {
+					s.logger.Warnw("buildConversationResponse: failed to fetch other user",
+						"conversation_id", conv.ConversationID, "other_user_id", otherUserID, "error", lookupErr)
+				}
 			} else {
 				resp.Name = userDisplayName(u)
 				resp.Avatar = u.Avatar
 				resp.OtherUser = &OtherUserBrief{
-					ID:       otherUserID.String(),
-					Username: u.Username,
-					FullName: u.FullName,
-					Avatar:   u.Avatar,
-					Bio:      u.Bio,
+					ID:            otherUserID.String(),
+					Username:      u.Username,
+					FullName:      u.FullName,
+					Avatar:        u.Avatar,
+					Bio:           u.Bio,
+					AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 				}
 			}
 		}

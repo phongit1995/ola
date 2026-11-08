@@ -1,19 +1,18 @@
 import { useTranslation } from 'react-i18next';
 import {
-  Avatar,
   CharmIcon,
   FullScreenOverlay,
   ScreenHeader,
   Spinner,
   UserName,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { GIFT_HISTORY_DIRECTION, GIFT_HISTORY_TABS } from '@constants';
 import { useGiftHistory } from '@ola/shared/stores/gift/useGiftHistory';
 import {
   cn,
   colorForName,
-  formatClockHM,
-  formatDateDMY,
+  formatCompactDateTime,
   formatKen,
   randomUuid,
 } from '@lib';
@@ -93,7 +92,8 @@ export function GiftHistoryPage({
         ) : (
           <ul className="divide-y divide-black/6 bg-white">
             {items.map((item) => {
-              const { fullName, username, avatar } = item.counterparty;
+              const { fullName, username, avatar, avatarFrameId } =
+                item.counterparty;
               const name = fullName || username;
               return (
                 <li key={item.id} className="flex items-start gap-3 px-4 py-3">
@@ -104,11 +104,12 @@ export function GiftHistoryPage({
                     aria-label={name}
                     className="relative shrink-0 rounded-full active:opacity-70"
                   >
-                    <Avatar
+                    <AvatarWithFrame
                       name={name}
                       src={avatar}
                       color={colorForName(name)}
                       size={44}
+                      frameId={avatarFrameId}
                     />
                     <span
                       aria-hidden="true"
@@ -136,8 +137,7 @@ export function GiftHistoryPage({
                         />
                       </button>
                       <span className="shrink-0 text-xs text-black/45">
-                        {formatDateDMY(item.createdAt)}{' '}
-                        {formatClockHM(item.createdAt)}
+                        {formatCompactDateTime(item.createdAt)}
                       </span>
                     </div>
                     <p className="mt-0.5 text-sm text-black/60">
@@ -186,7 +186,7 @@ export function GiftHistoryPage({
                     <img
                       src={item.giftImageUrl}
                       alt=""
-                      className="h-14 w-14 object-contain drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)]"
+                      className="h-20 w-20 object-contain drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)]"
                     />
                   </button>
                 </li>

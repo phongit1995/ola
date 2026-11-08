@@ -1,4 +1,9 @@
-import type { Megaphone, MegaphoneConfig, SendMegaphoneResult } from '../api/megaphone.type';
+import type { Megaphone, MegaphoneAppConfig, MegaphoneConfig, SendMegaphoneResult } from '../api/megaphone.type';
+
+export interface MegaphoneConfigState {
+  config: MegaphoneAppConfig | null;
+  load: () => Promise<void>;
+}
 
 export interface MegaphoneState {
   current: Megaphone | null;

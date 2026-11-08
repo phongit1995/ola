@@ -9,6 +9,18 @@ export function isTransferNotification(type: string): boolean {
   return type === APP_NOTIFICATION_TYPE.kenReceived || type === APP_NOTIFICATION_TYPE.vipReceived;
 }
 
+export function isAvatarFrameNotification(type: string): boolean {
+  return type === APP_NOTIFICATION_TYPE.avatarFrameReceived;
+}
+
+export function avatarFrameNotificationText(t: TFunction, item: AppNotification): string | null {
+  if (!isAvatarFrameNotification(item.type)) return null;
+  const frameId = item.transfer?.frameId;
+  return frameId != null && frameId !== ''
+    ? t('avatarFrame.notification.receivedFrame', { id: frameId })
+    : t('avatarFrame.notification.received');
+}
+
 export function transferNotificationContent(
   t: TFunction,
   item: AppNotification

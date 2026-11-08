@@ -31,6 +31,20 @@ func (r PlatformRules) EnabledForClient(client Client) bool {
 	return r.EnabledFor(client.Platform, client.AppVersion)
 }
 
+func (c Client) ResolvedPlatform() string {
+	switch strings.ToLower(strings.TrimSpace(c.Platform)) {
+	case PlatformAndroid:
+		return PlatformAndroid
+	case PlatformIOS:
+		return PlatformIOS
+	case "":
+		if utils.IsNativeAppUserAgent(c.UserAgent) {
+			return utils.ParsePlatform(c.UserAgent)
+		}
+	}
+	return PlatformWeb
+}
+
 func ClientFrom(c *gin.Context) Client {
 	return Client{
 		Platform:   c.GetHeader(HeaderPlatform),

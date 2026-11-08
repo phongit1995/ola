@@ -149,6 +149,8 @@ var appNotifBodies = map[string]string{
 	models.AppNotificationGiftReceived:     "Đã tặng bạn một món quà",
 	models.AppNotificationKenReceived:      "Đã chuyển Ken cho bạn",
 	models.AppNotificationVipReceived:      "Đã tặng bạn VIP",
+	models.AppNotificationAvatarFrame:      "Đã tặng bạn khung avatar",
+	models.AppNotificationGiftCode:         "Mã quà tặng",
 }
 
 var appNotifSystemTypes = map[string]bool{
@@ -159,6 +161,7 @@ var appNotifSystemTypes = map[string]bool{
 	models.AppNotificationClanBanned:       true,
 	models.AppNotificationContentViolation: true,
 	models.AppNotificationReportResolved:   true,
+	models.AppNotificationGiftCode:         true,
 }
 
 func appNotifTransferBody(ntype, preview string) (string, bool) {

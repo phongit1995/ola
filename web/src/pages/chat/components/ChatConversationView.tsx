@@ -4,7 +4,6 @@ import {
   ActionButton,
   AttachmentBar,
   type AttachPanelTab,
-  Avatar,
   ConfirmDialog,
   FullScreenOverlay,
   ListOptionDialog,
@@ -19,6 +18,7 @@ import {
   type ListOption,
   GiftPickerDialog,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { GIFT_SOURCE, MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
 import {
   BUBBLE_WALLPAPER,
@@ -68,6 +68,7 @@ import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 
 const HIGHLIGHT_DURATION_MS = 1500;
 
@@ -83,6 +84,7 @@ interface ChatConversationViewProps {
   title?: string;
   color: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   online?: boolean;
   lastActiveAt?: string;
   blockStatus?: RelationshipStatus | null;
@@ -95,6 +97,7 @@ export function ChatConversationView({
   title,
   color,
   avatar,
+  avatarFrameId,
   online,
   lastActiveAt,
   blockStatus,
@@ -126,6 +129,8 @@ export function ChatConversationView({
   const unblockPeer = useChatStore((s) => s.unblockPeer);
   const friendAction = useChatStore((s) => s.friendAction);
   const peerProfile = useChatStore((s) => s.peerProfile);
+  const peerFrameId =
+    peerProfile != null ? peerProfile.avatarFrameId : avatarFrameId;
   const peerCardRoll = useChatStore((s) => s.peerCardRoll);
   const notifyTyping = useChatStore((s) => s.notifyTyping);
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
@@ -148,6 +153,8 @@ export function ChatConversationView({
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
+  const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
+  const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const [pendingAudio, setPendingAudio] = useState<{
     blob: Blob;
     duration: number;
@@ -186,6 +193,10 @@ export function ChatConversationView({
 
   const wallpaperStyle = useChatWallpaperStyle();
   const peerTyping = typingUsers.length > 0;
+
+  useEffect(() => {
+    void loadGiftSettings();
+  }, [loadGiftSettings]);
 
   useEffect(() => {
     const tick = () => setNow(Date.now());
@@ -575,7 +586,15 @@ export function ChatConversationView({
             : lastActiveText ?? ''
         }
         onBack={onClose}
-        left={<Avatar name={name} color={color} src={avatar} size={32} />}
+        left={
+          <AvatarWithFrame
+            name={name}
+            color={color}
+            src={avatar}
+            size={32}
+            frameId={peerFrameId}
+          />
+        }
         onTitlePress={canViewProfile ? openPeerProfile : undefined}
       >
         {canCall && <ChatCallButtons />}
@@ -622,6 +641,7 @@ export function ChatConversationView({
                     name={name}
                     color={color}
                     avatar={avatar}
+                    avatarFrameId={peerFrameId}
                     isLastOwn={message.id === lastOwnId}
                     seen={conversationSeen}
                     highlighted={message.id === highlightedId}
@@ -641,7 +661,13 @@ export function ChatConversationView({
 
             {peerTyping && (
               <div className="mt-1 flex items-end gap-1">
-                <Avatar name={name} color={color} src={avatar} size={32} />
+                <AvatarWithFrame
+                  name={name}
+                  color={color}
+                  src={avatar}
+                  size={32}
+                  frameId={peerFrameId}
+                />
                 <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-3 py-3 shadow-sm">
                   <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40" />
                   <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40 [animation-delay:150ms]" />
@@ -819,7 +845,7 @@ export function ChatConversationView({
 
             {!voiceRecording && pendingAudio == null && (
               <AttachmentBar
-                tabs={['smiley', 'camera', 'photo', 'voice', 'gift', 'more']}
+                tabs={['smiley', 'camera', 'photo', 'voice', ...(giftsEnabled ? (['gift'] as const) : []), 'more']}
                 groupSmileyTabs
                 openTab={openTab}
                 onToggleTab={(tab) => {

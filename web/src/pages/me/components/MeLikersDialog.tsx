@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Dialog, Spinner } from '@components';
+import { Dialog, Spinner } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName, toast } from '@lib';
 import { RELATIONSHIP_STATUS } from '@constants';
 import { MeService, RelationshipService } from '@services';
@@ -157,12 +158,13 @@ export function MeLikersDialog({
                   onClick={() => openProfile(user.username)}
                   className="flex min-w-0 flex-1 items-center gap-3 text-left"
                 >
-                  <Avatar
+                  <AvatarWithFrame
                     name={user.username}
                     color={colorForName(user.username)}
                     size={44}
                     src={user.avatar}
                     rounded={false}
+                    frameId={user.avatarFrameId}
                   />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-base font-medium text-black/87">

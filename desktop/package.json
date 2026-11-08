@@ -25,6 +25,7 @@
     "cross-env": "^7.0.3",
     "electron": "43.4.0",
     "electron-builder": "^26.0.12",
+    "electron-updater": "6.8.11",
     "esbuild": "^0.28.2",
     "extract-zip": "^2.0.1",
     "typescript": "~6.0.3",

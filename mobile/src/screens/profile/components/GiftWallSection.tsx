@@ -8,8 +8,8 @@ import type { GiftWallItem } from '@ola/shared/types';
 import { CachedImage } from '@components/ui/CachedImage';
 import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { TEXT_FAINT, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
-import { CARD_SHADOW, GIFT_WALL_COLUMNS, GIFT_WALL_PREVIEW_ROWS } from '../constants';
+import { TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { CARD_SHADOW, GIFT_WALL_COLUMNS, GIFT_WALL_IMAGE_STYLE, GIFT_WALL_PREVIEW_ROWS } from '../constants';
 
 interface GiftWallSectionProps {
   userId: string;
@@ -74,11 +74,7 @@ export function GiftWallSection({
         )}
       </View>
 
-      {wall.items.length === 0 ? (
-        <Text className="py-4 text-center text-sm" style={{ color: TEXT_FAINT }}>
-          {t('gift.wall.empty')}
-        </Text>
-      ) : (
+      {wall.items.length > 0 && (
         <View className="mt-2 flex-row flex-wrap">
           {items.map((item) => {
             const name = giftDisplayName(item.gift, i18n.language);
@@ -92,7 +88,7 @@ export function GiftWallSection({
                 style={tileStyle}
               >
                 <View>
-                  <CachedImage uri={item.gift.imageUrl} style={{ width: 44, height: 44 }} resizeMode="contain" />
+                  <CachedImage uri={item.gift.imageUrl} style={GIFT_WALL_IMAGE_STYLE} resizeMode="contain" />
                   <View
                     className="rounded-full px-1"
                     style={{ position: 'absolute', right: -8, bottom: -4, backgroundColor: GIFT_ACCENT }}
@@ -102,7 +98,7 @@ export function GiftWallSection({
                     </Text>
                   </View>
                 </View>
-                <Text numberOfLines={1} className="mt-1 text-[11px]" style={{ color: TEXT_SECONDARY }}>
+                <Text numberOfLines={1} className="mt-1 text-xs" style={{ color: TEXT_SECONDARY }}>
                   {name}
                 </Text>
               </Pressable>

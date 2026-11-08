@@ -1,6 +1,6 @@
 import { Image, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 
 const backIcon = require('@assets/icons/ic_back.png');
 const moreIcon = require('@assets/icons/chat/ic_more_white.png');
@@ -9,6 +9,7 @@ interface ChatHeaderProps {
   title: string;
   subtitle: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   right?: React.ReactNode;
   onBack: () => void;
   onOpenProfile: () => void;
@@ -19,6 +20,7 @@ export function ChatHeader({
   title,
   subtitle,
   avatar,
+  avatarFrameId,
   right,
   onBack,
   onOpenProfile,
@@ -36,7 +38,7 @@ export function ChatHeader({
           <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
         <Pressable className="flex-1 flex-row items-center gap-2" onPress={onOpenProfile}>
-          <Avatar name={title} uri={avatar} size={32} />
+          <AvatarWithFrame name={title} uri={avatar} size={32} frameId={avatarFrameId} />
           <View className="flex-1">
             <Text className="text-sm font-bold text-white" numberOfLines={1}>
               {title}

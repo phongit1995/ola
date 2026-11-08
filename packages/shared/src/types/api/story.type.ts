@@ -76,6 +76,7 @@ export interface StoryCommentAuthor {
   avatar?: string;
   vipUsed?: string | null;
   vipEndTime?: string | null;
+  avatarFrameId?: string | null;
 }
 
 export interface StoryCommentReply {

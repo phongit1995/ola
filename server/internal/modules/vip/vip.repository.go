@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -13,9 +14,12 @@ import (
 )
 
 const (
-	PurchaseSourcePackage = "package"
-	PurchaseSourceIcon    = "icon"
-	PurchaseSourceGift    = "gift"
+	PurchaseSourcePackage  = "package"
+	PurchaseSourceIcon     = "icon"
+	PurchaseSourceGift     = "gift"
+	PurchaseSourceGiftCode = "gift_code"
+
+	IconSourceGiftCode = "gift_code"
 
 	iconPurchaseNameFormat = "VIP #%d"
 
@@ -258,6 +262,65 @@ func (r *Repository) AreFriends(a, b uuid.UUID) (bool, error) {
 	return count > 0, err
 }
 
+var (
+	packageOrder = utils.OrderedList{
+		Model:    &models.VipPackage{},
+		Table:    "vip_packages",
+		Column:   "sort_order",
+		OrderSQL: "sort_order ASC, created_at ASC",
+	}
+	shopItemOrder = utils.OrderedList{
+		Model:    &models.VipShopItem{},
+		Table:    "vip_shop_items",
+		Column:   "sort_order",
+		OrderSQL: "sort_order ASC, created_at ASC",
+	}
+)
+
+func (r *Repository) ReorderPackages(ids []uuid.UUID) error {
+	return packageOrder.Reorder(r.db, ids)
+}
+
+func (r *Repository) CreatePackageAt(pkg *models.VipPackage, position int) error {
+	placed, err := packageOrder.PlaceOne(r.db, position, &pkg.ID, func(tx *gorm.DB) error {
+		return tx.Create(pkg).Error
+	})
+	if err != nil {
+		return err
+	}
+	pkg.SortOrder = placed
+	return nil
+}
+
+func (r *Repository) UpdatePackageAt(id uuid.UUID, fields map[string]interface{}, position int) error {
+	_, err := packageOrder.PlaceOne(r.db, position, &id, func(tx *gorm.DB) error {
+		return tx.Model(&models.VipPackage{}).Where("id = ?", id).Updates(fields).Error
+	})
+	return err
+}
+
+func (r *Repository) ReorderShopItems(ids []uuid.UUID) error {
+	return shopItemOrder.Reorder(r.db, ids)
+}
+
+func (r *Repository) CreateShopItemAt(item *models.VipShopItem, position int) error {
+	placed, err := shopItemOrder.PlaceOne(r.db, position, &item.ID, func(tx *gorm.DB) error {
+		return tx.Create(item).Error
+	})
+	if err != nil {
+		return err
+	}
+	item.SortOrder = placed
+	return nil
+}
+
+func (r *Repository) UpdateShopItemAt(id uuid.UUID, fields map[string]interface{}, position int) error {
+	_, err := shopItemOrder.PlaceOne(r.db, position, &id, func(tx *gorm.DB) error {
+		return tx.Model(&models.VipShopItem{}).Where("id = ?", id).Updates(fields).Error
+	})
+	return err
+}
+
 func (r *Repository) ListActivePackages() ([]models.VipPackage, error) {
 	var pkgs []models.VipPackage
 	err := r.db.
@@ -295,10 +358,6 @@ func (r *Repository) FindActivePackage(id uuid.UUID) (*models.VipPackage, error)
 		return nil, err
 	}
 	return &pkg, nil
-}
-
-func (r *Repository) CreatePackage(pkg *models.VipPackage) error {
-	return r.db.Create(pkg).Error
 }
 
 func (r *Repository) UpdatePackage(id uuid.UUID, fields map[string]interface{}) error {
@@ -360,10 +419,6 @@ func (r *Repository) ShopTypeExists(vipTypeID int16) (bool, error) {
 	var count int64
 	err := r.db.Model(&models.VipShopItem{}).Where("vip_type_id = ?", vipTypeID).Count(&count).Error
 	return count > 0, err
-}
-
-func (r *Repository) CreateShopItem(item *models.VipShopItem) error {
-	return r.db.Create(item).Error
 }
 
 func (r *Repository) UpdateShopItem(id uuid.UUID, fields map[string]interface{}) error {
@@ -696,39 +751,82 @@ func (r *Repository) Purchase(userID uuid.UUID, pkg *models.VipPackage) (*models
 }
 
 func (r *Repository) GrantDays(userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {
-	var purchase models.VipPurchase
-
+	var purchase *models.VipPurchase
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		var u models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
-			return err
-		}
-
-		base := time.Now()
-		if u.VipEndTime != nil && u.VipEndTime.After(base) {
-			base = *u.VipEndTime
-		}
-		newEnd := base.Add(time.Duration(days) * 24 * time.Hour)
-
-		if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("vip_end_time", newEnd).Error; err != nil {
-			return err
-		}
-
-		purchase = models.VipPurchase{
-			UserID:          userID,
-			PackageName:     name,
-			Days:            days,
-			KenPrice:        0,
-			KenBalanceAfter: u.Ken,
-			VipEndTimeAfter: newEnd,
-			Source:          source,
-		}
-		return tx.Create(&purchase).Error
+		var err error
+		purchase, err = GrantDaysTx(tx, userID, days, source, name)
+		return err
 	})
 	if err != nil {
 		return nil, err
 	}
+	return purchase, nil
+}
+
+func GrantDaysTx(tx *gorm.DB, userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {
+	var u models.User
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+
+	base := time.Now()
+	if u.VipEndTime != nil && u.VipEndTime.After(base) {
+		base = *u.VipEndTime
+	}
+	newEnd := base.Add(time.Duration(days) * 24 * time.Hour)
+
+	if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("vip_end_time", newEnd).Error; err != nil {
+		return nil, err
+	}
+
+	purchase := models.VipPurchase{
+		UserID:          userID,
+		PackageName:     name,
+		Days:            days,
+		KenPrice:        0,
+		KenBalanceAfter: u.Ken,
+		VipEndTimeAfter: newEnd,
+		Source:          source,
+	}
+	if err := tx.Create(&purchase).Error; err != nil {
+		return nil, err
+	}
 	return &purchase, nil
+}
+
+func GrantIconTx(tx *gorm.DB, userID uuid.UUID, vipTypeID int16, iconSource, purchaseSource string) (*models.UserVipIcon, error) {
+	var u models.User
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+
+	icon := models.UserVipIcon{
+		UserID:     userID,
+		VipIconID:  vipTypeID,
+		Source:     iconSource,
+		AcquiredAt: time.Now(),
+	}
+	if err := tx.Create(&icon).Error; err != nil {
+		return nil, err
+	}
+
+	endAfter := time.Now()
+	if u.VipEndTime != nil {
+		endAfter = *u.VipEndTime
+	}
+	purchase := models.VipPurchase{
+		UserID:          userID,
+		PackageName:     IconPurchaseName(vipTypeID),
+		Days:            0,
+		KenPrice:        0,
+		KenBalanceAfter: u.Ken,
+		VipEndTimeAfter: endAfter,
+		Source:          purchaseSource,
+	}
+	if err := tx.Create(&purchase).Error; err != nil {
+		return nil, err
+	}
+	return &icon, nil
 }
 
 func (r *Repository) DeductDays(userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {

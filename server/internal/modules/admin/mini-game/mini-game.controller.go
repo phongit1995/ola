@@ -99,3 +99,24 @@ func (ctrl *Controller) Delete(c *gin.Context) (interface{}, error) {
 	}
 	return map[string]string{"message": "mini game deleted"}, nil
 }
+
+// Reorder godoc
+// @Summary      Lưu thứ tự toàn bộ mini game (admin), gán lại thành 1..N
+// @Tags         admin-mini-game
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body utils.ReorderRequest true "Toàn bộ id theo thứ tự mới"
+// @Success      200  {object}  map[string]string
+// @Failure      409  {object}  utils.APIError
+// @Router       /admin/mini-games/order [put]
+func (ctrl *Controller) Reorder(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[utils.ReorderRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.Reorder(req.IDs); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"message": "order updated"}, nil
+}

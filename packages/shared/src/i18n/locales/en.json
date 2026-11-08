@@ -228,7 +228,6 @@
       "social": "Social connections",
       "settings": "Settings",
       "removeAccount": "Delete account",
-      "appLock": "App lock",
       "support": "Customer support",
       "gifts": "Gifts"
     },
@@ -1360,6 +1359,7 @@
         "egg": "Egg game",
         "wheel": "Lucky wheel",
         "admin": "System reward",
+        "gift_code": "Gift code",
         "other": "Other"
       }
     },
@@ -1457,6 +1457,80 @@
       "passwordPlaceholder": "Enter password",
       "shopEmpty": "No VIP to redeem yet",
       "packagesEmpty": "No day package yet"
+    }
+  },
+  "avatarFrame": {
+    "title": "Avatar frames",
+    "shopTitle": "Buy / Gift",
+    "selectFrame": "Choose a frame",
+    "pickFrameTitle": "Choose an avatar frame",
+    "storeTitle": "Avatar frames",
+    "storeOf": "@{{name}}'S FRAMES",
+    "storePrivate": "This frame collection is private",
+    "openStore": "Avatar frame collection",
+    "empty": "No frames yet",
+    "shopEmpty": "No frames for sale yet",
+    "price": "{{price}} KEN",
+    "owned": "Owned",
+    "equipped": "Wearing",
+    "equippedHidden": "Wearing, hidden until VIP is renewed",
+    "vipRequiredHint": "VIP is required to wear a frame",
+    "buyVip": "Buy VIP",
+    "count": "{{count}} frames",
+    "actionBuy": "Buy",
+    "actionGift": "Gift",
+    "actionEquip": "Wear",
+    "actionUnequip": "Remove",
+    "actionTransfer": "Transfer",
+    "cancel": "Cancel",
+    "confirmBuyTitle": "Buy avatar frame",
+    "confirmBuy": "Buy frame {{frame}} for {{price}} KEN?",
+    "giftTitle": "Gift an avatar frame",
+    "confirmGift": "Gift frame {{frame}} to @{{name}} for {{price}} KEN?",
+    "transferTitle": "Transfer avatar frame",
+    "transferReceiver": "Receiver",
+    "password": "Password",
+    "passwordHint": "Enter your account password to confirm",
+    "toastBought": "Frame purchased",
+    "toastGifted": "Frame sent to @{{name}}",
+    "toastEquipped": "Frame on",
+    "toastUnequipped": "Frame removed",
+    "toastTransferred": "Frame transferred",
+    "privacyTitle": "Who can see your frames",
+    "privacyPublic": "Everyone",
+    "privacyFriends": "Friends",
+    "privacyPrivate": "Only me",
+    "privacyChanged": "Privacy updated",
+    "history": {
+      "title": "History",
+      "tabPurchases": "Purchases & gifts",
+      "tabTransfers": "Transfers",
+      "bought": "Bought a frame",
+      "giftedTo": "Gift to @{{name}}",
+      "receivedFrom": "From @{{name}}",
+      "sentTo": "Sent to @{{name}}",
+      "empty": "No transactions yet",
+      "loadMore": "Load more"
+    },
+    "notification": {
+      "received": "Sent you an avatar frame",
+      "receivedFrame": "Sent you avatar frame #{{id}}"
+    },
+    "errors": {
+      "itemUnavailable": "This frame is no longer for sale",
+      "priceChanged": "The frame price just changed, please check the new price",
+      "alreadyOwned": "You already own this frame",
+      "receiverOwns": "The receiver already owns this frame",
+      "notOwned": "You don't own this frame",
+      "inUse": "Remove the frame before transferring it",
+      "vipRequired": "VIP is required to wear a frame",
+      "insufficientKen": "Not enough KEN",
+      "wrongPassword": "Wrong password",
+      "receiverNotFound": "Receiver not found",
+      "selfTarget": "You can't send a frame to yourself",
+      "blocked": "You can't send a frame to this user",
+      "privateStore": "This frame collection is private",
+      "failed": "Something went wrong, please try again"
     }
   },
   "terms": {
@@ -1729,7 +1803,7 @@
   "download": {
     "back": "‹ Back",
     "title": "Get the Ola app",
-    "subtitle": "Install Ola on your phone for instant message alerts, voice calls and smoother games.",
+    "subtitle": "Install Ola on your phone or computer for instant message alerts, voice calls and smoother games.",
     "settingsRow": "Get the Ola app",
     "fab": "Get Ola app",
     "hideFab": "Hide the download button",
@@ -1741,7 +1815,7 @@
     "inAppTitle": "Please open in Chrome or Safari",
     "inAppMessage": "Browsers inside Facebook, Messenger or Zalo usually cannot open Google Play or the App Store. Copy the link and paste it into Chrome (Android) or Safari (iPhone) to get the app.",
     "openOnPhone": "Open this page on your phone",
-    "openOnPhoneHint": "You are on a computer. Type the address below into your phone browser to download the app.",
+    "openOnPhoneHint": "Want it on your phone? Type the address below into your phone browser.",
     "android": {
       "name": "Android",
       "channel": "Install from Google Play",
@@ -1765,6 +1839,44 @@
       ],
       "storeLinkLabel": "App Store link"
     },
+    "desktop": {
+      "name": "Computer",
+      "channel": "Download directly from Ola",
+      "barLabel": "Computer:",
+      "windows": {
+        "name": "Windows",
+        "action": "Download for Windows",
+        "steps": [
+          "Click “Download for Windows” and wait for ola-chat.exe to finish downloading.",
+          "Open the file. If Windows shows a blue warning, click “More info” and then “Run anyway”.",
+          "Ola opens by itself once installed. Sign in with your account."
+        ],
+        "note": "You only download once. The app updates itself after that."
+      },
+      "mac": {
+        "name": "Mac (M1+)",
+        "action": "Download for Mac with M1 or later",
+        "requirement": "Requires macOS {{version}} or later",
+        "steps": [
+          "Click “Download for Mac with M1 or later” and wait for ola-chat.dmg to finish downloading.",
+          "Open the file and drag Ola Chat into the Applications folder.",
+          "Open Ola Chat. If your Mac says it cannot be opened the first time, click Done, go to System Settings → Privacy & Security, scroll down and click “Open Anyway”.",
+          "Sign in with your account."
+        ],
+        "note": "This build runs only on Macs with Apple silicon (M1 or later), not on Intel Macs yet. You only download once. The app updates itself after that."
+      },
+      "linux": {
+        "name": "Linux",
+        "action": "Download AppImage (recommended)",
+        "debAction": "Download .deb (Ubuntu, Debian)",
+        "steps": [
+          "Choose the AppImage, or the .deb if you use Ubuntu or Debian.",
+          "AppImage: run chmod +x ola-chat.AppImage and open the file. .deb: run sudo apt install ./ola-chat.deb.",
+          "Open Ola and sign in with your account."
+        ],
+        "note": "The AppImage updates itself. The .deb only tells you when a new version is out, so download it again from this page."
+      }
+    },
     "faqTitle": "Troubleshooting",
     "faq": [
       {
@@ -1785,7 +1897,7 @@
       },
       {
         "question": "How do I update the app?",
-        "answer": "Android: Google Play updates it for you, or open the Ola Me listing on Play and tap Update. iPhone: the App Store updates it for you, or open the Ola Me listing on the App Store and tap Update."
+        "answer": "Android: Google Play updates it for you, or open the Ola Me listing on Play and tap Update. iPhone: the App Store updates it for you, or open the Ola Me listing on the App Store and tap Update. Computer: the app updates itself, except the Linux .deb, which you download again from this page."
       },
       {
         "question": "Will installing the app lose my account data?",
@@ -1793,14 +1905,17 @@
       }
     ],
     "safetyTitle": "Only get Ola from official sources",
-    "safety": "Ola ships only through Google Play (Android) and the App Store (iPhone). We will never ask you to install an APK sent in a stranger message, a Zalo group or on Facebook — files from other sources can be repackaged with malware to take over your account.",
+    "safety": "Ola ships only through Google Play (Android), the App Store (iPhone) and the computer download buttons on this page. We will never ask you to install a file sent in a stranger message, a Zalo group or on Facebook — files from other sources can be repackaged with malware to take over your account.",
     "useWeb": "Keep using the web version",
     "copiedToClipboard": "Copied"
   },
   "announcement": {
     "detailTitle": "Announcement",
     "openLink": "Learn more",
-    "dismiss": "Dismiss this announcement"
+    "dismiss": "Dismiss this announcement",
+    "feedAuthor": "System",
+    "feedBadge": "Announcement",
+    "feedOpenLink": "View details"
   },
   "notify": {
     "title": "Notifications",
@@ -1848,6 +1963,7 @@
       "types": {
         "VIP_PACKAGE": "VIP package",
         "VIP_ICON": "VIP icon",
+        "AVATAR_FRAME": "Avatar frame",
         "ADMIN_GRANT": "KEN granted",
         "ADMIN_DEDUCT": "KEN deducted",
         "REWARD": "Reward",
@@ -2289,7 +2405,6 @@
   },
   "appLock": {
     "title": "App lock",
-    "enable": "Enable app lock",
     "enableHint": "Require a PIN or biometrics every time you reopen Ola.",
     "changePin": "Change PIN",
     "biometric": "Unlock with {{method}}",
@@ -2478,7 +2593,6 @@
     "wall": {
       "title": "Gift wall",
       "totalGifts": "{{value}} gifts",
-      "empty": "No gifts received yet",
       "leaderboard": "Leaderboard",
       "history": "Gift history"
     },
@@ -2566,6 +2680,37 @@
       "insufficientKen": "You don't have enough KEN to broadcast",
       "rateLimited": "Too fast, try again in a few minutes",
       "failed": "Broadcast failed, try again later"
+    }
+  },
+  "giftCode": {
+    "menuTitle": "Redeem gift code",
+    "title": "Redeem gift code",
+    "hint": "Enter the code you got from an Ola event to claim your gift.",
+    "placeholder": "e.g. TET2027",
+    "submit": "Redeem",
+    "cancel": "Cancel",
+    "successTitle": "Gift received",
+    "successButton": "Awesome",
+    "rewardVipDays": "+{{count}} VIP days",
+    "rewardVipIcon": "VIP icon {{name}}",
+    "notTransferable": "From a gift code, cannot be transferred",
+    "verifyGuide": "How to verify: Personal → Profile → Email → Verify.",
+    "errors": {
+      "empty": "Please enter a code",
+      "invalid": "This code is invalid or has expired",
+      "notStarted": "This code is not active yet",
+      "expired": "This code has expired",
+      "soldOut": "This code has no uses left",
+      "used": "This code has already been used",
+      "alreadyRedeemed": "You already claimed this gift",
+      "deviceRedeemed": "This device already claimed this gift",
+      "accountTooNew": "Your account is too new for this code",
+      "platformNotAllowed": "This code is not available on this device",
+      "tooManyAttempts": "Too many wrong codes, try again in a few minutes",
+      "emailNotVerified": "You need to verify your email before redeeming gift codes.",
+      "deviceUnknown": "We could not identify your device. Sign out and sign in again to redeem.",
+      "rateLimited": "You are going too fast, try again in a few minutes",
+      "failed": "Could not claim the gift, try again later"
     }
   }
 }

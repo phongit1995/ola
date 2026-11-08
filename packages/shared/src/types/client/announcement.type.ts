@@ -6,14 +6,17 @@ export interface AnnouncementState {
   detailOpen: boolean;
   hidden: boolean;
   dismissedId: string | null;
+  feedDismissedId: string | null;
   load: () => Promise<void>;
   openDetail: () => void;
   closeDetail: () => void;
   hide: () => void;
   dismiss: () => void;
+  dismissFromFeed: () => void;
   reset: () => void;
 }
 
 export interface PersistedAnnouncementState {
   dismissedId: string | null;
+  feedDismissedId: string | null;
 }

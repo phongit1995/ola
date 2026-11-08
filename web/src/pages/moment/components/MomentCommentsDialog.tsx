@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, UserListDialog, UserName } from '@components';
+import { UserListDialog, UserName } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName, createTimeAgoFormatter, SmileyText } from '@lib';
 import { MomentService } from '@services';
 import { useMomentUserPages } from '@ola/shared/stores/moment/useMomentUserPages';
@@ -44,11 +45,12 @@ export function MomentCommentsDialog({
       {items.map(({ id, user, content, createdAt }) => (
         <li key={id} className="flex gap-3 py-2">
           <span className="shrink-0">
-            <Avatar
+            <AvatarWithFrame
               name={user.username}
               color={colorForName(user.username)}
               src={user.avatar ?? undefined}
               size={40}
+              frameId={user.avatarFrameId}
             />
           </span>
           <div className="min-w-0 flex-1">

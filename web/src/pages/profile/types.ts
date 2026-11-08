@@ -37,6 +37,7 @@ export interface UserProfile {
   color: string;
   coverColor: string;
   avatar?: string;
+  avatarFrameId: string | null;
   coverPhoto?: string;
   verified: boolean;
   emailVerified: boolean;
@@ -53,6 +54,7 @@ export interface UserProfile {
   isSelf: boolean;
   canViewVipStore: boolean;
   canViewGiftWall: boolean;
+  canViewAvatarFrameStore: boolean;
 }
 
 export interface ProfileSecondary {

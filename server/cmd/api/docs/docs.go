@@ -25275,7 +25275,7 @@ const docTemplate = `{
                     }
                 },
                 "settings": {
-                    "$ref": "#/definitions/internal_modules_gift.GiftSettingsView"
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_setting.GiftPublicConfig"
                 }
             }
         },
@@ -25439,33 +25439,6 @@ const docTemplate = `{
                 "senderCharmPercent": {
                     "type": "integer",
                     "example": 50
-                }
-            }
-        },
-        "internal_modules_gift.GiftSettingsView": {
-            "type": "object",
-            "properties": {
-                "confirmOverKen": {
-                    "type": "integer",
-                    "example": 1000
-                },
-                "enabled": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "noteMaxLength": {
-                    "type": "integer",
-                    "example": 100
-                },
-                "quantityMax": {
-                    "type": "integer",
-                    "example": 99
-                },
-                "quantityOptions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 }
             }
         },
@@ -28045,6 +28018,9 @@ const docTemplate = `{
                 },
                 "refId": {
                     "type": "string"
+                },
+                "transfer": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.AppNotificationTransfer"
                 },
                 "type": {
                     "type": "string"
@@ -32394,6 +32370,20 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_models.AppNotificationTransfer": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "days": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                }
+            }
+        },
         "ola-chat-server_internal_models.AppSetting": {
             "type": "object",
             "properties": {
@@ -34992,6 +34982,33 @@ const docTemplate = `{
                 },
                 "nextBefore": {
                     "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_setting.GiftPublicConfig": {
+            "type": "object",
+            "properties": {
+                "confirmOverKen": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "noteMaxLength": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "quantityMax": {
+                    "type": "integer",
+                    "example": 99
+                },
+                "quantityOptions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },

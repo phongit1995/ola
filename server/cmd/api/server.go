@@ -6,12 +6,14 @@ import (
 	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/announcement"
 	"ola-chat-server/internal/modules/auth"
+	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	"ola-chat-server/internal/modules/call"
 	chatbot "ola-chat-server/internal/modules/chat-bot"
 	"ola-chat-server/internal/modules/clan"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/modules/gift"
+	giftcode "ola-chat-server/internal/modules/gift-code"
 	"ola-chat-server/internal/modules/health"
 	"ola-chat-server/internal/modules/ken"
 	"ola-chat-server/internal/modules/kenchest"
@@ -70,12 +72,14 @@ func CreateServer(
 	clanRouter *clan.Router,
 	sessionRouter *session.Router,
 	vipRouter *vip.Router,
+	avatarFrameRouter *avatarframe.Router,
 	kenRouter *ken.Router,
 	eggRouter *egg.Router,
 	wheelRouter *wheel.Router,
 	kenChestRouter *kenchest.Router,
 	giftRouter *gift.Router,
 	megaphoneRouter *megaphone.Router,
+	giftCodeRouter *giftcode.Router,
 	marriageRouter *marriage.Router,
 	marriageDiaryRouter *marriagediary.Router,
 	penRouter *pen.Router,
@@ -140,12 +144,14 @@ func CreateServer(
 		clanRouter.Setup(api)
 		sessionRouter.Setup(api)
 		vipRouter.Setup(api)
+		avatarFrameRouter.Setup(api)
 		kenRouter.Setup(api)
 		eggRouter.Setup(api)
 		wheelRouter.Setup(api)
 		kenChestRouter.Setup(api)
 		giftRouter.Setup(api)
 		megaphoneRouter.Setup(api)
+		giftCodeRouter.Setup(api)
 		marriageRouter.Setup(api)
 		marriageDiaryRouter.Setup(api)
 		penRouter.Setup(api)

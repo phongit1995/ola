@@ -8,7 +8,7 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { activeVipTypeId, createTimeFormatter } from '@ola/shared/lib';
 import type { VisitorUser } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { VipBadge } from '@components/ui/VipBadge';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import type { RootStackParamList } from '@navigation/types';
@@ -102,7 +102,13 @@ export function MeVisitorsScreen() {
                   style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
                 >
                   <Pressable onPress={openProfile}>
-                    <Avatar name={item.username} uri={item.avatar ?? undefined} size={72} rounded={false} />
+                    <AvatarWithFrame
+                      name={item.username}
+                      uri={item.avatar ?? undefined}
+                      size={72}
+                      rounded={false}
+                      frameId={item.avatarFrameId}
+                    />
                   </Pressable>
                   <View className="min-w-0 flex-1 gap-1.5">
                     <Pressable onPress={openProfile}>

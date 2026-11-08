@@ -290,7 +290,7 @@ func (s *Service) authenticate(req *LoginRequest) (*models.User, error) {
 	user, err := s.repo.FindByUsername(req.Username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.logger.Warnw("User not found", "username", req.Username)
+			s.logger.Debugw("User not found", "username", req.Username)
 			return nil, errors.New("invalid username or password")
 		}
 		s.logger.Errorw("Database error while finding user", "username", req.Username, "error", err.Error())
@@ -298,7 +298,7 @@ func (s *Service) authenticate(req *LoginRequest) (*models.User, error) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		s.logger.Warnw("Invalid password", "user_id", user.ID, "username", req.Username)
+		s.logger.Debugw("Invalid password", "user_id", user.ID, "username", req.Username)
 		return nil, errors.New("invalid username or password")
 	}
 
@@ -387,6 +387,7 @@ func (s *Service) buildAuthResponse(user *models.User, token, refreshToken strin
 		CustomInfo:     user.CustomInfo,
 		Ken:            user.Ken,
 		VipUsed:        user.VipUsed,
+		AvatarFrameID:  user.ActiveAvatarFrameID(time.Now()),
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
 	}
@@ -627,7 +628,7 @@ func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string,
 		return "", errors.New("failed to send verification email")
 	}
 
-	s.logger.Infow("Verification code sent", "user_id", userID, "email", email)
+	s.logger.Infow("Verification code sent", "user_id", userID)
 	return verifyID, nil
 }
 
@@ -681,7 +682,7 @@ func (s *Service) ConfirmEmailVerification(userID uuid.UUID, verifyID, code stri
 		s.logger.Warnw("Failed to invalidate user cache after email verify", "user_id", userID, "error", err.Error())
 	}
 
-	s.logger.Infow("Email verified", "user_id", userID, "email", email)
+	s.logger.Infow("Email verified", "user_id", userID)
 
 	rewardDays := 0
 	if firstVerification && s.cfg.EmailVerifyVipRewardDays > 0 {

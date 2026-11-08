@@ -7,6 +7,7 @@ import menuIcon from '@/assets/icons/me/header/ic_header_menu.png';
 import { useAuthStore } from '@/store/authStore';
 import { useHorizontalSwipe } from './useHorizontalSwipe';
 import { PullToRefresh } from '@components';
+import { MeAnnouncementCard } from './components/MeAnnouncementCard';
 import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
 import { MeLeftDrawer } from './components/MeLeftDrawer';
@@ -32,6 +33,7 @@ export function MePanel() {
   const username = useAuthStore((s) => s.user?.username ?? null);
   const meId = useAuthStore((s) => s.user?.id ?? null);
   const avatarUrl = useAuthStore((s) => s.user?.avatar ?? null);
+  const avatarFrameId = useAuthStore((s) => s.user?.avatarFrameId ?? null);
   const coverUrl = useAuthStore((s) => s.user?.coverPhoto ?? null);
   const displayName = username ?? t('home.guest');
 
@@ -171,6 +173,7 @@ export function MePanel() {
               className="absolute inset-0 overflow-y-auto bg-ola-surface"
             >
               {momentEnabled && tab !== 'clan' && <MomentTray />}
+              {tab === 'community' && <MeAnnouncementCard />}
               <MeFeedList
                 posts={posts}
                 loading={loading}
@@ -209,6 +212,7 @@ export function MePanel() {
               <MeLeftDrawer
                 displayName={displayName}
                 avatarUrl={avatarUrl ?? undefined}
+                avatarFrameId={avatarFrameId}
                 coverUrl={coverUrl ?? undefined}
                 showMoment={momentEnabled}
                 onClose={() => setDrawerOpen(false)}

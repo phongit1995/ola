@@ -1,4 +1,7 @@
 import type { ChatBotType } from '../client/chatBot.type';
+import type { GiftSettings } from './gift.type';
+import type { GiftCodeAppConfig } from './giftCode.type';
+import type { MegaphoneAppConfig } from './megaphone.type';
 
 export type MessagePrivacy = 'all' | 'friends';
 export type MeVisibility = 'all' | 'friends';
@@ -19,6 +22,7 @@ export interface UserSettings {
   fontSize: FontSize;
   wallpaperUrl: string;
   giftWallPrivacy: GiftWallPrivacy;
+  avatarFrameStorePrivacy: GiftWallPrivacy;
 }
 
 export type UpdateSettingsRequest = Partial<UserSettings>;
@@ -86,6 +90,9 @@ export interface AppConfigs {
   story: StoryConfigResult;
   chatBot: ChatBotConfigResult;
   moment: MomentConfigResult;
+  gift: GiftSettings;
+  megaphone: MegaphoneAppConfig;
+  giftCode: GiftCodeAppConfig;
 }
 
 export interface AppUpdateResult {

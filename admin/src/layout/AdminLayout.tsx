@@ -22,13 +22,11 @@ import {
   NotificationOutlined,
   PlayCircleOutlined,
   RocketOutlined,
-  SendOutlined,
   SettingOutlined,
-  ShoppingCartOutlined,
-  SmileOutlined,
   SoundOutlined,
+  TagsOutlined,
   ShopOutlined,
-  SwapOutlined,
+  SkinOutlined,
   PictureOutlined,
   ReadOutlined,
   TeamOutlined,
@@ -76,23 +74,15 @@ const MENU_ITEMS = [
   },
   { key: '/clans', icon: <FlagOutlined />, label: 'Clan' },
   {
-    key: 'vip',
-    icon: <CrownOutlined />,
-    label: 'VIP',
-    children: [
-      { key: '/vip-packages', icon: <CrownOutlined />, label: 'Gói ngày VIP' },
-      { key: '/vip-shop', icon: <SmileOutlined />, label: 'Shop VIP' },
-      { key: '/vip-purchases', icon: <ShoppingCartOutlined />, label: 'Lịch sử mua VIP' },
-      { key: '/vip-transfers', icon: <SwapOutlined />, label: 'Lịch sử chuyển VIP' },
-    ],
-  },
-  {
     key: 'shop',
     icon: <ShopOutlined />,
     label: 'Cửa hàng',
     children: [
+      { key: '/vip-packages', icon: <CrownOutlined />, label: 'VIP' },
       { key: '/gifts', icon: <GiftOutlined />, label: 'Quà tặng' },
       { key: '/megaphones', icon: <SoundOutlined />, label: 'Loa' },
+      { key: '/avatar-frames', icon: <SkinOutlined />, label: 'Khung avatar' },
+      { key: '/gift-codes', icon: <TagsOutlined />, label: 'Mã quà tặng' },
     ],
   },
   {
@@ -127,7 +117,6 @@ const MENU_ITEMS = [
       { key: '/settings/username-change', icon: <EditOutlined />, label: 'Đổi nickname' },
       { key: '/settings/announcements', icon: <NotificationOutlined />, label: 'Thông báo banner' },
       { key: '/settings/notification', icon: <BellOutlined />, label: 'Thông báo' },
-      { key: '/settings/push-campaigns', icon: <SendOutlined />, label: 'Gửi push' },
       { key: '/settings/chat-bot', icon: <RobotOutlined />, label: 'Chat-bot' },
       { key: '/settings/app-update', icon: <CloudDownloadOutlined />, label: 'Cập nhật ứng dụng' },
     ],
@@ -140,11 +129,14 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
   return children ? children.map((child) => child.key) : [item.key]
 })
 
-const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-purchases', '/vip-transfers']
-const SHOP_KEYS = ['/gifts', '/megaphones']
+const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones', '/avatar-frames', '/gift-codes']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
   '/games/matches': '/games/mini-game',
+  '/settings/push-campaigns': '/settings/notification',
+  '/vip-shop': '/vip-packages',
+  '/vip-purchases': '/vip-packages',
+  '/vip-transfers': '/vip-packages',
 }
 
 const PAGE_TITLES: Record<string, string> = {
@@ -157,7 +149,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/rooms/word-chain': 'Phòng nối từ',
   '/clans': 'Quản lý clan',
   '/vip-packages': 'Quản lý gói VIP',
-  '/vip-shop': 'Shop VIP',
+  '/vip-shop': 'Icon VIP',
   '/vip-purchases': 'Lịch sử mua VIP',
   '/vip-transfers': 'Lịch sử chuyển VIP',
   '/gifts': 'Danh sách quà',
@@ -166,6 +158,13 @@ const PAGE_TITLES: Record<string, string> = {
   '/megaphones': 'Danh sách loa',
   '/megaphones/banned-words': 'Từ cấm',
   '/megaphones/settings': 'Cài đặt loa',
+  '/avatar-frames': 'Khung avatar đang bán',
+  '/avatar-frames/purchases': 'Lịch sử mua khung avatar',
+  '/avatar-frames/transfers': 'Lịch sử chuyển khung avatar',
+  '/gift-codes': 'Mã quà tặng',
+  '/gift-codes/new': 'Tạo đợt mã quà tặng',
+  '/gift-codes/attempts': 'Nhập mã lỗi',
+  '/gift-codes/settings': 'Cài đặt mã quà tặng',
   '/games/egg': 'Đập trứng',
   '/games/egg/stats': 'Thống kê trứng',
   '/games/wheel': 'Vòng quay may mắn',
@@ -185,8 +184,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/settings/topup': 'Cài đặt nạp KEN',
   '/settings/username-change': 'Cài đặt đổi nickname',
   '/settings/announcements': 'Thông báo banner',
-  '/settings/notification': 'Cài đặt thông báo',
-  '/settings/push-campaigns': 'Gửi push thông báo',
+  '/settings/notification': 'Thông báo',
   '/settings/chat-bot': 'Cài đặt chat-bot',
   '/settings/app-update': 'Cập nhật ứng dụng',
   [REPORTS_PATH]: REPORTS_LABEL,
@@ -228,7 +226,6 @@ export function AdminLayout() {
   const openKeys = [
     ...(selectedKey.startsWith('/users') ? ['users'] : []),
     ...(selectedKey.startsWith('/rooms') ? ['rooms'] : []),
-    ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
     ...(SHOP_KEYS.includes(selectedKey) ? ['shop'] : []),
     ...(selectedKey.startsWith('/games') ? ['games'] : []),
     ...(selectedKey.startsWith('/stories') ? ['stories'] : []),
