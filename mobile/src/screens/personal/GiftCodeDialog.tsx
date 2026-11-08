@@ -132,9 +132,14 @@ export function GiftCodeDialog({ visible, onClose }: GiftCodeDialogProps) {
           </Text>
         )}
         {redeem.needsEmailVerify && (
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>
-            {t('giftCode.verifyGuide')}
-          </Text>
+          <>
+            <Text className="text-sm" style={{ color: ERROR }}>
+              {t('giftCode.errors.emailNotVerified')}
+            </Text>
+            <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>
+              {t('giftCode.verifyGuide')}
+            </Text>
+          </>
         )}
       </View>
     </Dialog>

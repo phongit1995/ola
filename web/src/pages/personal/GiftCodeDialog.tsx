@@ -120,7 +120,12 @@ export function GiftCodeDialog({ open, onClose }: GiftCodeDialogProps) {
           <p className="text-sm text-ola-error">{redeem.error}</p>
         )}
         {redeem.needsEmailVerify && (
-          <p className="text-sm text-black/70">{t('giftCode.verifyGuide')}</p>
+          <>
+            <p className="text-sm text-ola-error">
+              {t('giftCode.errors.emailNotVerified')}
+            </p>
+            <p className="text-sm text-black/70">{t('giftCode.verifyGuide')}</p>
+          </>
         )}
       </div>
     </Dialog>
