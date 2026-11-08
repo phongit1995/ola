@@ -12,6 +12,8 @@
     "./constants/moment": "./src/constants/moment.ts",
     "./lib": "./src/lib/index.ts",
     "./lib/vip": "./src/lib/vip.ts",
+    "./lib/avatarFrame": "./src/lib/avatarFrame.ts",
+    "./lib/avatarFrames.json": "./src/lib/avatarFrames.json",
     "./lib/vietqr": "./src/lib/vietqr.ts",
     "./lib/moment": "./src/lib/moment.ts",
     "./lib/giftAnimationVariants": "./src/lib/giftAnimationVariants.ts",

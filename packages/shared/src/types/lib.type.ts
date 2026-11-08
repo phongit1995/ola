@@ -84,6 +84,13 @@ export interface VipCatalogEntry {
   name: string;
 }
 
+export interface AvatarFrame {
+  id: string;
+  name: string;
+  file: string;
+  url: string;
+}
+
 export interface VietQrImageParams {
   bankBin: string;
   accountNumber: string;
