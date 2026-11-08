@@ -19,6 +19,7 @@ var (
 	ErrGiftCodeTooManyAttempts    = utils.NewHTTPErrorWithCode(http.StatusTooManyRequests, "too many wrong gift codes, try again later", ErrorCodeGiftCodeTooManyAttempts)
 	ErrGiftCodeEmailNotVerified   = utils.NewHTTPErrorWithCode(http.StatusForbidden, "verify your email to redeem gift codes", ErrorCodeGiftCodeEmailNotVerified)
 	ErrGiftCodeDeviceUnknown      = utils.NewHTTPErrorWithCode(http.StatusForbidden, "cannot identify this device, sign in again to redeem", ErrorCodeGiftCodeDeviceUnknown)
+	ErrGiftCodeFrameOwned         = utils.NewHTTPErrorWithCode(http.StatusConflict, "you already own the avatar frame from this code", ErrorCodeGiftCodeFrameOwned)
 )
 
 var reasonErrors = map[string]error{
@@ -35,6 +36,7 @@ var reasonErrors = map[string]error{
 	ReasonPlatform:   ErrGiftCodePlatformNotAllowed,
 	ReasonUnverified: ErrGiftCodeEmailNotVerified,
 	ReasonNoDevice:   ErrGiftCodeDeviceUnknown,
+	ReasonOwned:      ErrGiftCodeFrameOwned,
 }
 
 var guessReasons = map[string]bool{

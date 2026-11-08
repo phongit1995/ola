@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, Spinner, VipIcon } from '@components';
 import { GIFT_CODE_MAX_LENGTH, GIFT_CODE_REWARD_TYPE } from '@constants';
 import { giftCodeRewardText } from '@lib';
+import { avatarFrameById } from '@ola/shared/lib/avatarFrame';
 import { useGiftCodeRedeem } from '@ola/shared/stores/gift-code/useGiftCodeRedeem';
 import type { GiftCodeReward } from '@app-types';
 import giftCodeIcon from '@/assets/icons/apps/gift-code.webp';
@@ -18,9 +19,15 @@ function RewardChip({ reward }: { reward: GiftCodeReward }) {
   if (text == null) return null;
   const isIcon =
     reward.type === GIFT_CODE_REWARD_TYPE.vipIcon && reward.vipIconId != null;
+  const frameUrl =
+    reward.type === GIFT_CODE_REWARD_TYPE.avatarFrame
+      ? avatarFrameById(reward.frameId)?.url
+      : undefined;
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-ola-primary/10 py-1 pl-1.5 pr-3 text-sm font-semibold text-black/87">
-      {isIcon ? (
+      {frameUrl != null ? (
+        <img src={frameUrl} alt="" className="h-6 w-6 object-contain" />
+      ) : isIcon ? (
         <VipIcon typeId={reward.vipIconId} className="h-6 w-6" />
       ) : (
         <img src={vipCrownIcon} alt="" className="h-5 w-6 object-contain" />

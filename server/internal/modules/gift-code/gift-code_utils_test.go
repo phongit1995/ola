@@ -114,6 +114,13 @@ func TestSuccessMessage(t *testing.T) {
 	if got := RewardsText(two); got != "2 icon VIP" {
 		t.Errorf("two icons: %q", got)
 	}
+	frame := models.GiftCodeReward{Type: models.GiftCodeRewardAvatarFrame, FrameID: "001"}
+	if got := RewardsText(models.GiftCodeRewards{frame}); got != "khung avatar" {
+		t.Errorf("one frame: %q", got)
+	}
+	if got := RewardsText(models.GiftCodeRewards{rewards[0], frame, frame}); got != "7 ngày VIP và 2 khung avatar" {
+		t.Errorf("days and frames: %q", got)
+	}
 }
 
 func TestResolvedPlatform(t *testing.T) {

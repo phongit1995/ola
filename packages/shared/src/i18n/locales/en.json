@@ -1523,6 +1523,7 @@
       "receiverOwns": "The receiver already owns this frame",
       "notOwned": "You don't own this frame",
       "inUse": "Remove the frame before transferring it",
+      "notTransferable": "Frames from a gift code cannot be transferred",
       "vipRequired": "VIP is required to wear a frame",
       "insufficientKen": "Not enough KEN",
       "wrongPassword": "Wrong password",
@@ -2693,6 +2694,7 @@
     "successButton": "Awesome",
     "rewardVipDays": "+{{count}} VIP days",
     "rewardVipIcon": "VIP icon {{name}}",
+    "rewardAvatarFrame": "Avatar frame",
     "notTransferable": "From a gift code, cannot be transferred",
     "verifyGuide": "How to verify: Personal → Profile → Email → Verify.",
     "errors": {
@@ -2709,6 +2711,7 @@
       "tooManyAttempts": "Too many wrong codes, try again in a few minutes",
       "emailNotVerified": "You need to verify your email before redeeming gift codes.",
       "deviceUnknown": "We could not identify your device. Sign out and sign in again to redeem.",
+      "frameOwned": "You already own the avatar frame from this code",
       "rateLimited": "You are going too fast, try again in a few minutes",
       "failed": "Could not claim the gift, try again later"
     }

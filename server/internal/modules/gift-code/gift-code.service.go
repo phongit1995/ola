@@ -3,10 +3,12 @@ package giftcode
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
+	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/user"
@@ -147,6 +149,15 @@ func (s *Service) redeemTx(tx *gorm.DB, rc redeemContext, code string, now time.
 		return nil, &rejection{reason: reason, campaignID: &campaign.ID}
 	}
 
+	claimable, err := claimableRewards(tx, rc.userID, campaign.Rewards)
+	if err != nil {
+		return nil, err
+	}
+	if len(claimable) == 0 {
+		return nil, &rejection{reason: ReasonOwned, campaignID: &campaign.ID}
+	}
+	campaign.Rewards = claimable
+
 	redemption := models.GiftCodeRedemption{
 		CampaignID: campaign.ID,
 		CodeID:     gc.ID,
@@ -168,7 +179,7 @@ func (s *Service) redeemTx(tx *gorm.DB, rc redeemContext, code string, now time.
 	if err := markRedeemed(tx, campaign, gc, rc.userID, now); err != nil {
 		return nil, err
 	}
-	if err := grantRewards(tx, rc.userID, code, campaign.Rewards); err != nil {
+	if err := grantRewards(tx, rc.userID, code, campaign, now); err != nil {
 		return nil, err
 	}
 	return campaign, nil
@@ -230,8 +241,36 @@ func (s *Service) eligibility(tx *gorm.DB, campaign *models.GiftCodeCampaign, gc
 	return "", nil
 }
 
-func grantRewards(tx *gorm.DB, userID uuid.UUID, code string, rewards models.GiftCodeRewards) error {
+func hasFrameReward(rewards models.GiftCodeRewards) bool {
+	return slices.ContainsFunc(rewards, func(r models.GiftCodeReward) bool {
+		return r.Type == models.GiftCodeRewardAvatarFrame
+	})
+}
+
+func claimableRewards(tx *gorm.DB, userID uuid.UUID, rewards models.GiftCodeRewards) (models.GiftCodeRewards, error) {
+	if hasFrameReward(rewards) {
+		if err := avatarframe.LockOwnerTx(tx, userID); err != nil {
+			return nil, err
+		}
+	}
+	claimable := make(models.GiftCodeRewards, 0, len(rewards))
 	for _, r := range rewards {
+		if r.Type == models.GiftCodeRewardAvatarFrame {
+			owned, err := avatarframe.OwnsFrameTx(tx, userID, r.FrameID)
+			if err != nil {
+				return nil, err
+			}
+			if owned {
+				continue
+			}
+		}
+		claimable = append(claimable, r)
+	}
+	return claimable, nil
+}
+
+func grantRewards(tx *gorm.DB, userID uuid.UUID, code string, campaign *models.GiftCodeCampaign, now time.Time) error {
+	for _, r := range campaign.Rewards {
 		switch r.Type {
 		case models.GiftCodeRewardVipDays:
 			if r.Days <= 0 {
@@ -246,6 +285,17 @@ func grantRewards(tx *gorm.DB, userID uuid.UUID, code string, rewards models.Gif
 			}
 			if _, err := vip.GrantIconTx(tx, userID, r.VipIconID, vip.IconSourceGiftCode, vip.PurchaseSourceGiftCode); err != nil {
 				return err
+			}
+		case models.GiftCodeRewardAvatarFrame:
+			if r.FrameID == "" {
+				continue
+			}
+			granted, err := avatarframe.GrantFrameTx(tx, userID, r.FrameID, models.AvatarFrameSourceGiftCode, now)
+			if err != nil {
+				return err
+			}
+			if !granted {
+				return &rejection{reason: ReasonOwned, campaignID: &campaign.ID}
 			}
 		}
 	}
@@ -339,7 +389,7 @@ func (s *Service) PurgeAttempts() (int64, error) {
 func toRewardItems(rewards models.GiftCodeRewards) []RewardItem {
 	items := make([]RewardItem, 0, len(rewards))
 	for _, r := range rewards {
-		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID})
+		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID})
 	}
 	return items
 }

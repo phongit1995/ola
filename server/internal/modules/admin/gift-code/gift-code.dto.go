@@ -7,9 +7,10 @@ import (
 )
 
 type RewardInput struct {
-	Type      string `json:"type" binding:"required,oneof=vip_days vip_icon" example:"vip_days"`
+	Type      string `json:"type" binding:"required,oneof=vip_days vip_icon avatar_frame" example:"vip_days"`
 	Days      int    `json:"days" binding:"omitempty,min=1,max=3650" example:"7"`
 	VipIconID int16  `json:"vipIconId" binding:"omitempty,min=1,max=138" example:"15"`
+	FrameID   string `json:"frameId" binding:"omitempty,len=3,numeric" example:"001"`
 }
 
 type CampaignRequest struct {
@@ -55,6 +56,7 @@ type RewardItem struct {
 	Type      string `json:"type"`
 	Days      int    `json:"days,omitempty"`
 	VipIconID int16  `json:"vipIconId,omitempty"`
+	FrameID   string `json:"frameId,omitempty"`
 }
 
 type CampaignItem struct {

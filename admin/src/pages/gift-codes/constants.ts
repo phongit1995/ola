@@ -62,6 +62,7 @@ export const GIFT_CODE_REASON_META: Record<GiftCodeAttemptReason, { label: strin
   platform: { label: 'Nền tảng không hỗ trợ', color: 'default' },
   unverified: { label: 'Chưa xác thực email', color: 'purple' },
   no_device: { label: 'Không rõ thiết bị', color: 'volcano' },
+  owned: { label: 'Đã có khung', color: 'cyan' },
 }
 
 export const GIFT_CODE_REASON_OPTIONS = (Object.keys(GIFT_CODE_REASON_META) as GiftCodeAttemptReason[]).map((value) => ({

@@ -1,10 +1,12 @@
 import type { TFunction } from 'i18next';
 import {
+  AVATAR_FRAME_SOURCE_GIFT_CODE,
   GIFT_CODE_ERROR_KEYS,
   GIFT_CODE_MAX_LENGTH,
   GIFT_CODE_REWARD_TYPE,
   VIP_ICON_SOURCE_GIFT_CODE,
 } from '../constants/giftCode';
+import type { OwnedAvatarFrame } from '../types/api/avatarFrame.type';
 import type { GiftCodeReward } from '../types/api/giftCode.type';
 import type { VipIconInstance } from '../types/api/vip.type';
 import { ApiError } from './apiError';
@@ -30,9 +32,16 @@ export function giftCodeRewardText(t: TFunction, reward: GiftCodeReward): string
   if (reward.type === GIFT_CODE_REWARD_TYPE.vipIcon && reward.vipIconId != null) {
     return t('giftCode.rewardVipIcon', { name: vipName(reward.vipIconId) });
   }
+  if (reward.type === GIFT_CODE_REWARD_TYPE.avatarFrame && reward.frameId != null) {
+    return t('giftCode.rewardAvatarFrame');
+  }
   return null;
 }
 
 export function isVipIconTransferable(icon: Pick<VipIconInstance, 'source'>): boolean {
   return icon.source !== VIP_ICON_SOURCE_GIFT_CODE;
+}
+
+export function isAvatarFrameTransferable(frame: Pick<OwnedAvatarFrame, 'source'>): boolean {
+  return frame.source !== AVATAR_FRAME_SOURCE_GIFT_CODE;
 }

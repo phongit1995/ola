@@ -159,7 +159,7 @@ func (r *Repository) Equip(userID uuid.UUID, frameID string, now time.Time) erro
 		if err != nil {
 			return err
 		}
-		owned, err := ownsInTx(tx, userID, frameID)
+		owned, err := OwnsFrameTx(tx, userID, frameID)
 		if err != nil {
 			return err
 		}
@@ -220,12 +220,27 @@ func lockUsersInOrder(tx *gorm.DB, ids ...uuid.UUID) (map[uuid.UUID]*models.User
 	return locked, nil
 }
 
-func ownsInTx(tx *gorm.DB, userID uuid.UUID, frameID string) (bool, error) {
+func OwnsFrameTx(tx *gorm.DB, userID uuid.UUID, frameID string) (bool, error) {
 	var count int64
 	err := tx.Model(&models.UserAvatarFrame{}).
 		Where("user_id = ? AND frame_id = ?", userID, frameID).
 		Count(&count).Error
 	return count > 0, err
+}
+
+func LockOwnerTx(tx *gorm.DB, userID uuid.UUID) error {
+	_, err := lockUsersInOrder(tx, userID)
+	return err
+}
+
+func GrantFrameTx(tx *gorm.DB, userID uuid.UUID, frameID, source string, now time.Time) (bool, error) {
+	result := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&models.UserAvatarFrame{
+		UserID:     userID,
+		FrameID:    frameID,
+		Source:     source,
+		AcquiredAt: now,
+	})
+	return result.RowsAffected > 0, result.Error
 }
 
 type purchaseParams struct {
@@ -268,7 +283,7 @@ func (r *Repository) purchase(p purchaseParams, alreadyOwnedErr error) (*models.
 			return err
 		}
 
-		owned, err := ownsInTx(tx, p.recipientID, item.FrameID)
+		owned, err := OwnsFrameTx(tx, p.recipientID, item.FrameID)
 		if err != nil {
 			return err
 		}
@@ -398,8 +413,11 @@ func (r *Repository) Transfer(fromID, toID uuid.UUID, frameID string) error {
 			}
 			return err
 		}
+		if row.Source == models.AvatarFrameSourceGiftCode {
+			return ErrNotTransferable
+		}
 
-		owned, err := ownsInTx(tx, toID, frameID)
+		owned, err := OwnsFrameTx(tx, toID, frameID)
 		if err != nil {
 			return err
 		}

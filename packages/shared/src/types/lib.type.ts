@@ -79,6 +79,7 @@ export type GiftCodeErrorKey =
   | 'giftCode.errors.tooManyAttempts'
   | 'giftCode.errors.emailNotVerified'
   | 'giftCode.errors.deviceUnknown'
+  | 'giftCode.errors.frameOwned'
   | 'giftCode.errors.rateLimited'
   | 'giftCode.errors.failed';
 

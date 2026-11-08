@@ -3007,7 +3007,7 @@ export interface ContentCheckResult {
 
 export type GiftCodeKind = 'shared' | 'unique'
 export type GiftCodeStatus = 'running' | 'scheduled' | 'soldout' | 'expired' | 'off'
-export type GiftCodeRewardType = 'vip_days' | 'vip_icon'
+export type GiftCodeRewardType = 'vip_days' | 'vip_icon' | 'avatar_frame'
 export type GiftCodeCodeStatus = 'unused' | 'used' | 'locked'
 export type GiftCodePlatform = 'web' | 'android' | 'ios'
 export type GiftCodeAttemptReason =
@@ -3024,6 +3024,7 @@ export type GiftCodeAttemptReason =
   | 'platform'
   | 'unverified'
   | 'no_device'
+  | 'owned'
 export type GiftCodeAttemptRange = '1h' | '24h' | '7d' | '30d'
 
 export interface GiftCodeSetting {
@@ -3036,6 +3037,7 @@ export interface GiftCodeReward {
   type: GiftCodeRewardType
   days?: number
   vipIconId?: number
+  frameId?: string
 }
 
 export interface GiftCodeAdminBrief {

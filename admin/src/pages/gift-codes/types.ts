@@ -5,6 +5,7 @@ export interface GiftCodeRewardFormValue {
   type: GiftCodeRewardType
   days?: number
   vipIconId?: number
+  frameId?: string
 }
 
 export interface GiftCodeFormValues {

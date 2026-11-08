@@ -12,6 +12,7 @@ import (
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
 	admincommon "ola-chat-server/internal/modules/admin/common"
+	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	giftcode "ola-chat-server/internal/modules/gift-code"
 	"ola-chat-server/internal/services"
 
@@ -585,6 +586,7 @@ func buildDraft(req *CampaignRequest) (campaignDraft, error) {
 	if d.startsAt != nil && !d.endsAt.After(*d.startsAt) {
 		return d, invalidInput("Ngày kết thúc phải sau ngày bắt đầu")
 	}
+	frames := make(map[string]struct{}, len(req.Rewards))
 	for _, r := range req.Rewards {
 		switch r.Type {
 		case models.GiftCodeRewardVipDays:
@@ -597,6 +599,15 @@ func buildDraft(req *CampaignRequest) (campaignDraft, error) {
 				return d, invalidInput("Chọn icon VIP")
 			}
 			d.rewards = append(d.rewards, models.GiftCodeReward{Type: r.Type, VipIconID: r.VipIconID})
+		case models.GiftCodeRewardAvatarFrame:
+			if !avatarframe.IsValidFrameID(r.FrameID) {
+				return d, invalidInput("Chọn khung avatar")
+			}
+			if _, dup := frames[r.FrameID]; dup {
+				return d, invalidInput("Khung avatar bị trùng")
+			}
+			frames[r.FrameID] = struct{}{}
+			d.rewards = append(d.rewards, models.GiftCodeReward{Type: r.Type, FrameID: r.FrameID})
 		}
 	}
 	if len(d.rewards) == 0 {
@@ -646,7 +657,7 @@ func mapCodeConflict(err error) error {
 func toRewardItems(rewards models.GiftCodeRewards) []RewardItem {
 	items := make([]RewardItem, 0, len(rewards))
 	for _, r := range rewards {
-		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID})
+		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID})
 	}
 	return items
 }

@@ -16,6 +16,7 @@ const (
 	ReasonPlatform   = "platform"
 	ReasonUnverified = "unverified"
 	ReasonNoDevice   = "no_device"
+	ReasonOwned      = "owned"
 
 	StatusRunning   = "running"
 	StatusScheduled = "scheduled"
@@ -35,6 +36,7 @@ const (
 	ErrorCodeGiftCodeTooManyAttempts    = "GIFT_CODE_TOO_MANY_ATTEMPTS"
 	ErrorCodeGiftCodeEmailNotVerified   = "GIFT_CODE_EMAIL_NOT_VERIFIED"
 	ErrorCodeGiftCodeDeviceUnknown      = "GIFT_CODE_DEVICE_UNKNOWN"
+	ErrorCodeGiftCodeFrameOwned         = "GIFT_CODE_FRAME_OWNED"
 
 	CacheKeyGiftCodeFailUser    = "GIFTCODE:FAIL:USER:%s"
 	CacheKeyGiftCodeFailDevice  = "GIFTCODE:FAIL:DEVICE:%s"

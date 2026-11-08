@@ -13,14 +13,16 @@ const (
 	GiftCodeKindShared = "shared"
 	GiftCodeKindUnique = "unique"
 
-	GiftCodeRewardVipDays = "vip_days"
-	GiftCodeRewardVipIcon = "vip_icon"
+	GiftCodeRewardVipDays     = "vip_days"
+	GiftCodeRewardVipIcon     = "vip_icon"
+	GiftCodeRewardAvatarFrame = "avatar_frame"
 )
 
 type GiftCodeReward struct {
 	Type      string `json:"type"`
 	Days      int    `json:"days,omitempty"`
 	VipIconID int16  `json:"vipIconId,omitempty"`
+	FrameID   string `json:"frameId,omitempty"`
 }
 
 type GiftCodeRewards []GiftCodeReward
