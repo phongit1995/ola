@@ -16,7 +16,6 @@ export type AppItemAction =
   | 'media'
   | 'social'
   | 'settings'
-  | 'app-lock'
   | 'remove-account'
   | 'support'
   | 'logout';
@@ -96,11 +95,6 @@ export const PERSONAL_ITEMS: AppItem[] = [
     icon: require('@assets/icons/apps/setting.png'),
     titleKey: 'home.apps.settings',
     action: 'settings',
-  },
-  {
-    icon: require('@assets/icons/apps/app-lock.png'),
-    titleKey: 'home.apps.appLock',
-    action: 'app-lock',
   },
   {
     icon: require('@assets/icons/apps/delete-account.png'),

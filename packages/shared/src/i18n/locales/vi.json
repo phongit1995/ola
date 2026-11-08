@@ -228,7 +228,6 @@
       "social": "Mạng Xã Hội",
       "settings": "Cài đặt",
       "removeAccount": "Xóa tài khoản",
-      "appLock": "Khoá ứng dụng",
       "support": "Hỗ trợ khách hàng",
       "gifts": "Quà tặng"
     },
@@ -2328,7 +2327,6 @@
   },
   "appLock": {
     "title": "Khoá ứng dụng",
-    "enable": "Bật khoá ứng dụng",
     "enableHint": "Yêu cầu mã PIN hoặc sinh trắc học mỗi khi mở lại Ola.",
     "changePin": "Đổi mã PIN",
     "biometric": "Mở khoá bằng {{method}}",

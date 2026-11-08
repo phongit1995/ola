@@ -228,7 +228,6 @@
       "social": "Social connections",
       "settings": "Settings",
       "removeAccount": "Delete account",
-      "appLock": "App lock",
       "support": "Customer support",
       "gifts": "Gifts"
     },
@@ -2328,7 +2327,6 @@
   },
   "appLock": {
     "title": "App lock",
-    "enable": "Enable app lock",
     "enableHint": "Require a PIN or biometrics every time you reopen Ola.",
     "changePin": "Change PIN",
     "biometric": "Unlock with {{method}}",

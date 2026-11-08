@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import DeviceInfo from 'react-native-device-info';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatKen } from '@ola/shared/lib';
@@ -24,16 +25,25 @@ import { GiftCodeDialog } from './GiftCodeDialog';
 import { useGiftCodeConfigSync } from './useGiftCodeConfigSync';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
+const APP_VERSION_LABEL = `v${DeviceInfo.getVersion()} (${DeviceInfo.getBuildNumber()})`;
 
 interface PanelRowProps {
   icon: number;
   title: string;
   subtitle?: string;
   badge?: number;
+  trailing?: string;
   onPress: () => void;
 }
 
-function PanelRow({ icon, title, subtitle, badge, onPress }: PanelRowProps) {
+function PanelRow({
+  icon,
+  title,
+  subtitle,
+  badge,
+  trailing,
+  onPress,
+}: PanelRowProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -65,6 +75,11 @@ function PanelRow({ icon, title, subtitle, badge, onPress }: PanelRowProps) {
             {badge > 99 ? '99+' : badge}
           </Text>
         </View>
+      )}
+      {trailing != null && (
+        <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.38)' }}>
+          {trailing}
+        </Text>
       )}
     </Pressable>
   );
@@ -143,10 +158,6 @@ export function PersonalScreen() {
       navigation.navigate(ROOT_ROUTES.Settings);
       return;
     }
-    if (item.action === 'app-lock') {
-      navigation.navigate(ROOT_ROUTES.AppLock);
-      return;
-    }
     push('info', t('chat.comingSoon'));
   }
 
@@ -209,6 +220,9 @@ export function PersonalScreen() {
                 item.subtitleKey != null ? t(item.subtitleKey) : undefined
               }
               badge={item.action === 'notifications' ? notifUnread : undefined}
+              trailing={
+                item.action === 'logout' ? APP_VERSION_LABEL : undefined
+              }
               onPress={() => handleOpen(item)}
             />
           ))}

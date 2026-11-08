@@ -1,14 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Platform } from 'react-native';
 import { toast } from '@ola/shared/lib';
 import { PinEntryModal, type PinEntryMode } from '@components/applock/PinEntryModal';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
-import { ScreenHeader } from '@components/ui/ScreenHeader';
-import type { RootStackParamList } from '@navigation/types';
-import type { ROOT_ROUTES } from '@navigation/routes';
 import {
   AUTO_LOCK_OPTIONS,
   biometryLabelKey,
@@ -20,6 +15,7 @@ import { useAppLockStore } from '@store/appLockStore';
 import { LinkRow, SectionIcon, SettingRow, SettingsCard, ToggleSwitch } from './components';
 
 const iconPrivacy = require('@assets/icons/settings/icon-privacy.webp');
+const iconAppLock = require('@assets/icons/apps/app-lock.png');
 
 type Purpose = 'enable' | 'disable' | 'change-verify' | 'change-create';
 
@@ -35,11 +31,8 @@ const FLOW_BY_PURPOSE: Record<Purpose, PinEntryMode> = {
   'change-create': 'create',
 };
 
-type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.AppLock>;
-
-export function AppLockScreen({ navigation }: Props) {
+export function AppLockSection({ index }: { index: number }) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const enabled = useAppLockStore((s) => s.enabled);
   const biometricEnabled = useAppLockStore((s) => s.biometricEnabled);
   const autoLockSeconds = useAppLockStore((s) => s.autoLockSeconds);
@@ -134,40 +127,33 @@ export function AppLockScreen({ navigation }: Props) {
     shownFlow?.purpose === 'change-verify' ? t('appLock.currentPin') : t('appLock.enterPin');
 
   return (
-    <View className="flex-1" style={{ backgroundColor: '#eef0f2' }}>
-      <ScreenHeader title={t('appLock.title')} centerTitle onBack={() => navigation.goBack()} />
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="gap-4 px-4 py-4"
-        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) }}
-      >
-        <SettingsCard icon={<SectionIcon src={iconPrivacy} />} title={t('appLock.securityTitle')}>
-          <SettingRow label={t('appLock.enable')} hint={t('appLock.enableHint')} last={!enabled}>
-            <ToggleSwitch on={enabled} onChange={() => openFlow(enabled ? 'disable' : 'enable')} />
-          </SettingRow>
-          {enabled && (
-            <>
-              <LinkRow label={t('appLock.changePin')} onPress={() => openFlow('change-verify')} />
-              <SettingRow
-                label={t('appLock.biometric', { method: methodLabel })}
-                hint={biometryAvailable ? undefined : t('appLock.biometricUnavailable')}
-              >
-                <ToggleSwitch
-                  on={biometricEnabled && biometryAvailable}
-                  disabled={!biometryAvailable || authenticating}
-                  onChange={() => void toggleBiometric()}
-                />
-              </SettingRow>
-              <LinkRow
-                label={t('appLock.autoLock')}
-                value={autoLockLabel(autoLockSeconds)}
-                last
-                onPress={() => setAutoLockOpen(true)}
+    <>
+      <SettingsCard icon={<SectionIcon src={iconPrivacy} />} index={index} title={t('appLock.securityTitle')}>
+        <SettingRow icon={iconAppLock} label={t('appLock.title')} hint={t('appLock.enableHint')} last={!enabled}>
+          <ToggleSwitch on={enabled} onChange={() => openFlow(enabled ? 'disable' : 'enable')} />
+        </SettingRow>
+        {enabled && (
+          <>
+            <LinkRow label={t('appLock.changePin')} onPress={() => openFlow('change-verify')} />
+            <SettingRow
+              label={t('appLock.biometric', { method: methodLabel })}
+              hint={biometryAvailable ? undefined : t('appLock.biometricUnavailable')}
+            >
+              <ToggleSwitch
+                on={biometricEnabled && biometryAvailable}
+                disabled={!biometryAvailable || authenticating}
+                onChange={() => void toggleBiometric()}
               />
-            </>
-          )}
-        </SettingsCard>
-      </ScrollView>
+            </SettingRow>
+            <LinkRow
+              label={t('appLock.autoLock')}
+              value={autoLockLabel(autoLockSeconds)}
+              last
+              onPress={() => setAutoLockOpen(true)}
+            />
+          </>
+        )}
+      </SettingsCard>
 
       <PinEntryModal
         visible={flow != null}
@@ -188,6 +174,6 @@ export function AppLockScreen({ navigation }: Props) {
           onSelect: () => useAppLockStore.getState().setAutoLockSeconds(seconds),
         }))}
       />
-    </View>
+    </>
   );
 }

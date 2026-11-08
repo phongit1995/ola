@@ -61,7 +61,6 @@ import { GiftHistoryScreen } from '@screens/gift/GiftHistoryScreen';
 import { MegaphoneScreen } from '@screens/megaphone/MegaphoneScreen';
 import { NotificationsScreen } from '@screens/apps/NotificationsScreen';
 import { SettingsScreen } from '@screens/settings/SettingsScreen';
-import { AppLockScreen } from '@screens/settings/AppLockScreen';
 import { PenGameScreen } from '@screens/games/pen/PenGameScreen';
 import { SpinWheelGameScreen } from '@screens/games/spin-wheel/SpinWheelGameScreen';
 import { EggGameScreen } from '@screens/games/egg/EggGameScreen';
@@ -335,7 +334,6 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.Megaphone} component={MegaphoneScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Notifications} component={NotificationsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Settings} component={SettingsScreen} />
-      <RootStack.Screen name={ROOT_ROUTES.AppLock} component={AppLockScreen} />
       <RootStack.Screen name={ROOT_ROUTES.PenGame} component={PenGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.SpinWheel} component={SpinWheelGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EggGame} component={EggGameScreen} />

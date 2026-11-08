@@ -36,7 +36,6 @@ export const ROOT_ROUTES = {
   Megaphone: 'Megaphone',
   Notifications: 'Notifications',
   Settings: 'Settings',
-  AppLock: 'AppLock',
   PenGame: 'PenGame',
   SpinWheel: 'SpinWheel',
   EggGame: 'EggGame',
