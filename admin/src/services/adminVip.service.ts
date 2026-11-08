@@ -46,6 +46,16 @@ export const AdminVipService = {
     return data.data
   },
 
+  async reorderPackages(ids: string[]): Promise<MessageResult> {
+    const { data } = await http.put<ApiResponse<MessageResult>>('/admin/vip/packages/order', { ids })
+    return data.data
+  },
+
+  async reorderShopItems(ids: string[]): Promise<MessageResult> {
+    const { data } = await http.put<ApiResponse<MessageResult>>('/admin/vip/shop/order', { ids })
+    return data.data
+  },
+
   async listShopItems(): Promise<VipShopItem[]> {
     const { data } = await http.get<ApiResponse<{ total: number; items: VipShopItem[] }>>(
       '/admin/vip/shop',

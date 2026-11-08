@@ -9,7 +9,6 @@ import {
   Select,
   Space,
   Switch,
-  Table,
   Tag,
   Typography,
   type TableColumnsType,
@@ -20,7 +19,11 @@ import {
   useDeleteVipShopItem,
   useUpdateVipShopItem,
   useVipShopItems,
+  useVipShopOrder,
 } from './useVipShopQueries'
+import { MoveToTopButton, RenumberButton } from '@/components/ListOrderButtons'
+import { PositionField } from '@/components/PositionField'
+import { SortableTable } from '@/components/SortableTable'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
@@ -47,6 +50,7 @@ export function VipShopPage() {
   const deleteItem = useDeleteVipShopItem()
 
   const items = data ?? []
+  const order = useVipShopOrder(items)
   const isEdit = editing != null
 
   const availableTypes = useMemo(() => {
@@ -57,7 +61,12 @@ export function VipShopPage() {
   function openCreate() {
     setEditing(null)
     setFormOpen(true)
-    form.setFieldsValue({ vipTypeId: undefined, kenPrice: 100, sortOrder: 0, isActive: true })
+    form.setFieldsValue({
+      vipTypeId: undefined,
+      kenPrice: 100,
+      sortOrder: order.nextPosition,
+      isActive: true,
+    })
   }
 
   function openEdit(item: VipShopItem) {
@@ -172,9 +181,14 @@ export function VipShopPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 160,
+      width: 200,
       render: (_, item) => (
         <Space>
+          <MoveToTopButton
+            name={vipName(item.vipTypeId)}
+            disabled={order.isFirst(item) || order.saving}
+            onClick={() => order.moveToTop(item)}
+          />
           <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(item)}>
             Sửa
           </Button>
@@ -190,17 +204,22 @@ export function VipShopPage() {
         <Typography.Text type="secondary">
           Chọn VIP để bán trong shop. Chỉ những VIP ở đây mới hiển thị cho người dùng mua.
         </Typography.Text>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          Thêm VIP
-        </Button>
+        <Space>
+          <RenumberButton disabled={order.numbered || order.saving} onClick={order.renumber} />
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            Thêm VIP
+          </Button>
+        </Space>
       </div>
-      <Table<VipShopItem>
-        rowKey="id"
+      <SortableTable<VipShopItem>
+        items={items}
         columns={columns}
-        dataSource={items}
         loading={isFetching}
-        scroll={{ x: 680 }}
-        pagination={{ pageSize: 20, showTotal: (total) => `${total} VIP đang bán` }}
+        scroll={{ x: 770 }}
+        pagination={false}
+        footer={() => `${items.length} VIP đang bán. Kéo biểu tượng đầu dòng để đổi thứ tự.`}
+        reorderDisabled={order.saving}
+        onReorder={order.save}
       />
 
       <Modal
@@ -254,9 +273,7 @@ export function VipShopPage() {
           >
             <InputNumber min={0} style={{ width: '100%' }} placeholder="100" {...kenNumberInputProps} />
           </Form.Item>
-          <Form.Item name="sortOrder" label="Thứ tự sắp xếp (nhỏ hơn hiển thị trước)">
-            <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
-          </Form.Item>
+          <PositionField />
           <Form.Item name="isActive" label="Đang bán" valuePropName="checked">
             <Switch />
           </Form.Item>

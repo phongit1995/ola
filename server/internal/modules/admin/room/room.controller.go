@@ -202,3 +202,24 @@ func (ctrl *Controller) PurgeImages(c *gin.Context) (interface{}, error) {
 	}
 	return resp, nil
 }
+
+// ReorderRooms godoc
+// @Summary      Lưu thứ tự toàn bộ phòng chat (admin), gán lại thành 1..N
+// @Tags         admin-room
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body utils.ReorderRequest true "Toàn bộ id theo thứ tự mới"
+// @Success      200  {object}  map[string]string
+// @Failure      409  {object}  utils.APIError
+// @Router       /admin/rooms/order [put]
+func (ctrl *Controller) ReorderRooms(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[utils.ReorderRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.Reorder(req.IDs); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"message": "order updated"}, nil
+}

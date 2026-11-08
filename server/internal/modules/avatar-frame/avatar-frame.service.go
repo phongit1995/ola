@@ -400,6 +400,7 @@ func (s *Service) CreateShopItems(req *CreateShopItemsRequest) (*CreateShopItems
 		active = *req.IsActive
 	}
 	resp := &CreateShopItemsResponse{Created: []ShopItem{}, Skipped: []string{}}
+	createdIDs := make([]uuid.UUID, 0, len(ids))
 	for _, id := range ids {
 		if existing[id] {
 			resp.Skipped = append(resp.Skipped, id)
@@ -418,13 +419,29 @@ func (s *Service) CreateShopItems(req *CreateShopItemsRequest) (*CreateShopItems
 			}
 			return nil, err
 		}
+		createdIDs = append(createdIDs, item.ID)
 		resp.Created = append(resp.Created, toShopItem(&item, false))
+	}
+	if len(createdIDs) == 0 {
+		return resp, nil
+	}
+	first, err := s.repo.PlaceShopItems(createdIDs, req.SortOrder)
+	if err != nil {
+		return nil, err
+	}
+	for index := range resp.Created {
+		resp.Created[index].SortOrder = first + index
 	}
 	return resp, nil
 }
 
+func (s *Service) ReorderShopItems(ids []uuid.UUID) error {
+	return s.repo.ReorderShopItems(ids)
+}
+
 func (s *Service) UpdateShopItem(id uuid.UUID, req *UpdateShopItemRequest) (*ShopItem, error) {
-	if _, err := s.repo.FindShopItem(id); err != nil {
+	current, err := s.repo.FindShopItem(id)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrShopItemNotFound
 		}
@@ -437,13 +454,13 @@ func (s *Service) UpdateShopItem(id uuid.UUID, req *UpdateShopItemRequest) (*Sho
 	if req.IsActive != nil {
 		fields["is_active"] = *req.IsActive
 	}
-	if req.SortOrder != nil {
-		fields["sort_order"] = *req.SortOrder
+	if req.SortOrder != nil && *req.SortOrder != current.SortOrder {
+		err = s.repo.UpdateShopItemAt(id, fields, *req.SortOrder)
+	} else if len(fields) > 0 {
+		err = s.repo.UpdateShopItem(id, fields)
 	}
-	if len(fields) > 0 {
-		if err := s.repo.UpdateShopItem(id, fields); err != nil {
-			return nil, err
-		}
+	if err != nil {
+		return nil, err
 	}
 	item, err := s.repo.FindShopItem(id)
 	if err != nil {

@@ -25,6 +25,11 @@ export const AdminGiftService = {
     return data.data
   },
 
+  async reorder(ids: string[]): Promise<MessageResult> {
+    const { data } = await http.put<ApiResponse<MessageResult>>('/admin/gifts/order', { ids })
+    return data.data
+  },
+
   async remove(id: string): Promise<MessageResult> {
     const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/gifts/${id}`)
     return data.data

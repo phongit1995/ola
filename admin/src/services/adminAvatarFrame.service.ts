@@ -51,6 +51,11 @@ export const AdminAvatarFrameService = {
     return data.data
   },
 
+  async reorderShopItems(ids: string[]): Promise<MessageResult> {
+    const { data } = await http.put<ApiResponse<MessageResult>>('/admin/avatar-frames/shop/order', { ids })
+    return data.data
+  },
+
   async listPurchases(
     params: AvatarFramePurchaseListParams = {},
   ): Promise<ListResult<AdminAvatarFramePurchase>> {

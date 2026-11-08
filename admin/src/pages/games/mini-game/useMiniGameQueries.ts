@@ -1,14 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useListOrder } from '@/hooks/useListOrder'
 import { AdminMiniGameService } from '@/services/adminMiniGame.service'
-import type { CreateMiniGameRequest, UpdateMiniGameRequest } from '@/types'
+import type { CreateMiniGameRequest, MiniGame, UpdateMiniGameRequest } from '@/types'
 
 const MINI_GAMES_KEY = 'admin-mini-games'
 
 export function useMiniGames() {
   return useQuery({
     queryKey: [MINI_GAMES_KEY],
-    queryFn: () => AdminMiniGameService.list(),
+    queryFn: async () => (await AdminMiniGameService.list()).items,
     placeholderData: (prev) => prev,
+  })
+}
+
+export function useMiniGameOrder(games: MiniGame[]) {
+  return useListOrder({
+    items: games,
+    queryKey: [MINI_GAMES_KEY],
+    orderKey: 'sortOrder',
+    reorder: AdminMiniGameService.reorder,
+    nameOf: (game) => game.name,
   })
 }
 

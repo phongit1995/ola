@@ -1,8 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useListOrder } from '@/hooks/useListOrder'
 import { AdminAvatarFrameService } from '@/services/adminAvatarFrame.service'
+import { avatarFrameName } from './utils'
 import type {
   AvatarFramePurchaseListParams,
   AvatarFramePurchaseStatsParams,
+  AvatarFrameShopItem,
   AvatarFrameTransferListParams,
   CreateAvatarFrameShopItemsRequest,
   UpdateAvatarFrameShopItemRequest,
@@ -17,6 +20,16 @@ export function useAvatarFrameShopItems() {
   return useQuery({
     queryKey: [AVATAR_FRAME_SHOP_KEY],
     queryFn: () => AdminAvatarFrameService.listShopItems(),
+  })
+}
+
+export function useAvatarFrameShopOrder(items: AvatarFrameShopItem[]) {
+  return useListOrder({
+    items,
+    queryKey: [AVATAR_FRAME_SHOP_KEY],
+    orderKey: 'sortOrder',
+    reorder: AdminAvatarFrameService.reorderShopItems,
+    nameOf: (item) => avatarFrameName(item.frameId),
   })
 }
 

@@ -10,11 +10,13 @@ import {
   Select,
   Space,
   Switch,
-  Table,
   Typography,
   type TableColumnsType,
 } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import { MoveToTopButton, RenumberButton } from '@/components/ListOrderButtons'
+import { PositionField } from '@/components/PositionField'
+import { SortableTable } from '@/components/SortableTable'
 import { errorMessage } from '@/lib/apiError'
 import { formatCount, kenNumberInputProps } from '@/lib/format'
 import { PAGE_SIZE } from '@/lib/constants'
@@ -25,6 +27,7 @@ import { AddAvatarFramesModal } from './AddAvatarFramesModal'
 import { AvatarFrameCell } from './AvatarFrameCell'
 import {
   useAvatarFrameShopItems,
+  useAvatarFrameShopOrder,
   useDeleteAvatarFrameShopItem,
   useUpdateAvatarFrameShopItem,
 } from './useAvatarFrameQueries'
@@ -46,6 +49,7 @@ export function AvatarFrameShopPage() {
   const [editing, setEditing] = useState<AvatarFrameShopItem | null>(null)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<StatusFilter | undefined>()
+  const [priceSorted, setPriceSorted] = useState(false)
   const [form] = Form.useForm<EditFormValues>()
 
   useEffect(() => {
@@ -63,6 +67,7 @@ export function AvatarFrameShopPage() {
   const deleteItem = useDeleteAvatarFrameShopItem()
 
   const items = useMemo(() => data ?? [], [data])
+  const order = useAvatarFrameShopOrder(items)
   const shopFrameIds = useMemo(() => new Set(items.map((it) => it.frameId)), [items])
   const activeCount = items.filter((it) => it.isActive).length
 
@@ -76,6 +81,7 @@ export function AvatarFrameShopPage() {
       return frame ? matchesAvatarFrameQuery(frame, q) : it.frameId.includes(q)
     })
   }, [items, search, status])
+  const canDrag = filtered.length === items.length && !priceSorted
 
   function toggleActive(item: AvatarFrameShopItem, isActive: boolean) {
     updateItem.mutate(
@@ -113,7 +119,7 @@ export function AvatarFrameShopPage() {
         id: editing.id,
         payload: {
           kenPrice: values.kenPrice,
-          sortOrder: values.sortOrder ?? 0,
+          sortOrder: values.sortOrder ?? editing.sortOrder,
           isActive: values.isActive,
         },
       })
@@ -141,7 +147,6 @@ export function AvatarFrameShopPage() {
       title: 'Thứ tự',
       dataIndex: 'sortOrder',
       width: 100,
-      sorter: (a, b) => a.sortOrder - b.sortOrder,
     },
     {
       title: 'Đang bán',
@@ -158,9 +163,14 @@ export function AvatarFrameShopPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 150,
+      width: 190,
       render: (_, item) => (
         <Space>
+          <MoveToTopButton
+            name={avatarFrameName(item.frameId)}
+            disabled={order.isFirst(item) || order.saving}
+            onClick={() => order.moveToTop(item)}
+          />
           <Button size="small" icon={<EditOutlined />} onClick={() => setEditing(item)}>
             Sửa
           </Button>
@@ -201,16 +211,28 @@ export function AvatarFrameShopPage() {
             {formatCount(activeCount)} đang bán / {formatCount(items.length)} khung trong cửa hàng
           </Typography.Text>
         </Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setAddOpen(true)}>
-          Thêm khung
-        </Button>
+        <Space>
+          <RenumberButton disabled={order.numbered || order.saving} onClick={order.renumber} />
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setAddOpen(true)}>
+            Thêm khung
+          </Button>
+        </Space>
       </div>
-      <Table<AvatarFrameShopItem>
-        rowKey="id"
+      <SortableTable<AvatarFrameShopItem>
+        items={filtered}
         columns={columns}
-        dataSource={filtered}
         loading={isFetching}
-        scroll={{ x: 680 }}
+        scroll={{ x: 770 }}
+        onChange={(_pagination, _filters, sorter) =>
+          setPriceSorted(!Array.isArray(sorter) && sorter.order != null)
+        }
+        footer={() =>
+          canDrag
+            ? 'Kéo biểu tượng đầu dòng để đổi thứ tự trong trang, hoặc bấm "Đưa lên đầu".'
+            : 'Bỏ tìm kiếm, bộ lọc và sắp xếp theo giá để kéo đổi thứ tự.'
+        }
+        reorderDisabled={order.saving || !canDrag}
+        onReorder={order.save}
         pagination={{
           pageSize: PAGE_SIZE,
           showSizeChanger: false,
@@ -248,9 +270,7 @@ export function AvatarFrameShopPage() {
           >
             <InputNumber min={0} style={{ width: '100%' }} {...kenNumberInputProps} />
           </Form.Item>
-          <Form.Item name="sortOrder" label="Thứ tự sắp xếp (nhỏ hơn hiển thị trước)">
-            <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
-          </Form.Item>
+          <PositionField />
           <Form.Item name="isActive" label="Đang bán" valuePropName="checked">
             <Switch />
           </Form.Item>

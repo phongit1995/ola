@@ -7,6 +7,7 @@ import (
 
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -35,6 +36,30 @@ func (r *Repository) FindByUsername(username string) (*models.User, error) {
 		return nil, err
 	}
 	return &u, nil
+}
+
+var shopItemOrder = utils.OrderedList{
+	Model:    &models.AvatarFrameShopItem{},
+	Table:    "avatar_frame_shop_items",
+	Column:   "sort_order",
+	OrderSQL: "sort_order ASC, created_at DESC",
+}
+
+func (r *Repository) ReorderShopItems(ids []uuid.UUID) error {
+	return shopItemOrder.Reorder(r.db, ids)
+}
+
+func (r *Repository) PlaceShopItems(ids []uuid.UUID, position int) (int, error) {
+	return shopItemOrder.Place(r.db, position, func(*gorm.DB) ([]uuid.UUID, error) {
+		return ids, nil
+	})
+}
+
+func (r *Repository) UpdateShopItemAt(id uuid.UUID, fields map[string]interface{}, position int) error {
+	_, err := shopItemOrder.PlaceOne(r.db, position, &id, func(tx *gorm.DB) error {
+		return tx.Model(&models.AvatarFrameShopItem{}).Where("id = ?", id).Updates(fields).Error
+	})
+	return err
 }
 
 func (r *Repository) ListShopItems(activeOnly bool) ([]models.AvatarFrameShopItem, error) {

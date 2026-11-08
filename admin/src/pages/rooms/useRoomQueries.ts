@@ -1,15 +1,26 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useListOrder } from '@/hooks/useListOrder'
+import { fetchAllPages } from '@/lib/fetchAllPages'
 import { AdminRoomService } from '@/services/adminRoom.service'
-import type { CreateRoomRequest, ListParams, UpdateRoomRequest } from '@/types'
+import type { CreateRoomRequest, Room, UpdateRoomRequest } from '@/types'
 import { ROOM_MESSAGES_PAGE_SIZE } from './constants'
 
 const ROOMS_KEY = 'admin-rooms'
 
-export function useRooms(params: ListParams) {
+export function useRooms() {
   return useQuery({
-    queryKey: [ROOMS_KEY, params],
-    queryFn: () => AdminRoomService.list(params),
-    placeholderData: (prev) => prev,
+    queryKey: [ROOMS_KEY, 'all'],
+    queryFn: () => fetchAllPages((page) => AdminRoomService.list(page)),
+  })
+}
+
+export function useRoomOrder(rooms: Room[]) {
+  return useListOrder({
+    items: rooms,
+    queryKey: [ROOMS_KEY, 'all'],
+    orderKey: 'index',
+    reorder: AdminRoomService.reorder,
+    nameOf: (room) => room.name,
   })
 }
 

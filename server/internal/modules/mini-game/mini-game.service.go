@@ -64,10 +64,14 @@ func (s *Service) Create(req CreateMiniGameRequest) (*models.MiniGame, error) {
 	if req.IsEnabled != nil {
 		game.IsEnabled = *req.IsEnabled
 	}
-	if err := s.repo.Create(game); err != nil {
+	if err := s.repo.CreateAt(game, req.SortOrder); err != nil {
 		return nil, err
 	}
 	return game, nil
+}
+
+func (s *Service) Reorder(ids []uuid.UUID) error {
+	return s.repo.Reorder(ids)
 }
 
 func (s *Service) Update(id uuid.UUID, req UpdateMiniGameRequest) (*models.MiniGame, error) {
@@ -94,11 +98,12 @@ func (s *Service) Update(id uuid.UUID, req UpdateMiniGameRequest) (*models.MiniG
 	if req.IsEnabled != nil {
 		game.IsEnabled = *req.IsEnabled
 	}
-	if req.SortOrder != nil {
-		game.SortOrder = *req.SortOrder
+	if req.SortOrder != nil && *req.SortOrder != game.SortOrder {
+		err = s.repo.SaveAt(game, *req.SortOrder)
+	} else {
+		err = s.repo.SaveKeepingPosition(game)
 	}
-
-	if err := s.repo.Save(game); err != nil {
+	if err != nil {
 		return nil, err
 	}
 	return game, nil

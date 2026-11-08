@@ -169,7 +169,7 @@ export function AddAvatarFramesModal({ open, shopFrameIds, onClose }: AddAvatarF
       const result = await createItems.mutateAsync({
         frameIds: [...selected].sort(),
         kenPrice: values.kenPrice,
-        sortOrder: values.sortOrder ?? 0,
+        sortOrder: values.sortOrder ?? 1,
         isActive: values.isActive,
       })
       if (result.skipped.length > 0) {
@@ -290,7 +290,7 @@ export function AddAvatarFramesModal({ open, shopFrameIds, onClose }: AddAvatarF
           form={form}
           layout="inline"
           requiredMark={false}
-          initialValues={{ kenPrice: AVATAR_FRAME_DEFAULT_PRICE, sortOrder: 0, isActive: true }}
+          initialValues={{ kenPrice: AVATAR_FRAME_DEFAULT_PRICE, sortOrder: 1, isActive: true }}
           style={{ rowGap: 8 }}
         >
           <Form.Item
@@ -300,15 +300,15 @@ export function AddAvatarFramesModal({ open, shopFrameIds, onClose }: AddAvatarF
           >
             <InputNumber min={0} style={{ width: 160 }} {...kenNumberInputProps} />
           </Form.Item>
-          <Form.Item name="sortOrder" label="Thứ tự" tooltip="Nhỏ hơn hiển thị trước">
-            <InputNumber min={0} style={{ width: 100 }} />
+          <Form.Item name="sortOrder" label="Vị trí" tooltip="1 là đầu tiên, các khung đang có tự lùi xuống">
+            <InputNumber min={1} precision={0} style={{ width: 100 }} />
           </Form.Item>
           <Form.Item name="isActive" label="Bán ngay" valuePropName="checked">
             <Switch />
           </Form.Item>
         </Form>
         <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          Các khung đã chọn dùng chung một giá, thứ tự và trạng thái. Sửa từng khung sau ở danh sách.
+          Các khung đã chọn dùng chung một giá và trạng thái, xếp liền nhau từ vị trí đã nhập. Sửa từng khung sau ở danh sách.
         </Typography.Text>
       </Space>
     </Modal>

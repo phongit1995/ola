@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Switch, Upload } from 'antd'
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { useCreateRoom, useUpdateRoom } from './useRoomQueries'
+import { PositionField } from '@/components/PositionField'
 import { AdminUploadService } from '@/services/adminUpload.service'
 import { errorMessage } from '@/lib/apiError'
 import type { CreateRoomRequest, Room } from '@/types'
@@ -9,10 +10,11 @@ import type { CreateRoomRequest, Room } from '@/types'
 interface RoomFormModalProps {
   open: boolean
   room: Room | null
+  nextPosition: number
   onClose: () => void
 }
 
-export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
+export function RoomFormModal({ open, room, nextPosition, onClose }: RoomFormModalProps) {
   const { message } = App.useApp()
   const [form] = Form.useForm<CreateRoomRequest>()
   const createRoom = useCreateRoom()
@@ -29,12 +31,12 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
         description: room?.description ?? '',
         imageUrl: room?.imageUrl ?? '',
         maxMembers: room?.maxMembers ?? undefined,
-        index: room?.index ?? 0,
+        index: room?.index ?? nextPosition,
         vipRequired: room?.vipRequired ?? false,
         vipMinMembers: room?.vipMinMembers ?? 0,
       })
     }
-  }, [open, room, form])
+  }, [open, room, nextPosition, form])
 
   async function handleUpload(file: File) {
     setUploading(true)
@@ -139,9 +141,7 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
         <Form.Item name="maxMembers" label="Giới hạn thành viên (0 = không giới hạn)">
           <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
         </Form.Item>
-        <Form.Item name="index" label="Thứ tự sắp xếp (nhỏ hơn hiển thị trước)">
-          <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
-        </Form.Item>
+        <PositionField name="index" />
         <Form.Item name="vipRequired" label="Yêu cầu VIP" valuePropName="checked">
           <Switch />
         </Form.Item>

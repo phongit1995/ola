@@ -228,3 +228,24 @@ func (ctrl *Controller) ListTransfers(c *gin.Context) (interface{}, error) {
 	}
 	return resp, nil
 }
+
+// ReorderShopItems godoc
+// @Summary      Lưu thứ tự toàn bộ khung trong cửa hàng (admin), gán lại thành 1..N
+// @Tags         admin-avatar-frame
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body utils.ReorderRequest true "Toàn bộ id theo thứ tự mới"
+// @Success      200  {object}  map[string]string
+// @Failure      409  {object}  utils.APIError
+// @Router       /admin/avatar-frames/shop/order [put]
+func (ctrl *Controller) ReorderShopItems(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[utils.ReorderRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.ReorderShopItems(req.IDs); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"message": "order updated"}, nil
+}

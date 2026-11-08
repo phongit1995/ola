@@ -7,7 +7,6 @@ import {
   Card,
   Space,
   Switch,
-  Table,
   Tabs,
   Tag,
   Typography,
@@ -20,7 +19,14 @@ import {
   PlayCircleOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
-import { useDeleteMiniGame, useMiniGames, useUpdateMiniGame } from './useMiniGameQueries'
+import {
+  useDeleteMiniGame,
+  useMiniGameOrder,
+  useMiniGames,
+  useUpdateMiniGame,
+} from './useMiniGameQueries'
+import { MoveToTopButton, RenumberButton } from '@/components/ListOrderButtons'
+import { SortableTable } from '@/components/SortableTable'
 import { errorMessage } from '@/lib/apiError'
 import { MiniGameFormModal } from './MiniGameFormModal'
 import { GameMatchesPage } from './GameMatchesPage'
@@ -36,6 +42,8 @@ function MiniGameListTab() {
   const [editing, setEditing] = useState<MiniGame | null>(null)
 
   const { data, isFetching } = useMiniGames()
+  const games = data ?? []
+  const order = useMiniGameOrder(games)
   const updateGame = useUpdateMiniGame()
   const deleteGame = useDeleteMiniGame()
 
@@ -147,9 +155,14 @@ function MiniGameListTab() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 160,
+      width: 200,
       render: (_, game) => (
         <Space>
+          <MoveToTopButton
+            name={game.name}
+            disabled={order.isFirst(game) || order.saving}
+            onClick={() => order.moveToTop(game)}
+          />
           <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(game)}>
             Sửa
           </Button>
@@ -168,19 +181,29 @@ function MiniGameListTab() {
           justifyContent: 'flex-end',
         }}
       >
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          Tạo mini game
-        </Button>
+        <Space>
+          <RenumberButton disabled={order.numbered || order.saving} onClick={order.renumber} />
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            Tạo mini game
+          </Button>
+        </Space>
       </div>
-      <Table<MiniGame>
-        rowKey="id"
+      <SortableTable<MiniGame>
+        items={games}
         columns={columns}
-        dataSource={data?.items ?? []}
         loading={isFetching}
-        scroll={{ x: 900 }}
+        scroll={{ x: 990 }}
         pagination={false}
+        footer={() => `${games.length} game. Kéo biểu tượng đầu dòng để đổi thứ tự.`}
+        reorderDisabled={order.saving}
+        onReorder={order.save}
       />
-      <MiniGameFormModal open={formOpen} game={editing} onClose={() => setFormOpen(false)} />
+      <MiniGameFormModal
+        open={formOpen}
+        game={editing}
+        nextPosition={order.nextPosition}
+        onClose={() => setFormOpen(false)}
+      />
     </>
   )
 }

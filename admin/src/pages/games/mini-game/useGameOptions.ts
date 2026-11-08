@@ -8,7 +8,7 @@ export function useGameOptions() {
 
   const gameNames = useMemo(() => {
     const names: Record<string, string> = {}
-    for (const game of games?.items ?? []) {
+    for (const game of games ?? []) {
       names[game.slug] = game.name
     }
     return names
@@ -17,7 +17,7 @@ export function useGameOptions() {
   const gameOptions = useMemo(() => {
     const slugs = new Set([
       ...Object.keys(GAME_ID_LABEL),
-      ...(games?.items ?? []).map((game) => game.slug),
+      ...(games ?? []).map((game) => game.slug),
     ])
     return [...slugs].map((slug) => ({ value: slug, label: gameLabel(slug, gameNames) }))
   }, [games, gameNames])

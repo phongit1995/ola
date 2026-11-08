@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -261,6 +262,65 @@ func (r *Repository) AreFriends(a, b uuid.UUID) (bool, error) {
 	return count > 0, err
 }
 
+var (
+	packageOrder = utils.OrderedList{
+		Model:    &models.VipPackage{},
+		Table:    "vip_packages",
+		Column:   "sort_order",
+		OrderSQL: "sort_order ASC, created_at ASC",
+	}
+	shopItemOrder = utils.OrderedList{
+		Model:    &models.VipShopItem{},
+		Table:    "vip_shop_items",
+		Column:   "sort_order",
+		OrderSQL: "sort_order ASC, created_at ASC",
+	}
+)
+
+func (r *Repository) ReorderPackages(ids []uuid.UUID) error {
+	return packageOrder.Reorder(r.db, ids)
+}
+
+func (r *Repository) CreatePackageAt(pkg *models.VipPackage, position int) error {
+	placed, err := packageOrder.PlaceOne(r.db, position, &pkg.ID, func(tx *gorm.DB) error {
+		return tx.Create(pkg).Error
+	})
+	if err != nil {
+		return err
+	}
+	pkg.SortOrder = placed
+	return nil
+}
+
+func (r *Repository) UpdatePackageAt(id uuid.UUID, fields map[string]interface{}, position int) error {
+	_, err := packageOrder.PlaceOne(r.db, position, &id, func(tx *gorm.DB) error {
+		return tx.Model(&models.VipPackage{}).Where("id = ?", id).Updates(fields).Error
+	})
+	return err
+}
+
+func (r *Repository) ReorderShopItems(ids []uuid.UUID) error {
+	return shopItemOrder.Reorder(r.db, ids)
+}
+
+func (r *Repository) CreateShopItemAt(item *models.VipShopItem, position int) error {
+	placed, err := shopItemOrder.PlaceOne(r.db, position, &item.ID, func(tx *gorm.DB) error {
+		return tx.Create(item).Error
+	})
+	if err != nil {
+		return err
+	}
+	item.SortOrder = placed
+	return nil
+}
+
+func (r *Repository) UpdateShopItemAt(id uuid.UUID, fields map[string]interface{}, position int) error {
+	_, err := shopItemOrder.PlaceOne(r.db, position, &id, func(tx *gorm.DB) error {
+		return tx.Model(&models.VipShopItem{}).Where("id = ?", id).Updates(fields).Error
+	})
+	return err
+}
+
 func (r *Repository) ListActivePackages() ([]models.VipPackage, error) {
 	var pkgs []models.VipPackage
 	err := r.db.
@@ -298,10 +358,6 @@ func (r *Repository) FindActivePackage(id uuid.UUID) (*models.VipPackage, error)
 		return nil, err
 	}
 	return &pkg, nil
-}
-
-func (r *Repository) CreatePackage(pkg *models.VipPackage) error {
-	return r.db.Create(pkg).Error
 }
 
 func (r *Repository) UpdatePackage(id uuid.UUID, fields map[string]interface{}) error {
@@ -363,10 +419,6 @@ func (r *Repository) ShopTypeExists(vipTypeID int16) (bool, error) {
 	var count int64
 	err := r.db.Model(&models.VipShopItem{}).Where("vip_type_id = ?", vipTypeID).Count(&count).Error
 	return count > 0, err
-}
-
-func (r *Repository) CreateShopItem(item *models.VipShopItem) error {
-	return r.db.Create(item).Error
 }
 
 func (r *Repository) UpdateShopItem(id uuid.UUID, fields map[string]interface{}) error {

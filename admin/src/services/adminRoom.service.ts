@@ -36,6 +36,11 @@ export const AdminRoomService = {
     return data.data
   },
 
+  async reorder(ids: string[]): Promise<MessageResult> {
+    const { data } = await http.put<ApiResponse<MessageResult>>('/admin/rooms/order', { ids })
+    return data.data
+  },
+
   async messages(
     id: string,
     params: { limit?: number; before?: string } = {},

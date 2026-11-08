@@ -5,10 +5,18 @@ import (
 
 	"ola-chat-server/internal/models"
 	admincommon "ola-chat-server/internal/modules/admin/common"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+var giftOrder = utils.OrderedList{
+	Model:    &models.Gift{},
+	Table:    "gifts",
+	Column:   "sort_order",
+	OrderSQL: "sort_order ASC, ken_price ASC, created_at ASC",
+}
 
 type Repository struct {
 	db *gorm.DB
@@ -16,6 +24,24 @@ type Repository struct {
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
+}
+
+func (r *Repository) ReorderGifts(ids []uuid.UUID) error {
+	return giftOrder.Reorder(r.db, ids)
+}
+
+func (r *Repository) SaveGiftAtPosition(item *models.Gift, position int, isNew bool) error {
+	placed, err := giftOrder.PlaceOne(r.db, position, &item.ID, func(tx *gorm.DB) error {
+		if isNew {
+			return tx.Create(item).Error
+		}
+		return tx.Save(item).Error
+	})
+	if err != nil {
+		return err
+	}
+	item.SortOrder = placed
+	return nil
 }
 
 type TransactionFilter struct {

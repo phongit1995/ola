@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Switch, Upload } from 'antd'
+import { App, Button, Form, Image, Input, Modal, Space, Switch, Upload } from 'antd'
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { useCreateMiniGame, useUpdateMiniGame } from './useMiniGameQueries'
+import { PositionField } from '@/components/PositionField'
 import { AdminUploadService } from '@/services/adminUpload.service'
 import { errorMessage } from '@/lib/apiError'
 import type { CreateMiniGameRequest, MiniGame } from '@/types'
@@ -9,10 +10,11 @@ import type { CreateMiniGameRequest, MiniGame } from '@/types'
 interface MiniGameFormModalProps {
   open: boolean
   game: MiniGame | null
+  nextPosition: number
   onClose: () => void
 }
 
-export function MiniGameFormModal({ open, game, onClose }: MiniGameFormModalProps) {
+export function MiniGameFormModal({ open, game, nextPosition, onClose }: MiniGameFormModalProps) {
   const { message } = App.useApp()
   const [form] = Form.useForm<CreateMiniGameRequest>()
   const createGame = useCreateMiniGame()
@@ -29,11 +31,11 @@ export function MiniGameFormModal({ open, game, onClose }: MiniGameFormModalProp
         description: game?.description ?? '',
         iconUrl: game?.iconUrl ?? '',
         gameUrl: game?.gameUrl ?? '',
-        sortOrder: game?.sortOrder ?? 0,
+        sortOrder: game?.sortOrder ?? nextPosition,
         isEnabled: game?.isEnabled ?? true,
       })
     }
-  }, [open, game, form])
+  }, [open, game, nextPosition, form])
 
   async function handleUpload(file: File) {
     setUploading(true)
@@ -163,9 +165,7 @@ export function MiniGameFormModal({ open, game, onClose }: MiniGameFormModalProp
         >
           <Input placeholder="https://game-dev.olachat.net/caro/" />
         </Form.Item>
-        <Form.Item name="sortOrder" label="Thứ tự sắp xếp (nhỏ hơn hiển thị trước)">
-          <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
-        </Form.Item>
+        <PositionField />
         <Form.Item name="isEnabled" label="Đang bật" valuePropName="checked">
           <Switch />
         </Form.Item>

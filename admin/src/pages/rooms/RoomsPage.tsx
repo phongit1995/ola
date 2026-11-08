@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   App,
   Avatar,
@@ -7,7 +7,6 @@ import {
   Input,
   Space,
   Switch,
-  Table,
   Tag,
   Typography,
   type TableColumnsType,
@@ -20,21 +19,19 @@ import {
   MessageOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useDeleteRoom, useRooms, useUpdateRoom } from './useRoomQueries'
+import { useDeleteRoom, useRoomOrder, useRooms, useUpdateRoom } from './useRoomQueries'
+import { MoveToTopButton, RenumberButton } from '@/components/ListOrderButtons'
+import { SortableTable } from '@/components/SortableTable'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { RoomFormModal } from './RoomFormModal'
 import { RoomMessagesModal } from './RoomMessagesModal'
 import { RoomImagePurgeModal } from './RoomImagePurgeModal'
 import type { Room } from '@/types'
-import { PAGE_SIZE } from '@/lib/constants'
 
 export function RoomsPage() {
   const { message, modal } = App.useApp()
   const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const q = useDebounce(search.trim())
 
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Room | null>(null)
@@ -42,11 +39,14 @@ export function RoomsPage() {
   const [msgRoom, setMsgRoom] = useState<Room | null>(null)
   const [purgeOpen, setPurgeOpen] = useState(false)
 
-  const { data, isFetching } = useRooms({
-    q: q || undefined,
-    limit: PAGE_SIZE,
-    offset: (page - 1) * PAGE_SIZE,
-  })
+  const { data, isFetching } = useRooms()
+  const rooms = useMemo(() => data ?? [], [data])
+  const order = useRoomOrder(rooms)
+  const query = search.trim().toLowerCase()
+  const visibleRooms = useMemo(
+    () => (query ? rooms.filter((room) => room.name.toLowerCase().includes(query)) : rooms),
+    [rooms, query],
+  )
   const updateRoom = useUpdateRoom()
   const deleteRoom = useDeleteRoom()
 
@@ -168,9 +168,14 @@ export function RoomsPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 240,
+      width: 280,
       render: (_, room) => (
         <Space>
+          <MoveToTopButton
+            name={room.name}
+            disabled={order.isFirst(room) || order.saving}
+            onClick={() => order.moveToTop(room)}
+          />
           <Button
             size="small"
             icon={<MessageOutlined />}
@@ -207,13 +212,11 @@ export function RoomsPage() {
           allowClear
           placeholder="Tìm theo tên phòng..."
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value)
-            setPage(1)
-          }}
+          onChange={(e) => setSearch(e.target.value)}
           style={{ maxWidth: 360 }}
         />
         <Space wrap>
+          <RenumberButton disabled={order.numbered || order.saving} onClick={order.renumber} />
           <Button icon={<ClearOutlined />} onClick={() => setPurgeOpen(true)}>
             Xoá ảnh cũ
           </Button>
@@ -222,21 +225,26 @@ export function RoomsPage() {
           </Button>
         </Space>
       </div>
-      <Table<Room>
-        rowKey="id"
+      <SortableTable<Room>
+        items={visibleRooms}
         columns={columns}
-        dataSource={data?.items ?? []}
         loading={isFetching}
-        scroll={{ x: 1010 }}
-        pagination={{
-          current: page,
-          pageSize: PAGE_SIZE,
-          total: data?.total ?? 0,
-          showTotal: (total) => `${total} phòng`,
-          onChange: setPage,
-        }}
+        scroll={{ x: 1100 }}
+        pagination={false}
+        footer={() =>
+          query
+            ? `${visibleRooms.length} phòng. Xoá ô tìm kiếm để kéo đổi thứ tự.`
+            : `${rooms.length} phòng. Kéo biểu tượng đầu dòng để đổi thứ tự.`
+        }
+        reorderDisabled={order.saving || query !== ''}
+        onReorder={order.save}
       />
-      <RoomFormModal open={formOpen} room={editing} onClose={() => setFormOpen(false)} />
+      <RoomFormModal
+        open={formOpen}
+        room={editing}
+        nextPosition={order.nextPosition}
+        onClose={() => setFormOpen(false)}
+      />
       <RoomMessagesModal
         roomId={msgRoom?.id ?? null}
         roomName={msgRoom?.name}

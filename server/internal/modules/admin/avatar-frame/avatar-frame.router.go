@@ -19,6 +19,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	{
 		frames.GET("/shop", r.controller.ListShopItems)
 		frames.POST("/shop", r.controller.CreateShopItems)
+		frames.PUT("/shop/order", r.controller.ReorderShopItems)
 		frames.PATCH("/shop/:id", r.controller.UpdateShopItem)
 		frames.DELETE("/shop/:id", r.controller.DeleteShopItem)
 		frames.GET("/purchases", r.controller.ListPurchases)

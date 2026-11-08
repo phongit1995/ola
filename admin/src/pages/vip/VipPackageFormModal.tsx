@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { App, Form, Input, InputNumber, Modal, Switch } from 'antd'
+import { PositionField } from '@/components/PositionField'
 import { useCreateVipPackage, useUpdateVipPackage } from './useVipPackageQueries'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
@@ -8,10 +9,11 @@ import type { CreateVipPackageRequest, VipPackage } from '@/types'
 interface VipPackageFormModalProps {
   open: boolean
   pkg: VipPackage | null
+  nextPosition: number
   onClose: () => void
 }
 
-export function VipPackageFormModal({ open, pkg, onClose }: VipPackageFormModalProps) {
+export function VipPackageFormModal({ open, pkg, nextPosition, onClose }: VipPackageFormModalProps) {
   const { message } = App.useApp()
   const [form] = Form.useForm<CreateVipPackageRequest>()
   const createPackage = useCreateVipPackage()
@@ -24,11 +26,11 @@ export function VipPackageFormModal({ open, pkg, onClose }: VipPackageFormModalP
         name: pkg?.name ?? '',
         days: pkg?.days ?? undefined,
         kenPrice: pkg?.kenPrice ?? undefined,
-        sortOrder: pkg?.sortOrder ?? 0,
+        sortOrder: pkg?.sortOrder ?? nextPosition,
         isActive: pkg?.isActive ?? true,
       })
     }
-  }, [open, pkg, form])
+  }, [open, pkg, nextPosition, form])
 
   async function onOk() {
     const values = await form.validateFields()
@@ -82,9 +84,7 @@ export function VipPackageFormModal({ open, pkg, onClose }: VipPackageFormModalP
         >
           <InputNumber min={0} style={{ width: '100%' }} placeholder="250" {...kenNumberInputProps} />
         </Form.Item>
-        <Form.Item name="sortOrder" label="Thứ tự sắp xếp (nhỏ hơn hiển thị trước)">
-          <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
-        </Form.Item>
+        <PositionField />
         <Form.Item name="isActive" label="Đang bật" valuePropName="checked">
           <Switch />
         </Form.Item>

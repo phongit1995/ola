@@ -5,31 +5,33 @@ import {
   Card,
   Space,
   Switch,
-  Table,
   Tag,
   Typography,
   type TableColumnsType,
 } from 'antd'
 import { CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
-import { useDeleteVipPackage, useUpdateVipPackage, useVipPackages } from './useVipPackageQueries'
+import {
+  useDeleteVipPackage,
+  useUpdateVipPackage,
+  useVipPackageOrder,
+  useVipPackages,
+} from './useVipPackageQueries'
+import { MoveToTopButton, RenumberButton } from '@/components/ListOrderButtons'
+import { SortableTable } from '@/components/SortableTable'
 import { errorMessage } from '@/lib/apiError'
 import { VipPackageFormModal } from './VipPackageFormModal'
 import type { VipPackage } from '@/types'
-import { PACKAGE_PAGE_SIZE } from './constants'
 import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
 import { VIP_SECTION_LINKS } from '@/pages/shop/sections'
 
 export function VipPackagesPage() {
   const { message, modal } = App.useApp()
-  const [page, setPage] = useState(1)
-
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<VipPackage | null>(null)
 
-  const { data, isFetching } = useVipPackages({
-    limit: PACKAGE_PAGE_SIZE,
-    offset: (page - 1) * PACKAGE_PAGE_SIZE,
-  })
+  const { data, isFetching } = useVipPackages()
+  const packages = data ?? []
+  const order = useVipPackageOrder(packages)
   const updatePackage = useUpdateVipPackage()
   const deletePackage = useDeleteVipPackage()
 
@@ -128,9 +130,14 @@ export function VipPackagesPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 160,
+      width: 200,
       render: (_, pkg) => (
         <Space>
+          <MoveToTopButton
+            name={pkg.name}
+            disabled={order.isFirst(pkg) || order.saving}
+            onClick={() => order.moveToTop(pkg)}
+          />
           <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(pkg)}>
             Sửa
           </Button>
@@ -154,25 +161,29 @@ export function VipPackagesPage() {
           justifyContent: 'flex-end',
         }}
       >
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          Tạo gói VIP
-        </Button>
+        <Space>
+          <RenumberButton disabled={order.numbered || order.saving} onClick={order.renumber} />
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            Tạo gói VIP
+          </Button>
+        </Space>
       </div>
-      <Table<VipPackage>
-        rowKey="id"
+      <SortableTable<VipPackage>
+        items={packages}
         columns={columns}
-        dataSource={data?.items ?? []}
         loading={isFetching}
-        scroll={{ x: 720 }}
-        pagination={{
-          current: page,
-          pageSize: PACKAGE_PAGE_SIZE,
-          total: data?.total ?? 0,
-          showTotal: (total) => `${total} gói`,
-          onChange: setPage,
-        }}
+        scroll={{ x: 810 }}
+        pagination={false}
+        footer={() => `${packages.length} gói. Kéo biểu tượng đầu dòng để đổi thứ tự.`}
+        reorderDisabled={order.saving}
+        onReorder={order.save}
       />
-      <VipPackageFormModal open={formOpen} pkg={editing} onClose={() => setFormOpen(false)} />
+      <VipPackageFormModal
+        open={formOpen}
+        pkg={editing}
+        nextPosition={order.nextPosition}
+        onClose={() => setFormOpen(false)}
+      />
     </Card>
   )
 }
