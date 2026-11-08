@@ -16,10 +16,12 @@ import (
 
 type MessageHandler func(ctx context.Context, message []byte) error
 
+type dlqPublisher func(ctx context.Context, originalTopic string, key string, payload []byte, reason string) error
+
 type Consumer struct {
 	logger         *zap.SugaredLogger
 	cfg            *config.Config
-	producer       *Producer
+	publishDLQ     dlqPublisher
 	handlers       map[string]MessageHandler
 	ctx            context.Context
 	cancel         context.CancelFunc
@@ -45,7 +47,7 @@ func NewConsumer(cfg *config.Config, logger *zap.SugaredLogger, producer *Produc
 	return &Consumer{
 		logger:         logger.Named("[kafka_consumer]"),
 		cfg:            cfg,
-		producer:       producer,
+		publishDLQ:     producer.PublishToDLQ,
 		handlers:       make(map[string]MessageHandler),
 		ctx:            ctx,
 		cancel:         cancel,
@@ -257,26 +259,19 @@ type commitRequest struct {
 }
 
 func (c *Consumer) commitLoop(ctx context.Context, gen *kafka.Generation, commits <-chan commitRequest) {
-	pending := make(map[string]map[int]int64)
+	state := newCommitState()
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
 	flush := func() {
-		if len(pending) == 0 {
+		if !state.hasPending() {
 			return
 		}
-		offsets := make(map[string]map[int]int64, len(pending))
-		for t, parts := range pending {
-			offsets[t] = make(map[int]int64, len(parts))
-			for p, o := range parts {
-				offsets[t][p] = o
-			}
-		}
-		if err := gen.CommitOffsets(offsets); err != nil {
+		if err := gen.CommitOffsets(state.pending); err != nil {
 			c.logger.Errorw("Failed to commit offsets", "error", err)
 			return
 		}
-		pending = make(map[string]map[int]int64)
+		state.markCommitted()
 	}
 
 	for {
@@ -289,12 +284,7 @@ func (c *Consumer) commitLoop(ctx context.Context, gen *kafka.Generation, commit
 				flush()
 				return
 			}
-			if pending[req.topic] == nil {
-				pending[req.topic] = make(map[int]int64)
-			}
-			if existing, has := pending[req.topic][req.partition]; !has || req.offset > existing {
-				pending[req.topic][req.partition] = req.offset
-			}
+			state.add(req)
 		case <-ticker.C:
 			flush()
 		}
@@ -362,15 +352,36 @@ func (c *Consumer) processMessage(handler MessageHandler, msg kafka.Message, wor
 		"error", lastErr,
 	)
 
-	dlqCtx, dlqCancel := context.WithTimeout(c.ctx, 5*time.Second)
-	dlqErr := c.producer.PublishToDLQ(dlqCtx, msg.Topic, string(msg.Key), msg.Value, lastErr.Error())
-	dlqCancel()
+	return c.publishToDLQUntilDone(msg, lastErr)
+}
 
-	if dlqErr != nil {
-		c.logger.Errorw("Failed to publish to DLQ", "topic", msg.Topic, "error", dlqErr)
-		return false
+func (c *Consumer) publishToDLQUntilDone(msg kafka.Message, reason error) bool {
+	const (
+		publishTimeout = 5 * time.Second
+		maxBackoff     = 30 * time.Second
+	)
+	backoff := time.Second
+
+	for {
+		ctx, cancel := context.WithTimeout(c.ctx, publishTimeout)
+		err := c.publishDLQ(ctx, msg.Topic, string(msg.Key), msg.Value, reason.Error())
+		cancel()
+		if err == nil {
+			return true
+		}
+
+		c.logger.Errorw("Failed to publish to DLQ, retrying",
+			"topic", msg.Topic,
+			"partition", msg.Partition,
+			"offset", msg.Offset,
+			"error", err,
+			"backoff", backoff.String(),
+		)
+		if !c.sleep(backoff) {
+			return false
+		}
+		backoff = nextBackoff(backoff, maxBackoff)
 	}
-	return true
 }
 
 func (c *Consumer) sleep(d time.Duration) bool {

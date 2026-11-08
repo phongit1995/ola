@@ -116,3 +116,69 @@ func TestProcessMessageDuringShutdownIsNotAcknowledged(t *testing.T) {
 		t.Fatal("a message interrupted by shutdown must stay uncommitted")
 	}
 }
+
+func TestProcessMessageRetriesDLQUntilPublished(t *testing.T) {
+	c := testConsumer(context.Background())
+	attempts := 0
+	c.publishDLQ = func(context.Context, string, string, []byte, string) error {
+		attempts++
+		if attempts < 2 {
+			return errors.New("broker unavailable")
+		}
+		return nil
+	}
+	finished := c.processMessage(func(context.Context, []byte) error { return errors.New("failed") }, kafkago.Message{}, 0)
+	if !finished || attempts != 2 {
+		t.Fatalf("finished = %v, attempts = %d, want true, 2", finished, attempts)
+	}
+}
+
+func TestProcessMessageStopsRetryingDLQOnShutdown(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := testConsumer(ctx)
+	c.publishDLQ = func(context.Context, string, string, []byte, string) error {
+		cancel()
+		return errors.New("broker unavailable")
+	}
+	finished := c.processMessage(func(context.Context, []byte) error { return errors.New("failed") }, kafkago.Message{}, 0)
+	if finished {
+		t.Fatal("a message that never reached the DLQ must stay uncommitted")
+	}
+}
+
+func TestCommitStateIgnoresLowerOffsetAfterFlush(t *testing.T) {
+	state := newCommitState()
+	state.add(commitRequest{topic: "t", partition: 0, offset: 7})
+	state.markCommitted()
+
+	state.add(commitRequest{topic: "t", partition: 0, offset: 6})
+	if state.hasPending() {
+		t.Fatalf("offset 6 must not be committed after 7, pending = %v", state.pending)
+	}
+
+	state.add(commitRequest{topic: "t", partition: 0, offset: 8})
+	if got := state.pending["t"][0]; got != 8 {
+		t.Fatalf("pending = %d, want 8", got)
+	}
+}
+
+func TestCommitStateKeepsHighestPendingOffset(t *testing.T) {
+	state := newCommitState()
+	state.add(commitRequest{topic: "t", partition: 1, offset: 9})
+	state.add(commitRequest{topic: "t", partition: 1, offset: 5})
+	if got := state.pending["t"][1]; got != 9 {
+		t.Fatalf("pending = %d, want 9", got)
+	}
+}
+
+func TestCommitStateTracksPartitionsSeparately(t *testing.T) {
+	state := newCommitState()
+	state.add(commitRequest{topic: "t", partition: 0, offset: 50})
+	state.markCommitted()
+
+	state.add(commitRequest{topic: "t", partition: 1, offset: 3})
+	if got := state.pending["t"][1]; got != 3 {
+		t.Fatalf("pending = %d, want 3", got)
+	}
+}

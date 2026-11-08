@@ -37,3 +37,43 @@ func (t *offsetTracker) finish(offset int64) (int64, bool) {
 	}
 	return next, advanced
 }
+
+type commitState struct {
+	pending   map[string]map[int]int64
+	committed map[string]map[int]int64
+}
+
+func newCommitState() *commitState {
+	return &commitState{
+		pending:   make(map[string]map[int]int64),
+		committed: make(map[string]map[int]int64),
+	}
+}
+
+func (s *commitState) add(req commitRequest) {
+	if last, has := s.committed[req.topic][req.partition]; has && req.offset <= last {
+		return
+	}
+	if s.pending[req.topic] == nil {
+		s.pending[req.topic] = make(map[int]int64)
+	}
+	if existing, has := s.pending[req.topic][req.partition]; !has || req.offset > existing {
+		s.pending[req.topic][req.partition] = req.offset
+	}
+}
+
+func (s *commitState) hasPending() bool {
+	return len(s.pending) > 0
+}
+
+func (s *commitState) markCommitted() {
+	for topic, partitions := range s.pending {
+		if s.committed[topic] == nil {
+			s.committed[topic] = make(map[int]int64, len(partitions))
+		}
+		for partition, offset := range partitions {
+			s.committed[topic][partition] = offset
+		}
+	}
+	s.pending = make(map[string]map[int]int64)
+}
