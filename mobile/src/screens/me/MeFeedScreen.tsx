@@ -31,6 +31,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { MeFeedHeader } from './components/MeFeedHeader';
 import { MomentTray } from '@screens/moment/components/MomentTray';
+import { MeAnnouncementCard } from './components/MeAnnouncementCard';
 import { useMomentOverlays } from '@screens/moment/useMomentOverlays';
 import { useMomentTraySync } from '@screens/moment/useMomentTraySync';
 import { useMomentEnabled } from '@ola/shared/stores/moment/momentConfigStore';
@@ -136,6 +137,12 @@ export function MeFeedScreen() {
   const comingSoon = () => pushToast('info', t('me.comingSoon'));
   const momentTray =
     momentEnabled && tab !== 'clan' ? <MomentTray onOpenViewer={moment.openViewer} onAddMoment={moment.openComposer} /> : null;
+  const feedHeader = (
+    <>
+      {momentTray ?? <View className="h-2" />}
+      {tab === 'community' && <MeAnnouncementCard />}
+    </>
+  );
 
   function refreshAll() {
     void refreshFeed(TAB_FILTER[tab]);
@@ -215,14 +222,14 @@ export function MeFeedScreen() {
       >
         {loading && posts.length === 0 ? (
           <View className="flex-1">
-            {momentTray}
+            {feedHeader}
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator color={colors.primary} size="large" />
             </View>
           </View>
         ) : error && posts.length === 0 ? (
           <View className="flex-1">
-            {momentTray}
+            {feedHeader}
             <View className="flex-1 items-center justify-center px-8">
               <Text className="text-center text-sm" style={{ color: '#e34545' }}>
                 {t('common.error')}
@@ -231,7 +238,7 @@ export function MeFeedScreen() {
           </View>
         ) : visiblePosts.length === 0 ? (
           <View className="flex-1">
-            {momentTray}
+            {feedHeader}
             <View className="flex-1 items-center justify-center px-8">
               <Text className="text-center text-sm text-ola-ink-soft">
                 {t('me.empty')}
@@ -243,7 +250,7 @@ export function MeFeedScreen() {
             data={visiblePosts}
             keyExtractor={(item) => item.id}
             contentContainerClassName="pb-2"
-            ListHeaderComponent={momentTray ?? <View className="h-2" />}
+            ListHeaderComponent={feedHeader}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshAll} />}
             onEndReached={() => void loadMore(TAB_FILTER[tab])}
             onEndReachedThreshold={0.4}

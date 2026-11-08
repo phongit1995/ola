@@ -1911,7 +1911,10 @@
   "announcement": {
     "detailTitle": "Announcement",
     "openLink": "Learn more",
-    "dismiss": "Dismiss this announcement"
+    "dismiss": "Dismiss this announcement",
+    "feedAuthor": "System",
+    "feedBadge": "Announcement",
+    "feedOpenLink": "View details"
   },
   "notify": {
     "title": "Notifications",

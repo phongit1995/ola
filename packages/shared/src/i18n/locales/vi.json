@@ -1911,7 +1911,10 @@
   "announcement": {
     "detailTitle": "Thông báo",
     "openLink": "Xem thêm",
-    "dismiss": "Ẩn thông báo này"
+    "dismiss": "Ẩn thông báo này",
+    "feedAuthor": "Hệ Thống",
+    "feedBadge": "Thông báo",
+    "feedOpenLink": "Xem chi tiết"
   },
   "notify": {
     "title": "Thông báo",

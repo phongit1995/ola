@@ -7,6 +7,7 @@ import menuIcon from '@/assets/icons/me/header/ic_header_menu.png';
 import { useAuthStore } from '@/store/authStore';
 import { useHorizontalSwipe } from './useHorizontalSwipe';
 import { PullToRefresh } from '@components';
+import { MeAnnouncementCard } from './components/MeAnnouncementCard';
 import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
 import { MeLeftDrawer } from './components/MeLeftDrawer';
@@ -172,6 +173,7 @@ export function MePanel() {
               className="absolute inset-0 overflow-y-auto bg-ola-surface"
             >
               {momentEnabled && tab !== 'clan' && <MomentTray />}
+              {tab === 'community' && <MeAnnouncementCard />}
               <MeFeedList
                 posts={posts}
                 loading={loading}
