@@ -31,6 +31,7 @@ type cachedUser struct {
 	Ken             int                    `json:"ken"`
 	VipUsed         *string                `json:"vipUsed"`
 	VipEndTime      *time.Time             `json:"vipEndTime"`
+	AvatarFrameID   *string                `json:"avatarFrameId"`
 	FollowerCount   int                    `json:"followerCount"`
 	FollowingCount  int                    `json:"followingCount"`
 	CreatedAt       time.Time              `json:"createdAt"`
@@ -55,6 +56,7 @@ func toCachedUser(u *models.User) *cachedUser {
 		Ken:             u.Ken,
 		VipUsed:         u.VipUsed,
 		VipEndTime:      u.VipEndTime,
+		AvatarFrameID:   u.AvatarFrameID,
 		FollowerCount:   u.FollowerCount,
 		FollowingCount:  u.FollowingCount,
 		CreatedAt:       u.CreatedAt,
@@ -79,6 +81,7 @@ func (cu *cachedUser) toModel() *models.User {
 		Ken:             cu.Ken,
 		VipUsed:         cu.VipUsed,
 		VipEndTime:      cu.VipEndTime,
+		AvatarFrameID:   cu.AvatarFrameID,
 		FollowerCount:   cu.FollowerCount,
 		FollowingCount:  cu.FollowingCount,
 	}

@@ -9,6 +9,7 @@ import (
 	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/announcement"
 	"ola-chat-server/internal/modules/auth"
+	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	"ola-chat-server/internal/modules/call"
 	chatbot "ola-chat-server/internal/modules/chat-bot"
 	"ola-chat-server/internal/modules/clan"
@@ -96,6 +97,7 @@ func NewContainer(opts ...dig.Option) (*dig.Container, error) {
 		me.Provider,
 		clan.Provider,
 		vip.Provider,
+		avatarframe.Provider,
 		ken.Provider,
 		egg.Provider,
 		wheel.Provider,

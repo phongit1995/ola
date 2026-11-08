@@ -53,6 +53,7 @@ export interface UserProfile {
   isSelf: boolean;
   canViewVipStore: boolean;
   canViewGiftWall: boolean;
+  canViewAvatarFrameStore: boolean;
 }
 
 export interface ProfileSecondary {

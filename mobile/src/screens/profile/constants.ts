@@ -18,6 +18,10 @@ export const FOLLOW_PAGE_SIZE = 10;
 
 export const PEER_VIP_PAGE_SIZE = 100;
 
+export const AVATAR_FRAME_STORE_ICON_ID = '001';
+
+export const PEER_FRAME_AVATAR_SIZE = 52;
+
 export const POSTS_PAGE_SIZE = 30;
 
 export const POSTS_END_DISTANCE_PX = 600;

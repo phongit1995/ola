@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { MOMENT_TYPE } from '@ola/shared/constants';
 import { colorForName, momentPreviewMedia } from '@ola/shared/lib';
 import type { Moment } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { MOMENT_TRAY_CARD_HEIGHT, MOMENT_TRAY_CARD_WIDTH } from '../constants';
 import { MomentCanvas } from './MomentCanvas';
@@ -76,11 +76,12 @@ export function MomentTrayCard({ moment, label, ringed, onPress }: MomentTrayCar
         style={[styles.ring, { backgroundColor: ringed ? colors.primary : 'rgba(255,255,255,0.8)' }]}
       >
         <View style={styles.ringInner}>
-          <Avatar
+          <AvatarWithFrame
             name={author.username}
             color={colorForName(author.username)}
             uri={author.avatar ?? undefined}
             size={AVATAR_SIZE}
+            frameId={author.avatarFrameId}
           />
         </View>
       </View>

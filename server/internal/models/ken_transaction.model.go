@@ -14,6 +14,7 @@ type KenTxType string
 const (
 	KenTxTypeVipPackage     KenTxType = "VIP_PACKAGE"
 	KenTxTypeVipIcon        KenTxType = "VIP_ICON"
+	KenTxTypeAvatarFrame    KenTxType = "AVATAR_FRAME"
 	KenTxTypeAdminGrant     KenTxType = "ADMIN_GRANT"
 	KenTxTypeAdminDeduct    KenTxType = "ADMIN_DEDUCT"
 	KenTxTypeReward         KenTxType = "REWARD"

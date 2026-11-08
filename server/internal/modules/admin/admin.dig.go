@@ -5,6 +5,7 @@ import (
 	adminannouncement "ola-chat-server/internal/modules/admin/announcement"
 	adminaudit "ola-chat-server/internal/modules/admin/audit"
 	adminauth "ola-chat-server/internal/modules/admin/auth"
+	adminavatarframe "ola-chat-server/internal/modules/admin/avatar-frame"
 	adminclan "ola-chat-server/internal/modules/admin/clan"
 	adminconversation "ola-chat-server/internal/modules/admin/conversation"
 	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
@@ -49,6 +50,7 @@ func Provider(c *dig.Container) error {
 		adminclan.Provider,
 		adminupload.Provider,
 		adminvip.Provider,
+		adminavatarframe.Provider,
 		admingiftcode.Provider,
 		adminegg.Provider,
 		adminwheel.Provider,

@@ -17,6 +17,7 @@ import { playLikeMeSound } from '@lib/sound';
 import { renderRichText } from '@lib/richText';
 import { stickerImageForCode } from '@lib/kul';
 import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CachedImage } from '@components/ui/CachedImage';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { useAppTypography } from '@components/AppFontProvider';
@@ -307,7 +308,12 @@ function MePostCardComponent({
     <View className="mb-2 bg-white" style={{ elevation: 1, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } }}>
       <View className="flex-row items-start gap-4 px-4 pt-4">
         <Pressable onPress={openAuthor} className="min-w-0 flex-1 flex-row items-start gap-4">
-          <Avatar name={author} uri={post.author?.avatar ?? undefined} size={40} />
+          <AvatarWithFrame
+            name={author}
+            uri={post.author?.avatar ?? undefined}
+            size={40}
+            frameId={post.author?.avatarFrameId}
+          />
           <View className="min-w-0 flex-1">
             <View className="flex-row items-center gap-1">
               <UserName

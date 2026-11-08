@@ -6,7 +6,7 @@ import { MeService, RelationshipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { PostAuthor } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { Dialog } from '@components/ui/Dialog';
 import { LIKERS_PAGE_SIZE } from '../constants';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
@@ -133,7 +133,13 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
                       onPress={() => openProfile(item.username)}
                       className="min-w-0 flex-1 flex-row items-center gap-3"
                     >
-                      <Avatar name={item.username} uri={item.avatar ?? undefined} size={44} rounded={false} />
+                      <AvatarWithFrame
+                        name={item.username}
+                        uri={item.avatar ?? undefined}
+                        size={44}
+                        rounded={false}
+                        frameId={item.avatarFrameId}
+                      />
                       <View className="min-w-0 flex-1">
                         <Text numberOfLines={1} className="text-base font-medium text-ola-ink">
                           {title}

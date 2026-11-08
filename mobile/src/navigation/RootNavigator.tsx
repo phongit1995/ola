@@ -52,6 +52,8 @@ import { ProfileViewScreen } from '@screens/profile/ProfileViewScreen';
 import { EditProfileScreen } from '@screens/profile/EditProfileScreen';
 import { VipStoreScreen } from '@screens/vip/VipStoreScreen';
 import { BuyVipScreen } from '@screens/vip/BuyVipScreen';
+import { AvatarFrameShopScreen } from '@screens/avatar-frame/AvatarFrameShopScreen';
+import { AvatarFrameStoreScreen } from '@screens/avatar-frame/AvatarFrameStoreScreen';
 import { KenStoreScreen } from '@screens/ken/KenStoreScreen';
 import { BuyKenScreen } from '@screens/ken/BuyKenScreen';
 import { MediaStoreScreen } from '@screens/media/MediaStoreScreen';
@@ -325,6 +327,8 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.EditProfile} component={EditProfileScreen} />
       <RootStack.Screen name={ROOT_ROUTES.VipStore} component={VipStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.BuyVip} component={BuyVipScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.AvatarFrameShop} component={AvatarFrameShopScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.AvatarFrameStore} component={AvatarFrameStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.KenStore} component={KenStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.BuyKen} component={BuyKenScreen} />
       <RootStack.Screen name={ROOT_ROUTES.MediaStore} component={MediaStoreScreen} />

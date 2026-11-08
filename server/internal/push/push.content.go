@@ -149,6 +149,7 @@ var appNotifBodies = map[string]string{
 	models.AppNotificationGiftReceived:     "Đã tặng bạn một món quà",
 	models.AppNotificationKenReceived:      "Đã chuyển Ken cho bạn",
 	models.AppNotificationVipReceived:      "Đã tặng bạn VIP",
+	models.AppNotificationAvatarFrame:      "Đã tặng bạn khung avatar",
 	models.AppNotificationGiftCode:         "Mã quà tặng",
 }
 

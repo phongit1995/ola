@@ -97,6 +97,7 @@ export function toMePost(
     author,
     fullName: post.author?.fullName ?? '',
     avatar: post.author?.avatar ?? null,
+    avatarFrameId: post.author?.avatarFrameId ?? null,
     color: colorForName(author),
     time: formatTime(post.createdAt),
     createdAt: post.createdAt,

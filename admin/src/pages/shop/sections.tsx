@@ -1,4 +1,5 @@
 import {
+  AppstoreOutlined,
   CrownOutlined,
   SettingOutlined,
   ShoppingCartOutlined,
@@ -34,4 +35,10 @@ export const GIFT_CODE_SECTION_LINKS: ShopSectionLink[] = [
   { path: '/gift-codes', label: 'Đợt mã', icon: <UnorderedListOutlined /> },
   { path: '/gift-codes/attempts', label: 'Nhập lỗi', icon: <WarningOutlined /> },
   { path: '/gift-codes/settings', label: 'Cài đặt', icon: <SettingOutlined /> },
+]
+
+export const AVATAR_FRAME_SECTION_LINKS: ShopSectionLink[] = [
+  { path: '/avatar-frames', label: 'Khung đang bán', icon: <AppstoreOutlined /> },
+  { path: '/avatar-frames/purchases', label: 'Lịch sử mua', icon: <ShoppingCartOutlined /> },
+  { path: '/avatar-frames/transfers', label: 'Lịch sử chuyển', icon: <SwapOutlined /> },
 ]

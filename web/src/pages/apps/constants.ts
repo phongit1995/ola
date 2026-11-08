@@ -21,7 +21,11 @@ import iconMegaphone from '@/assets/images/member-megaphone.webp';
 import iconSocial from '@/assets/icons/social/social-menu-light.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
 import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
+import { AVATAR_FRAME_BASE_URL } from '@ola/shared/constants';
+import { STORE_ICON_FRAME_ID } from '../avatar-frame/constants';
 import type { Venue } from './NearbyPlacesPage';
+
+const avatarFrameMenuIcon = `${AVATAR_FRAME_BASE_URL}/${STORE_ICON_FRAME_ID}.webp`;
 
 export interface AppItem {
   icon: string;
@@ -54,6 +58,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
   },
   { icon: iconPersonal, titleKey: 'home.apps.profile', app: 'profile' },
   { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
+  {
+    icon: avatarFrameMenuIcon,
+    titleKey: 'avatarFrame.storeTitle',
+    app: 'avatarFrameStore',
+  },
   { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
   { icon: iconGift, titleKey: 'home.apps.gifts', app: 'gifts' },
   { icon: iconGiftCode, titleKey: 'giftCode.menuTitle', action: 'gift-code' },

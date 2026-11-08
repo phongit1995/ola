@@ -1,6 +1,11 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog, Avatar, ReportDialog } from '@components';
+import {
+  ConfirmDialog,
+  Avatar,
+  ReportDialog,
+} from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName, renderRichText } from '@lib';
 import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
 import likeIcon from '@/assets/icons/me/ic_like_gray.png';
@@ -85,11 +90,12 @@ function MeCommentItemComponent({
             onClick={() => onOpenProfile?.(name, color)}
             className="shrink-0"
           >
-            <Avatar
+            <AvatarWithFrame
               name={name}
               src={comment.author?.avatar}
               color={color}
               size={36}
+              frameId={comment.author?.avatarFrameId}
             />
           </button>
           <div className="min-w-0 flex-1">

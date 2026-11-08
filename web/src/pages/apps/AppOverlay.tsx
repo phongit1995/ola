@@ -40,6 +40,17 @@ const BuyVipPage = lazy(() =>
   import('../vip/BuyVipPage').then((m) => ({ default: m.BuyVipPage }))
 );
 
+const AvatarFrameShopPage = lazy(() =>
+  import('../avatar-frame/AvatarFrameShopPage').then((m) => ({
+    default: m.AvatarFrameShopPage,
+  }))
+);
+const AvatarFrameStorePage = lazy(() =>
+  import('../avatar-frame/AvatarFrameStorePage').then((m) => ({
+    default: m.AvatarFrameStorePage,
+  }))
+);
+
 function renderEntry(entry: AppOverlayEntry, onClose: () => void) {
   switch (entry.kind) {
     case 'notifications':
@@ -64,6 +75,10 @@ function renderEntry(entry: AppOverlayEntry, onClose: () => void) {
       return <GiftHomePage onClose={onClose} />;
     case 'megaphone':
       return <MegaphonePage onClose={onClose} />;
+    case 'avatarFrameShop':
+      return <AvatarFrameShopPage onClose={onClose} />;
+    case 'avatarFrameStore':
+      return <AvatarFrameStorePage onClose={onClose} />;
     default:
       return null;
   }

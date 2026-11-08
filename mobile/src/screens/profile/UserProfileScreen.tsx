@@ -32,6 +32,7 @@ import { FollowingPreviewCard } from './components/FollowingPreviewCard';
 import { ProfilePostList } from './components/ProfilePostList';
 import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { PeerVipStoreDialog } from './components/PeerVipStoreDialog';
+import { PeerAvatarFrameStoreDialog } from './components/PeerAvatarFrameStoreDialog';
 import { GiftWallSection } from './components/GiftWallSection';
 
 const composeIcon = require('@assets/icons/chat/ic_action_compose_message.png');
@@ -93,6 +94,7 @@ export function UserProfileScreen({
   const [followingOpen, setFollowingOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState(false);
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
+  const [frameStoreOpen, setFrameStoreOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
   const [viewer, setViewer] = useState<ProfileViewerState | null>(null);
   const [giftOpen, setGiftOpen] = useState(false);
@@ -187,6 +189,7 @@ export function UserProfileScreen({
             onKiss={kiss}
             onOpenFollowers={() => setFollowersOpen(true)}
             onOpenVipStore={() => setVipStoreOpen(true)}
+            onOpenAvatarFrameStore={() => setFrameStoreOpen(true)}
             onFriendAction={friendAction}
             onToggleFollow={toggleFollow}
             onUnblock={blockAction}
@@ -308,6 +311,15 @@ export function UserProfileScreen({
           userId={profile.id}
           name={profile.username}
           onClose={() => setVipStoreOpen(false)}
+        />
+      )}
+
+      {frameStoreOpen && profile != null && (
+        <PeerAvatarFrameStoreDialog
+          userId={profile.id}
+          name={profile.username}
+          avatar={profile.avatar ?? undefined}
+          onClose={() => setFrameStoreOpen(false)}
         />
       )}
 

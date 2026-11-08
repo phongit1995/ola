@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { MOMENT_TYPE } from '@constants';
 import { cn, colorForName, momentPreviewMedia } from '@lib';
 import type { Moment } from '@app-types';
@@ -41,11 +41,12 @@ export function MomentTrayCard({
         className={`absolute top-2 left-2 rounded-full p-[2px] ${ringed ? 'bg-ola-primary' : 'bg-white/80'}`}
       >
         <span className="block rounded-full bg-white p-[1.5px]">
-          <Avatar
+          <AvatarWithFrame
             name={author.username}
             color={colorForName(author.username)}
             src={author.avatar ?? undefined}
             size={30}
+            frameId={author.avatarFrameId}
           />
         </span>
       </span>

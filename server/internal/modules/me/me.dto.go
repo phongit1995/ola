@@ -74,12 +74,13 @@ type MeAudioResponse struct {
 }
 
 type AuthorResponse struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-	IsFriend bool   `json:"isFriend,omitempty"`
-	IsSelf   bool   `json:"isSelf,omitempty"`
+	ID            string  `json:"id"`
+	Username      string  `json:"username"`
+	FullName      string  `json:"fullName,omitempty"`
+	Avatar        string  `json:"avatar,omitempty"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty"`
+	IsFriend      bool    `json:"isFriend,omitempty"`
+	IsSelf        bool    `json:"isSelf,omitempty"`
 }
 
 type MeResponse struct {

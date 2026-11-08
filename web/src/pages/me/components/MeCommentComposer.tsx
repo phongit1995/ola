@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import { useAuthStore } from '@/store/authStore';
 import {
-  Avatar,
   ComposerSmileyPanel,
   SmileyInput,
   type SmileyInputHandle,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { useOutsideClick } from '@hooks';
 import { colorForName } from '@lib';
 
@@ -82,11 +82,12 @@ export function MeCommentComposer({
         </div>
       )}
       <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
-        <Avatar
+        <AvatarWithFrame
           name={myName}
           src={me?.avatar}
           color={colorForName(myName)}
           size={36}
+          frameId={me?.avatarFrameId}
         />
         <SmileyInput
           ref={composerRef}

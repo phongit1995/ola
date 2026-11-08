@@ -11,3 +11,8 @@ export function avatarFrameById(id: string | null | undefined): AvatarFrame | un
   if (id == null || id === '') return undefined;
   return AVATAR_FRAMES_BY_ID.get(id);
 }
+
+export function avatarFrameLabel(frameId: string): string {
+  const name = avatarFrameById(frameId)?.name ?? '';
+  return name !== '' ? name : `#${frameId}`;
+}

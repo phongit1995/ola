@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FullScreenOverlay, ScreenHeader, Avatar, Spinner } from '@components';
+import {
+  FullScreenOverlay,
+  ScreenHeader,
+  Spinner,
+} from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { ME_ERROR_CODE, ME_NOTIFICATION_LABEL_KEY } from '@constants';
 import {
   colorForName,
@@ -177,10 +182,11 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
                     onClick={() => openNotification(item)}
                     className="flex w-full items-start gap-3 p-4 text-left active:bg-black/5"
                   >
-                    <Avatar
+                    <AvatarWithFrame
                       name={name}
                       src={item.actor?.avatar}
                       color={colorForName(name)}
+                      frameId={item.actor?.avatarFrameId}
                     />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm leading-snug text-black/87">

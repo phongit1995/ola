@@ -287,18 +287,19 @@ func (r *Repository) RecordProfileView(viewerID, ownerID uuid.UUID) error {
 }
 
 type VisitorRow struct {
-	ID         uuid.UUID
-	Username   string
-	FullName   string
-	Avatar     string
-	VipUsed    *string
-	VipEndTime *time.Time
-	ViewedAt   time.Time
+	ID            uuid.UUID
+	Username      string
+	FullName      string
+	Avatar        string
+	VipUsed       *string
+	VipEndTime    *time.Time
+	AvatarFrameID *string
+	ViewedAt      time.Time
 }
 
 func (r *Repository) ListVisitors(ownerID uuid.UUID, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]VisitorRow, bool, error) {
 	q := r.db.Table("profile_views AS pv").
-		Select("u.id, u.username, u.full_name, u.avatar, u.vip_used, u.vip_end_time, pv.viewed_at").
+		Select("u.id, u.username, u.full_name, u.avatar, u.vip_used, u.vip_end_time, u.avatar_frame_id, pv.viewed_at").
 		Joins("JOIN users u ON u.id = pv.viewer_id AND u.deleted_at IS NULL").
 		Where("pv.owner_id = ?", ownerID)
 	if cursorTime != nil && cursorID != nil {

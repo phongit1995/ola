@@ -7,7 +7,7 @@ import { activeVipTypeId, colorForName } from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useMeLocalStore } from '@store/meLocalStore';
 import type { ViewedProfile } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { VipBadge } from '@components/ui/VipBadge';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 
@@ -49,7 +49,12 @@ function MeProfileRow({
       onPress={() => onOpen(profile)}
       className="h-12 flex-row items-center gap-2 px-2 active:bg-ola-primary-light"
     >
-      <Avatar name={title} uri={profile.avatar ?? undefined} size={32} />
+      <AvatarWithFrame
+        name={title}
+        uri={profile.avatar ?? undefined}
+        size={32}
+        frameId={profile.avatarFrameId}
+      />
       <View className="min-w-0 flex-1">
         <View className="flex-row items-center gap-1">
           <VipBadge typeId={profile.vipTypeId} size={16} />
@@ -115,6 +120,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
               fullName: user.fullName,
               avatar: user.avatar,
               vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime),
+              avatarFrameId: user.avatarFrameId ?? null,
             }))
           )
         )

@@ -4,6 +4,7 @@ export interface ViewedProfile {
   fullName?: string;
   avatar?: string;
   vipTypeId?: number | null;
+  avatarFrameId?: string | null;
 }
 
 export interface MeLocalState {

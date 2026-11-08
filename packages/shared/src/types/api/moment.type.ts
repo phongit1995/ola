@@ -17,6 +17,7 @@ export interface MomentAuthor {
   username: string;
   fullName?: string;
   avatar?: string | null;
+  avatarFrameId?: string | null;
 }
 
 export interface MomentOverlay {

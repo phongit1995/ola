@@ -451,12 +451,13 @@ func (s *Service) Likers(viewerID, postID uuid.UUID, limit, offset int) (*LikerL
 	items := make([]AuthorResponse, 0, len(rows))
 	for _, row := range rows {
 		items = append(items, AuthorResponse{
-			ID:       row.ID.String(),
-			Username: row.Username,
-			FullName: row.FullName,
-			Avatar:   row.Avatar,
-			IsFriend: row.IsFriend,
-			IsSelf:   row.ID == viewerID,
+			ID:            row.ID.String(),
+			Username:      row.Username,
+			FullName:      row.FullName,
+			Avatar:        row.Avatar,
+			AvatarFrameID: row.activeAvatarFrameID(),
+			IsFriend:      row.IsFriend,
+			IsSelf:        row.ID == viewerID,
 		})
 	}
 	return &LikerListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
@@ -843,12 +844,13 @@ func (s *Service) CommentLikers(viewerID, postID, commentID uuid.UUID, limit, of
 	items := make([]AuthorResponse, 0, len(rows))
 	for _, row := range rows {
 		items = append(items, AuthorResponse{
-			ID:       row.ID.String(),
-			Username: row.Username,
-			FullName: row.FullName,
-			Avatar:   row.Avatar,
-			IsFriend: row.IsFriend,
-			IsSelf:   row.ID == viewerID,
+			ID:            row.ID.String(),
+			Username:      row.Username,
+			FullName:      row.FullName,
+			Avatar:        row.Avatar,
+			AvatarFrameID: row.activeAvatarFrameID(),
+			IsFriend:      row.IsFriend,
+			IsSelf:        row.ID == viewerID,
 		})
 	}
 	return &LikerListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
@@ -1436,10 +1438,11 @@ func toAuthorResponse(u *models.User) *AuthorResponse {
 		return nil
 	}
 	return &AuthorResponse{
-		ID:       u.ID.String(),
-		Username: u.Username,
-		FullName: u.FullName,
-		Avatar:   u.Avatar,
+		ID:            u.ID.String(),
+		Username:      u.Username,
+		FullName:      u.FullName,
+		Avatar:        u.Avatar,
+		AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 	}
 }
 

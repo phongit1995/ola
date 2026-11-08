@@ -22,6 +22,7 @@ export interface UserSettings {
   fontSize: FontSize;
   wallpaperUrl: string;
   giftWallPrivacy: GiftWallPrivacy;
+  avatarFrameStorePrivacy: GiftWallPrivacy;
 }
 
 export type UpdateSettingsRequest = Partial<UserSettings>;

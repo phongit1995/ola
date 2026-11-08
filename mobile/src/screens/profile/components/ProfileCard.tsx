@@ -14,8 +14,9 @@ import { Avatar } from '@components/ui/Avatar';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { DIVIDER } from '@constants';
-import { CARD_SHADOW, DEFAULT_COVER_COLOR } from '../constants';
+import { AVATAR_FRAME_STORE_ICON_ID, CARD_SHADOW, DEFAULT_COVER_COLOR } from '../constants';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
+import { AvatarFrameImage } from '@components/ui/AvatarFrameImage';
 import { RelationButtons } from './RelationButtons';
 import { GENDER } from '@ola/shared/constants';
 import { CharmIcon } from '@components/gift/CharmIcon';
@@ -45,6 +46,7 @@ interface ProfileCardProps {
   onKiss: () => void;
   onOpenFollowers: () => void;
   onOpenVipStore: () => void;
+  onOpenAvatarFrameStore: () => void;
   onFriendAction: () => void;
   onToggleFollow: () => void;
   onUnblock: () => void;
@@ -102,6 +104,7 @@ export function ProfileCard({
   onKiss,
   onOpenFollowers,
   onOpenVipStore,
+  onOpenAvatarFrameStore,
   onFriendAction,
   onToggleFollow,
   onUnblock,
@@ -361,6 +364,17 @@ export function ProfileCard({
             />
             <Text className="text-xs" style={{ color: colors.primaryDarker }}>
               {t('profile.viewVipStore')}
+            </Text>
+          </Pressable>
+        )}
+        {profile.canViewAvatarFrameStore === true && (
+          <Pressable
+            onPress={onOpenAvatarFrameStore}
+            className="ml-4 mt-2 flex-row items-center gap-1 active:opacity-70"
+          >
+            <AvatarFrameImage frameId={AVATAR_FRAME_STORE_ICON_ID} size={16} />
+            <Text className="text-xs" style={{ color: colors.primaryDarker }}>
+              {t('avatarFrame.openStore')}
             </Text>
           </Pressable>
         )}

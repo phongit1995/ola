@@ -172,7 +172,7 @@ func NewRepository(db *gorm.DB) *Repository {
 
 func withAuthor(db *gorm.DB) *gorm.DB {
 	return db.Preload("Author", func(db *gorm.DB) *gorm.DB {
-		return db.Select("id", "username", "full_name", "avatar")
+		return db.Select("id", "username", "full_name", "avatar", "avatar_frame_id", "vip_end_time")
 	})
 }
 
@@ -404,7 +404,7 @@ func (r *Repository) FindUsers(ids []uuid.UUID) ([]models.User, error) {
 	if len(ids) == 0 {
 		return users, nil
 	}
-	err := r.db.Select("id", "username", "full_name", "avatar").Where("id IN ?", ids).Find(&users).Error
+	err := r.db.Select("id", "username", "full_name", "avatar", "avatar_frame_id", "vip_end_time").Where("id IN ?", ids).Find(&users).Error
 	return users, err
 }
 

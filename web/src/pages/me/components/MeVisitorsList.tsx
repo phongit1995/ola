@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Spinner, UserName, VipIcon } from '@components';
+import { Spinner, UserName, VipIcon } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import {
   activeVipTypeId,
   colorForName,
@@ -23,6 +24,7 @@ interface VisitorRow {
   username: string;
   fullName?: string;
   avatar?: string;
+  avatarFrameId: string | null;
   vipTypeId: number | null;
   viewedAt: string;
   status: RelationshipStatus | 'none';
@@ -34,6 +36,7 @@ function toRow(user: VisitorUser): VisitorRow {
     username: user.username,
     fullName: user.fullName,
     avatar: user.avatar,
+    avatarFrameId: user.avatarFrameId ?? null,
     vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime),
     viewedAt: user.viewedAt,
     status: user.relationship?.status ?? 'none',
@@ -161,12 +164,13 @@ export function MeVisitorsList({
               className="flex items-start gap-3 border-b border-black/12 px-4 py-3 last:border-b-0"
             >
               <button type="button" onClick={openProfile} className="shrink-0">
-                <Avatar
+                <AvatarWithFrame
                   name={title}
                   color={colorForName(row.username)}
                   size={72}
                   src={row.avatar}
                   rounded={false}
+                  frameId={row.avatarFrameId}
                 />
               </button>
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">

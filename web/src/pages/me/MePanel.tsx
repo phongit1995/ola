@@ -32,6 +32,7 @@ export function MePanel() {
   const username = useAuthStore((s) => s.user?.username ?? null);
   const meId = useAuthStore((s) => s.user?.id ?? null);
   const avatarUrl = useAuthStore((s) => s.user?.avatar ?? null);
+  const avatarFrameId = useAuthStore((s) => s.user?.avatarFrameId ?? null);
   const coverUrl = useAuthStore((s) => s.user?.coverPhoto ?? null);
   const displayName = username ?? t('home.guest');
 
@@ -209,6 +210,7 @@ export function MePanel() {
               <MeLeftDrawer
                 displayName={displayName}
                 avatarUrl={avatarUrl ?? undefined}
+                avatarFrameId={avatarFrameId}
                 coverUrl={coverUrl ?? undefined}
                 showMoment={momentEnabled}
                 onClose={() => setDrawerOpen(false)}

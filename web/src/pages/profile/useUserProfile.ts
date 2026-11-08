@@ -111,6 +111,7 @@ export function useUserProfile(
         fullName: data.fullName,
         avatar: data.avatar,
         vipTypeId: activeVipTypeId(data.vipUsed, data.vipEndTime),
+        avatarFrameId: data.avatarFrameId ?? null,
       });
     }
     return data.id;

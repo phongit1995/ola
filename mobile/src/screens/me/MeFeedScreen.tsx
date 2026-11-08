@@ -68,6 +68,7 @@ export function MeFeedScreen() {
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const username = useAuthStore((s) => s.user?.username ?? null);
   const avatarUrl = useAuthStore((s) => s.user?.avatar ?? null);
+  const avatarFrameId = useAuthStore((s) => s.user?.avatarFrameId ?? null);
   const coverUrl = useAuthStore((s) => s.user?.coverPhoto ?? null);
   const displayName = username ?? t('home.guest');
   const reloadMoments = useMomentStore((s) => s.load);
@@ -289,6 +290,7 @@ export function MeFeedScreen() {
           <MeLeftDrawer
             displayName={displayName}
             avatarUrl={avatarUrl ?? undefined}
+            avatarFrameId={avatarFrameId}
             coverUrl={coverUrl ?? undefined}
             showMoment={momentEnabled}
             onClose={() => setDrawerOpen(false)}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View, type ImageSourcePropType } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import { useNavigation } from '@react-navigation/native';
@@ -28,7 +28,7 @@ const kenIcon = require('@assets/icons/apps/ken.png');
 const APP_VERSION_LABEL = `v${DeviceInfo.getVersion()} (${DeviceInfo.getBuildNumber()})`;
 
 interface PanelRowProps {
-  icon: number;
+  icon: ImageSourcePropType;
   title: string;
   subtitle?: string;
   badge?: number;
@@ -126,6 +126,10 @@ export function PersonalScreen() {
       navigation.navigate(ROOT_ROUTES.VipStore);
       return;
     }
+    if (item.action === 'avatar-frame-store') {
+      navigation.navigate(ROOT_ROUTES.AvatarFrameStore);
+      return;
+    }
     if (item.action === 'ken') {
       navigation.navigate(ROOT_ROUTES.KenStore);
       return;
@@ -214,7 +218,7 @@ export function PersonalScreen() {
           {items.map(item => (
             <PanelRow
               key={item.titleKey}
-              icon={item.icon}
+              icon={item.iconUri != null ? { uri: item.iconUri } : item.icon}
               title={t(item.titleKey)}
               subtitle={
                 item.subtitleKey != null ? t(item.subtitleKey) : undefined

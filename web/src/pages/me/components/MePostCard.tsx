@@ -10,6 +10,7 @@ import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import likeStickerFly from '@/assets/icons/me/sticker_like.png';
 import likeSoundUrl from '@/assets/sounds/like_me.mp3';
 import { Avatar, UserName } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
 import { DEFAULT_AVATAR_COLOR, formatDuration, portalRoot } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -146,10 +147,11 @@ function MePostCardComponent({
           onClick={() => onOpenProfile?.(post.author, post.color)}
           className="flex min-w-0 flex-1 items-start gap-4 text-left"
         >
-          <Avatar
+          <AvatarWithFrame
             name={post.author}
             src={post.avatar ?? undefined}
             color={post.color}
+            frameId={post.avatarFrameId}
           />
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1">

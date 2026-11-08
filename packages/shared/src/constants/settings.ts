@@ -13,4 +13,5 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   fontSize: 'medium',
   wallpaperUrl: '',
   giftWallPrivacy: 0,
+  avatarFrameStorePrivacy: 0,
 };

@@ -21,6 +21,7 @@ const (
 	AppNotificationGiftReceived     = "gift_received"
 	AppNotificationKenReceived      = "ken_received"
 	AppNotificationVipReceived      = "vip_received"
+	AppNotificationAvatarFrame      = "avatar_frame_received"
 	AppNotificationGiftCode         = "gift_code"
 )
 
@@ -40,9 +41,10 @@ func (AppNotification) TableName() string {
 }
 
 type AppNotificationTransfer struct {
-	Amount    int   `json:"amount,omitempty"`
-	VipTypeID int16 `json:"vipTypeId,omitempty"`
-	Days      int   `json:"days,omitempty"`
+	Amount    int    `json:"amount,omitempty"`
+	VipTypeID int16  `json:"vipTypeId,omitempty"`
+	Days      int    `json:"days,omitempty"`
+	FrameID   string `json:"frameId,omitempty"`
 }
 
 func (t AppNotificationTransfer) Preview() string {
@@ -62,7 +64,7 @@ func ParseAppNotificationTransfer(preview string) (AppNotificationTransfer, bool
 }
 
 func IsAppNotificationTransfer(ntype string) bool {
-	return ntype == AppNotificationKenReceived || ntype == AppNotificationVipReceived
+	return ntype == AppNotificationKenReceived || ntype == AppNotificationVipReceived || ntype == AppNotificationAvatarFrame
 }
 
 func (t AppNotificationTransfer) Message(ntype string) string {
@@ -71,6 +73,12 @@ func (t AppNotificationTransfer) Message(ntype string) string {
 			return "Đã chuyển cho bạn " + groupThousands(t.Amount) + " Ken"
 		}
 		return "Đã chuyển Ken cho bạn"
+	}
+	if ntype == AppNotificationAvatarFrame {
+		if t.FrameID != "" {
+			return "Đã tặng bạn khung avatar #" + t.FrameID
+		}
+		return "Đã tặng bạn khung avatar"
 	}
 	if t.Days > 0 {
 		return fmt.Sprintf("Đã tặng bạn %d ngày VIP", t.Days)

@@ -11,7 +11,9 @@ export type AppOverlayKind =
   | 'nearby'
   | 'settings'
   | 'gifts'
-  | 'megaphone';
+  | 'megaphone'
+  | 'avatarFrameShop'
+  | 'avatarFrameStore';
 
 export type VipBuyMode = 'give' | 'buy' | 'extend';
 

@@ -18,6 +18,9 @@ import { GiftSettingsPage } from '@/pages/gifts/GiftSettingsPage'
 import { MegaphonesPage } from '@/pages/megaphones/MegaphonesPage'
 import { MegaphoneSettingsPage } from '@/pages/megaphones/MegaphoneSettingsPage'
 import { BannedWordsPage } from '@/pages/megaphones/BannedWordsPage'
+import { AvatarFrameShopPage } from '@/pages/avatar-frames/AvatarFrameShopPage'
+import { AvatarFramePurchasesPage } from '@/pages/avatar-frames/AvatarFramePurchasesPage'
+import { AvatarFrameTransfersPage } from '@/pages/avatar-frames/AvatarFrameTransfersPage'
 import { GiftCodesPage } from '@/pages/gift-codes/GiftCodesPage'
 import { GiftCodeFormPage } from '@/pages/gift-codes/GiftCodeFormPage'
 import { GiftCodeDetailPage } from '@/pages/gift-codes/GiftCodeDetailPage'
@@ -84,6 +87,9 @@ export const router = createBrowserRouter([
       { path: 'megaphones', element: <MegaphonesPage /> },
       { path: 'megaphones/settings', element: <MegaphoneSettingsPage /> },
       { path: 'megaphones/banned-words', element: <BannedWordsPage /> },
+      { path: 'avatar-frames', element: <AvatarFrameShopPage /> },
+      { path: 'avatar-frames/purchases', element: <AvatarFramePurchasesPage /> },
+      { path: 'avatar-frames/transfers', element: <AvatarFrameTransfersPage /> },
       { path: 'gift-codes', element: <GiftCodesPage /> },
       { path: 'gift-codes/new', element: <GiftCodeFormPage /> },
       { path: 'gift-codes/attempts', element: <GiftCodeAttemptsPage /> },

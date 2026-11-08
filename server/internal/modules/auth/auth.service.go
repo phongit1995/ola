@@ -387,6 +387,7 @@ func (s *Service) buildAuthResponse(user *models.User, token, refreshToken strin
 		CustomInfo:     user.CustomInfo,
 		Ken:            user.Ken,
 		VipUsed:        user.VipUsed,
+		AvatarFrameID:  user.ActiveAvatarFrameID(time.Now()),
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
 	}

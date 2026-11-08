@@ -46,6 +46,7 @@ export function mapPublicProfile(
     isSelf: data.relationship?.status === 'self',
     canViewVipStore: data.canViewVipStore !== false,
     canViewGiftWall: data.canViewGiftWall !== false,
+    canViewAvatarFrameStore: data.canViewAvatarFrameStore === true,
   };
 }
 

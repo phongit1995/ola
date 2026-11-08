@@ -6,6 +6,7 @@ import (
 	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/announcement"
 	"ola-chat-server/internal/modules/auth"
+	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	"ola-chat-server/internal/modules/call"
 	chatbot "ola-chat-server/internal/modules/chat-bot"
 	"ola-chat-server/internal/modules/clan"
@@ -71,6 +72,7 @@ func CreateServer(
 	clanRouter *clan.Router,
 	sessionRouter *session.Router,
 	vipRouter *vip.Router,
+	avatarFrameRouter *avatarframe.Router,
 	kenRouter *ken.Router,
 	eggRouter *egg.Router,
 	wheelRouter *wheel.Router,
@@ -142,6 +144,7 @@ func CreateServer(
 		clanRouter.Setup(api)
 		sessionRouter.Setup(api)
 		vipRouter.Setup(api)
+		avatarFrameRouter.Setup(api)
 		kenRouter.Setup(api)
 		eggRouter.Setup(api)
 		wheelRouter.Setup(api)

@@ -27,6 +27,8 @@ export const ROOT_ROUTES = {
   EditProfile: 'EditProfile',
   VipStore: 'VipStore',
   BuyVip: 'BuyVip',
+  AvatarFrameShop: 'AvatarFrameShop',
+  AvatarFrameStore: 'AvatarFrameStore',
   KenStore: 'KenStore',
   BuyKen: 'BuyKen',
   MediaStore: 'MediaStore',

@@ -26,6 +26,7 @@ import {
   SoundOutlined,
   TagsOutlined,
   ShopOutlined,
+  SkinOutlined,
   PictureOutlined,
   ReadOutlined,
   TeamOutlined,
@@ -80,6 +81,7 @@ const MENU_ITEMS = [
       { key: '/vip-packages', icon: <CrownOutlined />, label: 'VIP' },
       { key: '/gifts', icon: <GiftOutlined />, label: 'Quà tặng' },
       { key: '/megaphones', icon: <SoundOutlined />, label: 'Loa' },
+      { key: '/avatar-frames', icon: <SkinOutlined />, label: 'Khung avatar' },
       { key: '/gift-codes', icon: <TagsOutlined />, label: 'Mã quà tặng' },
     ],
   },
@@ -127,7 +129,7 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
   return children ? children.map((child) => child.key) : [item.key]
 })
 
-const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones', '/gift-codes']
+const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones', '/avatar-frames', '/gift-codes']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
   '/games/matches': '/games/mini-game',
@@ -156,6 +158,9 @@ const PAGE_TITLES: Record<string, string> = {
   '/megaphones': 'Danh sách loa',
   '/megaphones/banned-words': 'Từ cấm',
   '/megaphones/settings': 'Cài đặt loa',
+  '/avatar-frames': 'Khung avatar đang bán',
+  '/avatar-frames/purchases': 'Lịch sử mua khung avatar',
+  '/avatar-frames/transfers': 'Lịch sử chuyển khung avatar',
   '/gift-codes': 'Mã quà tặng',
   '/gift-codes/new': 'Tạo đợt mã quà tặng',
   '/gift-codes/attempts': 'Nhập mã lỗi',

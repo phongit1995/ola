@@ -44,3 +44,6 @@ export * from './color';
 export * from './story';
 export * from './moment';
 export * from './momentReactionBurst';
+export * from './avatarFrameLayout';
+export * from './avatarFrameErrors';
+export * from './avatarFrameText';

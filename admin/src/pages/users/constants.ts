@@ -5,6 +5,7 @@ import type { ViolationState } from './types'
 export const KEN_TX_TYPE: Record<string, string> = {
   VIP_PACKAGE: 'Mua gói VIP',
   VIP_ICON: 'Mua VIP icon',
+  AVATAR_FRAME: 'Mua khung avatar',
   ADMIN_GRANT: 'Admin cộng',
   ADMIN_DEDUCT: 'Admin trừ',
   REWARD: 'Phần thưởng',

@@ -29,3 +29,4 @@ export * from './wordChain';
 export * from './gift';
 export * from './megaphone';
 export * from './giftCode';
+export * from './avatarFrame';

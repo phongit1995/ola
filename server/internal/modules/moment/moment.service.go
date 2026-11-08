@@ -700,10 +700,11 @@ func authorOf(moment *models.Moment) MomentAuthorResponse {
 
 func toAuthorResponse(user *models.User) MomentAuthorResponse {
 	return MomentAuthorResponse{
-		ID:       user.ID.String(),
-		Username: user.Username,
-		FullName: user.FullName,
-		Avatar:   user.Avatar,
+		ID:            user.ID.String(),
+		Username:      user.Username,
+		FullName:      user.FullName,
+		Avatar:        user.Avatar,
+		AvatarFrameID: user.ActiveAvatarFrameID(time.Now()),
 	}
 }
 

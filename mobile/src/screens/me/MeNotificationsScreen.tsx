@@ -27,7 +27,7 @@ import { REACTION_IMAGE } from '@lib/reactions';
 import { SmileyText } from '@lib/richText';
 import { useMomentOverlays } from '@screens/moment/useMomentOverlays';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
@@ -162,7 +162,12 @@ export function MeNotificationsScreen() {
                   onPress={() => openNotification(item)}
                   className="flex-row items-start gap-3 bg-white/80 p-4 active:bg-black/5"
                 >
-                  <Avatar name={name} uri={item.actor?.avatar ?? undefined} size={40} />
+                  <AvatarWithFrame
+                    name={name}
+                    uri={item.actor?.avatar ?? undefined}
+                    size={40}
+                    frameId={item.actor?.avatarFrameId}
+                  />
                   <View className="min-w-0 flex-1">
                     <Text className="text-sm leading-snug text-ola-ink">
                       <Text className="font-bold">{name}</Text>{' '}

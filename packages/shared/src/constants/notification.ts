@@ -9,6 +9,7 @@ export const APP_NOTIFICATION_TYPE = {
   giftReceived: 'gift_received',
   kenReceived: 'ken_received',
   vipReceived: 'vip_received',
+  avatarFrameReceived: 'avatar_frame_received',
   giftCode: 'gift_code',
 } as const satisfies Record<string, AppNotificationType>;
 

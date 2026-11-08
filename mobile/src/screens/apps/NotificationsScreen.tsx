@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { ParseKeys } from 'i18next';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { APP_NOTIF_ID, clearPushNotification } from '@lib/push';
@@ -10,7 +11,13 @@ import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { MarriageService, RelationshipService } from '@ola/shared/services';
-import { createTimeFormatter, isTransferNotification, transferNotificationContent } from '@ola/shared/lib';
+import {
+  avatarFrameNotificationText,
+  createTimeFormatter,
+  isAvatarFrameNotification,
+  isTransferNotification,
+  transferNotificationContent,
+} from '@ola/shared/lib';
 import type { AppNotification } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { VipIcon } from '@components/ui/VipIcon';
@@ -21,6 +28,9 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { APP_NOTIFICATION_TYPE, isSystemNotice } from '@ola/shared/constants';
 import { GIFT_ASSETS } from '@components/gift/giftAssets';
 import { UserName } from '@components/ui/UserName';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { AvatarFrameImage } from '@components/ui/AvatarFrameImage';
 
 const icFriend = require('@assets/icons/notify/ic_notification_add_friend.png');
 const icHeart = require('@assets/icons/notify/ic_notification_heart.png');
@@ -69,7 +79,7 @@ type ProposalAction = { item: AppNotification; kind: 'accept' | 'deny' } | null;
 export function NotificationsScreen() {
   const { t, i18n } = useTranslation();
   const colors = useThemeColors();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const push = useToastStore((s) => s.push);
   const items = useAppNotificationStore((s) => s.items);
   const loading = useAppNotificationStore((s) => s.loading);
@@ -185,12 +195,20 @@ export function NotificationsScreen() {
             const name = system ? t('notify.systemSender') : actor?.fullName || actor?.username || '';
             const handle = actor != null ? `@${actor.username}` : name;
             const transfer = transferNotificationContent(t, item);
-            const message = transfer?.text ?? (config != null ? t(config.messageKey) : item.preview ?? '');
+            const frameReceived = isAvatarFrameNotification(item.type);
+            const frameId = frameReceived ? item.transfer?.frameId : undefined;
+            const frameMessage = avatarFrameNotificationText(t, item);
+            const message =
+              frameMessage ?? transfer?.text ?? (config != null ? t(config.messageKey) : item.preview ?? '');
             const badge = transfer?.badge;
             const showPreview =
               config != null && !isTransferNotification(item.type) && item.preview != null && item.preview !== '';
             return (
-              <View className="min-h-[72px] flex-row items-start bg-white/80 p-4">
+              <Pressable
+                disabled={!frameReceived}
+                onPress={() => navigation.navigate(ROOT_ROUTES.AvatarFrameStore)}
+                className="min-h-[72px] flex-row items-start bg-white/80 p-4 active:bg-black/5"
+              >
                 {system ? (
                   <SystemAvatar />
                 ) : (
@@ -208,6 +226,7 @@ export function NotificationsScreen() {
                       {config != null && (
                         <Image source={config.icon} style={{ width: 18, height: 18 }} resizeMode="contain" />
                       )}
+                      {frameId != null && frameId !== '' && <AvatarFrameImage frameId={frameId} size={18} />}
                       <Text className="text-xs text-ola-ink-soft">
                         {formatTime(item.createdAt)}
                       </Text>
@@ -250,7 +269,7 @@ export function NotificationsScreen() {
                     </Text>
                   </Pressable>
                 )}
-              </View>
+              </Pressable>
             );
           }}
         />

@@ -32,6 +32,8 @@ export type RootStackParamList = {
   [ROOT_ROUTES.EditProfile]: undefined;
   [ROOT_ROUTES.VipStore]: undefined;
   [ROOT_ROUTES.BuyVip]: { mode?: BuyVipMode } | undefined;
+  [ROOT_ROUTES.AvatarFrameShop]: undefined;
+  [ROOT_ROUTES.AvatarFrameStore]: undefined;
   [ROOT_ROUTES.KenStore]: undefined;
   [ROOT_ROUTES.BuyKen]: undefined;
   [ROOT_ROUTES.MediaStore]: undefined;

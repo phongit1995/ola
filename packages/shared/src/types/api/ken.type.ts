@@ -15,6 +15,7 @@ export type KenDirection = 'credit' | 'debit';
 export type KenTxType =
   | 'VIP_PACKAGE'
   | 'VIP_ICON'
+  | 'AVATAR_FRAME'
   | 'ADMIN_GRANT'
   | 'ADMIN_DEDUCT'
   | 'REWARD'
