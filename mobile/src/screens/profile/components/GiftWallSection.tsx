@@ -50,7 +50,7 @@ export function GiftWallSection({
   }
 
   return (
-    <View className="mb-2 bg-white px-3 py-3" style={CARD_SHADOW}>
+    <View className="mb-2 bg-white px-3 py-4" style={CARD_SHADOW}>
       <View className="flex-row items-center gap-2">
         <Text className="text-base font-medium" style={{ color: TEXT_PRIMARY }}>
           {t('gift.wall.title')}
