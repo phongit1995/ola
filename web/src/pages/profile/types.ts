@@ -37,6 +37,7 @@ export interface UserProfile {
   color: string;
   coverColor: string;
   avatar?: string;
+  avatarFrameId: string | null;
   coverPhoto?: string;
   verified: boolean;
   emailVerified: boolean;

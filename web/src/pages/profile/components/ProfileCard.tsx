@@ -10,6 +10,7 @@ import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import vipStoreIcon from '@/assets/icons/me/icon_vip.webp';
 import avatarFrameStoreIcon from '@/assets/icons/profile/ic_avatar_frame_store.webp';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import {
   Avatar,
   CharmIcon,
@@ -29,6 +30,10 @@ import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
+
+const PROFILE_AVATAR_SIZE = 96;
+const AVATAR_RING_CLASS =
+  'block rounded-full bg-white p-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]';
 
 interface ProfileCardProps {
   userId: string;
@@ -134,6 +139,18 @@ export function ProfileCard({
     clearAvatarCrop();
   }
 
+  const ownAvatar = (
+    <span className={profile.avatarFrameId ? 'block' : AVATAR_RING_CLASS}>
+      <AvatarWithFrame
+        name={profile.nick}
+        color={profile.color}
+        size={PROFILE_AVATAR_SIZE}
+        src={profile.avatar}
+        frameId={profile.avatarFrameId}
+      />
+    </span>
+  );
+
   return (
     <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
       <div
@@ -182,30 +199,18 @@ export function ProfileCard({
             )}
           </>
         )}
-        <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 gap-1 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+        <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 items-end gap-1">
           {profile.avatar ? (
             <button
               type="button"
               aria-label={t('profile.viewImage')}
               onClick={() => openViewer([profile.avatar!])}
-              className="leading-none"
+              className="rounded-full leading-none"
             >
-              <Avatar
-                name={profile.nick}
-                color={profile.color}
-                size={96}
-                src={profile.avatar}
-                rounded={false}
-              />
+              {ownAvatar}
             </button>
           ) : (
-            <Avatar
-              name={profile.nick}
-              color={profile.color}
-              size={96}
-              src={profile.avatar}
-              rounded={false}
-            />
+            ownAvatar
           )}
           {profile.spouse ? (
             <button
@@ -213,15 +218,16 @@ export function ProfileCard({
               onClick={() =>
                 profile.spouse && onOpenUser?.(profile.spouse.nick)
               }
-              className="leading-none"
+              className="rounded-full leading-none"
             >
-              <Avatar
-                name={profile.spouse.nick}
-                color={colorForName(profile.spouse.nick)}
-                size={96}
-                src={profile.spouse.avatar}
-                rounded={false}
-              />
+              <span className={AVATAR_RING_CLASS}>
+                <Avatar
+                  name={profile.spouse.nick}
+                  color={colorForName(profile.spouse.nick)}
+                  size={PROFILE_AVATAR_SIZE}
+                  src={profile.spouse.avatar}
+                />
+              </span>
             </button>
           ) : null}
         </div>

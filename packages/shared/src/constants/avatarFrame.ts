@@ -1,7 +1,7 @@
 import type { AvatarFrameHistoryTab, AvatarFramePrivacy } from '../types/api/avatarFrame.type';
 
 export const AVATAR_FRAME_SCALE = 1.2;
-export const AVATAR_FRAME_HOLE_RATIO = 0.66;
+export const AVATAR_FRAME_HOLE_RATIO = 0.75;
 export const AVATAR_FRAME_MIN_SLOT = 24;
 export const AVATAR_FRAME_STORE_PAGE_SIZE = 50;
 export const AVATAR_FRAME_HISTORY_PAGE_SIZE = 20;

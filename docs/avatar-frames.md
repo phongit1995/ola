@@ -19,7 +19,7 @@ import { AVATAR_FRAMES, avatarFrameById } from '@ola/shared/lib/avatarFrame';
 - `id` là chuỗi, trùng tên file, không được đổi hay đánh lại. Server chỉ lưu `frameId`.
 - Đã bỏ 28 mẫu sticker che kín avatar và 7 dòng trùng file.
 - 6 frame chưa có tên: `100`, `256`, `555`, `657`, `658`, `707`.
-- Hiển thị: khung rộng bằng 1,2 lần chỗ avatar, avatar bằng 66% khung, khung đè lên trên avatar.
+- Hiển thị: khung rộng bằng 1,2 lần chỗ avatar, avatar bằng 75% khung, khung đè lên trên avatar (lỗ các khung khoảng 50–77%, avatar lớn hơn lỗ thì mép được khung che).
 - Chỉ gắn frame cho avatar của user (`user.avatar`) trong Me, không gắn cho `VipAvatar` hay icon.
 
 Bộ gốc 264px (759 ảnh, gồm cả sticker): https://drive.google.com/open?id=1nXDcAOplfoXxIkIsV1aYswPrvp4tcpYE
