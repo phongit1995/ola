@@ -78,11 +78,6 @@ export const PERSONAL_ITEMS: AppItem[] = [
     action: 'gifts',
   },
   {
-    icon: require('@assets/icons/apps/gift-code.webp'),
-    titleKey: 'giftCode.menuTitle',
-    action: 'gift-code',
-  },
-  {
     icon: MEGAPHONE_IMAGE,
     titleKey: 'megaphone.menuTitle',
     action: 'megaphone',
@@ -96,6 +91,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
     icon: require('@assets/icons/social/social-menu-light.png'),
     titleKey: 'home.apps.social',
     action: 'social',
+  },
+  {
+    icon: require('@assets/icons/apps/gift-code.webp'),
+    titleKey: 'giftCode.menuTitle',
+    action: 'gift-code',
   },
   {
     icon: require('@assets/icons/apps/setting.png'),

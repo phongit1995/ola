@@ -62,10 +62,10 @@ export const PERSONAL_ITEMS: AppItem[] = [
   },
   { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
   { icon: iconGift, titleKey: 'home.apps.gifts', app: 'gifts' },
-  { icon: iconGiftCode, titleKey: 'giftCode.menuTitle', action: 'gift-code' },
   { icon: iconMegaphone, titleKey: 'megaphone.menuTitle', app: 'megaphone' },
   { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
   { icon: iconSocial, titleKey: 'home.apps.social', action: 'social' },
+  { icon: iconGiftCode, titleKey: 'giftCode.menuTitle', action: 'gift-code' },
   { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },
   {
     icon: iconRemoveAccount,
