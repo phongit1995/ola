@@ -24,11 +24,8 @@ import {
   RocketOutlined,
   SendOutlined,
   SettingOutlined,
-  ShoppingCartOutlined,
-  SmileOutlined,
   SoundOutlined,
   ShopOutlined,
-  SwapOutlined,
   PictureOutlined,
   ReadOutlined,
   TeamOutlined,
@@ -76,21 +73,11 @@ const MENU_ITEMS = [
   },
   { key: '/clans', icon: <FlagOutlined />, label: 'Clan' },
   {
-    key: 'vip',
-    icon: <CrownOutlined />,
-    label: 'VIP',
-    children: [
-      { key: '/vip-packages', icon: <CrownOutlined />, label: 'Gói ngày VIP' },
-      { key: '/vip-shop', icon: <SmileOutlined />, label: 'Shop VIP' },
-      { key: '/vip-purchases', icon: <ShoppingCartOutlined />, label: 'Lịch sử mua VIP' },
-      { key: '/vip-transfers', icon: <SwapOutlined />, label: 'Lịch sử chuyển VIP' },
-    ],
-  },
-  {
     key: 'shop',
     icon: <ShopOutlined />,
     label: 'Cửa hàng',
     children: [
+      { key: '/vip-packages', icon: <CrownOutlined />, label: 'VIP' },
       { key: '/gifts', icon: <GiftOutlined />, label: 'Quà tặng' },
       { key: '/megaphones', icon: <SoundOutlined />, label: 'Loa' },
     ],
@@ -140,11 +127,13 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
   return children ? children.map((child) => child.key) : [item.key]
 })
 
-const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-purchases', '/vip-transfers']
-const SHOP_KEYS = ['/gifts', '/megaphones']
+const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
   '/games/matches': '/games/mini-game',
+  '/vip-shop': '/vip-packages',
+  '/vip-purchases': '/vip-packages',
+  '/vip-transfers': '/vip-packages',
 }
 
 const PAGE_TITLES: Record<string, string> = {
@@ -157,7 +146,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/rooms/word-chain': 'Phòng nối từ',
   '/clans': 'Quản lý clan',
   '/vip-packages': 'Quản lý gói VIP',
-  '/vip-shop': 'Shop VIP',
+  '/vip-shop': 'Icon VIP',
   '/vip-purchases': 'Lịch sử mua VIP',
   '/vip-transfers': 'Lịch sử chuyển VIP',
   '/gifts': 'Danh sách quà',
@@ -228,7 +217,6 @@ export function AdminLayout() {
   const openKeys = [
     ...(selectedKey.startsWith('/users') ? ['users'] : []),
     ...(selectedKey.startsWith('/rooms') ? ['rooms'] : []),
-    ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
     ...(SHOP_KEYS.includes(selectedKey) ? ['shop'] : []),
     ...(selectedKey.startsWith('/games') ? ['games'] : []),
     ...(selectedKey.startsWith('/stories') ? ['stories'] : []),

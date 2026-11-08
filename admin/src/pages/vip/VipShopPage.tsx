@@ -25,6 +25,8 @@ import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { VipShopItem } from '@/types'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { VIP_SECTION_LINKS } from '@/pages/shop/sections'
 
 interface ShopFormValues {
   vipTypeId: number
@@ -183,7 +185,7 @@ export function VipShopPage() {
   ]
 
   return (
-    <Card>
+    <Card title={<ShopSectionNav links={VIP_SECTION_LINKS} />}>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Text type="secondary">
           Chọn VIP để bán trong shop. Chỉ những VIP ở đây mới hiển thị cho người dùng mua.

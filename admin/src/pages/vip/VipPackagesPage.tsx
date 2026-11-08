@@ -16,6 +16,8 @@ import { errorMessage } from '@/lib/apiError'
 import { VipPackageFormModal } from './VipPackageFormModal'
 import type { VipPackage } from '@/types'
 import { PACKAGE_PAGE_SIZE } from './constants'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { VIP_SECTION_LINKS } from '@/pages/shop/sections'
 
 export function VipPackagesPage() {
   const { message, modal } = App.useApp()
@@ -144,7 +146,7 @@ export function VipPackagesPage() {
   ]
 
   return (
-    <Card>
+    <Card title={<ShopSectionNav links={VIP_SECTION_LINKS} />}>
       <div
         style={{
           marginBottom: 16,

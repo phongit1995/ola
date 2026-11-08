@@ -6,6 +6,8 @@ import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { AdminVipTransfer } from '@/types'
 import { formatDateTime } from '@/lib/format'
 import { PAGE_SIZE } from '@/lib/constants'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { VIP_SECTION_LINKS } from '@/pages/shop/sections'
 
 function UserCell({ fullName, username }: { fullName: string; username: string }) {
   return (
@@ -74,7 +76,7 @@ export function VipTransfersPage() {
   ]
 
   return (
-    <Card>
+    <Card title={<ShopSectionNav links={VIP_SECTION_LINKS} />}>
       <Space style={{ marginBottom: 16 }} wrap>
         <Input.Search
           allowClear
