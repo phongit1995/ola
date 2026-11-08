@@ -34,6 +34,10 @@ import { RelationButtons } from './RelationButtons';
 const PROFILE_AVATAR_SIZE = 96;
 const AVATAR_RING_CLASS =
   'block rounded-full bg-white p-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]';
+const SINGLE_AVATAR_CLASS =
+  'absolute -bottom-12 left-1/2 flex -translate-x-1/2 items-end gap-1';
+const COUPLE_AVATAR_CLASS =
+  'absolute -bottom-12 left-1/2 flex -translate-x-1/2 gap-1 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]';
 
 interface ProfileCardProps {
   userId: string;
@@ -139,7 +143,16 @@ export function ProfileCard({
     clearAvatarCrop();
   }
 
-  const ownAvatar = (
+  const married = profile.spouse != null;
+  const ownAvatar = married ? (
+    <Avatar
+      name={profile.nick}
+      color={profile.color}
+      size={PROFILE_AVATAR_SIZE}
+      src={profile.avatar}
+      rounded={false}
+    />
+  ) : (
     <span className={profile.avatarFrameId ? 'block' : AVATAR_RING_CLASS}>
       <AvatarWithFrame
         name={profile.nick}
@@ -199,13 +212,13 @@ export function ProfileCard({
             )}
           </>
         )}
-        <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 items-end gap-1">
+        <div className={married ? COUPLE_AVATAR_CLASS : SINGLE_AVATAR_CLASS}>
           {profile.avatar ? (
             <button
               type="button"
               aria-label={t('profile.viewImage')}
               onClick={() => openViewer([profile.avatar!])}
-              className="rounded-full leading-none"
+              className={married ? 'leading-none' : 'rounded-full leading-none'}
             >
               {ownAvatar}
             </button>
@@ -218,16 +231,15 @@ export function ProfileCard({
               onClick={() =>
                 profile.spouse && onOpenUser?.(profile.spouse.nick)
               }
-              className="rounded-full leading-none"
+              className="leading-none"
             >
-              <span className={AVATAR_RING_CLASS}>
-                <Avatar
-                  name={profile.spouse.nick}
-                  color={colorForName(profile.spouse.nick)}
-                  size={PROFILE_AVATAR_SIZE}
-                  src={profile.spouse.avatar}
-                />
-              </span>
+              <Avatar
+                name={profile.spouse.nick}
+                color={colorForName(profile.spouse.nick)}
+                size={PROFILE_AVATAR_SIZE}
+                src={profile.spouse.avatar}
+                rounded={false}
+              />
             </button>
           ) : null}
         </div>

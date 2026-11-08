@@ -44,6 +44,16 @@ const AVATAR_RING_STYLE = {
   shadowOffset: { width: 0, height: 1 },
   elevation: 3,
 };
+const COUPLE_AVATAR_STYLE = {
+  padding: 1,
+  paddingBottom: 2,
+  backgroundColor: '#ffffff',
+  shadowColor: '#000000',
+  shadowOpacity: 0.3,
+  shadowRadius: 3,
+  shadowOffset: { width: 0, height: 1 },
+  elevation: 3,
+};
 
 interface ProfileCardProps {
   profile: PublicProfile;
@@ -146,18 +156,31 @@ export function ProfileCard({
       colorForName(profile.spouse!.username),
     );
 
+  const married = profile.spouse != null;
   const ownAvatar = (
-    <View style={profile.avatarFrameId ? undefined : AVATAR_RING_STYLE}>
-      <AvatarWithFrame
-        name={nick}
-        uri={profile.avatar ?? undefined}
-        size={PROFILE_AVATAR_SIZE}
-        frameId={profile.avatarFrameId}
-      />
+    <View style={married || profile.avatarFrameId ? undefined : AVATAR_RING_STYLE}>
+      {married ? (
+        <Avatar
+          name={nick}
+          uri={profile.avatar ?? undefined}
+          size={PROFILE_AVATAR_SIZE}
+          rounded={false}
+        />
+      ) : (
+        <AvatarWithFrame
+          name={nick}
+          uri={profile.avatar ?? undefined}
+          size={PROFILE_AVATAR_SIZE}
+          frameId={profile.avatarFrameId}
+        />
+      )}
       {uploadingAvatar && (
         <View
           className="absolute inset-0 items-center justify-center"
-          style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: PROFILE_AVATAR_SIZE }}
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.3)',
+            borderRadius: married ? 0 : PROFILE_AVATAR_SIZE,
+          }}
         >
           <Text className="text-sm text-white">{t('common.loading')}</Text>
         </View>
@@ -212,7 +235,7 @@ export function ProfileCard({
           className="absolute bottom-0 left-0 right-0 items-center"
           pointerEvents="box-none"
         >
-          <View className="flex-row items-end gap-1">
+          <View className="flex-row items-end gap-1" style={married ? COUPLE_AVATAR_STYLE : undefined}>
             {profile.avatar != null && profile.avatar !== '' ? (
               <Pressable onPress={() => openViewer([profile.avatar!])}>{ownAvatar}</Pressable>
             ) : (
@@ -220,13 +243,12 @@ export function ProfileCard({
             )}
             {profile.spouse != null && (
               <Pressable onPress={openSpouse}>
-                <View style={AVATAR_RING_STYLE}>
-                  <Avatar
-                    name={profile.spouse.username}
-                    uri={profile.spouse.avatar ?? undefined}
-                    size={PROFILE_AVATAR_SIZE}
-                  />
-                </View>
+                <Avatar
+                  name={profile.spouse.username}
+                  uri={profile.spouse.avatar ?? undefined}
+                  size={PROFILE_AVATAR_SIZE}
+                  rounded={false}
+                />
               </Pressable>
             )}
           </View>
