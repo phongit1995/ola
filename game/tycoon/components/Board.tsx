@@ -1,280 +1,150 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
-import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_TILE, MAX_HOUSES, SIDE_TILES, TAX_RATE } from '../logic/constants';
-import { SEAT_SOFT_COLORS, seatColor } from '../helpers/player';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GO_SALARY, MAX_HOUSES, TAX_RATE } from '../logic/constants';
+import { tileRect, type Side } from '../helpers/boardGeometry';
+import { pawnLayout } from '../helpers/pawnLayout';
+import { seatColor, SEAT_TINTS } from '../helpers/player';
 import { levelLabel, rentLabel, shortName } from '../helpers/tiles';
 import { useTycoon } from '../store/useTycoon';
-import { Skyline } from './Skyline';
-import { glyphForTile, TileGlyph } from './TileGlyph';
+import { TileMark, type TileMarkName } from './TileMark';
 import { Token } from './Token';
 import { TILE_ART } from './tileArt';
 
-const CORNER = 13.6;
-const EDGE = (100 - 2 * CORNER) / (SIDE_TILES - 1);
-const TOKEN_SPREAD = 2.6;
+const SIDE_CLASS: Record<Side, string> = { left: 'l', top: 't', right: 'r', bottom: 'b', corner: 'c' };
+const MARK_BY_KIND: Partial<Record<string, TileMarkName>> = { chance: 'chance', chest: 'chest', tax: 'tax', go: 'go' };
 
-export type Side = 'bottom' | 'left' | 'top' | 'right' | 'corner';
-export type CornerPos = 'bl' | 'tl' | 'tr' | 'br';
-
-export interface TileRect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  side: Side;
-  corner?: CornerPos;
-}
-
-// Xuất phát ở góc dưới-trái, đi thuận kim đồng hồ: lên cột trái → hàng trên → xuống cột phải → về hàng dưới.
-export function tileRect(idx: number): TileRect {
-  const leg = Math.floor(idx / SIDE_TILES);
-  const step = idx % SIDE_TILES;
-  if (step === 0) {
-    const corner = (['bl', 'tl', 'tr', 'br'] as const)[leg];
-    return { x: corner === 'bl' || corner === 'tl' ? 0 : 100 - CORNER, y: corner === 'tl' || corner === 'tr' ? 0 : 100 - CORNER, w: CORNER, h: CORNER, side: 'corner', corner };
-  }
-  const along = CORNER + (step - 1) * EDGE;
-  switch (leg) {
-    case 0:
-      return { x: 0, y: 100 - along - EDGE, w: CORNER, h: EDGE, side: 'left' };
-    case 1:
-      return { x: along, y: 0, w: EDGE, h: CORNER, side: 'top' };
-    case 2:
-      return { x: 100 - CORNER, y: along, w: CORNER, h: EDGE, side: 'right' };
+function caption(idx: number): string {
+  const tile = BOARD[idx];
+  switch (tile.kind) {
+    case 'go':
+      return `+${GO_SALARY} tr`;
+    case 'jail':
+      return 'Thăm tù';
+    case 'festival':
+      return `Thuê x${FESTIVAL_MULTIPLIER}`;
+    case 'travel':
+      return 'Bay lượt sau';
+    case 'tax':
+      return `−${TAX_RATE * 100}%`;
     default:
-      return { x: 100 - along - EDGE, y: 100 - CORNER, w: EDGE, h: CORNER, side: 'bottom' };
+      return tile.price ? `${tile.price} tr` : '';
   }
 }
 
-const CORNER_TOKEN_INSET = 6;
-
-function cornerAnchor(r: TileRect): { x: number; y: number; flip?: boolean } {
-  switch (r.corner) {
-    case 'bl':
-      return { x: r.x + r.w + CORNER_TOKEN_INSET, y: r.y - 0.6 };
-    case 'br':
-      return { x: r.x - CORNER_TOKEN_INSET, y: r.y - 0.6 };
-    case 'tr':
-      return { x: r.x - CORNER_TOKEN_INSET, y: r.y + r.h + 0.6, flip: true };
-    default:
-      return { x: r.x + r.w + CORNER_TOKEN_INSET, y: r.y + r.h + 0.6, flip: true };
+function Houses({ houses }: { houses: number }) {
+  if (houses >= MAX_HOUSES) {
+    return (
+      <svg className="ty-s6-hotel" viewBox="0 0 20 12" aria-hidden="true">
+        <path d="M1 11V3.6L6 1l4 2.2L14 1l5 2.6V11Z" fill="#E4573D" stroke="#1F2A44" strokeWidth="1.1" strokeLinejoin="round" />
+        <path d="M5 6h2M9 6h2M13 6h2" stroke="#FFF3C4" strokeWidth="1.4" />
+      </svg>
+    );
   }
-}
-
-function tokenAnchor(idx: number, inJail: boolean): { x: number; y: number; flip?: boolean } {
-  const r = tileRect(idx);
-  if (idx === JAIL_TILE && inJail) return { x: r.x + r.w * 0.66, y: r.y + r.h * 0.84 };
-  switch (r.side) {
-    case 'bottom':
-      return { x: r.x + r.w / 2, y: r.y + 1 };
-    case 'top':
-      return { x: r.x + r.w / 2, y: r.y + r.h - 0.8, flip: true };
-    case 'left':
-      return { x: r.x + r.w + 1.6, y: r.y + r.h * 0.8 };
-    case 'right':
-      return { x: r.x - 1.6, y: r.y + r.h * 0.8 };
-    default:
-      return cornerAnchor(r);
-  }
-}
-
-function TileHouses({ houses }: { houses: number }) {
-  if (houses <= 0) return null;
-  if (houses >= MAX_HOUSES) return <i className="ty-hotel" />;
   return (
     <>
       {Array.from({ length: houses }, (_, i) => (
-        <i key={i} className="ty-house" />
+        <svg key={i} viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M1 6.2 6 1.6l5 4.6H9.8V11H2.2V6.2Z" fill="#2FA86F" stroke="#1F2A44" strokeWidth="1.1" strokeLinejoin="round" />
+        </svg>
       ))}
     </>
   );
 }
 
-function TileArt({ src, className }: { src: string; className: string }) {
-  return <img className={className} src={src} alt="" aria-hidden="true" draggable={false} />;
-}
-
-// Ô có ảnh thì ảnh thay cho glyph, không vẽ chồng lên chữ.
-function CornerContent({ idx, art }: { idx: number; art?: string }) {
-  switch (BOARD[idx].kind) {
-    case 'go':
-      return (
-        <span className="ty-corner ty-corner-go">
-          <span className="ty-corner-title">
-            XUẤT
-            <br />
-            PHÁT
-          </span>
-          <span className="ty-corner-pill">+{GO_SALARY}</span>
-          <TileGlyph name="arrow" size={20} />
-        </span>
-      );
-    case 'jail':
-      return (
-        <>
-          <span className={art ? 'ty-jail-cell ty-jail-cell-art' : 'ty-jail-cell'}>
-            {art ? <TileArt className="ty-jail-art" src={art} /> : <TileGlyph name="jail" size={18} color="var(--ty-cream)" />}
-            <span className="ty-jail-label">NHÀ TÙ</span>
-          </span>
-          <span className="ty-jail-visit">Thăm tù</span>
-        </>
-      );
-    case 'festival':
-      return (
-        <span className="ty-corner ty-corner-festival">
-          {art ? <TileArt className="ty-corner-art" src={art} /> : <TileGlyph name="festival" size={22} />}
-          <span className="ty-corner-title">
-            LỄ
-            <br />
-            HỘI
-          </span>
-        </span>
-      );
-    default:
-      return (
-        <span className="ty-corner ty-corner-travel">
-          <TileGlyph name="travel" size={22} />
-          <span className="ty-corner-title">
-            DU
-            <br />
-            LỊCH
-          </span>
-        </span>
-      );
-  }
-}
-
-function BoardCenter() {
-  return (
-    <div className="ty-center" aria-hidden="true">
-      <Skyline className="ty-center-skyline" />
-      <span className="ty-deck ty-deck-chance">
-        <TileGlyph name="chance" size={26} color="var(--ty-navy)" />
-        <b>CƠ HỘI</b>
-      </span>
-      <span className="ty-deck ty-deck-chest">
-        <TileGlyph name="chest" size={26} color="var(--ty-navy)" />
-        <b>KHÍ VẬN</b>
-      </span>
-      <span className="ty-center-logo">
-        <b>CỜ TỶ PHÚ</b>
-        <small>Phố Thị Rực Rỡ</small>
-      </span>
-    </div>
-  );
-}
-
 export function Board({ onTileTap, children }: { onTileTap: (idx: number) => void; children?: ReactNode }) {
-  const { tiles, positions, players, view, landingTile, pathTiles, you, replaying } = useTycoon(
+  const { tiles, positions, players, view, you, myTurn, replaying, movePending, barsOn } = useTycoon(
     useShallow((s) => ({
       tiles: s.tiles,
       positions: s.positions,
       players: s.players,
       view: s.view,
-      landingTile: s.landingTile,
-      pathTiles: s.pathTiles,
       you: s.you,
+      myTurn: s.myTurn,
       replaying: s.replaying,
+      movePending: s.movePending,
+      barsOn: s.barsOn,
     })),
   );
-  const turnSeat = view?.turn ?? -1;
+  const turn = view?.turn ?? -1;
   const festival = view?.festival ?? -1;
+  const idle = !replaying && !movePending;
+  const choosingFestival = idle && myTurn && view?.phase === 'festival';
+  const choosingTravel = idle && myTurn && view?.phase === 'travel';
+  const bankrupt = positions.map((_, seat) => Boolean(view?.players[seat]?.bankrupt));
+  const spots = pawnLayout(positions.map((pos) => ((pos % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE), bankrupt, turn);
 
   return (
-    <div className="ty-board" role="group" aria-label="Bàn cờ tỷ phú">
-      <BoardCenter />
-      {BOARD.map((tile) => {
-        const rect = tileRect(tile.idx);
-        const state = tiles[tile.idx];
-        const owner = state?.owner ?? -1;
-        const houses = state?.houses ?? 0;
-        const corner = rect.side === 'corner';
-        const art = TILE_ART[tile.idx];
-        const glyph = corner || art ? null : glyphForTile(tile.kind);
-        const owned = owner >= 0;
-        const priceText = owned ? rentLabel(tiles, tile.idx, festival) : tile.price ? String(tile.price) : tile.kind === 'tax' ? `−${TAX_RATE * 100}%` : '';
-        const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}${festival === tile.idx ? `, đang có Lễ hội, thuê ×${FESTIVAL_MULTIPLIER}` : ''}`;
-        const style = {
-          left: `${rect.x}%`,
-          top: `${rect.y}%`,
-          width: `${rect.w}%`,
-          height: `${rect.h}%`,
-          ...(owned ? { '--owner': seatColor(owner), '--owner-soft': SEAT_SOFT_COLORS[owner] ?? SEAT_SOFT_COLORS[0] } : {}),
-        } as CSSProperties;
-        return (
-          <button
-            key={tile.idx}
-            type="button"
-            className={[
-              'ty-tile',
-              `ty-tile-${rect.side}`,
-              `ty-tile-kind-${tile.kind}`,
-              rect.corner ? `ty-tile-corner-${rect.corner}` : '',
-              glyph ? 'ty-tile-special' : '',
-              owned ? 'ty-tile-owned' : '',
-              festival === tile.idx ? 'ty-tile-festival' : '',
-              landingTile === tile.idx ? 'ty-tile-landing' : '',
-              pathTiles.includes(tile.idx) ? 'ty-tile-path' : '',
-            ].join(' ')}
-            style={style}
-            data-group={tile.group ?? undefined}
-            onClick={() => onTileTap(tile.idx)}
-            aria-label={label}
-          >
-            {tile.kind === 'street' && tile.group ? (
-              <span className={`ty-tile-band ty-band-${tile.group}`}>
-                <TileHouses houses={houses} />
+    <div className="ty-s6-board" id="ty-s6-board" role="group" aria-label="Bàn cờ tỷ phú">
+      <div className="ty-s6-grid" id="ty-s6-grid">
+        {BOARD.map((tile) => {
+          const rect = tileRect(tile.idx);
+          const state = tiles[tile.idx];
+          const owner = state?.owner ?? -1;
+          const houses = state?.houses ?? 0;
+          const owned = owner >= 0 && (tile.kind === 'street' || tile.kind === 'station');
+          const corner = rect.side === 'corner';
+          const art = TILE_ART[tile.idx];
+          const mark = MARK_BY_KIND[tile.kind];
+          const text = owned ? `${rentLabel(tiles, tile.idx, festival)} tr` : caption(tile.idx);
+          const dim = (choosingFestival && !(tile.kind === 'street' && owner === you)) || (choosingTravel && tile.idx === view?.players[you]?.pos);
+          const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}${festival === tile.idx ? `, đang có Lễ hội, thuê ×${FESTIVAL_MULTIPLIER}` : ''}`;
+          const style = {
+            left: `calc(${rect.x}% + var(--u) * .15)`,
+            top: `calc(${rect.y}% + var(--u) * .15)`,
+            width: `calc(${rect.w}% - var(--u) * .3)`,
+            height: `calc(${rect.h}% - var(--u) * .3)`,
+            ...(owned ? { '--own': SEAT_TINTS[owner], '--owner': seatColor(owner) } : {}),
+          } as CSSProperties;
+          return (
+            <button
+              key={tile.idx}
+              type="button"
+              className={['ty-s6-tile', `ty-s6-side-${SIDE_CLASS[rect.side]}`, `ty-s6-kind-${tile.kind}`, owned ? 'ty-s6-owned' : '', dim ? 'ty-s6-dim' : ''].join(' ')}
+              style={style}
+              data-tile={tile.idx}
+              onClick={() => onTileTap(tile.idx)}
+              aria-label={label}
+            >
+              {tile.kind === 'street' && tile.group ? <i className="ty-s6-band" style={{ background: `var(--ty-g-${tile.group})` }} /> : null}
+              <span className="ty-s6-tile-body">
+                <b className="ty-s6-tile-name">{corner ? tile.name.toUpperCase() : shortName(tile.idx)}</b>
+                {art ? <span className={`ty-s6-art ${tile.kind === 'travel' ? 'ty-s6-art-contain' : ''}`} data-fig style={{ backgroundImage: `url(${art})` }} /> : null}
+                {!art && mark ? (
+                  <span className="ty-s6-glyph" data-fig>
+                    <TileMark name={mark} />
+                  </span>
+                ) : null}
+                {text ? <span className="ty-s6-price">{text}</span> : null}
               </span>
-            ) : null}
-            {festival === tile.idx ? (
-              <span className="ty-festival-badge" aria-hidden="true">
-                <TileGlyph name="festival" size={12} color="var(--ty-cream)" />
+              <span className="ty-s6-houses" data-houses>
+                <Houses houses={houses} />
               </span>
-            ) : null}
-            {corner ? (
-              <CornerContent idx={tile.idx} art={art} />
-            ) : (
-              <span className="ty-tile-body">
-                {art ? <TileArt className="ty-tile-art" src={art} /> : null}
-                {glyph ? <TileGlyph name={glyph} size={16} /> : null}
-                <span className="ty-tile-text">
-                  <span className="ty-tile-name">{shortName(tile.idx)}</span>
-                  {priceText ? <span className={owned ? 'ty-tile-rent' : tile.kind === 'tax' ? 'ty-tile-price ty-tile-price-tax' : 'ty-tile-price'}>{priceText}</span> : null}
+              <i className="ty-s6-odot" data-owner-dot style={owned ? { background: seatColor(owner) } : undefined} />
+              {festival === tile.idx ? <span className="ty-s6-fest">★</span> : null}
+              <span className="ty-s6-trail" data-trail />
+              {tile.kind === 'jail' ? (
+                <span className={`ty-s6-bars ${barsOn ? 'ty-s6-bars-on' : ''}`} id="ty-s6-bars">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
                 </span>
-              </span>
-            )}
-          </button>
-        );
-      })}
-
-      {positions.map((pos, seat) => {
-        const player = view?.players[seat];
-        if (!player || player.bankrupt) return null;
-        const idx = ((pos % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE;
-        const inJail = player.inJail && idx === JAIL_TILE;
-        const anchor = tokenAnchor(idx, inJail);
-        const mates = positions
-          .map((p, s) => ({ p, s }))
-          .filter(({ p, s }) => p === pos && !view?.players[s]?.bankrupt && (idx !== JAIL_TILE || Boolean(view?.players[s]?.inJail) === player.inJail))
-          .map(({ s }) => s);
-        const order = mates.indexOf(seat);
-        const offset = mates.length > 1 ? (order - (mates.length - 1) / 2) * TOKEN_SPREAD : 0;
-        return (
-          <Token
-            key={seat}
-            seat={seat}
-            x={anchor.x + offset}
-            y={anchor.y}
-            active={turnSeat === seat && !replaying}
-            inJail={inJail}
-            mine={seat === you}
-            flip={anchor.flip}
-            avatar={players[seat]?.avatar}
-          />
-        );
-      })}
+              ) : null}
+            </button>
+          );
+        })}
+        {positions.map((pos, seat) => {
+          const spot = spots[seat];
+          if (!spot) return null;
+          const active = turn === seat && idle && !view?.finished;
+          return <Token key={seat} seat={seat} tile={pos} x={spot.x} y={spot.y} z={spot.z} active={active} offer={active && view?.phase === 'decide'} />;
+        })}
+      </div>
       {children}
+      <div className="ty-s6-annclip">
+        <div className="ty-s6-announce" id="ty-s6-announce" role="status" hidden />
+      </div>
     </div>
   );
 }

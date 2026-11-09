@@ -14,7 +14,7 @@ Docs đã được sửa theo ảnh này: [art direction](../../01-art-direction
 - **Ô bàn:** mỗi thành phố một tranh pixel 16-bit; sân bay chung một tranh máy bay; Cơ hội `?` cam, Khí vận gió xanh, Thuế túi tiền `%`; nền ô sáng.
 - **Ô góc:** `XUẤT PHÁT` mũi tên xanh lá; `NHÀ TÙ` tranh phòng giam có `Thăm tù`; `LỄ HỘI` nền navy đèn lồng, `Thuê x2`; `DU LỊCH` vali cam, `Bay lượt sau`.
 - **Giữa bàn:** chồng thẻ `CƠ HỘI` cam và `KHÍ VẬN` xanh; chip `Lượt của bạn` + đồng hồ; 2 xúc xắc trắng nổi khối; nút vàng `Gieo xúc xắc` hình viên thuốc nổi khối; dòng gợi ý `Thắng ngay`.
-- **Quân:** con tốt màu ghế (vàng, xanh, san hô, tím), đứng ở mép trong ô.
+- **Quân:** con tốt màu ghế (vàng, xanh, san hô, tím). Khi dựng, quân đứng **giữa ô**, đè lên tranh ô (khác ảnh, ảnh vẽ ở mép trong).
 - **Header, pod, footer:** logo vàng nổi khối, chip vòng, nút tròn trắng; 4 pod một hàng dưới bàn; pill `Tài sản`, `Diễn biến`.
 
 ## Docs vẫn thắng ảnh S6 ở

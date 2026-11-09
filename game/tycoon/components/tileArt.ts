@@ -23,6 +23,7 @@ const ART_BY_NAME: Record<string, string> = {
   'Sân bay': 'san-bay',
   'Nhà tù': 'nha-tu',
   'Lễ hội': 'le-hoi',
+  'Du lịch': 'du-lich',
 };
 
 function artForName(name: string): string | undefined {
