@@ -54,8 +54,10 @@ export function MeAnnouncementCard() {
       </p>
       {announcement.content !== '' && (
         <PostContent
+          key={announcement.id}
           content={announcement.content}
           onMention={() => undefined}
+          collapsible
         />
       )}
       {announcement.link !== '' && (

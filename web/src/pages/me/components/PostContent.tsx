@@ -6,9 +6,15 @@ interface PostContentProps {
   content: string;
   onMention: (nick: string) => void;
   leading?: ReactNode;
+  collapsible?: boolean;
 }
 
-export function PostContent({ content, onMention, leading }: PostContentProps) {
+export function PostContent({
+  content,
+  onMention,
+  leading,
+  collapsible = false,
+}: PostContentProps) {
   const { t } = useTranslation();
   const contentRef = useRef<HTMLParagraphElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -39,6 +45,15 @@ export function PostContent({ content, onMention, leading }: PostContentProps) {
             className="mt-0.5 text-sm text-ola-primary-dark"
           >
             {t('me.seeMore')}
+          </button>
+        )}
+        {collapsible && clamped && expanded && (
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="mt-0.5 text-sm text-ola-primary-dark"
+          >
+            {t('me.seeLess')}
           </button>
         )}
       </div>

@@ -1127,6 +1127,7 @@
     "checkInError": "Couldn't get location. Enable location and try again.",
     "removePhoto": "Remove photo",
     "seeMore": "See more",
+    "seeLess": "See less",
     "postToMePage": "Post status to Me page",
     "attachLocal": "Photo",
     "attachSmiley": "Smiley",
