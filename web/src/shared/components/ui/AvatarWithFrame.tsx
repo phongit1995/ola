@@ -1,5 +1,5 @@
-import { avatarFrameById } from '@ola/shared/lib/avatarFrame';
-import { avatarFrameLayout, canShowAvatarFrame } from '@lib';
+import { visibleAvatarFrame } from '@ola/shared/lib/avatarFrame';
+import { avatarFrameLayout } from '@lib';
 import { Avatar } from './Avatar';
 
 const DEFAULT_AVATAR_SIZE = 40;
@@ -21,9 +21,7 @@ export function AvatarWithFrame({
   rounded = true,
   frameId,
 }: AvatarWithFrameProps) {
-  const frame = canShowAvatarFrame(size, frameId)
-    ? avatarFrameById(frameId)
-    : undefined;
+  const frame = visibleAvatarFrame(size, frameId);
   if (frame == null) {
     return (
       <Avatar
