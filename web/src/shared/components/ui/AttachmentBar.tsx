@@ -46,7 +46,7 @@ export type AttachPanelTab = Exclude<AttachTab, 'voice' | 'gift'>;
 export type AttachBarVariant = 'full' | 'compact';
 
 export interface AttachSendPayload {
-  kind: 'location' | 'ken' | 'vip' | 'vipDays' | 'gift';
+  kind: 'location' | 'ken' | 'vip' | 'vipDays' | 'vipDayTransfer' | 'gift';
   address?: string;
   kenAmount?: number;
   vipDirection?: 'sent' | 'received';
@@ -97,6 +97,7 @@ interface AttachmentBarProps {
   variant?: AttachBarVariant;
   groupSmileyTabs?: boolean;
   voiceDisabled?: boolean;
+  vipDayTransferEnabled?: boolean;
 }
 
 function CameraPanel({ onCapture }: { onCapture: () => void }) {
@@ -173,8 +174,10 @@ function PhotoPanel({ onPickImage }: { onPickImage: () => void }) {
 
 function MorePanel({
   onSend,
+  vipDayTransferEnabled,
 }: {
   onSend: (payload: AttachSendPayload) => void;
+  vipDayTransferEnabled: boolean;
 }) {
   const { t } = useTranslation();
   const buttons: Array<{ key: string; label: string; onClick: () => void }> = [
@@ -199,6 +202,15 @@ function MorePanel({
       label: t('chat.attachSendVipDays'),
       onClick: () => onSend({ kind: 'vipDays' }),
     },
+    ...(vipDayTransferEnabled
+      ? [
+          {
+            key: 'vip-day-transfer',
+            label: t('chat.attachVipDayTransfer'),
+            onClick: () => onSend({ kind: 'vipDayTransfer' }),
+          },
+        ]
+      : []),
   ];
   return (
     <div className="flex flex-col gap-2 px-4 py-2">
@@ -230,6 +242,7 @@ export function AttachmentBar({
   variant = 'full',
   groupSmileyTabs = false,
   voiceDisabled = false,
+  vipDayTransferEnabled = false,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
   const isCompact = variant === 'compact';
@@ -358,7 +371,12 @@ export function AttachmentBar({
           {openTab === 'kul' && <KulPanel onSendKul={onSendKul} />}
           {openTab === 'camera' && <CameraPanel onCapture={onPickImage} />}
           {openTab === 'photo' && <PhotoPanel onPickImage={onPickImage} />}
-          {openTab === 'more' && <MorePanel onSend={onSend} />}
+          {openTab === 'more' && (
+            <MorePanel
+              onSend={onSend}
+              vipDayTransferEnabled={vipDayTransferEnabled}
+            />
+          )}
         </div>
       )}
     </div>

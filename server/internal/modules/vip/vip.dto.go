@@ -91,6 +91,20 @@ type GiftPackageResponse struct {
 	VipEndTime       string `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
 }
 
+type TransferDaysRequest struct {
+	ToUsername   string `json:"toUsername" binding:"required" example:"minhanh"`
+	SenderDays   int    `json:"senderDays" binding:"required,min=1" example:"10"`
+	ReceiverDays int    `json:"receiverDays" binding:"required,min=1" example:"4"`
+	Password     string `json:"password" binding:"required" example:"password123"`
+}
+
+type TransferDaysResponse struct {
+	ReceiverUsername string `json:"receiverUsername" example:"minhanh"`
+	SenderDays       int    `json:"senderDays" example:"10"`
+	ReceiverDays     int    `json:"receiverDays" example:"4"`
+	VipEndTime       string `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
+}
+
 type GiftIconRequest struct {
 	ShopItemID string `json:"shopItemId" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ToUsername string `json:"toUsername" binding:"required" example:"minhanh"`

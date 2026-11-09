@@ -9,7 +9,7 @@ import {
   Typography,
   type TableColumnsType,
 } from 'antd'
-import { CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import { CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons'
 import {
   useDeleteVipPackage,
   useUpdateVipPackage,
@@ -19,6 +19,7 @@ import {
 import { MoveToTopButton, RenumberButton } from '@/components/ListOrderButtons'
 import { SortableTable } from '@/components/SortableTable'
 import { errorMessage } from '@/lib/apiError'
+import { VipDayTransferSettingsModal } from './VipDayTransferSettingsModal'
 import { VipPackageFormModal } from './VipPackageFormModal'
 import type { VipPackage } from '@/types'
 import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
@@ -28,6 +29,7 @@ export function VipPackagesPage() {
   const { message, modal } = App.useApp()
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<VipPackage | null>(null)
+  const [transferSettingsOpen, setTransferSettingsOpen] = useState(false)
 
   const { data, isFetching } = useVipPackages()
   const packages = data ?? []
@@ -163,6 +165,9 @@ export function VipPackagesPage() {
       >
         <Space>
           <RenumberButton disabled={order.numbered || order.saving} onClick={order.renumber} />
+          <Button icon={<SettingOutlined />} onClick={() => setTransferSettingsOpen(true)}>
+            Cài đặt chuyển NSD
+          </Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
             Tạo gói VIP
           </Button>
@@ -183,6 +188,10 @@ export function VipPackagesPage() {
         pkg={editing}
         nextPosition={order.nextPosition}
         onClose={() => setFormOpen(false)}
+      />
+      <VipDayTransferSettingsModal
+        open={transferSettingsOpen}
+        onClose={() => setTransferSettingsOpen(false)}
       />
     </Card>
   )

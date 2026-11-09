@@ -75,6 +75,11 @@ import {
 } from '@components/chat/voice/VoiceRecorderControl';
 import { TradingVipDialog } from './components/TradingVipDialog';
 import { TransferVipDaysDialog } from './components/TransferVipDaysDialog';
+import { VipDayTransferDialog } from './components/VipDayTransferDialog';
+import {
+  selectVipDayTransferEnabled,
+  useVipDayTransferConfigStore,
+} from '@ola/shared/stores/vip/vipDayTransferConfigStore';
 import { PeerProfileCard } from './components/PeerProfileCard';
 import { ChatHeader } from './components/ChatHeader';
 import { TypingIndicator } from './components/TypingIndicator';
@@ -137,6 +142,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [openTab, setOpenTab] = useState<AttachPanelTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
+  const [vipDayTransferOpen, setVipDayTransferOpen] = useState(false);
+  const vipDayTransferEnabled = useVipDayTransferConfigStore(selectVipDayTransferEnabled);
+  const loadVipDayTransferConfig = useVipDayTransferConfigStore((s) => s.load);
+
+  useEffect(() => {
+    void loadVipDayTransferConfig();
+  }, [loadVipDayTransferConfig]);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
@@ -523,7 +535,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const transferReceiver = {
     id: peerId,
     name: title,
-    username: conversation?.otherUser?.username,
+    username: conversation?.otherUser?.username ?? peerProfile?.username,
     avatar: peerProfile?.avatar ?? peerAvatar,
   };
 
@@ -844,6 +856,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             }
             setTransferVipDaysOpen(true);
           }}
+          onVipDayTransfer={vipDayTransferEnabled ? () => {
+            setOpenTab(null);
+            if (peerId === '') {
+              push('error', t('chat.actionError'));
+              return;
+            }
+            setVipDayTransferOpen(true);
+          } : undefined}
           onSendGift={giftsEnabled ? () => {
             setOpenTab(null);
             if (peerId === '') {
@@ -873,6 +893,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         <TransferVipDaysDialog
           visible
           onClose={() => setTransferVipDaysOpen(false)}
+          receiver={transferReceiver}
+        />
+      )}
+
+      {vipDayTransferOpen && vipDayTransferEnabled && peerId !== '' && (
+        <VipDayTransferDialog
+          visible
+          onClose={() => setVipDayTransferOpen(false)}
           receiver={transferReceiver}
         />
       )}

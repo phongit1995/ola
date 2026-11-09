@@ -13,6 +13,8 @@ import type {
   VipPackage,
   VipPurchaseHistory,
   VipPurchaseListParams,
+  VipDayTransferListParams,
+  VipDayTransferListResult,
   VipPurchaseStatsParams,
   VipPurchaseStatsResult,
   VipShopItem,
@@ -107,6 +109,13 @@ export const AdminVipService = {
       { params },
     )
     return data.data
+  },
+
+  async listDayTransfers(params: VipDayTransferListParams): Promise<VipDayTransferListResult> {
+    const { data } = await http.get<ApiResponse<VipDayTransferListResult>>('/admin/vip/day-transfers', {
+      params,
+    })
+    return data.data as VipDayTransferListResult
   },
 
   async getPurchaseStats(params: VipPurchaseStatsParams = {}): Promise<VipPurchaseStatsResult> {

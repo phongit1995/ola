@@ -50,6 +50,7 @@ interface AttachmentBarProps {
   onTransferKen?: () => void;
   onTradingVip?: () => void;
   onSendVipDays?: () => void;
+  onVipDayTransfer?: () => void;
   onSendGift?: () => void;
   voiceDisabled?: boolean;
 }
@@ -58,10 +59,12 @@ function MorePanel({
   onTransferKen,
   onTradingVip,
   onSendVipDays,
+  onVipDayTransfer,
 }: {
   onTransferKen?: () => void;
   onTradingVip?: () => void;
   onSendVipDays?: () => void;
+  onVipDayTransfer?: () => void;
 }) {
   const { t } = useTranslation();
   const push = useToastStore((s) => s.push);
@@ -87,6 +90,15 @@ function MorePanel({
       label: t('chat.attachSendVipDays'),
       onPress: () => (onSendVipDays != null ? onSendVipDays() : push('info', t('chat.comingSoon'))),
     },
+    ...(onVipDayTransfer != null
+      ? [
+          {
+            key: 'vip-day-transfer',
+            label: t('chat.attachVipDayTransfer'),
+            onPress: onVipDayTransfer,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -120,6 +132,7 @@ export function AttachmentBar({
   onTransferKen,
   onTradingVip,
   onSendVipDays,
+  onVipDayTransfer,
   onSendGift,
   voiceDisabled = false,
 }: AttachmentBarProps) {
@@ -197,6 +210,7 @@ export function AttachmentBar({
           onTransferKen={onTransferKen}
           onTradingVip={onTradingVip}
           onSendVipDays={onSendVipDays}
+          onVipDayTransfer={onVipDayTransfer}
         />
       )}
     </View>

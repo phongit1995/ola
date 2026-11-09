@@ -137,6 +137,7 @@ const MENU_PATH_ALIASES: Record<string, string> = {
   '/vip-shop': '/vip-packages',
   '/vip-purchases': '/vip-packages',
   '/vip-transfers': '/vip-packages',
+  '/vip-day-transfers': '/vip-packages',
 }
 
 const PAGE_TITLES: Record<string, string> = {
@@ -152,6 +153,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/vip-shop': 'Icon VIP',
   '/vip-purchases': 'Lịch sử mua VIP',
   '/vip-transfers': 'Lịch sử chuyển VIP',
+  '/vip-day-transfers': 'Lịch sử chuyển NSD',
   '/gifts': 'Danh sách quà',
   '/gifts/transactions': 'Sổ quà',
   '/gifts/settings': 'Cài đặt tặng quà',

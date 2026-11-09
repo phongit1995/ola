@@ -40,6 +40,16 @@ export type BuyErrorKey =
   | 'vip.buy.errBlocked'
   | 'vip.buy.errWrongPassword';
 
+export type VipDayTransferErrorKey =
+  | 'vip.buy.errDayTransferDisabled'
+  | 'vip.buy.errDayTransferInvalid'
+  | 'vip.buy.errDayTransferNotEnough'
+  | 'vip.buy.errDayTransferRateChanged'
+  | 'vip.buy.errReceiverNotFound'
+  | 'vip.buy.errGiftSelf'
+  | 'vip.buy.errBlocked'
+  | 'vip.buy.errWrongPassword';
+
 export type GiftErrorKey =
   | 'gift.errors.disabled'
   | 'gift.errors.notFound'

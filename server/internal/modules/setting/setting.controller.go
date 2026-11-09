@@ -227,9 +227,17 @@ func (ctrl *Controller) megaphoneConfigFor(client Client) (MegaphonePublicConfig
 	return cfg.PublicFor(client), nil
 }
 
+func (ctrl *Controller) vipDayTransferConfigFor(client Client) (VipDayTransferPublicConfig, error) {
+	cfg, err := ctrl.service.GetVipDayTransfer()
+	if err != nil {
+		return VipDayTransferPublicConfig{}, err
+	}
+	return cfg.PublicFor(client), nil
+}
+
 // AppConfig godoc
 // @Summary      Gộp config hệ thống cho app trong một request
-// @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment, gift, megaphone, giftCode; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
+// @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment, gift, megaphone, giftCode, vipDayTransfer; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
 // @Description  Gửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.
 // @Tags         settings
 // @Produce      json

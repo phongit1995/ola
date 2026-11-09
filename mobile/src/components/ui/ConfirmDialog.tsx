@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { useThemeColors } from '@hooks/useThemeColors';
@@ -8,7 +9,7 @@ const infoIcon = require('@assets/icons/chat/ic_dialog_indicate_info.png');
 interface ConfirmDialogProps {
   visible: boolean;
   title: string;
-  message: string;
+  message: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   hideCancel?: boolean;
@@ -60,9 +61,13 @@ export function ConfirmDialog({
         </>
       }
     >
-      <Text className="text-sm leading-relaxed" style={{ color: '#616163' }}>
-        {message}
-      </Text>
+      {typeof message === 'string' ? (
+        <Text className="text-sm leading-relaxed" style={{ color: '#616163' }}>
+          {message}
+        </Text>
+      ) : (
+        message
+      )}
       {checkboxLabel != null && (
         <Pressable
           accessibilityRole="checkbox"

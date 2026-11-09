@@ -2920,6 +2920,35 @@ export interface GiftTransactionListResult extends ListResult<AdminGiftTransacti
   totalCharm: number
 }
 
+export interface VipDayTransferSetting {
+  platforms: PlatformRules
+  rate: number
+  minSenderDays: number
+}
+
+export interface AdminVipDayTransfer {
+  id: string
+  source: string
+  name: string
+  days: number
+  vipEndTime: string
+  user?: VipPurchaseUser
+  createdAt: string
+}
+
+export interface VipDayTransferListParams {
+  search?: string
+  limit: number
+  offset: number
+}
+
+export interface VipDayTransferListResult {
+  total: number
+  limit: number
+  offset: number
+  items: AdminVipDayTransfer[]
+}
+
 export interface GiftSetting {
   enabled: boolean
   platforms: PlatformRules

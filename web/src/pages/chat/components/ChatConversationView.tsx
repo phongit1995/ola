@@ -57,6 +57,11 @@ import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
 import { TransferVipDaysDialog } from './TransferVipDaysDialog';
+import { VipDayTransferDialog } from './VipDayTransferDialog';
+import {
+  selectVipDayTransferEnabled,
+  useVipDayTransferConfigStore,
+} from '@ola/shared/stores/vip/vipDayTransferConfigStore';
 import { useIncomingGiftAnimation } from '../useIncomingGiftAnimation';
 import { VoicePreviewBar } from '@components/chat/voice/VoicePreviewBar';
 import {
@@ -152,6 +157,15 @@ export function ChatConversationView({
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
+  const [vipDayTransferOpen, setVipDayTransferOpen] = useState(false);
+  const vipDayTransferEnabled = useVipDayTransferConfigStore(
+    selectVipDayTransferEnabled
+  );
+  const loadVipDayTransferConfig = useVipDayTransferConfigStore((s) => s.load);
+
+  useEffect(() => {
+    void loadVipDayTransferConfig();
+  }, [loadVipDayTransferConfig]);
   const [giftOpen, setGiftOpen] = useState(false);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
   const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
@@ -856,6 +870,7 @@ export function ChatConversationView({
                   voiceRecorderRef.current?.start();
                 }}
                 voiceDisabled={pendingImage != null}
+                vipDayTransferEnabled={vipDayTransferEnabled}
                 onPickEmoji={(emoji) =>
                   composerRef.current?.insertCode(emoji, true, false)
                 }
@@ -900,6 +915,15 @@ export function ChatConversationView({
                       return;
                     }
                     setTransferVipDaysOpen(true);
+                    return;
+                  }
+                  if (payload.kind === 'vipDayTransfer') {
+                    setOpenTab(null);
+                    if (peerId === '') {
+                      toast.error(t('chat.actionError'));
+                      return;
+                    }
+                    setVipDayTransferOpen(true);
                     return;
                   }
                   toast.info(t('chat.comingSoon'));
@@ -1000,6 +1024,20 @@ export function ChatConversationView({
         <TransferVipDaysDialog
           open
           onClose={() => setTransferVipDaysOpen(false)}
+          receiver={{
+            id: peerId,
+            name,
+            username,
+            avatar: peerProfile?.avatar ?? avatar,
+            color,
+          }}
+        />
+      )}
+
+      {vipDayTransferOpen && vipDayTransferEnabled && (
+        <VipDayTransferDialog
+          open
+          onClose={() => setVipDayTransferOpen(false)}
           receiver={{
             id: peerId,
             name,

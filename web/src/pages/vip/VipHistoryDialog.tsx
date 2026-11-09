@@ -6,6 +6,7 @@ import {
   createTimeFormatter,
   formatDateDMY,
   formatKen,
+  isVipDayTransferSource,
   vipName,
 } from '@lib';
 import { VipService } from '@services';
@@ -30,6 +31,8 @@ const SOURCE_KEYS = [
   'wheel',
   'admin',
   'gift_code',
+  'day_transfer_out',
+  'day_transfer_in',
 ] as const;
 
 type SourceKey = (typeof SOURCE_KEYS)[number];
@@ -181,7 +184,8 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
                           `vip.historyDialog.source.${sourceKeyOf(item.source)}`
                         )}
                         {item.days > 0 &&
-                          ` · ${t('vip.historyDialog.until', {
+                          !isVipDayTransferSource(item.source) &&
+                          ` ·${t('vip.historyDialog.until', {
                             date: formatDateDMY(item.vipEndTime),
                           })}`}
                       </p>
@@ -189,18 +193,27 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
                   </div>
                   <div className="shrink-0 text-right">
                     {item.days > 0 && (
-                      <p className="text-sm font-semibold text-[#1f8a3b]">
+                      <p className="text-sm font-semibold text-ola-credit">
                         {t('vip.historyDialog.days', { count: item.days })}
+                      </p>
+                    )}
+                    {item.days < 0 && (
+                      <p className="text-sm font-semibold text-ola-debit">
+                        {t('vip.historyDialog.daysLost', {
+                          count: -item.days,
+                        })}
                       </p>
                     )}
                     <p className="text-xs text-[#9a9a9c]">
                       {formatTime(item.createdAt)}
                     </p>
-                    <p className="text-xs text-[#c0392b]">
-                      {item.kenPrice > 0
-                        ? `-${formatKen(item.kenPrice)} KEN`
-                        : t('vip.historyDialog.free')}
-                    </p>
+                    {!isVipDayTransferSource(item.source) && (
+                      <p className="text-xs text-ola-debit">
+                        {item.kenPrice > 0
+                          ? `-${formatKen(item.kenPrice)} KEN`
+                          : t('vip.historyDialog.free')}
+                      </p>
+                    )}
                   </div>
                 </li>
               );

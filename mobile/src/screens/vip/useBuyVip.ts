@@ -11,10 +11,16 @@ import {
 import type { BuyVipMode } from '@ola/shared/types';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { useVipDayTransferForm } from '@ola/shared/stores/vip/useVipDayTransferForm';
+import {
+  selectVipDayTransferEnabled,
+  useVipDayTransferConfigStore,
+} from '@ola/shared/stores/vip/vipDayTransferConfigStore';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/shared/types';
 import type { ListOption } from '@components/ui/ListOptionDialog';
 import {
   DEFAULT_VIP_ID,
+  MODE_ORDER,
   MOCK_KEN_BALANCE,
   RECEIVER_SEARCH_DEBOUNCE_MS,
   RECEIVER_SEARCH_LIMIT,
@@ -28,7 +34,14 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
   const refreshUser = useAuthStore((s) => s.refreshUser);
   const push = useToastStore((s) => s.push);
 
-  const [mode, setMode] = useState<BuyVipMode>(initialMode ?? 'buy');
+  const [selectedMode, setMode] = useState<BuyVipMode>(initialMode ?? 'buy');
+  const dayTransferEnabled = useVipDayTransferConfigStore(selectVipDayTransferEnabled);
+  const dayTransfer = useVipDayTransferForm(t);
+  const mode: BuyVipMode =
+    selectedMode === 'transferDays' && !dayTransferEnabled ? 'buy' : selectedMode;
+  const visibleModes = MODE_ORDER.filter(
+    (item) => item !== 'transferDays' || dayTransferEnabled,
+  );
   const [selectedVipId, setSelectedVipId] = useState(DEFAULT_VIP_ID);
   const [selectedShopId, setSelectedShopId] = useState('');
   const [selectedPackageId, setSelectedPackageId] = useState('');
@@ -99,7 +112,8 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
   const isExtend = mode === 'extend';
   const isGiftIcon = mode === 'give';
   const isGiftDays = mode === 'giveDays';
-  const showReceiver = isGiftIcon || isGiftDays;
+  const isTransferDays = mode === 'transferDays';
+  const showReceiver = isGiftIcon || isGiftDays || isTransferDays;
   const showVipSelect = isBuyIcon || isGiftIcon;
   const showPackage = isExtend || isGiftDays;
 
@@ -164,6 +178,13 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
     if (showPackage && selectedPackageId === '') {
       push('info', t('vip.buy.needPackage'));
       return;
+    }
+    if (isTransferDays) {
+      const inputError = dayTransfer.inputError();
+      if (inputError != null) {
+        push('info', inputError);
+        return;
+      }
     }
     if (showReceiver && giftPassword.trim() === '') {
       push('info', t('vip.buy.needPassword'));
@@ -237,6 +258,12 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
       );
       return;
     }
+    if (isTransferDays) {
+      const done = await dayTransfer.submit(receiver.trim(), giftPassword);
+      setConfirmOpen(false);
+      if (done) onDone();
+      return;
+    }
     if (isGiftDays) {
       if (selectedPackageId === '') {
         setConfirmOpen(false);
@@ -267,6 +294,10 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
 
   return {
     mode,
+    visibleModes,
+    isTransferDays,
+    dayTransfer,
+    receiver,
     changeMode,
     kenBalance,
     showReceiver,
@@ -294,7 +325,7 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
     setConfirmOpen,
     giftPassword,
     setGiftPassword,
-    purchasing,
+    purchasing: purchasing || dayTransfer.submitting,
     handlePickVip,
     startPurchase,
     confirmPurchase,

@@ -17,6 +17,7 @@ export const VIP_SECTION_LINKS: ShopSectionLink[] = [
   { path: '/vip-shop', label: 'Icon VIP', icon: <SmileOutlined /> },
   { path: '/vip-purchases', label: 'Lịch sử mua', icon: <ShoppingCartOutlined /> },
   { path: '/vip-transfers', label: 'Lịch sử chuyển', icon: <SwapOutlined /> },
+  { path: '/vip-day-transfers', label: 'Lịch sử chuyển NSD', icon: <SwapOutlined /> },
 ]
 
 export const GIFT_SECTION_LINKS: ShopSectionLink[] = [

@@ -39,6 +39,23 @@ type PurchaseItem struct {
 	CreatedAt  string    `json:"createdAt" example:"2026-10-19T10:00:00Z"`
 }
 
+type DayTransferItem struct {
+	ID         string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Source     string    `json:"source" example:"day_transfer_out"`
+	Name       string    `json:"name" example:"Chuyển cho @minhanh, nhận 4 ngày"`
+	Days       int       `json:"days" example:"-3"`
+	VipEndTime string    `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
+	User       *UserInfo `json:"user,omitempty"`
+	CreatedAt  string    `json:"createdAt" example:"2026-10-19T10:00:00Z"`
+}
+
+type DayTransferListResponse struct {
+	Total  int64             `json:"total" example:"1"`
+	Limit  int               `json:"limit" example:"20"`
+	Offset int               `json:"offset" example:"0"`
+	Items  []DayTransferItem `json:"items"`
+}
+
 type PurchaseListResponse struct {
 	Total  int64          `json:"total" example:"1"`
 	Limit  int            `json:"limit" example:"20"`

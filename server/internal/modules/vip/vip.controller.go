@@ -1,6 +1,7 @@
 package vip
 
 import (
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -346,6 +347,22 @@ func (ctrl *Controller) GiftPackage(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 	resp, err := ctrl.service.GiftPackage(userID, packageID, req.ToUsername, req.Password)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+func (ctrl *Controller) TransferDays(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[TransferDaysRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.TransferDays(userID, *req, setting.ClientFrom(c))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

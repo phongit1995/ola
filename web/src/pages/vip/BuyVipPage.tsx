@@ -22,18 +22,26 @@ import type { ListOption } from '@components';
 import { VipService } from '@services';
 import type { VipIconCatalogItem, VipPackageItem } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
+import { useVipDayTransferForm } from '@ola/shared/stores/vip/useVipDayTransferForm';
+import {
+  selectVipDayTransferEnabled,
+  useVipDayTransferConfigStore,
+} from '@ola/shared/stores/vip/vipDayTransferConfigStore';
+import { VipDayTransferFields } from './components/VipDayTransferFields';
+import { VipDayTransferSummary } from './components/VipDayTransferSummary';
 import { ReceiverField } from './components/ReceiverField';
 import { SelectChevron } from './components/SelectChevron';
 import { useReceiverSearch } from './useReceiverSearch';
 
 const MOCK_KEN_BALANCE = 12_345;
 const DEFAULT_VIP_ID = 4;
-const MODE_ORDER: BuyVipMode[] = ['buy', 'give', 'giveDays', 'extend'];
+const MODE_ORDER: BuyVipMode[] = ['buy', 'give', 'giveDays', 'transferDays', 'extend'];
 
 const MODE_TITLE = {
   buy: 'vip.buy.titleBuy',
   give: 'vip.buy.titleGive',
   giveDays: 'vip.buy.titleGiveDays',
+  transferDays: 'vip.buy.titleTransferDays',
   extend: 'vip.buy.titleExtend',
 } as const;
 
@@ -41,6 +49,7 @@ const MODE_ACTION = {
   buy: 'vip.buyVip',
   give: 'vip.buy.actionGive',
   giveDays: 'vip.buy.actionGive',
+  transferDays: 'vip.buy.actionTransferDays',
   extend: 'vip.extendVip',
 } as const;
 
@@ -48,6 +57,7 @@ const MODE_TAB = {
   buy: 'vip.buy.modeBuy',
   give: 'vip.buy.modeGive',
   giveDays: 'vip.buy.modeGiveDays',
+  transferDays: 'vip.buy.modeTransferDays',
   extend: 'vip.buy.modeExtend',
 } as const;
 
@@ -125,7 +135,18 @@ export function BuyVipPage({
   const setUser = useAuthStore((s) => s.setUser);
   const refreshUser = useAuthStore((s) => s.refreshUser);
 
-  const [mode, setMode] = useState<BuyVipMode>(initialMode);
+  const [selectedMode, setMode] = useState<BuyVipMode>(initialMode);
+  const dayTransferEnabled = useVipDayTransferConfigStore(
+    selectVipDayTransferEnabled
+  );
+  const dayTransfer = useVipDayTransferForm(t);
+  const mode: BuyVipMode =
+    selectedMode === 'transferDays' && !dayTransferEnabled
+      ? 'buy'
+      : selectedMode;
+  const visibleModes = MODE_ORDER.filter(
+    (item) => item !== 'transferDays' || dayTransferEnabled
+  );
   const [selectedVipId, setSelectedVipId] = useState(DEFAULT_VIP_ID);
   const [selectedShopId, setSelectedShopId] = useState('');
   const [selectedPackageId, setSelectedPackageId] = useState('');
@@ -177,7 +198,8 @@ export function BuyVipPage({
   const isExtend = mode === 'extend';
   const isGiftIcon = mode === 'give';
   const isGiftDays = mode === 'giveDays';
-  const showReceiver = isGiftIcon || isGiftDays;
+  const isTransferDays = mode === 'transferDays';
+  const showReceiver = isGiftIcon || isGiftDays || isTransferDays;
   const showVipSelect = isBuyIcon || isGiftIcon;
   const showPackage = isExtend || isGiftDays;
 
@@ -235,6 +257,13 @@ export function BuyVipPage({
     if (showPackage && !selectedPackageId) {
       toast.info(t('vip.buy.needPackage'));
       return;
+    }
+    if (isTransferDays) {
+      const inputError = dayTransfer.inputError();
+      if (inputError != null) {
+        toast.info(inputError);
+        return;
+      }
     }
     if (showReceiver && giftPassword.trim() === '') {
       toast.info(t('vip.buy.needPassword'));
@@ -321,6 +350,12 @@ export function BuyVipPage({
       }
       return;
     }
+    if (isTransferDays) {
+      const done = await dayTransfer.submit(receiver.trim(), giftPassword);
+      setConfirmOpen(false);
+      if (done) onClose();
+      return;
+    }
     if (isGiftDays) {
       if (!selectedPackageId) {
         setConfirmOpen(false);
@@ -375,12 +410,12 @@ export function BuyVipPage({
 
       <div className="flex-1 overflow-y-auto bg-ola-surface-dim pb-6">
         <div className="flex gap-1 bg-white px-2 py-2">
-          {MODE_ORDER.map((item) => (
+          {visibleModes.map((item) => (
             <button
               key={item}
               type="button"
               onClick={() => changeMode(item)}
-              className={`flex-1 rounded-full px-2 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex-auto rounded-full px-1 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
                 mode === item
                   ? 'bg-ola-primary text-ola-on-primary'
                   : 'bg-black/5 text-black/60'
@@ -391,16 +426,18 @@ export function BuyVipPage({
           ))}
         </div>
 
-        <div className="mt-2 bg-white px-4 py-3">
-          <div className="flex items-center">
-            <span className="text-sm text-black/54">
-              {t('vip.buy.balance')}
-            </span>
-            <span className="ml-2 text-lg font-bold text-ola-primary-ink">
-              {formatKen(kenBalance)} KEN
-            </span>
+        {!isTransferDays && (
+          <div className="mt-2 bg-white px-4 py-3">
+            <div className="flex items-center">
+              <span className="text-sm text-black/54">
+                {t('vip.buy.balance')}
+              </span>
+              <span className="ml-2 text-lg font-bold text-ola-primary-ink">
+                {formatKen(kenBalance)} KEN
+              </span>
+            </div>
           </div>
-        </div>
+        )}
 
         {showReceiver && (
           <ReceiverField
@@ -459,6 +496,12 @@ export function BuyVipPage({
           </div>
         )}
 
+        {isTransferDays && (
+          <div className="mt-2 bg-white px-4 py-3">
+            <VipDayTransferFields form={dayTransfer} />
+          </div>
+        )}
+
         {showReceiver && receiverUser != null && (
           <div className="mt-2 bg-white px-4 py-3">
             <span className="text-xs text-black/54">
@@ -503,7 +546,18 @@ export function BuyVipPage({
       <ConfirmDialog
         open={confirmOpen}
         title={t(MODE_TITLE[mode])}
-        message={confirmMessage()}
+        message={
+          isTransferDays ? (
+            <VipDayTransferSummary
+              senderDays={dayTransfer.senderDays}
+              receiverDays={dayTransfer.receiverDays}
+              receiver={receiver}
+              note={t('vip.buy.transferDaysIrreversible')}
+            />
+          ) : (
+            confirmMessage()
+          )
+        }
         confirmLabel={t(MODE_ACTION[mode])}
         cancelLabel={t('vip.buy.cancel')}
         onConfirm={confirmPurchase}

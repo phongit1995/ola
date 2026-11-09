@@ -88,6 +88,43 @@ func (r *Repository) ListPurchases(f PurchaseFilter, limit, offset int) ([]purch
 	return rows, total, err
 }
 
+type dayTransferRow struct {
+	ID              uuid.UUID `gorm:"column:id"`
+	UserID          uuid.UUID `gorm:"column:user_id"`
+	PackageName     string    `gorm:"column:package_name"`
+	Days            int       `gorm:"column:days"`
+	Source          string    `gorm:"column:source"`
+	VipEndTimeAfter time.Time `gorm:"column:vip_end_time_after"`
+	CreatedAt       time.Time `gorm:"column:created_at"`
+}
+
+func (r *Repository) dayTransferQuery(search string) *gorm.DB {
+	query := r.db.Table("vip_purchases vp").
+		Where("vp.deleted_at IS NULL AND vp.source IN ?", vip.PurchaseDayTransferSources)
+	if search = strings.TrimPrefix(search, "@"); search != "" {
+		like := "%" + search + "%"
+		query = query.Joins("LEFT JOIN users u ON u.id = vp.user_id").
+			Where("(u.username ILIKE ? OR u.full_name ILIKE ? OR vp.package_name ILIKE ?)", like, like, like)
+	}
+	return query
+}
+
+func (r *Repository) ListDayTransfers(search string, limit, offset int) ([]dayTransferRow, int64, error) {
+	var total int64
+	if err := r.dayTransferQuery(search).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var rows []dayTransferRow
+	err := r.dayTransferQuery(search).
+		Select("vp.id, vp.user_id, vp.package_name, vp.days, vp.source, vp.vip_end_time_after, vp.created_at").
+		Order("vp.created_at DESC, vp.id DESC").
+		Limit(limit).
+		Offset(offset).
+		Scan(&rows).Error
+	return rows, total, err
+}
+
 type totalsRow struct {
 	Count        int64 `gorm:"column:count"`
 	Ken          int64 `gorm:"column:ken"`

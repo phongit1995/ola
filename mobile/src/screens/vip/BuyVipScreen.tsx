@@ -11,9 +11,11 @@ import { ListOptionDialog } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
-import { MODE_ACTION, MODE_ORDER, MODE_TAB, MODE_TITLE } from './constants';
+import { MODE_ACTION, MODE_TAB, MODE_TITLE } from './constants';
 import { useBuyVip } from './useBuyVip';
 import { ReceiverField } from './components/ReceiverField';
+import { VipDayTransferFields } from './components/VipDayTransferFields';
+import { VipDayTransferSummary } from './components/VipDayTransferSummary';
 import { VipIconImage } from './components/VipIconImage';
 import { VipPickerDialog } from './components/VipPickerDialog';
 
@@ -36,16 +38,17 @@ export function BuyVipScreen({ navigation, route }: Props) {
         contentContainerClassName="pb-6"
       >
         <View className="flex-row gap-1 bg-white px-2 py-2">
-          {MODE_ORDER.map((item) => {
+          {vm.visibleModes.map((item) => {
             const activeTab = vm.mode === item;
             return (
               <Pressable
                 key={item}
                 onPress={() => vm.changeMode(item)}
-                className="flex-1 items-center rounded-full px-2 py-1.5"
-                style={{ backgroundColor: activeTab ? colors.primary : 'rgba(0,0,0,0.05)' }}
+                className="items-center rounded-full px-1 py-1.5"
+                style={{ flexGrow: 1, backgroundColor: activeTab ? colors.primary : 'rgba(0,0,0,0.05)' }}
               >
                 <Text
+                  numberOfLines={1}
                   className="text-xs font-medium"
                   style={{ color: activeTab ? '#ffffff' : 'rgba(0,0,0,0.6)' }}
                 >
@@ -56,12 +59,14 @@ export function BuyVipScreen({ navigation, route }: Props) {
           })}
         </View>
 
-        <View className="mt-2 flex-row items-center bg-white px-4 py-3">
-          <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>{t('vip.buy.balance')}</Text>
-          <Text className="ml-2 text-lg font-bold" style={{ color: colors.primary }}>
-            {formatKen(vm.kenBalance)} KEN
-          </Text>
-        </View>
+        {!vm.isTransferDays && (
+          <View className="mt-2 flex-row items-center bg-white px-4 py-3">
+            <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>{t('vip.buy.balance')}</Text>
+            <Text className="ml-2 text-lg font-bold" style={{ color: colors.primary }}>
+              {formatKen(vm.kenBalance)} KEN
+            </Text>
+          </View>
+        )}
 
         {vm.showReceiver && (
           <ReceiverField
@@ -118,6 +123,12 @@ export function BuyVipScreen({ navigation, route }: Props) {
           </View>
         )}
 
+        {vm.isTransferDays && (
+          <View className="mt-2 bg-white px-4 py-3">
+            <VipDayTransferFields form={vm.dayTransfer} />
+          </View>
+        )}
+
         {vm.showReceiver && vm.receiverUser != null && (
           <View className="mt-2 bg-white px-4 py-3">
             <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
@@ -171,7 +182,18 @@ export function BuyVipScreen({ navigation, route }: Props) {
       <ConfirmDialog
         visible={vm.confirmOpen}
         title={t(MODE_TITLE[vm.mode])}
-        message={vm.confirmText}
+        message={
+          vm.isTransferDays ? (
+            <VipDayTransferSummary
+              senderDays={vm.dayTransfer.senderDays}
+              receiverDays={vm.dayTransfer.receiverDays}
+              receiver={vm.receiver}
+              note={t('vip.buy.transferDaysIrreversible')}
+            />
+          ) : (
+            vm.confirmText
+          )
+        }
         confirmLabel={t(MODE_ACTION[vm.mode])}
         cancelLabel={t('vip.buy.cancel')}
         onConfirm={() => void vm.confirmPurchase()}
