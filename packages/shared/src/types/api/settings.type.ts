@@ -76,6 +76,7 @@ export interface StoryConfigResult {
 export interface MomentConfigResult {
   enabled: boolean;
   videoVipRequired?: boolean;
+  musicEnabled?: boolean;
 }
 
 export interface UsernameChangeConfigResult {

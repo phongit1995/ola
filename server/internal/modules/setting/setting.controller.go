@@ -197,9 +197,14 @@ func (ctrl *Controller) momentConfigFor(client Client) (MomentConfigResponse, er
 	if err != nil {
 		return MomentConfigResponse{}, err
 	}
+	music, err := ctrl.service.GetMomentMusic()
+	if err != nil {
+		return MomentConfigResponse{}, err
+	}
 	return MomentConfigResponse{
 		Enabled:          cfg.EnabledFor(client.Platform, client.AppVersion),
 		VideoVipRequired: video.VipRequired,
+		MusicEnabled:     music.EnabledFor(client.Platform, client.AppVersion),
 	}, nil
 }
 

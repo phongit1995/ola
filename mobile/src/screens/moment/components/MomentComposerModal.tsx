@@ -34,12 +34,12 @@ import {
   toast,
 } from '@ola/shared/lib';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
-import { useMomentVideoLocked } from '@ola/shared/stores/moment/momentConfigStore';
+import { useMomentMusicEnabled, useMomentVideoLocked } from '@ola/shared/stores/moment/momentConfigStore';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import type { MomentDraftSlide, MomentMediaDraft, MomentVisibility } from '@ola/shared/types';
+import type { MomentDraftSlide, MomentMediaDraft, MomentMusicDraft, MomentVisibility } from '@ola/shared/types';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
@@ -58,6 +58,7 @@ import {
   MomentVisibilityMenu,
   type MomentMenuAnchor,
 } from './MomentComposerParts';
+import { MomentMusicBar, MomentMusicPanel } from './MomentMusicPanel';
 import { MomentTextPanel } from './MomentTextPanel';
 
 type ComposerMode = 'slides' | 'video';
@@ -113,16 +114,19 @@ function MomentComposerContent({ ready, onClose, requestCloseRef }: MomentCompos
   const [closePending, setClosePending] = useState(false);
   const [vipPrompt, setVipPrompt] = useState(false);
   const videoLocked = useMomentVideoLocked();
+  const musicEnabled = useMomentMusicEnabled();
+  const [music, setMusic] = useState<MomentMusicDraft | null>(null);
+  const [musicOpen, setMusicOpen] = useState(false);
   const buyVipAfterCloseRef = useRef(false);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const active = slides[activeIndex] ?? slides[0];
   const editing = active?.overlays.find((overlay) => overlay.id === editingId) ?? null;
-  const dirty = slides.some((slide) => slide.media != null || hasMomentOverlayText(slide));
+  const dirty = music != null || slides.some((slide) => slide.media != null || hasMomentOverlayText(slide));
   const footerHeight =
     mode === 'video'
       ? VIDEO_FOOTER_HEIGHT
-      : SLIDES_FOOTER_HEIGHT + (active?.media != null ? PHOTO_BAR_HEIGHT : 0);
+      : SLIDES_FOOTER_HEIGHT + (active?.media != null || musicEnabled ? PHOTO_BAR_HEIGHT : 0);
   const availableHeight =
     window.height - insets.top - insets.bottom - HEADER_HEIGHT - footerHeight - CANVAS_MARGIN;
   const canvasWidth = Math.min(window.width - CANVAS_MARGIN * 2, availableHeight * MOMENT_ASPECT_RATIO);
@@ -274,6 +278,10 @@ function MomentComposerContent({ ready, onClose, requestCloseRef }: MomentCompos
 
   function requestClose() {
     if (submitting) return;
+    if (musicOpen) {
+      setMusicOpen(false);
+      return;
+    }
     if (visibilityMenu != null) {
       setVisibilityMenu(null);
       return;
@@ -301,16 +309,24 @@ function MomentComposerContent({ ready, onClose, requestCloseRef }: MomentCompos
     }
     setSubmitting(true);
     try {
-      const posted = await publish(() =>
-        buildMomentUpload(
+      const posted = await publish(async () => ({
+        ...(await buildMomentUpload(
           visibility,
           slides.map((slide) => ({
             media: slide.media,
             background: slide.background,
             overlays: slide.overlays.filter((overlay) => overlay.text.trim() !== ''),
           }))
-        )
-      );
+        )),
+        music:
+          mode === 'slides' && music != null
+            ? {
+                file: music.file,
+                title: music.title,
+                startMs: music.startMs,
+              }
+            : undefined,
+      }));
       if (posted) toast.success(t('moment.posted'));
     } catch (error) {
       const failure = momentPublishError(error);
@@ -402,7 +418,12 @@ function MomentComposerContent({ ready, onClose, requestCloseRef }: MomentCompos
         <View className="justify-center px-3" style={{ height: footerHeight }}>
           {mode === 'slides' && (
             <>
-              {active.media != null && <MomentPhotoBar onChange={() => void pickPhotos()} />}
+              {(active.media != null || musicEnabled) && (
+                <MomentPhotoBar
+                  onChange={active.media != null ? () => void pickPhotos() : undefined}
+                  end={musicEnabled ? <MomentMusicBar music={music} onOpen={() => setMusicOpen(true)} /> : null}
+                />
+              )}
               <MomentSlideStrip
                 slides={slides}
                 activeIndex={activeIndex}
@@ -430,6 +451,17 @@ function MomentComposerContent({ ready, onClose, requestCloseRef }: MomentCompos
               updateSlideWith(active.id, (slide) => removeMomentOverlay(slide, editing.id));
               setEditingId(null);
             }}
+          />
+        )}
+
+        {musicOpen && (
+          <MomentMusicPanel
+            initial={music}
+            onApply={(next) => {
+              setMusic(next);
+              setMusicOpen(false);
+            }}
+            onClose={() => setMusicOpen(false)}
           />
         )}
 

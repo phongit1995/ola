@@ -66,6 +66,13 @@ func (r *Repository) List(f ListFilter, now time.Time) ([]*models.Moment, int64,
 	if f.Enabled != nil {
 		db = db.Where("moments.enabled = ?", *f.Enabled)
 	}
+	if f.HasMusic != nil {
+		if *f.HasMusic {
+			db = db.Where("moments.music_object <> ''")
+		} else {
+			db = db.Where("moments.music_object = ''")
+		}
+	}
 	if f.HasPendingReports != nil {
 		cond := pendingReportExists
 		if !*f.HasPendingReports {

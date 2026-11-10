@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/setting"
 )
 
 type CreateMomentItem struct {
@@ -21,6 +22,20 @@ type CreateMomentInput struct {
 	Thumbs     []*multipart.FileHeader
 	Video      *multipart.FileHeader
 	Thumb      *multipart.FileHeader
+	Music      *CreateMomentMusic
+	Client     setting.Client
+}
+
+type CreateMomentMusic struct {
+	File    *multipart.FileHeader
+	Title   string
+	StartMs int
+}
+
+type MomentMusicResponse struct {
+	URL        string `json:"url"`
+	Title      string `json:"title"`
+	DurationMs int    `json:"durationMs"`
 }
 
 type MomentAuthorResponse struct {
@@ -44,6 +59,7 @@ type MomentResponse struct {
 	Width             int                      `json:"width,omitempty"`
 	Height            int                      `json:"height,omitempty"`
 	Duration          float64                  `json:"duration,omitempty"`
+	Music             *MomentMusicResponse     `json:"music,omitempty"`
 	Visibility        string                   `json:"visibility"`
 	ViewerCount       *int64                   `json:"viewerCount,omitempty"`
 	ReactionCount     *int64                   `json:"reactionCount,omitempty"`

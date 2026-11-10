@@ -21,6 +21,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		moments.GET("/:id", r.controller.GetMoment)
 		moments.PATCH("/:id/status", r.controller.UpdateStatus)
 		moments.POST("/:id/purge-media", r.controller.PurgeMedia)
+		moments.POST("/:id/remove-music", r.controller.RemoveMusic)
 		moments.GET("/:id/viewers", r.controller.ListViewers)
 		moments.GET("/:id/comments", r.controller.ListComments)
 	}

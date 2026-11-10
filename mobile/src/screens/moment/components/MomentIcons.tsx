@@ -161,6 +161,16 @@ export function MomentPlayIcon(props: IconProps) {
   );
 }
 
+export function MomentMusicIcon(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <Path d="M9 18V6l11-2v12" />
+      <Circle cx="6.5" cy="18" r="2.5" />
+      <Circle cx="17.5" cy="16" r="2.5" />
+    </StrokeIcon>
+  );
+}
+
 export function MomentSoundIcon({ muted, ...props }: IconProps & { muted: boolean }) {
   return (
     <StrokeIcon {...props}>
@@ -185,6 +195,14 @@ export function MomentImageIcon(props: IconProps) {
       <Rect x="3" y="4" width="18" height="16" rx="2" />
       <Circle cx="9" cy="10" r="2" />
       <Path d="M21 16l-5-5-9 9" />
+    </StrokeIcon>
+  );
+}
+
+export function MomentPencilIcon(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <Path d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4" />
     </StrokeIcon>
   );
 }

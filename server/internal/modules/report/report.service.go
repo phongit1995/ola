@@ -58,6 +58,7 @@ var validReasons = map[string]bool{
 	ReportReasonSensitive:  true,
 	ReportReasonScam:       true,
 	ReportReasonHarassment: true,
+	ReportReasonCopyright:  true,
 	ReportReasonOther:      true,
 }
 

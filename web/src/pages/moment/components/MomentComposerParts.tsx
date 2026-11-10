@@ -406,18 +406,30 @@ export function MomentSlideChoice({
   );
 }
 
-export function MomentPhotoBar({ onChange }: { onChange: () => void }) {
+export function MomentPhotoBar({
+  onChange,
+  end,
+}: {
+  onChange?: () => void;
+  end?: ReactNode;
+}) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-center py-1.5 text-sm">
-      <button
-        type="button"
-        onClick={onChange}
-        className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 font-medium text-ola-primary-ink shadow-sm ring-1 ring-black/5 transition-colors hover:bg-ola-primary-light"
-      >
-        <MomentImageIcon className="h-4 w-4" />
-        {t('moment.changePhoto')}
-      </button>
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-1.5 text-sm">
+      <span />
+      {onChange != null ? (
+        <button
+          type="button"
+          onClick={onChange}
+          className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 font-medium text-ola-primary-ink shadow-sm ring-1 ring-black/5 transition-colors hover:bg-ola-primary-light"
+        >
+          <MomentImageIcon className="h-4 w-4" />
+          {t('moment.changePhoto')}
+        </button>
+      ) : (
+        <span />
+      )}
+      <div className="flex min-w-0 justify-end">{end}</div>
     </div>
   );
 }

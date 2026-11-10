@@ -44,6 +44,7 @@ export * from './callStatus';
 export * from './color';
 export * from './story';
 export * from './moment';
+export * from './momentMusic';
 export * from './momentReactionBurst';
 export * from './avatarFrameLayout';
 export * from './avatarFrameErrors';

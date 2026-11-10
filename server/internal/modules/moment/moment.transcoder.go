@@ -248,6 +248,36 @@ func (t *Transcoder) Probe(ctx context.Context, src string) (*probedVideo, error
 	return info, nil
 }
 
+func (t *Transcoder) ProbeMusic(ctx context.Context, src string) (*probedMusic, error) {
+	if !t.Available() {
+		return nil, errTranscoderDisabled
+	}
+	out, err := t.run(ctx, t.ffprobe, probeArgs(src))
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", errProbeFailed, err)
+	}
+	info, err := parseMusicProbe(out)
+	if err != nil {
+		return nil, err
+	}
+	if info.DurationMs == 0 {
+		packets, err := t.run(ctx, t.ffprobe, musicPacketTimesArgs(src))
+		if err != nil {
+			return nil, fmt.Errorf("%w: %v", errProbeFailed, err)
+		}
+		info.DurationMs = int(lastPacketTime(packets) * 1000)
+	}
+	if info.DurationMs == 0 {
+		return nil, errProbeNoDuration
+	}
+	return info, nil
+}
+
+func (t *Transcoder) CutMusic(ctx context.Context, src, dst string, startMs, durationMs int, loop bool) error {
+	_, err := t.run(ctx, t.ffmpeg, musicClipArgs(src, dst, startMs, durationMs, loop))
+	return err
+}
+
 func (t *Transcoder) Video(ctx context.Context, plan videoPlan, hdr bool, src, dst string) error {
 	_, err := t.run(ctx, t.ffmpeg, videoArgs(plan, hdr, src, dst))
 	return err

@@ -437,6 +437,16 @@ const MOMENT_PUBLISH_ERROR_KEY = {
   [MOMENT_ERROR_CODE.videoInvalid]: 'moment.videoInvalid',
   [MOMENT_ERROR_CODE.videoNotMp4]: 'moment.videoMp4Only',
   [MOMENT_ERROR_CODE.videoVipRequired]: 'moment.videoVipRequired',
+  [MOMENT_ERROR_CODE.musicNotAllowed]: 'moment.musicUnavailable',
+  [MOMENT_ERROR_CODE.musicDisabled]: 'moment.musicDisabled',
+  [MOMENT_ERROR_CODE.musicUnavailable]: 'moment.musicUnavailable',
+  [MOMENT_ERROR_CODE.musicTooLarge]: 'moment.musicTooLarge',
+  [MOMENT_ERROR_CODE.musicInvalid]: 'moment.musicInvalid',
+  [MOMENT_ERROR_CODE.musicTooShort]: 'moment.musicTooShort',
+  [MOMENT_ERROR_CODE.musicTooLong]: 'moment.musicTooLong',
+  [MOMENT_ERROR_CODE.musicRange]: 'moment.musicRange',
+  [MOMENT_ERROR_CODE.musicBlocked]: 'moment.musicBlocked',
+  [MOMENT_ERROR_CODE.musicTitle]: 'moment.musicTitleTooLong',
 } as const;
 
 type MomentPublishErrorCode = keyof typeof MOMENT_PUBLISH_ERROR_KEY;

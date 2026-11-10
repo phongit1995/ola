@@ -4,6 +4,13 @@ import type { MeAuthor } from './me'
 
 export type AdminMomentState = 'live' | 'processing' | 'failed' | 'expired' | 'deleted'
 
+export interface AdminMomentMusic {
+  url?: string
+  title: string
+  startMs: number
+  durationMs: number
+}
+
 export interface AdminMoment {
   id: string
   type: MomentType
@@ -18,6 +25,7 @@ export interface AdminMoment {
   duration?: number
   size?: number
   mimeType?: string
+  music?: AdminMomentMusic
   visibility: MomentVisibility
   status: string
   state: AdminMomentState
@@ -48,6 +56,8 @@ export interface MomentMediaPurgeSetting {
 }
 
 export type MomentDisplaySetting = PlatformRules
+
+export type MomentMusicSetting = PlatformRules
 
 export interface MomentVideoSetting {
   vipRequired: boolean
@@ -100,6 +110,7 @@ export interface AdminMomentListParams {
   state?: AdminMomentState
   enabled?: boolean
   hasPendingReports?: boolean
+  hasMusic?: boolean
   sortBy?: string
   sortDir?: string
   limit?: number

@@ -84,6 +84,8 @@ export const MOMENT_DISPLAY_SETTING_KEY = 'moment'
 
 export const MOMENT_VIDEO_SETTING_KEY = 'moment_video'
 
+export const MOMENT_MUSIC_SETTING_KEY = 'moment_music'
+
 export const DEFAULT_MOMENT_VIDEO_SETTING: MomentVideoSetting = { vipRequired: false }
 
 export const MOMENT_MEDIA_PURGE_SETTING_KEY = 'moment_media_purge'

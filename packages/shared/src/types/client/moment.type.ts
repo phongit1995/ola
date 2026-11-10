@@ -11,6 +11,15 @@ export interface MomentMediaDraft {
   playable?: boolean;
 }
 
+export interface MomentMusicDraft {
+  file: UploadFile;
+  url: string;
+  fileName: string;
+  title: string;
+  durationMs: number;
+  startMs: number;
+}
+
 export interface MomentDraftSlide {
   id: string;
   media: MomentMediaDraft | null;
@@ -45,6 +54,7 @@ export interface MomentReactionSpark {
 export interface MomentConfigState {
   enabled: boolean | null;
   videoVipRequired: boolean;
+  musicEnabled: boolean;
   load: () => Promise<void>;
 }
 

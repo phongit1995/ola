@@ -7,6 +7,7 @@ const (
 	ReportReasonSensitive  = "sensitive"
 	ReportReasonScam       = "scam"
 	ReportReasonHarassment = "harassment"
+	ReportReasonCopyright  = "copyright"
 	ReportReasonOther      = "other"
 	ReportNoteMaxRunes     = 500
 	ReportTargetIDMaxLen   = 64

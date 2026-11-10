@@ -32,14 +32,15 @@ import {
   momentPublishError,
   toast,
 } from '@lib';
-import type { MomentDraftSlide, MomentVisibility } from '@app-types';
+import type { MomentDraftSlide, MomentMusicDraft, MomentVisibility } from '@app-types';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
-import { useMomentVideoLocked } from '@ola/shared/stores/moment/momentConfigStore';
+import { useMomentMusicEnabled, useMomentVideoLocked } from '@ola/shared/stores/moment/momentConfigStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { buildMomentUpload } from '../momentUpload';
 import { readVideoFile } from '../videoFile';
 import { MomentCanvasEditor } from './MomentCanvasEditor';
 import { MomentCanvas, MomentStage } from './MomentCanvas';
+import { MomentMusicBar, MomentMusicPanel } from './MomentMusicPanel';
 import {
   MomentModePicker,
   MomentPhotoBar,
@@ -76,6 +77,10 @@ export function MomentComposer({ onClose }: { onClose: () => void }) {
   const [discardOpen, setDiscardOpen] = useState(false);
   const [vipPromptOpen, setVipPromptOpen] = useState(false);
   const videoLocked = useMomentVideoLocked();
+  const musicEnabled = useMomentMusicEnabled();
+  const [music, setMusic] = useState<MomentMusicDraft | null>(null);
+  const [musicOpen, setMusicOpen] = useState(false);
+  const musicUrlRef = useRef<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const slidesRef = useRef(slides);
@@ -84,12 +89,22 @@ export function MomentComposer({ onClose }: { onClose: () => void }) {
     slidesRef.current = slides;
   }, [slides]);
 
-  useEffect(() => () => releaseSlides(slidesRef.current), []);
+  useEffect(() => {
+    musicUrlRef.current = music?.url;
+  }, [music?.url]);
+
+  useEffect(
+    () => () => {
+      releaseSlides(slidesRef.current);
+      if (musicUrlRef.current != null) URL.revokeObjectURL(musicUrlRef.current);
+    },
+    []
+  );
 
   const active = slides[activeIndex] ?? slides[0];
   const dirty = slides.some(
     (slide) => slide.media != null || hasMomentOverlayText(slide)
-  );
+  ) || music != null;
 
   function startSlides() {
     setSlides([createBlankMomentSlide()]);
@@ -226,8 +241,8 @@ export function MomentComposer({ onClose }: { onClose: () => void }) {
     }
     setSubmitting(true);
     try {
-      const posted = await publish(() =>
-        buildMomentUpload(
+      const posted = await publish(async () => ({
+        ...(await buildMomentUpload(
           visibility,
           slides.map((slide) => ({
             media: slide.media,
@@ -236,8 +251,16 @@ export function MomentComposer({ onClose }: { onClose: () => void }) {
               (overlay) => overlay.text.trim() !== ''
             ),
           }))
-        )
-      );
+        )),
+        music:
+          mode === 'slides' && music != null
+            ? {
+                file: music.file,
+                title: music.title,
+                startMs: music.startMs,
+              }
+            : undefined,
+      }));
       if (posted) toast.success(t('moment.posted'));
     } catch (error) {
       const failure = momentPublishError(error);
@@ -322,8 +345,18 @@ export function MomentComposer({ onClose }: { onClose: () => void }) {
           <div className="shrink-0 px-3 pt-2 pb-3">
             {mode === 'slides' && (
               <>
-                {active.media != null && (
-                  <MomentPhotoBar onChange={pickPhotos} />
+                {(active.media != null || musicEnabled) && (
+                  <MomentPhotoBar
+                    onChange={active.media != null ? pickPhotos : undefined}
+                    end={
+                      musicEnabled ? (
+                        <MomentMusicBar
+                          music={music}
+                          onOpen={() => setMusicOpen(true)}
+                        />
+                      ) : null
+                    }
+                  />
                 )}
                 <MomentSlideStrip
                   slides={slides}
@@ -344,6 +377,16 @@ export function MomentComposer({ onClose }: { onClose: () => void }) {
               />
             )}
           </div>
+          {musicOpen && (
+            <MomentMusicPanel
+              initial={music}
+              onApply={(next) => {
+                setMusic(next);
+                setMusicOpen(false);
+              }}
+              onClose={() => setMusicOpen(false)}
+            />
+          )}
         </FullScreenOverlay>
       )}
 
