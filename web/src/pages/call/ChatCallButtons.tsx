@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@lib';
+import { toast, withCallPeerFrame } from '@lib';
 import type { CallerBrief, CallType } from '@app-types';
 import { useCallStore } from '@/store/callStore';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -61,7 +61,15 @@ export function ChatCallButtons() {
       );
       if (conversationId == null) return;
 
-      await startCall(conversationId, callType, peer);
+      const chat = useChatStore.getState();
+      const created = chat.conversations.find(
+        (item) => item.id === conversationId
+      );
+      await startCall(
+        conversationId,
+        callType,
+        withCallPeerFrame(peer, created, chat.peerProfile)
+      );
     } finally {
       setPreparing(false);
     }

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import type { CallerBrief, CallType } from '@ola/shared/types';
+import { withCallPeerFrame } from '@ola/shared/lib';
 import { useCallStore } from '@store/callStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { ChatPhoneIcon, ChatVideoIcon } from './icons';
@@ -56,7 +57,9 @@ export function ChatCallButtons() {
       });
       if (conversationId == null) return;
 
-      await startCall(conversationId, callType, peer);
+      const chat = useChatStore.getState();
+      const created = chat.conversations.find(item => item.id === conversationId);
+      await startCall(conversationId, callType, withCallPeerFrame(peer, created, chat.peerProfile));
     } finally {
       setPreparing(false);
     }
