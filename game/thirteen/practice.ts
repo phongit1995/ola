@@ -167,9 +167,9 @@ export function createPracticeSession({ user, bots, random = Math.random }: Prac
       matchId,
       winnerId: winner >= 0 ? players[winner].id : undefined,
       reason: 'win',
-      state: viewFor(state, YOU),
+      state: { ...viewFor(state, YOU), hands: state.hands.map((hand) => [...hand]) },
       rankings: order.map((seat, i) => ({ userId: players[seat].id, place: i + 1 })),
-    } satisfies MatchOverData<ServerState>);
+    } satisfies MatchOverData<ServerState & { hands: number[][] }>);
   };
 
   const armTurn = (previousSeat: number): number => {

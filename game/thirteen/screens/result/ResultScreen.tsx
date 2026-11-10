@@ -130,7 +130,10 @@ export function ResultScreen() {
                   <span className="tl-result-name">
                     <PlayerName name={nameOf(entry.userId)} self={me} />
                   </span>
-                  <span className="tl-result-label">{placeLabel(entry.place, total)}</span>
+                  <span className="tl-result-label">
+                    {placeLabel(entry.place, total)}
+                    {result.congIds?.includes(entry.userId) ? ' · Cóng' : ''}
+                  </span>
                 </span>
                 {exp > 0 && <span className="tl-result-exp">+{exp} EXP</span>}
               </li>

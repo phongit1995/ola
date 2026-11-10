@@ -28,7 +28,7 @@ func ExportClientConfig() ClientConfig {
 			string(ComboQuad), string(ComboStraight), string(ComboDoubleRun),
 		},
 		InstantWins: []string{InstantFourTwos, InstantDragon, InstantFourPairRun, InstantSixPairs},
-		StepKinds:   []string{StepDeal, StepPlay, StepPass, StepClear, StepFinish, StepInstant},
+		StepKinds:   []string{StepDeal, StepPlay, StepPass, StepClear, StepFinish, StepInstant, StepCong},
 	}
 }
 

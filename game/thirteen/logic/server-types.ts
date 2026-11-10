@@ -22,6 +22,7 @@ export interface ServerState {
   passed: boolean[];
   quit: boolean[];
   finishOrder: number[];
+  cong?: number[];
   turn: number;
   starter: number;
   require3s: boolean;
@@ -37,6 +38,7 @@ export interface FinalState {
   passed: boolean[];
   quit: boolean[];
   finishOrder: number[];
+  cong?: number[];
   quitOrder?: number[];
   turn: number;
   starter: number;
@@ -61,6 +63,7 @@ export function decodeServerState(raw: unknown): ServerState {
     passed: Array.isArray(state.passed) ? state.passed.map(Boolean) : [],
     quit: Array.isArray(state.quit) ? state.quit.map(Boolean) : [],
     finishOrder: Array.isArray(state.finishOrder) ? state.finishOrder.filter((i) => Number.isInteger(i)) : [],
+    cong: Array.isArray(state.cong) ? state.cong.filter((i) => Number.isInteger(i)) : [],
     turn: numberOr(state.turn, 0),
     starter: numberOr(state.starter, 0),
     require3s: Boolean(state.require3s),

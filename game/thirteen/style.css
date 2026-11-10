@@ -771,6 +771,35 @@ button {
   opacity: 0.55;
 }
 
+.tl-reveal {
+  display: flex;
+  justify-content: center;
+  max-width: 112px;
+  animation: tl-reveal-in 320ms ease-out;
+}
+
+.tl-reveal-card {
+  width: 24px;
+  height: auto;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.tl-reveal-card + .tl-reveal-card {
+  margin-left: -17px;
+}
+
+@keyframes tl-reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .tl-opponent-name {
   font: 800 13px var(--body);
   color: var(--cream);
@@ -1015,6 +1044,12 @@ button {
   z-index: 20;
   animation: tl-banner 700ms ease-out;
   white-space: nowrap;
+}
+
+.tl-finish-banner.cong {
+  background: var(--red);
+  border-color: #9e3b2f;
+  color: #fff;
 }
 
 @keyframes tl-banner {

@@ -63,6 +63,24 @@ Không có raster UI mới và không có text nằm trong asset.
   - Người thắng rời ván trước khi đánh thì lượt chuyển sang người kế, nhưng server vẫn giữ `ledByWinner`. Nhờ điều kiện trên, người kế không bị gắn nhãn.
 - Tới trắng vẫn xét theo thứ tự bắt đầu từ người đi trước.
 
+**Chiều đánh và chỗ ngồi:**
+- Lượt đi theo ghế `+1`. Client đặt ghế ngược chiều kim đồng hồ quanh bàn (`helpers/seats.ts`): mình ngồi dưới, người đánh sau mình ngồi bên phải, rồi trên, rồi trái.
+- Bàn chơi theo phòng giữ nguyên ghế giữa các ván. Thứ tự ghế lưu ở `seatOrder` trong JSON phòng, chỉ dùng cho game cài `logic.SeatKeeper` (hiện chỉ Tiến Lên); Caro / War God / Cờ tướng vẫn xáo ghế mỗi ván.
+  - Ván đầu của phòng xáo ghế ngẫu nhiên.
+  - Ai rời bàn thì bỏ ghế đó, người mới ngồi sau những người đã có ghế.
+
+**Cóng:**
+- Khi người đầu tiên hết bài, ai chưa đánh lá nào (còn đủ 13 lá) bị cóng: khóa, không được đánh tiếp, xếp chót theo thứ tự lượt tính từ người về Nhất. Những người còn lại đánh tiếp để phân hạng.
+- State và view có `cong` (danh sách ghế), bước `cong` báo cho client hiện banner “… bị cóng!” và nhãn “Cóng” ở ghế. Bài người bị cóng không lật lúc đó, chỉ lật khi hạ bài lúc hết ván.
+- Không phạt thêm cược: cược chỉ trả cho người về Nhất.
+- Chế độ tập luyện (`logic/engine.ts`) chạy cùng luật.
+
+**Hết ván:**
+- Nước kết thúc ván không có `state` riêng: server chỉ gửi `matchOver` với state đầy đủ (`hands`, `table`, `finishOrder`, `cong`, `steps`). Client khóa thao tác ngay (`turn = -1`, `animating`), phát lại `steps` nếu `moveCount` mới hơn state đã áp (chế độ tập luyện đã gửi `state` trước nên không phát lại), rồi áp snapshot cuối: bài trên tay, bài giữa bàn, số lá, hạng, cóng.
+- Sau đó chờ 600 ms rồi hạ bài: lật bài còn lại của từng người ngay tại ghế trong 2,8 s, xong mới mở kết quả. Chế độ tập luyện gửi kèm `hands` trong `matchOver`.
+- Dữ liệu lật bài và cóng (`revealHands`, `cong`, `congFx`) được xóa khi bắt đầu ván, vào xem bàn khác, đóng kết quả hoặc rời bàn.
+- Màn kết quả ghi thêm “· Cóng” cạnh hạng của người bị cóng.
+
 Phía server:
 - phòng chờ lưu `lastWinnerId` (trong JSON phòng ở Redis, không cần migration):
   - gán khi hết ván (`prepareNextRound`);
@@ -81,7 +99,7 @@ Giao diện người xem:
 - ghế 0 ngồi ở giữa phía dưới bàn (`.tl-seat-slot.bottom`, lưới `.tl-felt.watching` thêm hàng `bottom`), vẽ y như ghế đối diện: avatar, badge số lá, tên, hạng/bỏ lượt/mất kết nối. Không vẽ bài úp;
 - thanh dưới thay cho “Bỏ lượt / Đánh”: ghi chú “Bạn đang xem ván này” và nút “Rời xem”;
 - chat chỉ đọc: vẫn thấy tin nhắn và cảm xúc của người chơi, không có hàng cảm xúc, câu nhanh và ô nhập;
-- hết ván: không mở modal kết quả. Chờ bước đánh cuối phát xong (600 ms) rồi chuyển sang bàn chờ của chính bàn đó (xem dưới). Nếu bàn đã giải tán thì về sảnh kèm toast “Ván đấu bạn đang xem đã kết thúc.”;
+- hết ván: không mở modal kết quả. Chờ bước đánh cuối phát xong (600 ms) và hạ bài (2,8 s) như người chơi, rồi chuyển sang bàn chờ của chính bàn đó (xem dưới). Nếu bàn đã giải tán thì về sảnh kèm toast “Ván đấu bạn đang xem đã kết thúc.”;
 - mất kết nối rồi có lại thì tự gửi lại yêu cầu xem; ván đã xong thì về sảnh kèm thông báo.
 
 Bàn chờ của người xem (giữa hai ván):

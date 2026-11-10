@@ -14,6 +14,7 @@ const (
 	StepClear   = "clear"
 	StepFinish  = "finish"
 	StepInstant = "instant"
+	StepCong    = "cong"
 )
 
 const (
@@ -43,6 +44,7 @@ type State struct {
 	Passed             []bool  `json:"passed"`
 	Quit               []bool  `json:"quit"`
 	FinishOrder        []int   `json:"finishOrder"`
+	Cong               []int   `json:"cong,omitempty"`
 	QuitOrder          []int   `json:"quitOrder,omitempty"`
 	Turn               int     `json:"turn"`
 	Starter            int     `json:"starter"`
@@ -66,10 +68,23 @@ func (s *State) hasCards(idx int) bool {
 	return idx >= 0 && idx < s.playerCount() && len(s.Hands[idx]) > 0
 }
 
+func (s *State) isCong(idx int) bool {
+	for _, c := range s.Cong {
+		if c == idx {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *State) canAct(idx int) bool {
+	return s.isActive(idx) && s.hasCards(idx) && !s.isCong(idx)
+}
+
 func (s *State) activeWithCards() []int {
 	idxs := make([]int, 0, s.playerCount())
 	for i := range s.Hands {
-		if s.isActive(i) && s.hasCards(i) {
+		if s.canAct(i) {
 			idxs = append(idxs, i)
 		}
 	}
@@ -80,7 +95,7 @@ func (s *State) nextEligible(from int) int {
 	n := s.playerCount()
 	for i := 1; i <= n; i++ {
 		j := (from + i) % n
-		if s.isActive(j) && s.hasCards(j) && !s.Passed[j] {
+		if s.canAct(j) && !s.Passed[j] {
 			return j
 		}
 	}
@@ -91,11 +106,25 @@ func (s *State) firstActiveFrom(from int) int {
 	n := s.playerCount()
 	for i := 0; i < n; i++ {
 		j := (from + i) % n
-		if s.isActive(j) && s.hasCards(j) {
+		if s.canAct(j) {
 			return j
 		}
 	}
 	return -1
+}
+
+// markCong locks every player still holding a full hand when the first player
+// goes out: they rank last, in turn order from the winner.
+func (s *State) markCong(winner int) {
+	n := s.playerCount()
+	for i := 1; i < n; i++ {
+		p := (winner + i) % n
+		if s.isActive(p) && len(s.Hands[p]) == HandSize && !s.isCong(p) {
+			s.Cong = append(s.Cong, p)
+			s.Passed[p] = false
+			s.Steps = append(s.Steps, Step{Kind: StepCong, By: p})
+		}
+	}
 }
 
 func (s *State) clearTrick() {
@@ -343,11 +372,12 @@ func validateSavedState(s *State) error {
 			return err
 		}
 	}
-	if len(s.FinishOrder) > n || len(s.QuitOrder) > n {
+	if len(s.FinishOrder) > n || len(s.QuitOrder) > n || len(s.Cong) > n {
 		return errors.New("invalid saved orders")
 	}
 	seenIdx := make(map[int]bool, n)
-	for _, idx := range append(append([]int(nil), s.FinishOrder...), s.QuitOrder...) {
+	ordered := append(append(append([]int(nil), s.FinishOrder...), s.Cong...), s.QuitOrder...)
+	for _, idx := range ordered {
 		if idx < 0 || idx >= n || seenIdx[idx] {
 			return errors.New("invalid saved finish order")
 		}

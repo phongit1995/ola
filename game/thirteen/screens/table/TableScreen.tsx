@@ -14,7 +14,7 @@ import type { FlightOrigin } from '../../helpers/cardFlight';
 import { HAND_SELECTED_LIFT, handArc, handArcDrop, handLayout, trickLayout, trickRotation } from '../../helpers/cardLayout';
 import { atName } from '../../helpers/name';
 import { TURN_SECONDS } from '../../logic/constants.gen';
-import { cardLabel } from '../../logic/cards';
+import { cardLabel, sortHand } from '../../logic/cards';
 import { comboLabel } from '../../logic/beats';
 import { detectCombo } from '../../logic/combos';
 import { hintPlays } from '../../logic/hints';
@@ -124,25 +124,40 @@ function ChatButton() {
   );
 }
 
+function RevealedHand({ seat }: { seat: number }) {
+  const cards = useThirteen((s) => s.revealHands?.[seat]);
+  if (!cards || cards.length === 0) return null;
+  return (
+    <div className="tl-reveal" aria-label={`Bài còn lại: ${cards.map(cardLabel).join(', ')}`}>
+      {sortHand(cards).map((card) => (
+        <img key={card} src={cardAsset(card)} alt="" className="tl-reveal-card" />
+      ))}
+    </div>
+  );
+}
+
 function OpponentSeat({ seat }: { seat: number }) {
   const players = useThirteen((s) => s.players);
   const handCounts = useThirteen((s) => s.handCounts);
   const passed = useThirteen((s) => s.passed);
   const quit = useThirteen((s) => s.quit);
   const finishOrder = useThirteen((s) => s.finishOrder);
+  const cong = useThirteen((s) => s.cong);
   const passFxSeat = useThirteen((s) => s.passFxSeat);
+  const revealed = useThirteen((s) => (s.revealHands?.[seat]?.length ?? 0) > 0);
   const player = players[seat];
   if (!player) return null;
   const count = handCounts[seat] ?? 0;
   const finishPlace = finishOrder.indexOf(seat);
-  const playing = !quit[seat] && finishPlace < 0;
+  const isCong = cong.includes(seat);
+  const playing = !quit[seat] && finishPlace < 0 && !isCong;
   return (
     <div className={'tl-opponent' + (quit[seat] ? ' quit' : '')}>
       <span className="tl-seat-avatar" data-seat={seat}>
         <TurnRing seat={seat}>
           <PlayerAvatar name={player.name} vipType={player.vipType} size="md" />
         </TurnRing>
-        {playing && (
+        {playing && !revealed && (
           <span className="tl-count-badge" aria-label={`${count} lá`}>
             <img src={CARD_BACK} alt="" />
             {count}
@@ -158,10 +173,13 @@ function OpponentSeat({ seat }: { seat: number }) {
         <span className="tl-badge">Đã rời</span>
       ) : finishPlace >= 0 ? (
         <span className="tl-badge tl-badge-gold">{placeLabel(finishPlace + 1, players.length)}</span>
+      ) : isCong ? (
+        <span className="tl-badge tl-badge-red">Cóng</span>
       ) : null}
-      {(passed[seat] || passFxSeat === seat) && !quit[seat] && finishPlace < 0 && (
+      {(passed[seat] || passFxSeat === seat) && playing && (
         <span className="tl-pass-chip">Bỏ lượt</span>
       )}
+      <RevealedHand seat={seat} />
       <AwayBadge seat={seat} />
     </div>
   );
@@ -588,6 +606,8 @@ export function TableScreen() {
   const passFxSeat = useThirteen((s) => s.passFxSeat);
   const passed = useThirteen((s) => s.passed);
   const finishOrder = useThirteen((s) => s.finishOrder);
+  const cong = useThirteen((s) => s.cong);
+  const congFx = useThirteen((s) => s.congFx);
   const practice = useThirteen((s) => s.practice != null);
   const spectating = useThirteen((s) => s.spectating);
   const anchor = spectating ? 0 : you;
@@ -600,6 +620,7 @@ export function TableScreen() {
   const rightSeat = seatsBySlot.get('right');
   const bottomSeat = spectating ? anchor : null;
   const myPlace = finishOrder.indexOf(you);
+  const myCong = cong.includes(you);
   const handRects = useRef<HandRects>(new Map());
 
   return (
@@ -654,6 +675,11 @@ export function TableScreen() {
           {placeLabel(finishFx.place, players.length)}!
         </div>
       )}
+      {congFx != null && !finishFx && (
+        <div className="tl-finish-banner cong">
+          {players[congFx]?.id === user?.id ? 'Bạn' : atName(players[congFx]?.name ?? '')} bị cóng!
+        </div>
+      )}
 
       {spectating ? (
         <div className="tl-bottom">
@@ -672,7 +698,8 @@ export function TableScreen() {
             <div className="tl-my-info">
               <span className="tl-my-name">Bạn</span>
               {myPlace >= 0 && <span className="tl-badge tl-badge-gold">{placeLabel(myPlace + 1, players.length)}</span>}
-              {(passed[you] || passFxSeat === you) && <span className="tl-pass-chip">Bỏ lượt</span>}
+              {myCong && <span className="tl-badge tl-badge-red">Cóng</span>}
+              {(passed[you] || passFxSeat === you) && !myCong && <span className="tl-pass-chip">Bỏ lượt</span>}
             </div>
             <HintButton />
           </div>

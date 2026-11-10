@@ -66,6 +66,12 @@ type LeaderInit interface {
 	InitPlayersLed(seed int64, playerCount, leader int) any
 }
 
+// SeatKeeper keeps room players in last round's seats instead of reshuffling,
+// for games where seat order decides who plays after whom.
+type SeatKeeper interface {
+	KeepsSeatsBetweenRounds() bool
+}
+
 // TurnOrder lets a game control which seat plays next; the engine default is
 // round-robin, which equals 1-idx for two players.
 type TurnOrder interface {
