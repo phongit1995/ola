@@ -44,7 +44,7 @@ export function AvatarWithFrame({
         color={color}
         size={avatarSize}
         src={src}
-        rounded={rounded}
+        rounded
       />
       <img
         src={frame.url}
