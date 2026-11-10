@@ -46,6 +46,7 @@ var alertReasonLabels = map[string]string{
 	ReportReasonSensitive:  "Nội dung nhạy cảm",
 	ReportReasonScam:       "Lừa đảo",
 	ReportReasonHarassment: "Quấy rối / xúc phạm",
+	ReportReasonCopyright:  "Vi phạm bản quyền",
 	ReportReasonOther:      "Khác",
 }
 

@@ -7,6 +7,7 @@ export const REPORT_REASONS = [
   { value: 'sensitive', labelKey: 'report.reasonSensitive' },
   { value: 'scam', labelKey: 'report.reasonScam' },
   { value: 'harassment', labelKey: 'report.reasonHarassment' },
+  { value: 'copyright', labelKey: 'report.reasonCopyright' },
   { value: 'other', labelKey: 'report.reasonOther' },
 ] as const satisfies ReadonlyArray<{ value: ReportReason; labelKey: string }>;
 

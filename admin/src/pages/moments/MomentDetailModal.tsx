@@ -33,6 +33,7 @@ import {
   useMomentDetail,
   useMomentViewers,
   usePurgeMomentMedia,
+  useRemoveMomentMusic,
   useSeedMomentDetail,
   useToggleMomentStatus,
 } from './useMomentQueries'
@@ -42,6 +43,7 @@ import {
   hasMomentSwitch,
   momentHiddenByLabel,
   momentLoadErrorText,
+  momentMusicRange,
   videoSummary,
 } from './utils'
 import {
@@ -224,6 +226,7 @@ function MomentInfo({
 }) {
   const status = useToggleMomentStatus()
   const media = usePurgeMomentMedia()
+  const music = useRemoveMomentMusic()
   const hiddenBy = momentHiddenByLabel(moment)
   const typeTag = MOMENT_TYPE_TAG[moment.type]
   const stateTag = MOMENT_STATE_TAG[moment.state]
@@ -299,6 +302,38 @@ function MomentInfo({
           )}
           {moment.type === 'video' && (
             <Descriptions.Item label="Video">{videoSummary(moment)}</Descriptions.Item>
+          )}
+          {moment.music && (
+            <Descriptions.Item label="Nhạc">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Typography.Text strong>{moment.music.title}</Typography.Text>
+                <Typography.Text type="secondary">{momentMusicRange(moment.music)}</Typography.Text>
+                {moment.music.url ? (
+                  <audio src={moment.music.url} controls style={{ width: '100%', height: 36 }} />
+                ) : (
+                  <Typography.Text type="secondary">File nhạc đã được dọn</Typography.Text>
+                )}
+                {moment.music.url && (
+                  <Space size={8} wrap>
+                    <Button
+                      size="small"
+                      loading={music.pendingId === moment.id}
+                      onClick={() => music.remove(moment, false)}
+                    >
+                      Gỡ nhạc
+                    </Button>
+                    <Button
+                      size="small"
+                      danger
+                      loading={music.pendingId === moment.id}
+                      onClick={() => music.remove(moment, true)}
+                    >
+                      Gỡ nhạc và chặn file này
+                    </Button>
+                  </Space>
+                )}
+              </div>
+            </Descriptions.Item>
           )}
           <Descriptions.Item label="Lượt xem">{moment.viewerCount ?? '—'}</Descriptions.Item>
           <Descriptions.Item label="Cảm xúc">

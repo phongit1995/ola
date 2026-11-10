@@ -33,6 +33,7 @@ import {
   portalRoot,
   momentExpiresInMs,
   momentGroupEntryStep,
+  momentSlideMs,
   momentGroupStartIndex,
   ownSessionMoments,
   momentItemStep,
@@ -54,6 +55,7 @@ import type { MomentMediaStatus } from '../types';
 import { MomentStage } from './MomentCanvas';
 import { MomentCommentSheet } from './MomentCommentSheet';
 import { MomentChevronIcon } from './MomentIcons';
+import { useMomentMusicPlayer } from '../useMomentMusicPlayer';
 import { MomentViewerFace } from './MomentViewerFace';
 
 const DRAG_START_PX = 10;
@@ -151,6 +153,16 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
   const closeCommentSheet = useCallback(() => setCommentMomentId(null), []);
   const waitingForMedia = mediaStatus === 'loading';
   const followsVideo = media?.type === MOMENT_TYPE.video && mediaStatus !== 'error';
+  const slideMs = moment == null ? MOMENT_SLIDE_MS : momentSlideMs(moment);
+  const muteOnAutoplayBlocked = useCallback(() => setMuted(true), []);
+
+  const { waiting: waitingForMusic } = useMomentMusicPlayer({
+    url: moment?.music?.url,
+    playId,
+    paused: paused || waitingForMedia,
+    muted,
+    onAutoplayBlocked: muteOnAutoplayBlocked,
+  });
   const hasPrev = groupIndex > 0;
   const hasNext = groupIndex < groups.length - 1;
 
@@ -251,7 +263,7 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
   }, [shownMomentId]);
 
   useEffect(() => {
-    if (paused || moment == null || waitingForMedia) return;
+    if (paused || moment == null || waitingForMedia || waitingForMusic) return;
     let frame = 0;
     if (followsVideo) {
       const follow = () => {
@@ -268,16 +280,16 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
     const step = (now: number) => {
       const elapsed = now - startedAt;
       elapsedRef.current = elapsed;
-      if (elapsed >= MOMENT_SLIDE_MS) {
+      if (elapsed >= slideMs) {
         advance(1);
         return;
       }
-      setProgress(elapsed / MOMENT_SLIDE_MS);
+      setProgress(elapsed / slideMs);
       frame = requestAnimationFrame(step);
     };
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
-  }, [paused, moment, playId, followsVideo, waitingForMedia, advance]);
+  }, [paused, moment, playId, followsVideo, waitingForMedia, waitingForMusic, advance, slideMs]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -451,7 +463,7 @@ export function MomentViewer({ session, onClose, onOpenProfile }: MomentViewerPr
                 offset={index - groupIndex - shift}
                 active={active}
                 progress={active ? progress : 0}
-                mediaStatus={mediaStatus}
+                mediaStatus={waitingForMusic && mediaStatus === 'ready' ? 'loading' : mediaStatus}
                 time={formatTime(faceMoment.createdAt)}
                 muted={muted}
                 paused={userPaused}

@@ -26,6 +26,7 @@ type MomentItem struct {
 	Duration           float64                      `json:"duration,omitempty"`
 	Size               int64                        `json:"size,omitempty"`
 	MimeType           string                       `json:"mimeType,omitempty"`
+	Music              *MomentMusicItem             `json:"music,omitempty"`
 	Visibility         string                       `json:"visibility"`
 	Status             string                       `json:"status"`
 	State              string                       `json:"state"`
@@ -44,6 +45,17 @@ type MomentItem struct {
 	CreatedAt          string                       `json:"createdAt"`
 	ExpiresAt          string                       `json:"expiresAt"`
 	DeletedAt          string                       `json:"deletedAt,omitempty"`
+}
+
+type MomentMusicItem struct {
+	URL        string `json:"url,omitempty"`
+	Title      string `json:"title"`
+	StartMs    int    `json:"startMs"`
+	DurationMs int    `json:"durationMs"`
+}
+
+type RemoveMusicRequest struct {
+	Block bool `json:"block" example:"false"`
 }
 
 type MomentDetail struct {

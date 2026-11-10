@@ -17,7 +17,9 @@ import { APP_PLATFORMS, normalizePlatformRules, OPEN_PLATFORM_RULES } from '@/li
 import type {
   AdminMoment,
   AppSetting,
+  AdminMomentMusic,
   MomentDisplaySetting,
+  MomentMusicSetting,
   MomentMediaPurgeLog,
   MomentMediaPurgeSetting,
   MomentVideoSetting,
@@ -26,6 +28,7 @@ import {
   DEFAULT_MOMENT_MEDIA_PURGE_SETTING,
   DEFAULT_MOMENT_VIDEO_SETTING,
   MOMENT_DISPLAY_SETTING_KEY,
+  MOMENT_MUSIC_SETTING_KEY,
   MOMENT_VIDEO_SETTING_KEY,
   MOMENT_EXCERPT_SEPARATOR,
   MOMENT_FONT_FACE,
@@ -132,6 +135,15 @@ export function videoSummary(moment: AdminMoment): string {
 
 export function momentDisplaySetting(settings: AppSetting[] | undefined): MomentDisplaySetting {
   return normalizePlatformRules(settingValue(settings, MOMENT_DISPLAY_SETTING_KEY, OPEN_PLATFORM_RULES))
+}
+
+export function momentMusicSetting(settings: AppSetting[] | undefined): MomentMusicSetting {
+  return normalizePlatformRules(settingValue(settings, MOMENT_MUSIC_SETTING_KEY, OPEN_PLATFORM_RULES))
+}
+
+export function momentMusicRange(music: AdminMomentMusic): string {
+  const start = Math.round(music.startMs / 1000)
+  return `Đoạn ${start}s – ${start + Math.round(music.durationMs / 1000)}s`
 }
 
 export function momentVideoSetting(settings: AppSetting[] | undefined): MomentVideoSetting {

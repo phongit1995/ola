@@ -69,12 +69,12 @@ WITH target AS (
 UPDATE moments m SET status = @purging
 FROM target t
 WHERE m.id = t.id
-RETURNING m.id, t.status, m.media_object, m.thumb_object, m.source_object`
+RETURNING m.id, t.status, m.media_object, m.thumb_object, m.source_object, m.music_object`
 
 const claimAgedPurgeQuery = `
 WITH target AS (
 	SELECT r.id, r.status FROM moments r
-	WHERE r.type <> @text
+	WHERE (r.type <> @text OR r.music_object <> '')
 		AND ` + purgeableFilter + `
 		AND r.created_at <= @cutoff
 		AND (r.created_at, r.id) > (@afterAt, @afterID)
@@ -90,7 +90,7 @@ WITH target AS (
 UPDATE moments m SET status = @purging
 FROM target t
 WHERE m.id = t.id
-RETURNING m.id, t.status, m.created_at, m.media_object, m.thumb_object, m.source_object`
+RETURNING m.id, t.status, m.created_at, m.media_object, m.thumb_object, m.source_object, m.music_object`
 
 const sourceLeftoversQuery = `
 SELECT id, source_object FROM moments
@@ -126,11 +126,12 @@ type cleanupCandidate struct {
 	MediaObject  string    `gorm:"column:media_object"`
 	ThumbObject  string    `gorm:"column:thumb_object"`
 	SourceObject string    `gorm:"column:source_object"`
+	MusicObject  string    `gorm:"column:music_object"`
 }
 
 func (c cleanupCandidate) objects() []string {
-	names := make([]string, 0, 3)
-	for _, name := range []string{c.MediaObject, c.ThumbObject, c.SourceObject} {
+	names := make([]string, 0, 4)
+	for _, name := range []string{c.MediaObject, c.ThumbObject, c.SourceObject, c.MusicObject} {
 		if name != "" && !slices.Contains(names, name) {
 			names = append(names, name)
 		}
@@ -189,6 +190,11 @@ func audienceArgs(viewerID uuid.UUID, now time.Time) map[string]interface{} {
 
 func (r *Repository) CreateBatch(moments []*models.Moment) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		if len(moments) > 0 {
+			if err := guardMusicBlock(tx, moments[0].MusicSourceHash); err != nil {
+				return err
+			}
+		}
 		return tx.Create(&moments).Error
 	})
 }

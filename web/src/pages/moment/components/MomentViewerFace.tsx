@@ -19,6 +19,7 @@ import {
   MomentMoreIcon,
   MomentPauseIcon,
   MomentPlayIcon,
+  MomentMusicIcon,
   MomentSoundIcon,
 } from './MomentIcons';
 import { MomentReactionBar } from './MomentReactionBar';
@@ -183,7 +184,7 @@ export function MomentViewerFace({
               <span className="block text-xs text-white/75">{time}</span>
             </span>
           </button>
-          {isVideo && (
+          {(isVideo || moment.music != null) && (
             <button
               type="button"
               aria-label={muted ? t('moment.unmute') : t('moment.mute')}
@@ -220,6 +221,14 @@ export function MomentViewerFace({
             <MomentCloseIcon />
           </button>
         </div>
+        {moment.music != null && (
+          <div className="mt-2 flex">
+            <span className="flex max-w-[80%] items-center gap-1.5 rounded-full bg-black/35 px-2.5 py-1 text-xs">
+              <MomentMusicIcon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{moment.music.title}</span>
+            </span>
+          </div>
+        )}
       </div>
       {onReact != null && (
         <MomentReactionBar

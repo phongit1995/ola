@@ -32,6 +32,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Param        state             query string false "live, processing, failed, expired, deleted"
 // @Param        enabled           query bool   false "Filter by status (true=shown, false=hidden by admin or author)"
 // @Param        hasPendingReports query bool   false "Filter moments with/without pending reports"
+// @Param        hasMusic          query bool   false "Filter moments with/without music"
 // @Param        sortBy            query string false "createdAt, reportCount"
 // @Param        sortDir           query string false "asc, desc"
 // @Param        limit             query int    false "Page size (default 20, max 100)"
@@ -46,6 +47,7 @@ func (ctrl *Controller) ListMoments(c *gin.Context) (interface{}, error) {
 		State:             parseState(c.Query("state")),
 		Enabled:           utils.ParseOptionalBool(c, "enabled"),
 		HasPendingReports: utils.ParseOptionalBool(c, "hasPendingReports"),
+		HasMusic:          utils.ParseOptionalBool(c, "hasMusic"),
 		SortBy:            c.Query("sortBy"),
 		SortDir:           c.Query("sortDir"),
 		Limit:             utils.ParseLimit(c, moment.AdminMomentDefaultPageSize, moment.AdminMomentMaxPageSize),
@@ -146,6 +148,32 @@ func (ctrl *Controller) PurgeMedia(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 	resp, err := ctrl.service.PurgeMedia(c.Request.Context(), id)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// RemoveMusic godoc
+// @Summary      Remove music from a moment; with block, also bans the file and removes it from every moment using it
+// @Tags         admin-moment
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path string             true "Moment ID"
+// @Param        body body RemoveMusicRequest false "Options"
+// @Success      200  {object}  utils.BaseResponse[MomentDetail]
+// @Router       /admin/moments/{id}/remove-music [post]
+func (ctrl *Controller) RemoveMusic(c *gin.Context) (interface{}, error) {
+	id, err := utils.ParseUUIDParam(c, "id", "invalid moment id")
+	if err != nil {
+		return nil, err
+	}
+	var req RemoveMusicRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid request body")
+	}
+	resp, err := ctrl.service.RemoveMusic(c.Request.Context(), id, req.Block)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

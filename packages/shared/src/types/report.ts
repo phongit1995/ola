@@ -7,7 +7,7 @@ export type ReportTargetType =
   | 'room_message'
   | 'moment'
   | 'megaphone';
-export type ReportReason = 'spam' | 'sensitive' | 'scam' | 'harassment' | 'other';
+export type ReportReason = 'spam' | 'sensitive' | 'scam' | 'harassment' | 'copyright' | 'other';
 
 export interface ReportTarget {
   type: ReportTargetType;

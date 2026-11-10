@@ -1736,6 +1736,29 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-document-picker (12.0.3):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - react-native-geolocation (3.4.0):
     - hermes-engine
     - RCTRequired
@@ -3205,6 +3228,7 @@ DEPENDENCIES:
   - "react-native-cameraroll (from `../../node_modules/@react-native-camera-roll/camera-roll`)"
   - react-native-capture-protection (from `../../node_modules/react-native-capture-protection`)
   - react-native-config (from `../../node_modules/react-native-config`)
+  - "react-native-document-picker (from `../../node_modules/@react-native-documents/picker`)"
   - "react-native-geolocation (from `../../node_modules/@react-native-community/geolocation`)"
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
   - react-native-image-picker (from `../../node_modules/react-native-image-picker`)
@@ -3426,6 +3450,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-capture-protection"
   react-native-config:
     :path: "../../node_modules/react-native-config"
+  react-native-document-picker:
+    :path: "../../node_modules/@react-native-documents/picker"
   react-native-geolocation:
     :path: "../../node_modules/@react-native-community/geolocation"
   react-native-get-random-values:
@@ -3644,6 +3670,7 @@ SPEC CHECKSUMS:
   react-native-cameraroll: 12de98186ed2270d873e6a6b3f870a6ddcf898e7
   react-native-capture-protection: 6a42410abc30418c5e62dfe49bb97f9c7f18501f
   react-native-config: 65e9f88ae102fe89bec7b320e2e7c2a8db1b9e00
+  react-native-document-picker: 0e19e3476259c7db349c80cdf3a58cc87ed20d65
   react-native-geolocation: 2c5f29e0098223d8fa2c18813f6acbf882563424
   react-native-get-random-values: 903f339dfb7b6d25850f68355de9286f34635251
   react-native-image-picker: 7cdf342c3b12b1e4f50f6098c5feaf058ea8d350

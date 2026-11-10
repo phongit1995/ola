@@ -26,6 +26,7 @@ export const REPORT_REASON_LABEL: Record<ReportReason, string> = {
   sensitive: 'Nội dung nhạy cảm',
   scam: 'Lừa đảo',
   harassment: 'Quấy rối / xúc phạm',
+  copyright: 'Vi phạm bản quyền',
   other: 'Khác',
 }
 

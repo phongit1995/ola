@@ -34,6 +34,14 @@ export interface CreateMomentsInput {
   thumbs?: UploadFile[];
   video?: UploadFile;
   thumb?: UploadFile;
+  music?: CreateMomentMusicInput;
+}
+
+export interface CreateMomentMusicInput {
+  file: UploadFile;
+  title: string;
+  startMs: number;
+  slideSeconds: number;
 }
 
 async function firstFilledPage<T>(
@@ -67,6 +75,12 @@ export class MomentService {
     input.thumbs?.forEach((file) => appendUploadFile(form, 'thumbs', file));
     if (input.video) appendUploadFile(form, 'video', input.video);
     if (input.thumb) appendUploadFile(form, 'thumb', input.thumb);
+    if (input.music) {
+      appendUploadFile(form, 'music', input.music.file);
+      form.append('musicTitle', input.music.title);
+      form.append('musicStartMs', String(input.music.startMs));
+      form.append('slideSeconds', String(input.music.slideSeconds));
+    }
     return http.postForm<CreateMomentsResult>(API_PATH.moments.base, form, {
       timeout: MOMENT_UPLOAD_TIMEOUT_MS,
     });

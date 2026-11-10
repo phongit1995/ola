@@ -1,5 +1,6 @@
 import type { MomentOverlay, MomentTrayGroup, MomentType } from '../api/moment.type';
 import type { ReactionType } from '../api/chat.type';
+import type { MOMENT_MUSIC_SLIDE_SECONDS } from '../../constants/moment';
 import type { UploadFile } from './upload.type';
 
 export interface MomentMediaDraft {
@@ -9,6 +10,18 @@ export interface MomentMediaDraft {
   posterUrl?: string;
   duration?: number;
   playable?: boolean;
+}
+
+export type MomentMusicSeconds = (typeof MOMENT_MUSIC_SLIDE_SECONDS)[number];
+
+export interface MomentMusicDraft {
+  file: UploadFile;
+  url: string;
+  fileName: string;
+  title: string;
+  durationMs: number;
+  startMs: number;
+  slideSeconds: MomentMusicSeconds;
 }
 
 export interface MomentDraftSlide {
@@ -45,6 +58,7 @@ export interface MomentReactionSpark {
 export interface MomentConfigState {
   enabled: boolean | null;
   videoVipRequired: boolean;
+  musicEnabled: boolean;
   load: () => Promise<void>;
 }
 

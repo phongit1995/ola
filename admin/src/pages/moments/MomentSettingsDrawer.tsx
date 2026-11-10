@@ -5,11 +5,12 @@ import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
 import { useServerFormValues } from '@/hooks/useServerFormValues'
 import { errorMessage } from '@/lib/apiError'
 import { cleanPlatformRules } from '@/lib/platformRules'
-import type { MomentDisplaySetting, MomentMediaPurgeSetting, MomentVideoSetting } from '@/types'
+import type { MomentDisplaySetting, MomentMediaPurgeSetting, MomentMusicSetting, MomentVideoSetting } from '@/types'
 import {
   MOMENT_DISPLAY_SETTING_KEY,
   MOMENT_VIDEO_SETTING_KEY,
   MOMENT_MEDIA_PURGE_SETTING_KEY,
+  MOMENT_MUSIC_SETTING_KEY,
   MOMENT_PURGE_AFTER_HOURS_MAX,
   MOMENT_PURGE_AFTER_HOURS_MIN,
   MOMENT_SETTINGS_DRAWER_WIDTH,
@@ -19,6 +20,7 @@ import {
   disabledPlatformLabels,
   hoursInDays,
   momentDisplaySetting,
+  momentMusicSetting,
   momentPurgeSetting,
   momentVideoSetting,
 } from './utils'
@@ -100,11 +102,12 @@ function MomentSettings() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <MomentDisplayCard current={momentDisplaySetting(settings)} />
       <MomentVideoCard current={momentVideoSetting(settings)} />
+      <MomentMusicCard current={momentMusicSetting(settings)} />
       <Card title="Tự động xoá file ảnh/video">
         <Typography.Paragraph type="secondary">
-          Khi bật, cứ 10 phút máy chủ kiểm tra một lần và xoá vĩnh viễn file ảnh, video, ảnh bìa của
+          Khi bật, cứ 10 phút máy chủ kiểm tra một lần và xoá vĩnh viễn file ảnh, video, ảnh bìa, nhạc của
           khoảnh khắc đã đăng quá số giờ cài bên dưới. Bản ghi, chữ trên khoảnh khắc và lượt xem vẫn
-          giữ, chỗ ảnh/video sẽ báo đã bị xoá. Khoảnh khắc chữ không có file nên không bị ảnh hưởng.
+          giữ, chỗ ảnh/video sẽ báo đã bị xoá. Khoảnh khắc chữ chỉ bị xoá file nhạc nếu có.
           Khoảnh khắc đang có báo cáo chờ xử lý được giữ file để admin xem, xử lý xong báo cáo thì lượt
           sau mới xoá. Tối thiểu {MOMENT_PURGE_AFTER_HOURS_MIN} giờ vì khoảnh khắc hiện trong khay 24
           giờ. Chưa lưu lần nào thì đang tắt.
@@ -150,6 +153,39 @@ function MomentSettings() {
       </Card>
       <MomentPurgeLogs enabled={current.enabled} afterHours={current.afterHours} />
     </div>
+  )
+}
+
+function MomentMusicCard({ current }: { current: MomentMusicSetting }) {
+  const { message } = App.useApp()
+  const putSetting = usePutAppSetting()
+  const [form] = Form.useForm<MomentMusicSetting>()
+  const markSaved = useServerFormValues(form, current)
+
+  async function save(values: MomentMusicSetting) {
+    try {
+      const value = cleanPlatformRules(values)
+      await putSetting.mutateAsync({ key: MOMENT_MUSIC_SETTING_KEY, value: { ...value } })
+      markSaved(values)
+      message.success('Đã lưu cài đặt thêm nhạc')
+    } catch (err) {
+      message.error(errorMessage(err, 'Lưu thất bại'))
+    }
+  }
+
+  return (
+    <Card title="Thêm nhạc vào khoảnh khắc">
+      <Typography.Paragraph type="secondary">
+        Tắt nền tảng nào thì nền tảng đó ẩn nút Nhạc khi đăng và server từ chối nhạc gửi từ nền tảng đó.
+        Khoảnh khắc đã có nhạc vẫn phát bình thường. Chỉ áp dụng cho ảnh và chữ, video không gắn nhạc.
+      </Typography.Paragraph>
+      <Form<MomentMusicSetting> form={form} layout="vertical" initialValues={current} onFinish={save}>
+        <PlatformRulesTable />
+        <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={putSetting.isPending}>
+          Lưu
+        </Button>
+      </Form>
+    </Card>
   )
 }
 

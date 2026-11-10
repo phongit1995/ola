@@ -54,10 +54,45 @@ export const MOMENT_ERROR_CODE = {
   videoVipRequired: 'MOMENT_VIDEO_VIP_REQUIRED',
   hiddenByAdmin: 'MOMENT_HIDDEN_BY_ADMIN',
   commentExists: 'MOMENT_COMMENT_EXISTS',
+  musicNotAllowed: 'MOMENT_MUSIC_NOT_ALLOWED',
+  musicDisabled: 'MOMENT_MUSIC_DISABLED',
+  musicUnavailable: 'MOMENT_MUSIC_UNAVAILABLE',
+  musicTooLarge: 'MOMENT_MUSIC_TOO_LARGE',
+  musicInvalid: 'MOMENT_MUSIC_INVALID',
+  musicTooShort: 'MOMENT_MUSIC_TOO_SHORT',
+  musicTooLong: 'MOMENT_MUSIC_TOO_LONG',
+  musicRange: 'MOMENT_MUSIC_RANGE',
+  musicBlocked: 'MOMENT_MUSIC_BLOCKED',
+  musicTitle: 'MOMENT_MUSIC_TITLE',
 } as const;
 
 export const MOMENT_LIFETIME_MS = 24 * 60 * 60 * 1000;
 export const MOMENT_SLIDE_MS = 5000;
+export const MOMENT_MUSIC_SLIDE_SECONDS = [5, 10, 15] as const;
+export const MOMENT_MUSIC_DEFAULT_SECONDS = 15;
+export const MOMENT_MUSIC_MAX_BYTES = 30 * 1024 * 1024;
+export const MOMENT_MUSIC_MIN_MS = 5000;
+export const MOMENT_MUSIC_MAX_MS = 10 * 60 * 1000;
+export const MOMENT_MUSIC_TITLE_MAX = 80;
+export const MOMENT_MUSIC_START_STEP_MS = 250;
+export const MOMENT_MUSIC_WAIT_MS = 5000;
+export const MOMENT_MUSIC_EXTENSIONS = [
+  'mp3',
+  'm4a',
+  'aac',
+  'wav',
+  'flac',
+  'ogg',
+  'oga',
+  'opus',
+  '3gp',
+  '3ga',
+  'amr',
+  'caf',
+] as const;
+export const MOMENT_MUSIC_ACCEPT = MOMENT_MUSIC_EXTENSIONS.map((ext) => `.${ext}`)
+  .concat('audio/*')
+  .join(',');
 export const MOMENT_SEEN_AFTER_MS = 1000;
 export const MOMENT_SEEN_BATCH = 50;
 export const MOMENT_SEEN_FLUSH_MS = 1500;

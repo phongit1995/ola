@@ -5,6 +5,7 @@ import (
 	"mime/multipart"
 	"net/http"
 
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -48,6 +49,10 @@ func firstFile(files []*multipart.FileHeader) *multipart.FileHeader {
 // @Param        thumbs     formData file   false "Small JPEG previews, same order as images"
 // @Param        video      formData file   false "Video ≤20s, ≤45MB. Without FFMPEG_PATH only MP4 H.264 is accepted; with it MOV/WebM/MKV/AVI/WMV/FLV/3GP/TS/MPG/OGV are converted to MP4 in the background (status=processing)"
 // @Param        thumb      formData file   false "Video cover JPEG (≤300KB)"
+// @Param        music      formData file   false "Audio file for image/text moments (≤30MB): mp3, m4a, aac, wav, flac, ogg, opus, 3gp, amr, caf"
+// @Param        musicTitle formData string false "Song title (≤80 characters), defaults to the file name"
+// @Param        musicStartMs formData int  false "Where the selected part starts in the file"
+// @Param        slideSeconds formData int  false "Seconds per slide with music: 5, 10 or 15"
 // @Success      200  {object}  utils.BaseResponse[CreateMomentsResponse]
 // @Router       /moments [post]
 func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
@@ -71,6 +76,8 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 		Thumbs:     form.File["thumbs"],
 		Video:      firstFile(form.File["video"]),
 		Thumb:      firstFile(form.File["thumb"]),
+		Music:      musicInput(form),
+		Client:     setting.ClientFrom(c),
 	})
 	if err != nil {
 		return nil, utils.ServiceError(err)

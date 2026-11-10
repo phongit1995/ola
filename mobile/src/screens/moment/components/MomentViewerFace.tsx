@@ -15,6 +15,7 @@ import {
   MomentMoreIcon,
   MomentPauseIcon,
   MomentPlayIcon,
+  MomentMusicIcon,
   MomentSoundIcon,
 } from './MomentIcons';
 import { MomentReactionBar } from './MomentReactionBar';
@@ -26,6 +27,18 @@ const ICON_HIT_SLOP = 8;
 const styles = StyleSheet.create({
   topShade: { position: 'absolute', left: 0, right: 0, top: 0, height: 120 },
   iconButton: { padding: 8, borderRadius: 999 },
+  musicRow: { marginTop: 8, flexDirection: 'row' },
+  musicChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: '80%',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  musicTitle: { flexShrink: 1, color: '#ffffff', fontSize: 12 },
   author: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
   notice: {
     position: 'absolute',
@@ -269,7 +282,7 @@ export function MomentViewerFace({
               <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>{time}</Text>
             </View>
           </Pressable>
-          {isVideo && (
+          {(isVideo || moment.music != null) && (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={muted ? t('moment.unmute') : t('moment.mute')}
@@ -310,6 +323,16 @@ export function MomentViewerFace({
             <MomentCloseIcon />
           </Pressable>
         </View>
+        {moment.music != null && (
+          <View pointerEvents="none" style={styles.musicRow}>
+            <View style={styles.musicChip}>
+              <MomentMusicIcon size={14} />
+              <Text numberOfLines={1} style={styles.musicTitle}>
+                {moment.music.title}
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
       {onReact != null && (
         <MomentReactionBar

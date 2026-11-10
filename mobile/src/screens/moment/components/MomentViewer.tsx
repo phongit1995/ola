@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Video from 'react-native-video';
 import { useTranslation } from 'react-i18next';
 import { AppState, StatusBar, StyleSheet, useWindowDimensions, View } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
@@ -30,6 +31,7 @@ import {
   isMomentHiddenByAdmin,
   momentExpiresInMs,
   momentGroupEntryStep,
+  momentSlideMs,
   momentGroupStartIndex,
   ownSessionMoments,
   momentItemStep,
@@ -40,6 +42,7 @@ import {
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import { useMomentHiddenToggle } from '@ola/shared/stores/moment/useMomentHiddenToggle';
 import { useMomentTray } from '@ola/shared/stores/moment/useMomentTray';
+import { useMomentMusicGate } from '@ola/shared/stores/moment/useMomentMusicGate';
 import { useMomentViewerGroups } from '@ola/shared/stores/moment/useMomentViewerGroups';
 import type { MomentAuthor, MomentPosition, MomentViewerSession, ReportTarget } from '@ola/shared/types';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
@@ -51,6 +54,9 @@ import { MOMENT_TURN_FLING_VELOCITY } from '../constants';
 import { momentViewerContent } from '../utils';
 import { MomentCommentSheet } from './MomentCommentSheet';
 import { MomentViewerFace, type MomentMediaStatus } from './MomentViewerFace';
+
+const HIDDEN_MUSIC_PLAYER = { width: 0, height: 0 };
+const MUSIC_PROGRESS_INTERVAL_MS = 250;
 
 const SWIPE_MIN_DISTANCE_PX = 10;
 const AXIS_NONE = 0;
@@ -131,6 +137,15 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
   const paused = holding || turning || userPaused || dialogOpen || !appActive;
   const waitingForMedia = mediaStatus === 'loading';
   const timedBySlide = !isVideo || mediaStatus === 'error';
+  const slideMs = moment == null ? MOMENT_SLIDE_MS : momentSlideMs(moment);
+  const musicUrl = moment?.music?.url;
+  const musicBufferingRef = useRef(false);
+  const {
+    waiting: waitingForMusic,
+    markPlaying: markMusicPlaying,
+    markBuffering: markMusicBuffering,
+    markFailed: markMusicFailed,
+  } = useMomentMusicGate(musicUrl == null ? null : `${musicUrl}:${playId}`, !paused && !waitingForMedia);
   const hasPrev = groupIndex > 0;
   const hasNext = groupIndex < groups.length - 1;
 
@@ -241,13 +256,13 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
   }, [shownMomentId, progress]);
 
   useEffect(() => {
-    if (moment == null || !timedBySlide || paused || waitingForMedia) return;
-    const remaining = MOMENT_SLIDE_MS * (1 - progress.value);
+    if (moment == null || !timedBySlide || paused || waitingForMedia || waitingForMusic) return;
+    const remaining = slideMs * (1 - progress.value);
     progress.value = withTiming(1, { duration: remaining, easing: Easing.linear }, (finished) => {
       if (finished) runOnJS(advanceNext)();
     });
     return () => cancelAnimation(progress);
-  }, [moment, playId, timedBySlide, paused, waitingForMedia, progress, advanceNext]);
+  }, [moment, playId, timedBySlide, paused, waitingForMedia, waitingForMusic, progress, advanceNext, slideMs]);
 
   useEffect(() => {
     if (session.own || moment == null || paused || mediaStatus !== 'ready') return;
@@ -373,6 +388,27 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
   return (
     <View style={{ flex: 1, backgroundColor: '#000000' }}>
       <StatusBar barStyle="light-content" />
+      {musicUrl != null && (
+        <Video
+          key={`${shownMomentId}-${playId}`}
+          source={{ uri: musicUrl }}
+          paused={paused || waitingForMedia}
+          muted={muted}
+          progressUpdateInterval={MUSIC_PROGRESS_INTERVAL_MS}
+          onLoadStart={() => {
+            musicBufferingRef.current = false;
+          }}
+          onBuffer={({ isBuffering }) => {
+            musicBufferingRef.current = isBuffering;
+            if (isBuffering) markMusicBuffering();
+          }}
+          onProgress={({ currentTime }) => {
+            if (currentTime > 0 && !musicBufferingRef.current) markMusicPlaying();
+          }}
+          onError={markMusicFailed}
+          style={HIDDEN_MUSIC_PLAYER}
+        />
+      )}
       <Animated.View
         style={[
           { flex: 1, alignItems: 'center', paddingTop: insets.top, paddingBottom: insets.bottom },
@@ -402,7 +438,7 @@ function MomentViewerContent({ session, onClose, onOpenProfile }: MomentViewerPr
                 itemIndex={active ? currentIndex : 0}
                 active={active}
                 progress={progress}
-                mediaStatus={mediaStatus}
+                mediaStatus={waitingForMusic && mediaStatus === 'ready' ? 'loading' : mediaStatus}
                 time={formatTime(faceMoment.createdAt)}
                 playId={playId}
                 paused={paused}

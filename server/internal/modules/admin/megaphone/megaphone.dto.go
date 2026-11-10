@@ -31,7 +31,7 @@ type ListResponse struct {
 }
 
 type PenaltyRequest struct {
-	Reason   string `json:"reason" binding:"required,oneof=spam sensitive scam harassment other" example:"scam"`
+	Reason   string `json:"reason" binding:"required,oneof=spam sensitive scam harassment copyright other" example:"scam"`
 	Severity string `json:"severity" binding:"required,oneof=none violation deliberate" example:"violation"`
 	Note     string `json:"note" binding:"omitempty,max=1000" example:"Rao bán KEN"`
 }
