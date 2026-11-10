@@ -7,6 +7,7 @@ import { pawnLayout } from '../helpers/pawnLayout';
 import { seatColor, SEAT_TINTS } from '../helpers/player';
 import { levelLabel, rentLabel, shortName } from '../helpers/tiles';
 import { useTycoon } from '../store/useTycoon';
+import { HotelIcon, HouseIcon } from './DeedParts';
 import { TileMark, type TileMarkName } from './TileMark';
 import { Token } from './Token';
 import { TILE_ART } from './tileArt';
@@ -33,20 +34,11 @@ function caption(idx: number): string {
 }
 
 function Houses({ houses }: { houses: number }) {
-  if (houses >= MAX_HOUSES) {
-    return (
-      <svg className="ty-s6-hotel" viewBox="0 0 20 12" aria-hidden="true">
-        <path d="M1 11V3.6L6 1l4 2.2L14 1l5 2.6V11Z" fill="#E4573D" stroke="#1F2A44" strokeWidth="1.1" strokeLinejoin="round" />
-        <path d="M5 6h2M9 6h2M13 6h2" stroke="#FFF3C4" strokeWidth="1.4" />
-      </svg>
-    );
-  }
+  if (houses >= MAX_HOUSES) return <HotelIcon className="ty-s6-hotel" />;
   return (
     <>
       {Array.from({ length: houses }, (_, i) => (
-        <svg key={i} viewBox="0 0 12 12" aria-hidden="true">
-          <path d="M1 6.2 6 1.6l5 4.6H9.8V11H2.2V6.2Z" fill="#2FA86F" stroke="#1F2A44" strokeWidth="1.1" strokeLinejoin="round" />
-        </svg>
+        <HouseIcon key={i} />
       ))}
     </>
   );

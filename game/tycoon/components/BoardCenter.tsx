@@ -1,6 +1,6 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { BOARD, cardById } from '../logic/board';
+import { BOARD, cardById, tilesOfGroup } from '../logic/board';
 import { JAIL_FINE, JAIL_MAX_TURNS, LEVEL_NAMES, STATION_RENT, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
 import { takeoverPrice } from '../logic/engine';
 import { hasAnyFullGroup } from '../logic/rules-hint';
@@ -10,8 +10,9 @@ import { formatMoney } from '../helpers/format';
 import { seatColor } from '../helpers/player';
 import { shortName } from '../helpers/tiles';
 import { useTycoon } from '../store/useTycoon';
+import { groupColor, GroupTag, LevelPips, SeatTag, TileThumb } from './DeedParts';
 import { TileMark } from './TileMark';
-import { TILE_ART } from './tileArt';
+import { TyIcon } from './TyIcon';
 
 const PIPS: Record<number, number[]> = { 1: [5], 2: [3, 7], 3: [3, 5, 7], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };
 const CELLS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -116,21 +117,52 @@ function TurnChip() {
 }
 
 function Deed({ idx, owner }: { idx: number; owner?: number }) {
-  const { view, players, you, openSheet } = useTycoon(useShallow((s) => ({ view: s.view, players: s.players, you: s.you, openSheet: s.openSheet })));
+  const { view, you, openSheet } = useTycoon(useShallow((s) => ({ view: s.view, you: s.you, openSheet: s.openSheet })));
   if (!view) return null;
   const tile = BOARD[idx];
-  const stripe = tile.group && tile.kind === 'street' ? `var(--ty-g-${tile.group})` : '#9AA6BC';
+  const members = tile.group ? tilesOfGroup(tile.group) : [];
   const baseRent = tile.kind === 'station' ? STATION_RENT[1] : tile.rent?.[0] ?? 0;
-  const ownerName = owner === you ? 'bạn' : owner != null ? players[owner]?.name ?? '?' : '';
-  const detail = owner == null ? `Giá ${formatMoney(tile.price ?? 0)} · Thuê ${baseRent} tr` : `Của ${ownerName} · ${LEVEL_NAMES[view.tiles[idx].houses] ?? ''} · Mua lại ${formatMoney(takeoverPrice(view, idx))}`;
   return (
-    <button type="button" className="ty-s6-deed" onClick={() => openSheet({ kind: 'tile', idx })} aria-label={`Xem chi tiết ${tile.name}`}>
-      <i style={{ background: stripe }} />
-      <span className="ty-s6-dart" style={{ backgroundImage: `url(${TILE_ART[idx]})` }} />
-      <span className="ty-s6-dtxt">
-        <b>{shortName(idx)}</b>
-        <small>{detail}</small>
+    <button type="button" className="ty-s6-deed" style={{ '--group': groupColor(idx) } as CSSProperties} onClick={() => openSheet({ kind: 'tile', idx })} aria-label={`Xem chi tiết ${tile.name}`}>
+      <TileThumb idx={idx} className="ty-s6-deed-art" />
+      <span className="ty-s6-deed-copy">
+        <GroupTag idx={idx} />
+        <b className="ty-s6-deed-name">{tile.name}</b>
+        {owner == null ? (
+          <span className="ty-s6-deed-stats">
+            <span>
+              <small>Giá</small>
+              <strong>{formatMoney(tile.price ?? 0)}</strong>
+            </span>
+            <span>
+              <small>Thuê</small>
+              <strong>{baseRent} tr</strong>
+            </span>
+            {members.length > 1 ? (
+              <span>
+                <small>Nhóm</small>
+                <span className="ty-s6-deed-dots" aria-label={`Bạn có ${members.filter((m) => view.tiles[m].owner === you).length} trên ${members.length}`}>
+                  {members.map((m) => (
+                    <i key={m} className={view.tiles[m].owner === you ? 'ty-s6-deed-have' : m === idx ? 'ty-s6-deed-here' : undefined} />
+                  ))}
+                </span>
+              </span>
+            ) : null}
+          </span>
+        ) : (
+          <span className="ty-s6-deed-stats">
+            <span>
+              <small>Chủ</small>
+              <SeatTag seat={owner} />
+            </span>
+            <span>
+              <small>{LEVEL_NAMES[view.tiles[idx].houses]}</small>
+              <LevelPips houses={view.tiles[idx].houses} />
+            </span>
+          </span>
+        )}
       </span>
+      <TyIcon name="chevron-right" size={16} className="ty-s6-deed-more" />
     </button>
   );
 }
@@ -362,9 +394,11 @@ export function BoardCenter() {
       ) : null}
       {turnExpired && myTurn ? <p className="ty-s6-say ty-s6-warn">Hết giờ, hệ thống đang đi thay bạn…</p> : null}
       <Feed hidden={showActions || (turnExpired && myTurn)} />
-      <p className="ty-s6-hint" style={{ visibility: showActions && view.phase === 'roll' ? 'visible' : 'hidden' }}>
-        Thắng ngay: {WIN_GROUPS} nhóm · 1 cạnh · 4 sân bay
-      </p>
+      {hideDice ? null : (
+        <p className="ty-s6-hint" style={{ visibility: showActions && view.phase === 'roll' ? 'visible' : 'hidden' }}>
+          Thắng ngay: {WIN_GROUPS} nhóm · 1 cạnh · 4 sân bay
+        </p>
+      )}
       <CardBox />
     </div>
   );

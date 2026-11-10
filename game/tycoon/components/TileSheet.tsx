@@ -1,17 +1,13 @@
 import { useShallow } from 'zustand/react/shallow';
-import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
-import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, MAX_HOUSES, STATION_RENT, TAX_RATE } from '../logic/constants';
+import { BOARD } from '../logic/board';
+import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, MAX_HOUSES, TAKEOVER_MULTIPLIER, TAX_RATE } from '../logic/constants';
+import { takeoverPrice } from '../logic/engine';
 import { canBuild, canSell, currentRent } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
-import { seatColor } from '../helpers/player';
-import { levelLabel } from '../helpers/tiles';
 import { BottomSheet } from './BottomSheet';
-import { glyphForTile, TileGlyph } from './TileGlyph';
+import { groupColor, GroupTag, HotelIcon, HouseIcon, rentLadder, SeatTag, TileThumb } from './DeedParts';
 import { TyIcon } from './TyIcon';
 import { useTycoon } from '../store/useTycoon';
-
-const HOUSE_LABELS = Array.from({ length: MAX_HOUSES + 1 }, (_, level) => levelLabel(level));
-const DARK_GROUPS = new Set(['brown', 'red', 'green', 'blue']);
 
 function specialDescription(idx: number): string {
   switch (BOARD[idx].kind) {
@@ -34,11 +30,22 @@ function specialDescription(idx: number): string {
   }
 }
 
+function StepIcon({ houses }: { houses: number }) {
+  if (houses >= MAX_HOUSES) return <HotelIcon />;
+  if (houses === 0) return <i className="ty-ladder-lot" />;
+  return (
+    <>
+      {Array.from({ length: houses }, (_, i) => (
+        <HouseIcon key={i} />
+      ))}
+    </>
+  );
+}
+
 export function TileSheet({ idx }: { idx: number }) {
-  const { view, players, you, myTurn, movePending, replaying, cash, sendMove, closeSheet } = useTycoon(
+  const { view, you, myTurn, movePending, replaying, cash, sendMove, closeSheet } = useTycoon(
     useShallow((s) => ({
       view: s.view,
-      players: s.players,
       you: s.you,
       myTurn: s.myTurn,
       movePending: s.movePending,
@@ -55,148 +62,135 @@ export function TileSheet({ idx }: { idx: number }) {
   const me = view.players[you];
   const myCash = cash[you] ?? me?.cash ?? 0;
   const busy = movePending || replaying;
-  const glyph = glyphForTile(tile.kind);
-  const isProperty = tile.kind === 'street' || tile.kind === 'station';
+  const street = tile.kind === 'street';
+  const property = street || tile.kind === 'station';
+  const price = tile.price ?? 0;
+  const houseCost = tile.houseCost ?? 0;
   const canBuyHere = myTurn && view.phase === 'decide' && me?.pos === idx && owner < 0;
-  const buildHint = owner === you && tile.kind === 'street' ? canBuild(view, you, idx) : null;
-  const sellHint = owner === you && tile.kind === 'street' ? canSell(view, you, idx) : null;
-  const manageAllowed = myTurn && (view.phase === 'manage' || (view.phase === 'debt' && view.debt?.by === you));
-  const canFestivalHere = myTurn && view.phase === 'festival' && owner === you && tile.kind === 'street';
+  const manageAllowed = myTurn && owner === you && street && (view.phase === 'manage' || (view.phase === 'debt' && view.debt?.by === you));
+  const buildHint = manageAllowed && view.phase === 'manage' ? canBuild(view, you, idx) : null;
+  const sellHint = manageAllowed ? canSell(view, you, idx) : null;
+  const canFestivalHere = myTurn && view.phase === 'festival' && owner === you && street;
   const canTravelHere = myTurn && view.phase === 'travel' && me?.pos !== idx;
+  const passesGo = canTravelHere && me != null && idx < me.pos;
+  const act = (move: Parameters<typeof sendMove>[0]) => {
+    sendMove(move);
+    closeSheet();
+  };
 
-  return (
-    <BottomSheet onClose={closeSheet} title={tile.name}>
-      <div className={`ty-sheet-band ${tile.kind === 'street' && tile.group ? `ty-band-${tile.group} ty-sheet-band-${DARK_GROUPS.has(tile.group) ? 'dark' : 'light'}` : 'ty-sheet-band-dim'}`}>
-        {glyph ? <TileGlyph name={glyph} size={34} /> : null}
-        <span className="ty-sheet-band-copy">
-          <small>{tile.kind === 'street' ? `Sổ đỏ · ${GROUP_LABEL[tile.group ?? 'brown']}` : isProperty ? GROUP_LABEL[tile.group ?? 'station'] : 'Ô đặc biệt'}</small>
-          <h2 className="ty-sheet-title">{tile.name}</h2>
-        </span>
-      </div>
-
-      {isProperty ? (
-        <>
-          <div className="ty-sheet-row">
-            <span>Chủ sở hữu</span>
-            {owner >= 0 ? (
-              <span className="ty-owner-chip" style={{ '--seat': seatColor(owner) } as React.CSSProperties}>
-                <i />
-                {owner === you ? 'Bạn' : players[owner]?.name ?? '?'}
-              </span>
-            ) : (
-              <strong>Chưa có chủ</strong>
-            )}
-          </div>
-          <div className="ty-sheet-row">
-            <span>Giá</span>
-            <strong>{formatMoney(tile.price ?? 0)}</strong>
-          </div>
-          {tile.kind === 'street' ? (
-            <>
-              <div className="ty-sheet-row">
-                <span>Giá nâng mỗi cấp</span>
-                <strong>{formatMoney(tile.houseCost ?? 0)}</strong>
-              </div>
-              <table className="ty-rent-table">
-                <tbody>
-                  {(tile.rent ?? []).map((rent, houses) => {
-                    const active = owner >= 0 && state.houses === houses;
-                    const groupBonus = houses === 0 && owner >= 0 && tilesOfGroup(tile.group ?? '').every((g) => view.tiles[g].owner === owner);
-                    return (
-                      <tr key={houses} className={active ? 'ty-rent-active' : ''}>
-                        <td>
-                          {HOUSE_LABELS[houses]}
-                          {houses === 0 ? <small> · ×2 khi trọn nhóm</small> : null}
-                        </td>
-                        <td>{formatMoney(groupBonus ? rent * 2 : rent)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <div className="ty-sheet-row">
-                <span>Cấp hiện tại</span>
-                <span className="ty-sheet-houses" aria-label={HOUSE_LABELS[state.houses]}>
-                  {state.houses >= MAX_HOUSES ? <i className="ty-hotel ty-hotel-lg" /> : Array.from({ length: state.houses }, (_, i) => <i key={i} className="ty-house ty-house-lg" />)}
-                  <small>{HOUSE_LABELS[state.houses]}</small>
-                </span>
-              </div>
-            </>
-          ) : tile.kind === 'station' ? (
-            <table className="ty-rent-table">
-              <tbody>
-                {[1, 2, 3, 4].map((count) => {
-                  const ownedCount = owner >= 0 ? tilesOfGroup('station').filter((g) => view.tiles[g].owner === owner).length : 0;
-                  return (
-                    <tr key={count} className={ownedCount === count ? 'ty-rent-active' : ''}>
-                      <td>Sở hữu {count} sân bay</td>
-                      <td>{formatMoney(STATION_RENT[count])}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          ) : null}
-          {view.festival === idx ? (
-            <div className="ty-sheet-row ty-sheet-row-note">
-              <span>Đang có Lễ hội</span>
-              <strong>Thuê ×{FESTIVAL_MULTIPLIER}</strong>
-            </div>
-          ) : null}
-          {owner >= 0 && owner !== you ? (
-            <div className="ty-sheet-row ty-sheet-row-note">
-              <span>Đáp vào lúc này phải trả</span>
-              <strong className="ty-neg">{formatMoney(currentRent(view, idx))}</strong>
-            </div>
-          ) : null}
-        </>
-      ) : (
-        <p className="ty-sheet-desc">{specialDescription(idx)}</p>
-      )}
-
-      <div className="ty-sheet-actions">
+  const footer =
+    canBuyHere || canFestivalHere || canTravelHere || manageAllowed ? (
+      <>
         {canBuyHere ? (
-          <>
-            <button type="button" className="ty-btn ty-btn-paper" disabled={busy} onClick={() => { sendMove({ type: 'DECLINE' }); closeSheet(); }}>
+          <div className="ty-sheet-pair">
+            <button type="button" className="ty-s6-ghost" disabled={busy} onClick={() => act({ type: 'DECLINE' })}>
               Bỏ qua
             </button>
-            <button type="button" className="ty-btn ty-btn-gold" disabled={busy || myCash < (tile.price ?? 0)} onClick={() => { sendMove({ type: 'BUY' }); closeSheet(); }}>
-              {myCash < (tile.price ?? 0) ? 'Thiếu tiền' : `Mua ${formatMoney(tile.price ?? 0)}`}
+            <button type="button" className="ty-s6-cta" disabled={busy || myCash < price} onClick={() => act({ type: 'BUY' })}>
+              Mua {formatMoney(price)}
+              <small>{myCash < price ? `cần thêm ${formatMoney(price - myCash)}` : `còn lại ${formatMoney(myCash - price)}`}</small>
             </button>
-          </>
+          </div>
         ) : null}
         {canFestivalHere ? (
-          <button type="button" className="ty-btn ty-btn-gold ty-btn-wide" disabled={busy} onClick={() => { sendMove({ type: 'FESTIVAL', tile: idx }); closeSheet(); }}>
-            <TileGlyph name="festival" size={18} color="currentColor" />
+          <button type="button" className="ty-s6-cta ty-s6-wide" disabled={busy} onClick={() => act({ type: 'FESTIVAL', tile: idx })}>
             Tổ chức Lễ hội ở đây
+            <small>
+              thuê {formatMoney(currentRent({ ...view, festival: -1 }, idx))} → {formatMoney(currentRent({ ...view, festival: idx }, idx))}
+            </small>
           </button>
         ) : null}
         {canTravelHere ? (
-          <button type="button" className="ty-btn ty-btn-gold ty-btn-wide" disabled={busy} onClick={() => { sendMove({ type: 'TRAVEL', tile: idx }); closeSheet(); }}>
-            <TileGlyph name="travel" size={18} color="currentColor" />
+          <button type="button" className="ty-s6-cta ty-s6-wide" disabled={busy} onClick={() => act({ type: 'TRAVEL', tile: idx })}>
             Bay tới đây
+            {passesGo ? <small>qua Xuất phát +{GO_SALARY} tr</small> : null}
           </button>
         ) : null}
-        {owner === you && tile.kind === 'street' && manageAllowed ? (
+        {manageAllowed ? (
           <>
-            <div className="ty-sheet-manage">
-              <button type="button" className="ty-btn ty-btn-paper" disabled={busy || !sellHint?.ok || view.phase !== 'debt' && view.phase !== 'manage'} onClick={() => sendMove({ type: 'SELL_HOUSE', tile: idx })}>
-                <TyIcon name="minus" size={18} className="ty-icon-coral" />
-                Hạ cấp (+{formatMoney((tile.houseCost ?? 0) / 2)})
+            <div className="ty-sheet-pair">
+              <button type="button" className="ty-s6-ghost" disabled={busy || !sellHint?.ok} onClick={() => sendMove({ type: 'SELL_HOUSE', tile: idx })}>
+                Hạ cấp
+                <small>+{formatMoney(houseCost / 2)}</small>
               </button>
-              <button type="button" className="ty-btn ty-btn-paper" disabled={busy || !buildHint?.ok || view.phase !== 'manage'} onClick={() => sendMove({ type: 'BUILD', tile: idx })}>
-                <TyIcon name="plus" size={18} className="ty-icon-jade" />
-                Nâng cấp ({formatMoney(tile.houseCost ?? 0)})
+              <button type="button" className="ty-s6-cta" disabled={busy || !buildHint?.ok} onClick={() => sendMove({ type: 'BUILD', tile: idx })}>
+                Nâng cấp
+                <small>{formatMoney(houseCost)}</small>
               </button>
             </div>
-            {buildHint && !buildHint.ok && view.phase === 'manage' ? (
+            {buildHint && !buildHint.ok ? (
               <p className="ty-sheet-reason">
                 <TyIcon name="warning" size={14} /> {buildHint.reason}
               </p>
             ) : null}
           </>
         ) : null}
-      </div>
+      </>
+    ) : null;
+
+  return (
+    <BottomSheet onClose={closeSheet} title={tile.name} accent={groupColor(idx)} footer={footer}>
+      <header className="ty-deed-hero">
+        <TileThumb idx={idx} className="ty-thumb-lg" />
+        <span className="ty-deed-hero-copy">
+          <GroupTag idx={idx} />
+          <h2 className="ty-sheet-title">{tile.name}</h2>
+          {property ? owner >= 0 ? <SeatTag seat={owner} /> : <span className="ty-deed-free">Chưa có chủ · giá {formatMoney(price)}</span> : null}
+        </span>
+      </header>
+
+      {view.festival === idx ? (
+        <p className="ty-deed-note ty-deed-note-gold">
+          <b>★ Đang có Lễ hội</b> thuê ×{FESTIVAL_MULTIPLIER}
+        </p>
+      ) : null}
+
+      {property && owner >= 0 && owner !== you ? (
+        <p className="ty-deed-note ty-deed-note-coral">
+          Đáp vào lúc này phải trả <b>{formatMoney(currentRent(view, idx))}</b>
+        </p>
+      ) : null}
+
+      {property ? (
+        <>
+          <ol className="ty-ladder" aria-label="Tiền thuê theo cấp">
+            {rentLadder(view, idx).map((step) => (
+              <li key={step.label} className={step.active ? 'ty-ladder-on' : undefined}>
+                <span className="ty-ladder-icon">{street ? <StepIcon houses={step.houses} /> : <b>{step.label.split(' ')[0]}</b>}</span>
+                <span className="ty-ladder-label">{street ? step.label : 'sân bay'}</span>
+                <strong>{step.rent} tr</strong>
+                {step.note ? <small>{step.note}</small> : null}
+              </li>
+            ))}
+          </ol>
+          <dl className="ty-deed-facts">
+            <div>
+              <dt>Giá đất</dt>
+              <dd>{formatMoney(price)}</dd>
+            </div>
+            {street ? (
+              <>
+                <div>
+                  <dt>Nâng mỗi cấp</dt>
+                  <dd>{formatMoney(houseCost)}</dd>
+                </div>
+                <div>
+                  <dt>Hạ cấp thu về</dt>
+                  <dd>{formatMoney(houseCost / 2)}</dd>
+                </div>
+              </>
+            ) : null}
+            {street && owner >= 0 && state.houses < MAX_HOUSES ? (
+              <div>
+                <dt>Mua lại ×{TAKEOVER_MULTIPLIER}</dt>
+                <dd>{formatMoney(takeoverPrice(view, idx))}</dd>
+              </div>
+            ) : null}
+          </dl>
+        </>
+      ) : (
+        <p className="ty-deed-desc">{specialDescription(idx)}</p>
+      )}
     </BottomSheet>
   );
 }
