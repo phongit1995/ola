@@ -10,13 +10,14 @@ import {
   UnorderedListOutlined,
   WarningOutlined,
 } from '@ant-design/icons'
-import type { ShopSectionLink } from './ShopSectionNav'
+import type { ShopSectionLink } from './types'
 
 export const VIP_SECTION_LINKS: ShopSectionLink[] = [
   { path: '/vip-packages', label: 'Gói ngày VIP', icon: <CrownOutlined /> },
   { path: '/vip-shop', label: 'Icon VIP', icon: <SmileOutlined /> },
   { path: '/vip-purchases', label: 'Lịch sử mua', icon: <ShoppingCartOutlined /> },
   { path: '/vip-transfers', label: 'Lịch sử chuyển', icon: <SwapOutlined /> },
+  { path: '/vip-day-transfers', label: 'Lịch sử chuyển NSD', icon: <SwapOutlined /> },
 ]
 
 export const GIFT_SECTION_LINKS: ShopSectionLink[] = [

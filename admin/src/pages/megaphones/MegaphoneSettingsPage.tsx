@@ -24,13 +24,9 @@ import {
   MEGAPHONE_SETTING_KEY,
   MEGAPHONE_WEIGHT_MAX,
 } from './constants'
-import { megaphoneQueueLimits } from './utils'
+import { megaphoneQueueLimits, megaphoneTiersAreValid } from './utils'
 import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
 import { MEGAPHONE_SECTION_LINKS } from '@/pages/shop/sections'
-
-function tiersAreValid(tiers: MegaphoneSetting['giftTiers']) {
-  return tiers[0]?.minKen === 0 && tiers.every((tier, index) => index === 0 || tier.minKen > tiers[index - 1].minKen)
-}
 
 function QueueLimitsNote({ values }: { values: MegaphoneSetting }) {
   const limits = megaphoneQueueLimits(values)
@@ -71,7 +67,7 @@ export function MegaphoneSettingsPage() {
   const current = settingValue(settings, MEGAPHONE_SETTING_KEY, DEFAULT_MEGAPHONE_SETTING)
 
   async function save(values: MegaphoneSetting) {
-    if (!tiersAreValid(values.giftTiers)) {
+    if (!megaphoneTiersAreValid(values.giftTiers)) {
       message.error('Mốc quà phải bắt đầu từ 0 KEN và tăng dần')
       return
     }

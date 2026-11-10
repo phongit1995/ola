@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Input, Table, Tag, Typography, type TableColumnsType } from 'antd'
 import { useKenAllClaims } from './useKenChestQueries'
 import { useDebounce } from '@/hooks/useDebounce'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { UserCell } from '@/components/UserCell'
 import { KenSourceTag } from '@/components/KenSourceTag'
 import type { KenClaimHistoryItem } from '@/types'
@@ -34,7 +34,7 @@ export function KenClaimsHistory() {
           <Tag color="default">Rỗng</Tag>
         ) : (
           <Typography.Text strong style={{ color: '#d48806' }}>
-            {claim.kenAmount.toLocaleString('vi-VN')} KEN
+            {formatCount(claim.kenAmount)} KEN
           </Typography.Text>
         ),
     },

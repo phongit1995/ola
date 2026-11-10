@@ -1,4 +1,6 @@
 import type { TFunction } from 'i18next';
+import type { Conversation } from '../types/api/chat.type';
+import type { PublicProfile } from '../types/api/user.type';
 import type { CallerBrief } from '../types/client/call.type';
 import type { MessageMetadata } from '../types/lib.type';
 
@@ -11,6 +13,21 @@ export function formatCallDuration(seconds: number): string {
 
 export function peerDisplayName(peer: CallerBrief, fallback: string): string {
   return peer.fullName ?? peer.username ?? fallback;
+}
+
+export function withCallPeerFrame(
+  peer: CallerBrief,
+  conversation: Conversation | null | undefined,
+  peerProfile: PublicProfile | null | undefined
+): CallerBrief {
+  if (peer.avatarFrameId != null) return peer;
+  const other =
+    conversation?.type === 'direct' && conversation.otherUser?.id === peer.id
+      ? conversation.otherUser
+      : null;
+  const profile = peerProfile?.id === peer.id ? peerProfile : null;
+  const avatarFrameId = other?.avatarFrameId ?? profile?.avatarFrameId;
+  return avatarFrameId != null ? { ...peer, avatarFrameId } : peer;
 }
 
 export interface CallPeerNameView {

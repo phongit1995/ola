@@ -3,7 +3,7 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { activeVipTypeId, daysSince, monthsSince, yearsSince } from '@ola/shared/lib';
 import type { PublicProfile } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CachedImageBackground } from '@components/ui/CachedImage';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { DIVIDER } from '@constants';
@@ -56,7 +56,15 @@ export function PeerProfileCard({
   const primaryName = fullName !== '' ? fullName : `@${profile.username}`;
   const secondaryName = fullName !== '' ? `@${profile.username}` : undefined;
 
-  const avatarEl = <Avatar name={name} uri={avatarUrl !== '' ? avatarUrl : undefined} size={56} rounded={false} />;
+  const avatarEl = (
+    <AvatarWithFrame
+      name={name}
+      uri={avatarUrl !== '' ? avatarUrl : undefined}
+      size={56}
+      rounded={false}
+      frameId={profile.avatarFrameId}
+    />
+  );
 
   return (
     <View className="mt-2 bg-white" style={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: DIVIDER }}>

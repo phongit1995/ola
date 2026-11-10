@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Avatar, UserName, VipIcon } from '@components';
+import { UserName, VipIcon } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { GENDER } from '@constants';
 import { activeVipTypeId, daysSince, monthsSince, yearsSince } from '@lib';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
@@ -52,12 +53,13 @@ export function PeerProfileCard({
   const secondaryName = fullName !== '' ? `@${profile.username}` : undefined;
 
   const avatarEl = (
-    <Avatar
+    <AvatarWithFrame
       name={name}
       color={color}
       src={avatarUrl}
       size={56}
       rounded={false}
+      frameId={profile.avatarFrameId}
     />
   );
 

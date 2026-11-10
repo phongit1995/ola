@@ -2,6 +2,7 @@ import type { ChatBotType } from '../client/chatBot.type';
 import type { GiftSettings } from './gift.type';
 import type { GiftCodeAppConfig } from './giftCode.type';
 import type { MegaphoneAppConfig } from './megaphone.type';
+import type { VipDayTransferConfig } from './vip.type';
 
 export type MessagePrivacy = 'all' | 'friends';
 export type MeVisibility = 'all' | 'friends';
@@ -93,6 +94,7 @@ export interface AppConfigs {
   gift: GiftSettings;
   megaphone: MegaphoneAppConfig;
   giftCode: GiftCodeAppConfig;
+  vipDayTransfer: VipDayTransferConfig;
 }
 
 export interface AppUpdateResult {

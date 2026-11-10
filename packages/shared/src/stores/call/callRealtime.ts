@@ -29,6 +29,7 @@ function callerFromConversations(event: IncomingCallEvent): CallerBrief | null {
     username: other.username,
     fullName: other.fullName,
     avatar: other.avatar,
+    avatarFrameId: other.avatarFrameId,
   };
 }
 
@@ -40,6 +41,7 @@ async function fetchCaller(callerId: string): Promise<CallerBrief | null> {
       username: profile.username,
       fullName: profile.fullName,
       avatar: profile.avatar,
+      avatarFrameId: profile.avatarFrameId,
     };
   } catch {
     return null;

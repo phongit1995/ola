@@ -5,6 +5,8 @@ import type {
   BuyVipPackageResult,
   GiftVipIconResult,
   GiftVipPackageResult,
+  TransferVipDaysBody,
+  TransferVipDaysResult,
   VipIconCatalogResult,
   VipPackageListResult,
   VipPurchaseHistoryResult,
@@ -46,6 +48,10 @@ export class VipService {
       toUsername,
       password,
     });
+  }
+
+  static transferDays(body: TransferVipDaysBody): Promise<TransferVipDaysResult> {
+    return http.post<TransferVipDaysResult>(API_PATH.vip.transferDays, body);
   }
 
   static store(params?: { limit?: number; offset?: number }): Promise<VipStoreResult> {

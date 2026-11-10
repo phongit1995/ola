@@ -10,6 +10,7 @@ import { REPORT_SUMMARY_KEY } from '@/hooks/useReportSummary'
 import { USERS_KEY } from '@/hooks/useUserQueries'
 import { MOMENTS_QUERY_KEY } from '@/pages/moments/useMomentQueries'
 import { toApiError } from '@/lib/apiError'
+import { HTTP_NOT_FOUND } from '@/lib/constants'
 import type {
   AdminReport,
   ReportAlertChannel,
@@ -19,7 +20,6 @@ import type {
 } from '@/types'
 
 const REPORTS_KEY = 'admin-reports'
-const HTTP_NOT_FOUND = 404
 const REPORT_REMOVE_REASON = 'Gỡ từ báo cáo'
 
 export interface ReportHandling {

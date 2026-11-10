@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { App, Form, Input, Modal } from 'antd'
-import { AdminAuthService } from '@/services/adminAuth.service'
 import { errorMessage } from '@/lib/apiError'
+import { useChangeAdminPassword } from '@/hooks/useAuthQueries'
 
 interface ChangePasswordFormValues {
   currentPassword: string
@@ -18,13 +17,12 @@ interface ChangePasswordModalProps {
 export function ChangePasswordModal({ open, onClose, onChanged }: ChangePasswordModalProps) {
   const { message } = App.useApp()
   const [form] = Form.useForm<ChangePasswordFormValues>()
-  const [submitting, setSubmitting] = useState(false)
+  const changePassword = useChangeAdminPassword()
 
   async function onOk() {
     const values = await form.validateFields()
-    setSubmitting(true)
     try {
-      await AdminAuthService.changePassword({
+      await changePassword.mutateAsync({
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       })
@@ -34,8 +32,6 @@ export function ChangePasswordModal({ open, onClose, onChanged }: ChangePassword
       onChanged()
     } catch (err) {
       message.error(errorMessage(err, 'Đổi mật khẩu thất bại'))
-    } finally {
-      setSubmitting(false)
     }
   }
 
@@ -52,7 +48,7 @@ export function ChangePasswordModal({ open, onClose, onChanged }: ChangePassword
       onCancel={handleCancel}
       okText="Đổi mật khẩu"
       cancelText="Huỷ"
-      confirmLoading={submitting}
+      confirmLoading={changePassword.isPending}
       destroyOnHidden
     >
       <Form form={form} layout="vertical" requiredMark={false}>

@@ -26,6 +26,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		vip.GET("/purchases", r.controller.ListPurchases)
 		vip.GET("/purchases/stats", r.controller.PurchaseStats)
 		vip.GET("/transfers", r.controller.ListTransfers)
+		vip.GET("/day-transfers", r.controller.ListDayTransfers)
 		vip.GET("/shop", r.controller.ListShopItems)
 		vip.POST("/shop", r.controller.CreateShopItem)
 		vip.PUT("/shop/order", r.controller.ReorderShopItems)

@@ -3,10 +3,11 @@ package notification
 import "ola-chat-server/internal/models"
 
 type ActorResponse struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName"`
-	Avatar   string `json:"avatar"`
+	ID            string  `json:"id"`
+	Username      string  `json:"username"`
+	FullName      string  `json:"fullName"`
+	Avatar        string  `json:"avatar"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty"`
 }
 
 type AppNotificationResponse struct {

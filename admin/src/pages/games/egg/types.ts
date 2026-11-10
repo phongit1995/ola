@@ -34,3 +34,13 @@ export interface CategoryTemplate {
   label: string
   hasItems: boolean
 }
+
+export interface EggItemFormValues {
+  label: string
+  weight: number
+  vipTypeId?: number
+  kenAmount?: number
+  vipDays?: number
+  isSuperLucky: boolean
+  isActive: boolean
+}

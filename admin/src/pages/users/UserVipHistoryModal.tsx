@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Modal, Table, Tag, type TableColumnsType } from 'antd'
 import { useVipHistory } from '@/hooks/useVipTransferQueries'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import type { VipPurchaseHistory } from '@/types'
 import { MODAL_PAGE_SIZE, VIP_HISTORY_SOURCE_META } from './constants'
 
@@ -36,14 +36,14 @@ export function UserVipHistoryModal({ open, userId, username, onClose }: UserVip
       dataIndex: 'days',
       width: 90,
       align: 'right',
-      render: (v: number) => v.toLocaleString('vi-VN'),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Giá (Ken)',
       dataIndex: 'kenPrice',
       width: 110,
       align: 'right',
-      render: (v: number) => v.toLocaleString('vi-VN'),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Nguồn',

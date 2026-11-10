@@ -1,4 +1,5 @@
 export const PAGE_SIZE = 20
+export const HTTP_NOT_FOUND = 404
 export const ALL_PAGES_LIMIT = 100
 
 export type DateRangePreset = '1d' | '3d' | '1w' | '2w' | '3w' | '1m' | 'custom'

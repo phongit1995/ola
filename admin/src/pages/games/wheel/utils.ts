@@ -9,6 +9,7 @@ import type {
 import type { LoadedWheel, WheelBreakdown, WheelKindMeta, WheelOptionStats } from './types'
 import { WHEEL_KINDS } from './constants'
 import { newId, percent, round4, sumActiveWeight } from '../egg/utils'
+import { formatCount } from '@/lib/format'
 
 export { newId, percent, sumActiveWeight, formatPercent, rebalanceWeights } from '../egg/utils'
 
@@ -145,7 +146,7 @@ export function toConfigRequest(segments: WheelSegment[]): SaveWheelConfigReques
 
 export function rewardText(spin: AdminWheelSpin): string {
   if (spin.segmentKind === 'miss') return 'Trượt'
-  if (spin.kenAmount) return `+${spin.kenAmount.toLocaleString('vi-VN')} Ken`
+  if (spin.kenAmount) return `+${formatCount(spin.kenAmount)} Ken`
   if (spin.vipDays) return `${spin.vipDays} ngày VIP`
   return spin.rewardLabel ?? 'Trúng'
 }

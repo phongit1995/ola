@@ -1,11 +1,12 @@
+import { flushSync } from 'react-dom';
 import { create } from 'zustand';
 import type { TyIconName } from '../components/TyIcon';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import { vipIconUrl } from '@ola/shared/lib/vip';
 import { bridge, type GameReactionType } from '../../src/sdk';
-import { BOARD, cardById } from '../logic/board';
+import { BOARD, cardById, GROUP_LABEL, tilesOfGroup } from '../logic/board';
 import { botMove } from '../logic/bot';
-import { BOARD_SIZE, FESTIVAL_MULTIPLIER, JAIL_TILE, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, JAIL_TILE, MAX_HOUSES, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
 import { applyMove, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
 import { RuleError, type BotLevel, type GameState, type Move, type Step, type TileState } from '../logic/types';
 import { MAX_BOTS, botName, type BotSetupItem } from '../helpers/bot';
@@ -15,6 +16,8 @@ import { avatarIconUrl } from '../helpers/player';
 import { MOCK_PROFILE, type LobbyProfile } from '../helpers/profile';
 import { levelLabel } from '../helpers/tiles';
 import { playSound, setSoundEnabled } from '../audio';
+import * as fx from '../fx/boardFx';
+import { sleep } from '../fx/runtime';
 
 export type BoardMode = 'idle' | 'playing';
 export type Sheet = { kind: 'tile'; idx: number } | { kind: 'assets'; seat: number } | { kind: 'log' } | null;
@@ -31,7 +34,15 @@ export interface DiceFx {
   values: [number, number];
   rolling: boolean;
   double: boolean;
+  showTotal: boolean;
   seq: number;
+}
+
+export interface FeedLine {
+  seq: number;
+  text: string;
+  tone: LogLine['tone'];
+  seat: number;
 }
 
 export interface CardFx {
@@ -112,19 +123,17 @@ interface TycoonState {
   deadline: number;
   timerLeftMs: number;
   turnExpired: boolean;
-  turnAnnounce: string | null;
   movePending: boolean;
   replaying: boolean;
   matchSeq: number;
   startedAt: number;
   log: LogLine[];
 
+  feed: FeedLine | null;
   diceFx: DiceFx;
   cardFx: CardFx | null;
-  landingTile: number;
-  pathTiles: number[];
   moneyFloats: MoneyFloat[];
-  jailFxSeat: number;
+  barsOn: boolean;
   sheet: Sheet;
 
   result: MatchResultState | null;
@@ -161,27 +170,12 @@ interface TycoonState {
 }
 
 const SOUND_KEY = 'ola:tycoon:sound';
-const TURN_ANNOUNCE_MS = 1200;
 const TOAST_MS = 2400;
 const RESULT_REVEAL_MS = 900;
-const BOT_THINK_MS = 650;
-
-const STEP_MS = {
-  rollSpin: 720,
-  rollSettle: 220,
-  hop: 140,
-  hopFast: 110,
-  teleport: 420,
-  land: 220,
-  pay: 520,
-  card: 420,
-  jailIn: 700,
-  jailOut: 200,
-  build: 260,
-  debt: 300,
-  bankrupt: 900,
-  round: 240,
-};
+const SCREEN_IN_MS = 260;
+const BOT_DELAY_MS = { card: 1500, quick: 240, think: 540 };
+const STEP_MS = { land: 300, debt: 320, round: 240 };
+const SILENT_PAY_REASONS = new Set(['buy', 'takeover', 'build', 'sell']);
 
 const RULE_TEXT: Record<string, string> = {
   wrong_phase: 'Chưa đến lúc làm việc này',
@@ -203,11 +197,28 @@ const RULE_TEXT: Record<string, string> = {
   unknown_move: 'Thao tác không hợp lệ',
 };
 
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
-const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-
 function emptyDice(): DiceFx {
-  return { values: [1, 1], rolling: false, double: false, seq: 0 };
+  return { values: [1, 1], rolling: false, double: false, showTotal: false, seq: 0 };
+}
+
+function readSound(): boolean {
+  try {
+    return localStorage.getItem(SOUND_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
+function writeSound(on: boolean): void {
+  try {
+    localStorage.setItem(SOUND_KEY, on ? '1' : '0');
+  } catch {
+    // WebView chặn storage thì chỉ không nhớ được lựa chọn.
+  }
+}
+
+function barsFor(state: GameState): boolean {
+  return state.players.some((p) => p.inJail && !p.bankrupt);
 }
 
 function reasonLabel(reason: string | undefined, amount: number, tile?: number): string {
@@ -248,12 +259,12 @@ export const useTycoon = create<TycoonState>((set, get) => {
     gameRun: 0,
     timer: 0 as ReturnType<typeof setInterval> | 0,
     botTimer: 0 as ReturnType<typeof setTimeout> | 0,
-    announceTimer: 0 as ReturnType<typeof setTimeout> | 0,
     toastTimer: 0 as ReturnType<typeof setTimeout> | 0,
     transientTimers: new Set<ReturnType<typeof setTimeout>>(),
     seq: 0,
     lastTick: -1,
     timedOut: false,
+    feedSeat: -1,
   };
 
   const nextSeq = () => ++refs.seq;
@@ -292,7 +303,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
   };
 
   const pushLog = (text: string, tone: LogLine['tone'] = 'neutral') => {
-    set((state) => ({ log: [...state.log.slice(-79), { seq: nextSeq(), text, tone }] }));
+    const seq = nextSeq();
+    set((state) => ({ log: [...state.log.slice(-79), { seq, text, tone }], feed: { seq, text, tone, seat: refs.feedSeat } }));
   };
 
   const floatMoney = (seat: number, amount: number) => {
@@ -302,12 +314,6 @@ export const useTycoon = create<TycoonState>((set, get) => {
     scheduleTransient(() => {
       set((state) => ({ moneyFloats: state.moneyFloats.filter((item) => item.seq !== float.seq) }));
     }, 1100);
-  };
-
-  const announce = (text: string) => {
-    if (refs.announceTimer) clearTimeout(refs.announceTimer);
-    set({ turnAnnounce: text });
-    refs.announceTimer = setTimeout(() => set({ turnAnnounce: null }), TURN_ANNOUNCE_MS);
   };
 
   const startTimer = () => {
@@ -343,213 +349,237 @@ export const useTycoon = create<TycoonState>((set, get) => {
     set({ deadline, timerLeftMs: human ? TURN_SECONDS * 1000 : 0, turnExpired: false });
   };
 
-  const snapState = (state: GameState, silent = false) => {
-    const previousTurn = get().view?.turn;
+  const announceTurn = (state: GameState, attention: boolean) => {
     const myTurn = state.turn === get().you && !state.finished;
-    set({
-      view: state,
-      positions: state.players.map((p) => p.pos),
-      cash: state.players.map((p) => p.cash),
-      tiles: state.tiles,
-      movePending: false,
-      replaying: false,
-      myTurn,
-      cardFx: state.phase === 'card' && state.card ? get().cardFx ?? { deck: state.card.deck, id: state.card.id, seq: nextSeq() } : null,
-      diceFx: { ...get().diceFx, rolling: false },
-    });
     armDeadline(state.turn);
     bridge.turnChanged({ yourTurn: myTurn, deadline: get().deadline });
-    if (!silent && myTurn && previousTurn !== state.turn) {
-      announce('ĐẾN LƯỢT BẠN');
-      bridge.attention({ reason: ARCADE_ATTENTION_REASON.YourTurn });
-    }
+    if (attention && myTurn) bridge.attention({ reason: ARCADE_ATTENTION_REASON.YourTurn });
+  };
+
+  // hold giữ bàn ở trạng thái bận và chưa chạy đồng hồ, để băng đổi lượt diễn xong mới cho bấm.
+  const snapState = (state: GameState, hold = false) => {
+    const previousTurn = get().view?.turn;
+    const myTurn = state.turn === get().you && !state.finished;
+    flushSync(() =>
+      set({
+        view: state,
+        positions: state.players.map((p) => p.pos),
+        cash: state.players.map((p) => p.cash),
+        tiles: state.tiles,
+        movePending: false,
+        replaying: hold,
+        myTurn,
+        barsOn: barsFor(state),
+        cardFx: state.phase === 'card' && state.card ? get().cardFx ?? { deck: state.card.deck, id: state.card.id, seq: nextSeq() } : null,
+        diceFx: { ...get().diceFx, rolling: false, showTotal: previousTurn === state.turn && get().diceFx.showTotal },
+      }),
+    );
+    if (hold) set({ deadline: 0, timerLeftMs: 0, turnExpired: false });
+    else announceTurn(state, false);
+  };
+
+  const turnTip = (state: GameState): string => {
+    if (state.phase === 'jail') return 'Bạn đang ở tù, chọn cách ra';
+    if (state.phase === 'travel') return 'Chọn ô để bay tới';
+    return 'Gieo xúc xắc để đi';
+  };
+
+  const playTurnBanner = (state: GameState): Promise<void> => {
+    const { you, players } = get();
+    return fx.showTurnBanner({ seat: state.turn, mine: state.turn === you, name: seatName(state.turn), avatar: players[state.turn]?.avatar, tip: turnTip(state) });
+  };
+
+  const commitPosition = (seat: number, pos: number) => {
+    flushSync(() =>
+      set((state) => {
+        const positions = [...state.positions];
+        positions[seat] = pos;
+        return { positions };
+      }),
+    );
+  };
+
+  const commitTiles = (update: (tiles: TileState[]) => TileState[]) => {
+    flushSync(() => set((state) => ({ tiles: update(state.tiles) })));
+  };
+
+  const addCash = (seat: number, amount: number) => {
+    if (seat < 0) return;
+    set((state) => {
+      const cash = [...state.cash];
+      if (cash[seat] != null) cash[seat] += amount;
+      return { cash };
+    });
+    floatMoney(seat, amount);
+  };
+
+  const withOwner = (tile: number, owner: number) => (tiles: TileState[]) => tiles.map((item, idx) => (idx === tile ? { ...item, owner } : item));
+
+  const stampTile = (tile: number, by: number): Promise<void> => {
+    const group = BOARD[tile].kind === 'street' ? BOARD[tile].group : undefined;
+    const members = group ? tilesOfGroup(group) : [];
+    const complete = group ? members.every((idx) => idx === tile || get().tiles[idx]?.owner === by) : false;
+    if (complete && group) get().showToast(`Trọn nhóm ${GROUP_LABEL[group]}, thuê ×2`);
+    return fx.stampDeed(tile, by, BOARD[tile].name, () => commitTiles(withOwner(tile, by)), complete ? members : null);
   };
 
   const replayStep = async (step: Step, epoch: number): Promise<void> => {
     const alive = () => refs.replayEpoch === epoch;
-    const fast = reducedMotion();
     const you = get().you;
     switch (step.kind) {
       case 'roll': {
         const values = step.dice ?? [1, 1];
-        set({ diceFx: { values, rolling: !fast, double: Boolean(step.double), seq: nextSeq() }, landingTile: -1, pathTiles: [] });
-        playSound('dice');
-        if (!fast) await sleep(STEP_MS.rollSpin);
+        const double = Boolean(step.double);
+        pushLog(`${seatName(step.by)} gieo ${values[0]} + ${values[1]}${double ? ' (đôi!)' : ''}`);
+        flushSync(() => set({ diceFx: { values, rolling: true, double, showTotal: false, seq: nextSeq() } }));
+        await fx.rollDice(values);
         if (!alive()) return;
-        set((state) => ({ diceFx: { ...state.diceFx, rolling: false } }));
-        await sleep(fast ? 80 : STEP_MS.rollSettle);
+        flushSync(() => set((state) => ({ diceFx: { ...state.diceFx, rolling: false, showTotal: true } })));
+        await fx.revealDiceTotal(double);
         return;
       }
       case 'move': {
         const from = step.from ?? 0;
         const to = step.to ?? from;
-        const distance = (to - from + BOARD_SIZE) % BOARD_SIZE;
-        if (fast) {
-          set((state) => {
-            const positions = [...state.positions];
-            positions[step.by] = to;
-            return { positions, pathTiles: [] };
-          });
-          await sleep(120);
-          return;
-        }
-        for (let i = 1; i <= distance; i++) {
-          if (!alive()) return;
-          const pos = (from + i) % BOARD_SIZE;
-          set((state) => {
-            const positions = [...state.positions];
-            positions[step.by] = pos;
-            return { positions, pathTiles: [...state.pathTiles.slice(-6), pos] };
-          });
-          playSound('step');
-          await sleep(i > 8 ? STEP_MS.hopFast : STEP_MS.hop);
-        }
-        scheduleTransient(() => set({ pathTiles: [] }), 600);
+        const { positions, view } = get();
+        await fx.walkPawn({
+          seat: step.by,
+          from,
+          count: (to - from + BOARD_SIZE) % BOARD_SIZE,
+          positions,
+          bankrupt: view?.players.map((p) => p.bankrupt) ?? [],
+          turn: view?.turn ?? -1,
+          commit: () => commitPosition(step.by, to),
+          alive,
+        });
         return;
       }
       case 'teleport': {
-        set((state) => {
-          const positions = [...state.positions];
-          positions[step.by] = step.to ?? positions[step.by];
-          return { positions };
-        });
-        await sleep(fast ? 120 : STEP_MS.teleport);
+        const to = step.to ?? get().positions[step.by];
+        const toJail = to === JAIL_TILE && step.from !== JAIL_TILE;
+        if (toJail) fx.policeWhistle(step.by);
+        await fx.flyPawn(step.by, toJail ? '#E4573D' : '#F2B807', () => commitPosition(step.by, to));
         return;
       }
       case 'land': {
-        set({ landingTile: step.tile ?? -1 });
-        await sleep(fast ? 60 : STEP_MS.land);
+        const tile = step.tile ?? 0;
+        fx.landOnTile(tile, step.by, get().tiles[tile]?.owner ?? -1);
+        await sleep(STEP_MS.land);
         return;
       }
       case 'pay': {
         const amount = step.amount ?? 0;
         const from = step.by;
         const to = step.target ?? -1;
-        set((state) => {
-          const cash = [...state.cash];
-          if (from >= 0 && cash[from] != null) cash[from] -= amount;
-          if (to >= 0 && cash[to] != null) cash[to] += amount;
-          return { cash };
-        });
-        floatMoney(from, -amount);
-        floatMoney(to, amount);
-        if (from === you) playSound('cash-out');
-        else if (to === you) playSound('cash-in');
         const label = reasonLabel(step.reason, amount, step.tile);
-        if (from >= 0 && to >= 0) pushLog(`${seatName(from)} trả ${seatName(to)} ${formatMoney(amount)} ${label}`, from === you ? 'down' : to === you ? 'up' : 'neutral');
+        if (SILENT_PAY_REASONS.has(step.reason ?? '')) {
+          // Bước mua/nâng ngay sau đã tự ghi diễn biến, không ghi trùng.
+        } else if (from >= 0 && to >= 0) pushLog(`${seatName(from)} trả ${seatName(to)} ${formatMoney(amount)} ${label}`, from === you ? 'down' : to === you ? 'up' : 'neutral');
         else if (from >= 0) pushLog(`${seatName(from)} trả ${formatMoney(amount)} ${label}`, from === you ? 'down' : 'neutral');
         else if (to >= 0) pushLog(`${seatName(to)} nhận ${formatMoney(amount)} ${label}`, to === you ? 'up' : 'neutral');
-        await sleep(fast ? 80 : STEP_MS.pay);
+        await fx.payMoney({ from, to, amount, reason: step.reason, debit: () => addCash(from, -amount), credit: () => addCash(to, amount) });
         return;
       }
       case 'buy': {
         const tile = step.tile ?? -1;
-        if (tile >= 0) {
-          set((state) => {
-            const tiles = [...state.tiles];
-            tiles[tile] = { ...tiles[tile], owner: step.by };
-            return { tiles };
-          });
-          pushLog(`${seatName(step.by)} mua ${BOARD[tile].name}`, step.by === you ? 'up' : 'neutral');
-        }
-        await sleep(fast ? 60 : STEP_MS.build);
-        return;
-      }
-      case 'card': {
-        if (step.deck && step.card) {
-          set({ cardFx: { deck: step.deck, id: step.card, seq: nextSeq() } });
-          playSound('card');
-          const card = cardById(step.card);
-          pushLog(`${seatName(step.by)} rút ${step.deck === 'chance' ? 'Cơ hội' : 'Khí vận'}: ${card?.text ?? ''}`);
-        }
-        await sleep(fast ? 80 : STEP_MS.card);
-        return;
-      }
-      case 'jail-in': {
-        set((state) => {
-          const positions = [...state.positions];
-          positions[step.by] = JAIL_TILE;
-          return { positions, jailFxSeat: step.by };
-        });
-        playSound('jail');
-        pushLog(`${seatName(step.by)} vào tù`, step.by === you ? 'down' : 'neutral');
-        await sleep(fast ? 100 : STEP_MS.jailIn);
-        set({ jailFxSeat: -1 });
-        return;
-      }
-      case 'jail-out': {
-        pushLog(`${seatName(step.by)} ra tù`);
-        await sleep(fast ? 40 : STEP_MS.jailOut);
-        return;
-      }
-      case 'build':
-      case 'sell': {
-        const tile = step.tile ?? -1;
-        if (tile >= 0) {
-          set((state) => {
-            const tiles = [...state.tiles];
-            tiles[tile] = { ...tiles[tile], houses: step.houses ?? tiles[tile].houses };
-            return { tiles };
-          });
-          if (step.kind === 'build') playSound('build');
-          pushLog(`${seatName(step.by)} ${step.kind === 'build' ? 'nâng' : 'hạ'} ${BOARD[tile].name} lên ${levelLabel(step.houses ?? 0)}`.replace(' lên Đất trống', ' về đất trống'));
-        }
-        await sleep(fast ? 60 : STEP_MS.build);
+        if (tile < 0) return;
+        pushLog(`${seatName(step.by)} mua ${BOARD[tile].name}`, step.by === you ? 'up' : 'neutral');
+        await stampTile(tile, step.by);
         return;
       }
       case 'takeover': {
         const tile = step.tile ?? -1;
-        if (tile >= 0) {
-          set((state) => {
-            const tiles = [...state.tiles];
-            tiles[tile] = { ...tiles[tile], owner: step.by };
-            return { tiles };
-          });
-          playSound('build');
-          pushLog(`${seatName(step.by)} mua lại ${BOARD[tile].name} của ${seatName(step.target ?? -1)}`, step.by === you ? 'up' : step.target === you ? 'down' : 'neutral');
-        }
-        await sleep(fast ? 60 : STEP_MS.build);
+        if (tile < 0) return;
+        pushLog(`${seatName(step.by)} mua lại ${BOARD[tile].name} của ${seatName(step.target ?? -1)}`, step.by === you ? 'up' : step.target === you ? 'down' : 'neutral');
+        await stampTile(tile, step.by);
+        return;
+      }
+      case 'card': {
+        if (!step.deck || !step.card) return;
+        const { deck, card } = step;
+        pushLog(`${seatName(step.by)} rút ${deck === 'chance' ? 'Cơ hội' : 'Khí vận'}: ${cardById(card)?.text ?? ''}`);
+        await fx.shakeDeck(deck);
+        if (!alive()) return;
+        flushSync(() => set({ cardFx: { deck, id: card, seq: nextSeq() } }));
+        await fx.flyCardIn(deck);
+        return;
+      }
+      case 'jail-in': {
+        commitPosition(step.by, JAIL_TILE);
+        flushSync(() => set({ barsOn: true }));
+        pushLog(`${seatName(step.by)} vào tù`, step.by === you ? 'down' : 'neutral');
+        await fx.jailDoorClose(step.by);
+        return;
+      }
+      case 'jail-out': {
+        pushLog(`${seatName(step.by)} ra tù`);
+        await fx.jailDoorOpen();
+        const stillJailed = get().view?.players.some((p, seat) => seat !== step.by && p.inJail && !p.bankrupt) ?? false;
+        set({ barsOn: stillJailed });
+        return;
+      }
+      case 'build': {
+        const tile = step.tile ?? -1;
+        if (tile < 0) return;
+        const houses = step.houses ?? 0;
+        pushLog(`${seatName(step.by)} nâng ${BOARD[tile].name} lên ${levelLabel(houses)}`);
+        commitTiles((tiles) => tiles.map((item, idx) => (idx === tile ? { ...item, houses } : item)));
+        await fx.buildHouse(tile, houses >= MAX_HOUSES);
+        return;
+      }
+      case 'sell': {
+        const tile = step.tile ?? -1;
+        if (tile < 0) return;
+        const houses = step.houses ?? 0;
+        pushLog(`${seatName(step.by)} hạ ${BOARD[tile].name} còn ${levelLabel(houses)}`);
+        await fx.sellHouse(tile, step.by);
+        commitTiles((tiles) => tiles.map((item, idx) => (idx === tile ? { ...item, houses } : item)));
         return;
       }
       case 'festival': {
         const tile = step.tile ?? -1;
-        if (tile >= 0) {
-          set((state) => (state.view ? { view: { ...state.view, festival: tile } } : {}));
-          playSound('build');
-          pushLog(`${seatName(step.by)} tổ chức Lễ hội ở ${BOARD[tile].name} — thuê ×${FESTIVAL_MULTIPLIER}`, step.by === you ? 'up' : 'neutral');
-        }
-        await sleep(fast ? 60 : STEP_MS.build);
+        if (tile < 0) return;
+        flushSync(() => set((state) => (state.view ? { view: { ...state.view, festival: tile } } : {})));
+        pushLog(`${seatName(step.by)} tổ chức Lễ hội ở ${BOARD[tile].name} — thuê ×${FESTIVAL_MULTIPLIER}`, step.by === you ? 'up' : 'neutral');
+        await fx.celebrateFestival(tile);
         return;
       }
       case 'travel': {
         pushLog(`${seatName(step.by)} được đi Du lịch — lượt sau bay tới ô bất kỳ`, step.by === you ? 'up' : 'neutral');
-        await sleep(fast ? 60 : STEP_MS.land);
+        await fx.travelWiggle();
         return;
       }
       case 'debt': {
         pushLog(`${seatName(step.by)} nợ ${formatMoney(step.amount ?? 0)} ${seatName(step.creditor ?? -1)}`, step.by === you ? 'down' : 'neutral');
-        await sleep(fast ? 60 : STEP_MS.debt);
+        fx.debtAlarm(step.by);
+        await sleep(STEP_MS.debt);
         return;
       }
       case 'bankrupt': {
-        set((state) => {
-          const tiles = state.tiles.map((t, idx) =>
-            (step.tiles ?? []).includes(idx) ? { owner: step.creditor != null && step.creditor >= 0 ? step.creditor : -1, houses: 0 } : t,
-          );
-          const cash = [...state.cash];
-          cash[step.by] = 0;
-          return { tiles, cash };
-        });
-        playSound('bankrupt');
+        const lost = step.tiles ?? [];
         pushLog(`${seatName(step.by)} phá sản`, step.by === you ? 'down' : 'neutral');
-        await sleep(fast ? 120 : STEP_MS.bankrupt);
+        await fx.bankruptSeat(step.by, seatName(step.by), lost);
+        if (!alive()) return;
+        flushSync(() =>
+          set((state) => {
+            const cash = [...state.cash];
+            cash[step.by] = 0;
+            return {
+              cash,
+              tiles: state.tiles.map((t, idx) => (lost.includes(idx) ? { owner: step.creditor != null && step.creditor >= 0 ? step.creditor : -1, houses: 0 } : t)),
+            };
+          }),
+        );
         return;
       }
       case 'round': {
         const round = step.round ?? 0;
-        pushLog(round > MAX_ROUNDS ? 'Hết vòng cuối' : `Vòng ${round}/${MAX_ROUNDS} bắt đầu`);
-        if (round === MAX_ROUNDS) announce('VÒNG CUỐI!');
-        await sleep(fast ? 60 : STEP_MS.round);
+        set((state) => ({
+          log: [...state.log.slice(-79), { seq: nextSeq(), text: round > MAX_ROUNDS ? 'Hết vòng cuối' : `Vòng ${round}/${MAX_ROUNDS} bắt đầu`, tone: 'neutral' }],
+          view: state.view ? { ...state.view, round } : state.view,
+        }));
+        fx.flipRound(round === MAX_ROUNDS);
+        await sleep(STEP_MS.round);
         return;
       }
       default:
@@ -558,11 +588,13 @@ export const useTycoon = create<TycoonState>((set, get) => {
   };
 
   const replaySteps = async (steps: Step[], epoch: number): Promise<void> => {
-    set({ replaying: true });
+    flushSync(() => set({ replaying: true }));
     for (const step of steps) {
       if (refs.replayEpoch !== epoch) return;
+      refs.feedSeat = step.kind === 'pay' && step.by < 0 ? step.target ?? -1 : step.by ?? -1;
       await replayStep(step, epoch);
     }
+    fx.clearMovingPawns();
   };
 
   const finishGame = (state: GameState) => {
@@ -601,6 +633,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       await sleep(RESULT_REVEAL_MS);
       if (get().matchSeq !== matchSeq || get().boardMode !== 'playing') return;
       playSound(myPlace === 1 ? 'win' : 'lose');
+      fx.celebrateResult(myPlace === 1, ranked[0]);
       bridge.gameOver({ matchId: `local-${matchSeq}`, winnerId: players[ranked[0]]?.id, reason: 'win', won: myPlace === 1 });
       bridge.attention({ reason: ARCADE_ATTENTION_REASON.GameOver });
       set({ result: { matchId: `local-${matchSeq}`, rows, myPlace, reasonText }, myTurn: false, sheet: null, cardFx: null, deadline: 0 });
@@ -616,7 +649,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     if (newTurn && Date.now() - get().startedAt >= TIME_LIMIT_MS) {
       const ended = endByTime(state);
       refs.state = ended;
-      snapState(ended, true);
+      snapState(ended);
       finishGame(ended);
       return;
     }
@@ -628,7 +661,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       if (run !== refs.gameRun || refs.state !== state) return;
       const mv = botMove(state, seat) ?? moveOnTimeout(state, seat);
       if (mv) applyLocal(seat, mv);
-    }, BOT_THINK_MS);
+    }, state.phase === 'card' ? BOT_DELAY_MS.card : state.phase === 'manage' || state.phase === 'roll' ? BOT_DELAY_MS.quick : BOT_DELAY_MS.think);
   };
 
   function applyLocal(seat: number, mv: Move): void {
@@ -647,12 +680,29 @@ export const useTycoon = create<TycoonState>((set, get) => {
     const epoch = refs.replayEpoch;
     const run = refs.gameRun;
     const newTurn = isNewTurn(current, next);
-    set({ deadline: 0, timerLeftMs: 0, turnExpired: false, ...(mv.type === 'CARD_ACK' ? { cardFx: null } : {}) });
+    set({ deadline: 0, timerLeftMs: 0, turnExpired: false });
     queueReplay(async () => {
-      if (refs.replayEpoch !== epoch || run !== refs.gameRun) return;
+      const stale = () => refs.replayEpoch !== epoch || run !== refs.gameRun;
+      if (stale()) return;
+      const openCard = mv.type === 'CARD_ACK' ? get().cardFx : null;
+      if (openCard) {
+        flushSync(() => set({ replaying: true }));
+        await fx.flyCardBack(openCard.deck);
+        if (stale()) return;
+        flushSync(() => set({ cardFx: null }));
+      }
       await replaySteps(next.steps, epoch);
-      if (refs.replayEpoch !== epoch || run !== refs.gameRun) return;
-      snapState(next);
+      if (stale()) return;
+      const turnChanged = newTurn && !isOver(next);
+      snapState(next, turnChanged);
+      if (turnChanged) {
+        refs.feedSeat = -1;
+        set({ feed: null });
+        await playTurnBanner(next);
+        if (stale()) return;
+        flushSync(() => set({ replaying: false }));
+        announceTurn(next, true);
+      }
       scheduleNext(next, newTurn);
     });
   }
@@ -674,16 +724,14 @@ export const useTycoon = create<TycoonState>((set, get) => {
       deadline: 0,
       timerLeftMs: 0,
       turnExpired: false,
-      turnAnnounce: null,
       movePending: false,
       replaying: false,
       log: [],
+      feed: null,
       diceFx: emptyDice(),
       cardFx: null,
-      landingTile: -1,
-      pathTiles: [],
       moneyFloats: [],
-      jailFxSeat: -1,
+      barsOn: false,
       sheet: null,
       result: null,
       notice: null,
@@ -713,17 +761,25 @@ export const useTycoon = create<TycoonState>((set, get) => {
       startedAt: Date.now(),
       log: [],
     });
+    const run = refs.gameRun;
     snapState(state, true);
     startTimer();
-    announce('ĐẾN LƯỢT BẠN');
     playSound('click');
     bridge.attention({ reason: ARCADE_ATTENTION_REASON.MatchStarted, matchId: `local-${get().matchSeq}` });
-    scheduleNext(state);
+    queueReplay(async () => {
+      await sleep(SCREEN_IN_MS);
+      if (run !== refs.gameRun) return;
+      await playTurnBanner(state);
+      if (run !== refs.gameRun) return;
+      flushSync(() => set({ replaying: false }));
+      announceTurn(state, false);
+      scheduleNext(state);
+    });
   };
 
   return {
     profile: MOCK_PROFILE,
-    soundOn: localStorage.getItem(SOUND_KEY) !== '0',
+    soundOn: readSound(),
     rulesOpen: false,
     setupOpen: false,
     roomsOpen: false,
@@ -743,19 +799,17 @@ export const useTycoon = create<TycoonState>((set, get) => {
     deadline: 0,
     timerLeftMs: 0,
     turnExpired: false,
-    turnAnnounce: null,
     movePending: false,
     replaying: false,
     matchSeq: 0,
     startedAt: 0,
     log: [],
 
+    feed: null,
     diceFx: emptyDice(),
     cardFx: null,
-    landingTile: -1,
-    pathTiles: [],
     moneyFloats: [],
-    jailFxSeat: -1,
+    barsOn: false,
     sheet: null,
 
     result: null,
@@ -771,16 +825,14 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
     dispose() {
       leaveToLobby();
-      if (refs.announceTimer) clearTimeout(refs.announceTimer);
       if (refs.toastTimer) clearTimeout(refs.toastTimer);
-      refs.announceTimer = 0;
       refs.toastTimer = 0;
       set({ toast: null, rulesOpen: false, setupOpen: false, roomsOpen: false, leaderboardOpen: false, historyOpen: false, lobbyFocus: null });
     },
 
     toggleSound() {
       const soundOn = !get().soundOn;
-      localStorage.setItem(SOUND_KEY, soundOn ? '1' : '0');
+      writeSound(soundOn);
       setSoundEnabled(soundOn);
       set({ soundOn });
       if (soundOn) playSound('click');

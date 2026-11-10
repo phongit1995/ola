@@ -14,6 +14,7 @@ import { errorMessage } from '@/lib/apiError'
 import type { Wheel } from '@/types'
 import { WheelEditorModal } from './WheelEditorModal'
 import { WheelHistoryModal } from './WheelHistoryModal'
+import { formatCount } from '@/lib/format'
 
 export function WheelRewardsPage() {
   const { message, modal } = App.useApp()
@@ -71,7 +72,7 @@ export function WheelRewardsPage() {
       dataIndex: 'kenCost',
       width: 130,
       align: 'right',
-      render: (value: number) => `${value.toLocaleString('vi-VN')} Ken`,
+      render: (value: number) => `${formatCount(value)} Ken`,
     },
     {
       title: 'Free/ngày',

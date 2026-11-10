@@ -3,7 +3,7 @@ import { ReloadOutlined, RobotOutlined } from '@ant-design/icons'
 import { UserCell } from '@/components/UserCell'
 import { useAppSettings } from '@/hooks/useAppSettingQueries'
 import { useWordChainOverview } from './useWordChainQueries'
-import { formatDateTime, formatKen } from '@/lib/format'
+import { formatCount, formatDateTime, formatKen } from '@/lib/format'
 import { wordChainSetting } from './utils'
 
 export function WordChainOverviewCard() {
@@ -87,10 +87,10 @@ export function WordChainOverviewCard() {
               {formatDateTime(state?.sessionStartedAt)}
             </Descriptions.Item>
             <Descriptions.Item label="Người đã ghi điểm">
-              {(data?.players ?? 0).toLocaleString('vi-VN')}
+              {formatCount(data?.players ?? 0)}
             </Descriptions.Item>
             <Descriptions.Item label="Người đã thắng">
-              {(data?.winners ?? 0).toLocaleString('vi-VN')}
+              {formatCount(data?.winners ?? 0)}
             </Descriptions.Item>
           </Descriptions>
           {data && data.history.length > 0 && (

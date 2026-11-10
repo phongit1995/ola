@@ -183,6 +183,7 @@ export const API_PATH = {
     packages: '/vip/packages',
     buyPackage: (id: string) => `/vip/packages/${id}/buy`,
     giftPackage: (id: string) => `/vip/packages/${id}/gift`,
+    transferDays: '/vip/days/transfer',
     iconUse: (id: string) => `/vip/icons/${id}/use`,
     iconLock: (id: string) => `/vip/icons/${id}/lock`,
     iconUnlock: (id: string) => `/vip/icons/${id}/unlock`,

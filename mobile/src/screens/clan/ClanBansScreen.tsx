@@ -6,7 +6,7 @@ import { clanErrorText, colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
 import type { ClanBan } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { BANS_PAGE_SIZE } from './constants';
@@ -81,11 +81,12 @@ export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
                   index > 0 ? { borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' } : undefined
                 }
               >
-                <Avatar
+                <AvatarWithFrame
                   name={username}
                   uri={item.user?.avatar !== '' ? item.user?.avatar : undefined}
                   color={colorForName(username)}
                   size={40}
+                  frameId={item.user?.avatarFrameId}
                 />
                 <UserName
                   name={username}

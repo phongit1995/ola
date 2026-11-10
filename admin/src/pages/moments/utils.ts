@@ -36,6 +36,8 @@ import {
   MOMENT_STATE_TAG,
   MOMENT_SWITCHLESS_STATES,
 } from './constants'
+import { errorMessage, toApiError } from '@/lib/apiError'
+import { HTTP_NOT_FOUND } from '@/lib/constants'
 
 export function momentBackgroundCss(key: string | undefined): string {
   const background = resolveMomentBackground(key)
@@ -167,4 +169,17 @@ export function momentPurgeResult(log: MomentMediaPurgeLog): string {
   if (parts.length === 0) parts.push('không có file nào cần xoá')
   if (log.hasMore) parts.push('còn file, lượt sau chạy tiếp')
   return parts.join(MOMENT_EXCERPT_SEPARATOR)
+}
+
+export function momentTagOptions<K extends string>(allLabel: string, tags: Record<K, { label: string }>) {
+  return [
+    { value: 'all', label: allLabel },
+    ...(Object.keys(tags) as K[]).map((key) => ({ value: key, label: tags[key].label })),
+  ]
+}
+
+export function momentLoadErrorText(error: unknown): string {
+  return toApiError(error).status === HTTP_NOT_FOUND
+    ? 'Khoảnh khắc không còn tồn tại'
+    : errorMessage(error, 'Không tải được khoảnh khắc')
 }

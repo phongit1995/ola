@@ -1,5 +1,6 @@
 import type { AdminAuditLog } from '@/types'
 import { KEN_ADJUST_ROUTE, RESOURCE_LABELS } from './constants'
+import { formatCount } from '@/lib/format'
 
 export function resourceLabel(resource: string) {
   return RESOURCE_LABELS[resource] ?? resource
@@ -16,7 +17,7 @@ export function actionLabel(log: AdminAuditLog): string | undefined {
     const body = detailBody(log)
     const verb = body?.action === 'deduct' ? 'Trừ Ken' : 'Tặng Ken'
     const amount = body?.amount
-    return typeof amount === 'number' ? `${verb} (${amount.toLocaleString('vi-VN')})` : verb
+    return typeof amount === 'number' ? `${verb} (${formatCount(amount)})` : verb
   }
   if (route.endsWith('/users/:id/vips')) return 'Tặng VIP'
   if (route.endsWith('/users/:id/username')) return 'Đổi username'

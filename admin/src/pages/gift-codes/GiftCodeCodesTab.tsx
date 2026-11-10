@@ -19,10 +19,9 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { errorMessage } from '@/lib/apiError'
 import { PAGE_SIZE } from '@/lib/constants'
 import { formatCount, formatDateTime } from '@/lib/format'
-import { AdminGiftCodeService } from '@/services/adminGiftCode.service'
 import type { GiftCodeCampaign, GiftCodeCodeStatus, GiftCodeItem } from '@/types'
 import { GIFT_CODE_CODE_STATUS_META, GIFT_CODE_LOCK_REASON_MAX, GIFT_CODE_MAX_BATCH } from './constants'
-import { useGenerateGiftCodes, useGiftCodes, useSetGiftCodeLock } from './useGiftCodeQueries'
+import { useExportGiftCodes, useGenerateGiftCodes, useGiftCodes, useSetGiftCodeLock } from './useGiftCodeQueries'
 import { csvFileName, downloadCsv } from './utils'
 
 export function GiftCodeCodesTab({ campaign }: { campaign: GiftCodeCampaign }) {
@@ -30,7 +29,7 @@ export function GiftCodeCodesTab({ campaign }: { campaign: GiftCodeCampaign }) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<GiftCodeCodeStatus>()
   const [page, setPage] = useState(1)
-  const [exporting, setExporting] = useState(false)
+  const exportCodes = useExportGiftCodes()
   const [locking, setLocking] = useState<GiftCodeItem | null>(null)
   const [generateOpen, setGenerateOpen] = useState(false)
   const [lockForm] = Form.useForm<{ reason: string }>()
@@ -81,9 +80,11 @@ export function GiftCodeCodesTab({ campaign }: { campaign: GiftCodeCampaign }) {
   }
 
   async function exportCsv() {
-    setExporting(true)
     try {
-      const all = await AdminGiftCodeService.exportCodes(campaign.id, { status, search: debouncedSearch || undefined })
+      const all = await exportCodes.mutateAsync({
+        id: campaign.id,
+        params: { status, search: debouncedSearch || undefined },
+      })
       downloadCsv(
         csvFileName(campaign.name, 'ma'),
         ['Mã', 'Trạng thái', 'Nickname', 'Lúc dùng', 'Lý do khoá'],
@@ -97,8 +98,6 @@ export function GiftCodeCodesTab({ campaign }: { campaign: GiftCodeCampaign }) {
       )
     } catch (err) {
       message.error(errorMessage(err, 'Xuất CSV thất bại'))
-    } finally {
-      setExporting(false)
     }
   }
 
@@ -191,7 +190,7 @@ export function GiftCodeCodesTab({ campaign }: { campaign: GiftCodeCampaign }) {
             { value: 'locked', label: `Đã khoá (${formatCount(counts?.locked ?? 0)})` },
           ]}
         />
-        <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void exportCsv()}>
+        <Button icon={<DownloadOutlined />} loading={exportCodes.isPending} onClick={() => void exportCsv()}>
           Xuất CSV
         </Button>
         {campaign.kind === 'unique' && (

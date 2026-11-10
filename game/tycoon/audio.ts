@@ -1,19 +1,28 @@
 export type TycoonSound =
   | 'click'
-  | 'dice'
-  | 'step'
-  | 'cash-in'
-  | 'cash-out'
+  | 'shake'
+  | 'roll'
+  | 'double'
+  | 'hop'
+  | 'land'
+  | 'coin'
+  | 'stamp'
+  | 'pop'
   | 'card'
-  | 'build'
-  | 'jail'
-  | 'bankrupt'
+  | 'whistle'
+  | 'bars'
+  | 'crack'
+  | 'fanfare'
+  | 'turn'
   | 'win'
   | 'lose'
   | 'tick';
 
+const COIN_GAP_MS = 150;
+
 let ctx: AudioContext | null = null;
 let enabled = true;
+let lastCoinAt = 0;
 
 type AudioContextCtor = typeof AudioContext;
 
@@ -26,17 +35,32 @@ function context(): AudioContext | null {
   return ctx;
 }
 
-function tone(audio: AudioContext, start: number, freq: number, duration: number, volume: number, type: OscillatorType): void {
+function tone(audio: AudioContext, delayMs: number, freq: number, durationMs: number, volume = 0.05, type: OscillatorType = 'triangle'): void {
   const osc = audio.createOscillator();
   const gain = audio.createGain();
+  const start = audio.currentTime + delayMs / 1000;
+  const end = start + durationMs / 1000;
   osc.type = type;
   osc.frequency.value = freq;
-  gain.gain.setValueAtTime(volume, start);
-  gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
-  osc.connect(gain);
-  gain.connect(audio.destination);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, end);
+  osc.connect(gain).connect(audio.destination);
   osc.start(start);
-  osc.stop(start + duration);
+  osc.stop(end + 0.02);
+}
+
+function noise(audio: AudioContext, delayMs: number, durationMs: number, volume = 0.05): void {
+  const length = Math.floor((audio.sampleRate * durationMs) / 1000);
+  const buffer = audio.createBuffer(1, length, audio.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
+  const source = audio.createBufferSource();
+  const gain = audio.createGain();
+  gain.gain.value = volume;
+  source.buffer = buffer;
+  source.connect(gain).connect(audio.destination);
+  source.start(audio.currentTime + delayMs / 1000);
 }
 
 export function setSoundEnabled(on: boolean): void {
@@ -48,57 +72,72 @@ export function playSound(sound: TycoonSound): void {
   const audio = context();
   if (!audio) return;
   if (audio.state === 'suspended') void audio.resume();
-  const now = audio.currentTime;
   switch (sound) {
     case 'click':
-      tone(audio, now, 660, 0.05, 0.12, 'square');
+      tone(audio, 0, 760, 30, 0.02);
       break;
-    case 'dice':
-      tone(audio, now, 240, 0.05, 0.2, 'square');
-      tone(audio, now + 0.07, 300, 0.05, 0.2, 'square');
-      tone(audio, now + 0.14, 200, 0.08, 0.25, 'square');
+    case 'shake':
+      [0, 80, 160].forEach((delay) => noise(audio, delay, 50));
       break;
-    case 'step':
-      tone(audio, now, 150, 0.04, 0.16, 'sine');
+    case 'roll':
+      [0, 90, 200, 340, 520].forEach((delay, i) => noise(audio, delay, 40, 0.07 - i * 0.01));
       break;
-    case 'cash-in':
-      tone(audio, now, 880, 0.08, 0.16, 'triangle');
-      tone(audio, now + 0.09, 1320, 0.12, 0.16, 'triangle');
+    case 'double':
+      tone(audio, 0, 880, 90, 0.06);
+      tone(audio, 90, 1175, 150, 0.06);
       break;
-    case 'cash-out':
-      tone(audio, now, 520, 0.08, 0.16, 'triangle');
-      tone(audio, now + 0.09, 340, 0.14, 0.16, 'triangle');
+    case 'hop':
+      tone(audio, 0, 500 + Math.random() * 60, 45, 0.018);
+      break;
+    case 'land':
+      tone(audio, 0, 330, 110);
+      break;
+    case 'coin': {
+      const now = performance.now();
+      if (now - lastCoinAt < COIN_GAP_MS) return;
+      lastCoinAt = now;
+      tone(audio, 0, 1800 * (0.95 + Math.random() * 0.1), 60, 0.03, 'sine');
+      tone(audio, 40, 2400, 80, 0.02, 'sine');
+      break;
+    }
+    case 'stamp':
+      tone(audio, 0, 120, 100, 0.09, 'square');
+      noise(audio, 0, 40);
+      break;
+    case 'pop':
+      tone(audio, 0, 620, 70, 0.04);
       break;
     case 'card':
-      tone(audio, now, 720, 0.05, 0.1, 'sawtooth');
-      tone(audio, now + 0.05, 960, 0.08, 0.1, 'sawtooth');
+      noise(audio, 0, 90, 0.04);
+      tone(audio, 50, 700, 100, 0.03);
       break;
-    case 'build':
-      tone(audio, now, 180, 0.06, 0.28, 'square');
-      tone(audio, now + 0.08, 180, 0.06, 0.2, 'square');
+    case 'whistle':
+      tone(audio, 0, 1500, 130, 0.04, 'square');
+      tone(audio, 150, 1900, 180, 0.04, 'square');
       break;
-    case 'jail':
-      tone(audio, now, 220, 0.14, 0.22, 'sawtooth');
-      tone(audio, now + 0.16, 160, 0.2, 0.22, 'sawtooth');
+    case 'bars':
+      tone(audio, 0, 220, 180, 0.06, 'sawtooth');
+      tone(audio, 20, 330, 160, 0.04, 'square');
       break;
-    case 'bankrupt':
-      tone(audio, now, 440, 0.12, 0.2, 'triangle');
-      tone(audio, now + 0.13, 370, 0.12, 0.2, 'triangle');
-      tone(audio, now + 0.26, 294, 0.12, 0.2, 'triangle');
-      tone(audio, now + 0.39, 220, 0.22, 0.2, 'triangle');
+    case 'crack':
+      noise(audio, 0, 160, 0.09);
+      tone(audio, 0, 90, 260, 0.08, 'sawtooth');
+      break;
+    case 'fanfare':
+      [523, 659, 784, 1047].forEach((freq, i) => tone(audio, i * 110, freq, 200, 0.06));
+      break;
+    case 'turn':
+      tone(audio, 0, 660, 90);
+      tone(audio, 90, 880, 140);
       break;
     case 'win':
-      tone(audio, now, 523, 0.12, 0.2, 'triangle');
-      tone(audio, now + 0.13, 659, 0.12, 0.2, 'triangle');
-      tone(audio, now + 0.26, 784, 0.2, 0.2, 'triangle');
+      [523, 659, 784].forEach((freq, i) => tone(audio, i * 130, freq, 200, 0.08));
       break;
     case 'lose':
-      tone(audio, now, 392, 0.14, 0.2, 'triangle');
-      tone(audio, now + 0.15, 330, 0.14, 0.2, 'triangle');
-      tone(audio, now + 0.3, 262, 0.22, 0.2, 'triangle');
+      [392, 330, 262].forEach((freq, i) => tone(audio, i * 150, freq, 220, 0.08));
       break;
     case 'tick':
-      tone(audio, now, 1200, 0.03, 0.08, 'square');
+      tone(audio, 0, 1200, 30, 0.03, 'square');
       break;
   }
 }

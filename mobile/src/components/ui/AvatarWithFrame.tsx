@@ -1,6 +1,6 @@
 import { View } from 'react-native';
-import { avatarFrameById } from '@ola/shared/lib/avatarFrame';
-import { avatarFrameLayout, canShowAvatarFrame } from '@ola/shared/lib';
+import { visibleAvatarFrame } from '@ola/shared/lib/avatarFrame';
+import { avatarFrameLayout } from '@ola/shared/lib';
 import { Avatar } from './Avatar';
 import { AvatarFrameImage } from './AvatarFrameImage';
 
@@ -25,7 +25,7 @@ export function AvatarWithFrame({
   showLoader,
   frameId,
 }: AvatarWithFrameProps) {
-  const frame = canShowAvatarFrame(size, frameId) ? avatarFrameById(frameId) : undefined;
+  const frame = visibleAvatarFrame(size, frameId);
   if (frame == null) {
     return (
       <Avatar

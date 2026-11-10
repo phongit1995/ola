@@ -15,6 +15,7 @@ export interface EngineState {
   passed: boolean[];
   quit: boolean[];
   finishOrder: number[];
+  cong?: number[];
   turn: number;
   starter: number;
   require3s: boolean;
@@ -54,6 +55,7 @@ export function dealFromDeck(deck: readonly number[], playerCount: number, leade
     passed: hands.map(() => false),
     quit: hands.map(() => false),
     finishOrder: [],
+    cong: [],
     turn: starter,
     starter,
     require3s,
@@ -118,6 +120,7 @@ export function cloneState(state: EngineState): EngineState {
     passed: [...state.passed],
     quit: [...state.quit],
     finishOrder: [...state.finishOrder],
+    cong: [...(state.cong ?? [])],
     steps: [],
   };
 }
@@ -126,15 +129,31 @@ const isActive = (state: EngineState, seat: number): boolean => seat >= 0 && sea
 
 const hasCards = (state: EngineState, seat: number): boolean => seat >= 0 && seat < state.hands.length && state.hands[seat].length > 0;
 
+const isCong = (state: EngineState, seat: number): boolean => state.cong?.includes(seat) ?? false;
+
+const canAct = (state: EngineState, seat: number): boolean => isActive(state, seat) && hasCards(state, seat) && !isCong(state, seat);
+
 export function activeWithCards(state: EngineState): number[] {
-  return state.hands.map((_, seat) => seat).filter((seat) => isActive(state, seat) && hasCards(state, seat));
+  return state.hands.map((_, seat) => seat).filter((seat) => canAct(state, seat));
+}
+
+function markCong(state: EngineState, winner: number): void {
+  const n = state.hands.length;
+  for (let i = 1; i < n; i += 1) {
+    const seat = (winner + i) % n;
+    if (isActive(state, seat) && state.hands[seat].length === HAND_SIZE && !isCong(state, seat)) {
+      state.cong = [...(state.cong ?? []), seat];
+      state.passed[seat] = false;
+      state.steps.push({ kind: 'cong', by: seat });
+    }
+  }
 }
 
 function nextEligible(state: EngineState, from: number): number {
   const n = state.hands.length;
   for (let i = 1; i <= n; i += 1) {
     const seat = (from + i) % n;
-    if (isActive(state, seat) && hasCards(state, seat) && !state.passed[seat]) return seat;
+    if (canAct(state, seat) && !state.passed[seat]) return seat;
   }
   return -1;
 }
@@ -143,7 +162,7 @@ function firstActiveFrom(state: EngineState, from: number): number {
   const n = state.hands.length;
   for (let i = 0; i < n; i += 1) {
     const seat = (from + i) % n;
-    if (isActive(state, seat) && hasCards(state, seat)) return seat;
+    if (canAct(state, seat)) return seat;
   }
   return -1;
 }
@@ -179,7 +198,7 @@ function advanceAfter(state: EngineState, actor: number): void {
 export function checkMove(state: EngineState, seat: number, move: ServerMove): void {
   if (seat < 0 || seat >= state.hands.length) throw new MoveError('invalid player');
   if (state.instantWin) throw new MoveError('the round already ended');
-  if (!isActive(state, seat) || !hasCards(state, seat)) throw new MoveError('player can no longer act');
+  if (!canAct(state, seat)) throw new MoveError('player can no longer act');
   if (move.type === 'pass') {
     if (!state.table) throw new MoveError('the leader must play a combination');
     return;
@@ -219,11 +238,14 @@ export function applyMove(state: EngineState, seat: number, move: ServerMove): v
   if (state.hands[seat].length === 0) {
     state.finishOrder.push(seat);
     state.steps.push({ kind: 'finish', by: seat, place: state.finishOrder.length });
+    if (state.finishOrder.length === 1) markCong(state, seat);
   }
   const active = activeWithCards(state);
-  if (active.length === 1) {
-    state.finishOrder.push(active[0]);
-    state.steps.push({ kind: 'finish', by: active[0], place: state.finishOrder.length });
+  if (active.length <= 1) {
+    if (active.length === 1) {
+      state.finishOrder.push(active[0]);
+      state.steps.push({ kind: 'finish', by: active[0], place: state.finishOrder.length });
+    }
     return;
   }
   advanceAfter(state, seat);
@@ -239,7 +261,7 @@ function tryApply(state: EngineState, seat: number, move: ServerMove): boolean {
 }
 
 export function skipTurn(state: EngineState, seat: number): void {
-  if (!isActive(state, seat) || !hasCards(state, seat)) return;
+  if (!canAct(state, seat)) return;
   if (!state.table) {
     const hand = state.hands[seat];
     const card = state.require3s && hand.includes(THREE_OF_SPADES) ? THREE_OF_SPADES : hand[0];
@@ -266,8 +288,9 @@ export function rankings(state: EngineState): number[] {
   const ranked: number[] = [];
   for (const seat of state.finishOrder) if (!ranked.includes(seat)) ranked.push(seat);
   state.hands.forEach((_, seat) => {
-    if (!ranked.includes(seat) && isActive(state, seat)) ranked.push(seat);
+    if (!ranked.includes(seat) && isActive(state, seat) && !isCong(state, seat)) ranked.push(seat);
   });
+  for (const seat of state.cong ?? []) if (!ranked.includes(seat)) ranked.push(seat);
   state.hands.forEach((_, seat) => {
     if (!ranked.includes(seat)) ranked.push(seat);
   });
@@ -283,6 +306,7 @@ export function viewFor(state: EngineState, seat: number): ServerState {
     passed: [...state.passed],
     quit: [...state.quit],
     finishOrder: [...state.finishOrder],
+    cong: [...(state.cong ?? [])],
     turn: state.turn,
     starter: state.starter,
     require3s: state.require3s,
@@ -299,7 +323,7 @@ export function turnStartDelayMs(steps: readonly ServerStep[], previousSeat: num
   for (const step of steps) {
     if (step.kind === 'play') delay += step.chop ? 900 : 500;
     else if (step.kind === 'clear') delay += 500;
-    else if (step.kind === 'finish') delay += 600;
+    else if (step.kind === 'finish' || step.kind === 'cong') delay += 600;
   }
   return Math.min(delay, TURN_START_DELAY_MAX_MS);
 }

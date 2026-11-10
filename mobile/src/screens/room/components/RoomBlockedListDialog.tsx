@@ -5,7 +5,7 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { useRoomFilterStore } from '@ola/shared/stores/room/roomFilterStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { RoomBlockedUser } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { UserListDialog } from '@components/ui/UserListDialog';
 
 export function RoomBlockedListDialog({ onClose }: { onClose: () => void }) {
@@ -77,7 +77,7 @@ export function RoomBlockedListDialog({ onClose }: { onClose: () => void }) {
         const busy = busyId === user.userId;
         return (
           <View key={user.userId} className="flex-row items-center gap-3 py-2">
-            <Avatar name={name} uri={user.avatar} size={40} />
+            <AvatarWithFrame name={name} uri={user.avatar} size={40} frameId={user.avatarFrameId} />
             <Text numberOfLines={1} className="min-w-0 flex-1 text-base text-ola-ink">
               {name}
             </Text>

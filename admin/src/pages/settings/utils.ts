@@ -1,11 +1,21 @@
 import { APP_PLATFORMS, cleanPlatformRules, cleanVersions, normalizePlatformRules } from '@/lib/platformRules'
-import type { AppSetting, ChatBotBotSetting, ChatBotPrompt, ChatBotSetting, ChatBotType } from '@/types'
+import type {
+  AppSetting,
+  ChatBotBotSetting,
+  ChatBotPrompt,
+  ChatBotSetting,
+  ChatBotType,
+  PushFirebaseSettingStatus,
+  PushNotificationSetting,
+} from '@/types'
 import {
   APP_UPDATE_PLATFORMS,
   APP_UPDATE_SETTING_KEY,
   CHAT_BOT_SETTING_KEY,
   CHAT_BOT_TYPES,
+  CREDENTIAL_KEY,
   DEFAULT_APP_UPDATE_SETTING,
+  TOGGLE_KEY,
 } from './constants'
 import type { AppUpdateSetting } from './types'
 
@@ -103,4 +113,15 @@ export function addedAppUpdateVersions(current: AppUpdateSetting, next: AppUpdat
   return APP_UPDATE_PLATFORMS.flatMap(({ key, label }) =>
     next[key].filter((version) => !current[key].includes(version)).map((version) => `${label} ${version}`),
   )
+}
+
+export function isPushReady(settings?: AppSetting[]): boolean {
+  const status = settings?.find((item) => item.key === CREDENTIAL_KEY)?.value as
+    | PushFirebaseSettingStatus
+    | null
+    | undefined
+  const toggle = settings?.find((item) => item.key === TOGGLE_KEY)?.value as
+    | PushNotificationSetting
+    | undefined
+  return status?.configured === true && toggle?.enabled === true
 }

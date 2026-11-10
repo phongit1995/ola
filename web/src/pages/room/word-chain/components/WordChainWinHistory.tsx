@@ -31,6 +31,7 @@ function WinRow({
     <WordChainUserRow
       name={win.username}
       avatar={win.avatar}
+      frameId={win.avatarFrameId}
       highlighted={highlighted}
       trailing={
         <WordChainStatusIcon status="win" className="h-6 w-6" decorative />

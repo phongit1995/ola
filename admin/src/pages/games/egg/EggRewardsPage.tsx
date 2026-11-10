@@ -14,6 +14,7 @@ import { errorMessage } from '@/lib/apiError'
 import type { EggPack } from '@/types'
 import { EggPackEditorModal } from './EggPackEditorModal'
 import { EggHistoryModal } from './EggHistoryModal'
+import { formatCount } from '@/lib/format'
 
 export function EggRewardsPage() {
   const { message, modal } = App.useApp()
@@ -71,7 +72,7 @@ export function EggRewardsPage() {
       dataIndex: 'kenCost',
       width: 130,
       align: 'right',
-      render: (value: number) => `${value.toLocaleString('vi-VN')} Ken`,
+      render: (value: number) => `${formatCount(value)} Ken`,
     },
     {
       title: 'Trạng thái',

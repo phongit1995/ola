@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CALL_TYPE } from '@constants';
 import { callPeerNameView, colorForName, peerDisplayName } from '@lib';
 import { useCallStore } from '@/store/callStore';
@@ -60,11 +60,12 @@ export function IncomingCallCard() {
       className="absolute left-0 top-0 z-[126] w-[300px] max-w-[92%] touch-none rounded-2xl bg-ola-call-bg/95 p-4 text-white shadow-2xl backdrop-blur"
     >
       <div className="flex items-center gap-3">
-        <Avatar
+        <AvatarWithFrame
           name={name}
           color={colorForName(name)}
           src={incoming.caller.avatar}
           size={52}
+          frameId={incoming.caller.avatarFrameId}
         />
         <div className="min-w-0 flex-1">
           <p className="truncate text-base font-semibold">{nameView.title}</p>

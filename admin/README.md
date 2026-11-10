@@ -36,7 +36,7 @@ pnpm dev           # http://localhost:3006
 admin/src/
 ├── main.tsx            # entry: QueryClient, ConfigProvider (vi_VN), RouterProvider
 ├── theme.ts            # theme antd
-├── types.ts            # type request/response của API admin
+├── types/            # type request/response của API admin, mỗi nghiệp vụ một file (khớp services/), common.ts cho type dùng chung, index.ts re-export
 ├── config/env.ts       # đọc VITE_*
 ├── api/                # axios instance (http.ts), interceptor token + API guard
 ├── services/           # adminXxx.service.ts: gọi API, mỗi nghiệp vụ một file
@@ -87,6 +87,10 @@ Chỉ tạo `constants.ts` / `utils.ts` / `types.ts` khi màn có nội dung cho
 - File hook react-query đặt tên `useXxxQueries.ts`. Hậu tố `Store` để dành cho zustand (`useAuthStore`).
 - Tên trong `constants.ts` / `utils.ts` dùng chung cho cả thư mục, nên phải rõ nghĩa ngoài file gốc: `MODAL_PAGE_SIZE`, `STORY_STATUS_TAG`, `CRAWL_STATUS_TAG` thay vì `PAGE_SIZE`, `STATUS_TAG`.
 
+**Component không gọi thẳng service**
+
+- Mọi lời gọi API trong component đi qua hook `useXxxQueries` (kể cả thao tác một lần như đăng nhập, xuất CSV, tải ảnh), không import `@/services` trong file `.tsx`.
+
 **Giữ lại trong component**
 
 - Hằng số có JSX hoặc `ReactNode` (icon, badge), cấu hình cột bảng có `render`, style object. File `.ts` không chứa được JSX, và những thứ này gắn với giao diện của màn.
@@ -102,6 +106,8 @@ Chỉ tạo `constants.ts` / `utils.ts` / `types.ts` khi màn có nội dung cho
 | Ô người dùng trong bảng | `UserBriefCell` (`@/components/UserBriefCell`), `UserCell` (`@/components/UserCell`) |
 | Số Ken ròng có dấu +/− | `NetText` (`@/components/NetText`) |
 | Ô tìm kiếm | `useDebounce` (`@/hooks/useDebounce`) |
+| Tải ảnh lên | `useImageUpload` (`@/hooks/useImageUpload`) |
+| Mã lỗi 404 | `HTTP_NOT_FOUND` từ `@/lib/constants` |
 
 ## Cấu hình bật/tắt và `app_settings`
 
@@ -163,6 +169,6 @@ Tặng quà từ nền tảng đã tắt loa thì quà vẫn gửi được, ch�
 
 ## Thêm một màn mới
 
-1. Thêm type request/response vào `src/types.ts` và hàm gọi API vào `src/services/adminXxx.service.ts`.
+1. Thêm type request/response vào `src/types/<nghiệp vụ>.ts` (file mới thì thêm dòng `export *` vào `src/types/index.ts`) và hàm gọi API vào `src/services/adminXxx.service.ts`. Vẫn import qua `@/types`.
 2. Tạo `src/pages/<màn>/` gồm `XxxPage.tsx` + `useXxxQueries.ts`, thêm `constants.ts` / `utils.ts` / `types.ts` khi cần.
 3. Khai báo route trong `src/routes/router.tsx` và mục menu trong `src/layout/AdminLayout.tsx`.

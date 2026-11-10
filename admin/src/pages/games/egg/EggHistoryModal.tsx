@@ -4,7 +4,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useEggDraws } from './useEggQueries'
 import type { AdminEggDraw, EggCategoryType } from '@/types'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
 import { PAGE_SIZE } from '@/lib/constants'
@@ -103,7 +103,7 @@ export function EggHistoryModal({ open, onClose }: EggHistoryModalProps) {
           <Space size={4} wrap>
             <Tag color="blue">{CATEGORY_LABEL[row.categoryType]}</Tag>
             <span>{row.rewardLabel}</span>
-            {row.kenAmount ? <Tag color="gold">+{row.kenAmount.toLocaleString('vi-VN')} Ken</Tag> : null}
+            {row.kenAmount ? <Tag color="gold">+{formatCount(row.kenAmount)} Ken</Tag> : null}
             {row.vipDays ? <Tag color="purple">{row.vipDays} ngày VIP</Tag> : null}
             {row.isSuperLucky ? <Tag color="magenta">⭐ Siêu may mắn</Tag> : null}
           </Space>
@@ -115,7 +115,7 @@ export function EggHistoryModal({ open, onClose }: EggHistoryModalProps) {
       dataIndex: 'kenCost',
       width: 110,
       align: 'right',
-      render: (value: number) => `${value.toLocaleString('vi-VN')} Ken`,
+      render: (value: number) => `${formatCount(value)} Ken`,
     },
   ]
 

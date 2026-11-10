@@ -18,10 +18,11 @@ export function MeAnnouncementCard() {
   const announcement = useAnnouncementStore(selectFeedAnnouncement);
   const dismissFromFeed = useAnnouncementStore((s) => s.dismissFromFeed);
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
-  const [expanded, setExpanded] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [clamped, setClamped] = useState(false);
 
   if (announcement == null) return null;
+  const expanded = expandedId === announcement.id;
 
   function onContentLayout(event: TextLayoutEvent) {
     setClamped(event.nativeEvent.lines.length > COLLAPSED_LINES);
@@ -87,10 +88,10 @@ export function MeAnnouncementCard() {
               {announcement.content}
             </Text>
           </View>
-          {clamped && !expanded && (
-            <Pressable onPress={() => setExpanded(true)}>
+          {clamped && (
+            <Pressable onPress={() => setExpandedId(expanded ? null : announcement.id)}>
               <Text className="mt-0.5 text-sm" style={{ color: colors.primaryDark }}>
-                {t('me.seeMore')}
+                {t(expanded ? 'me.seeLess' : 'me.seeMore')}
               </Text>
             </Pressable>
           )}

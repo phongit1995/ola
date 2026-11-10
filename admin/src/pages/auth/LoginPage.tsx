@@ -1,32 +1,27 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { App, Button, Form, Grid, Input, Typography } from 'antd'
 import { LockOutlined, SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons'
-import { AdminAuthService } from '@/services/adminAuth.service'
 import { useAuthStore } from '@/store/authStore'
 import { errorMessage } from '@/lib/apiError'
 import { BRAND } from '@/theme'
 import type { AdminLoginRequest } from '@/types'
+import { useAdminLogin } from '@/hooks/useAuthQueries'
 
 export function LoginPage() {
   const navigate = useNavigate()
   const screens = Grid.useBreakpoint()
   const { message } = App.useApp()
   const setAdmin = useAuthStore((s) => s.setAdmin)
-  const [loading, setLoading] = useState(false)
+  const login = useAdminLogin()
+  const loading = login.isPending
 
   async function onFinish(values: AdminLoginRequest) {
-    setLoading(true)
     try {
-      const result = await AdminAuthService.login(values)
+      const result = await login.mutateAsync(values)
       setAdmin(result.admin)
       navigate('/', { replace: true })
     } catch (err) {
-      const text =
-        errorMessage(err, 'Đăng nhập thất bại, vui lòng thử lại.')
-      message.error(text)
-    } finally {
-      setLoading(false)
+      message.error(errorMessage(err, 'Đăng nhập thất bại, vui lòng thử lại.'))
     }
   }
 

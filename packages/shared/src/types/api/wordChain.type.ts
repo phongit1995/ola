@@ -127,6 +127,7 @@ export interface WordChainLeaderboardEntry {
   username: string;
   fullName?: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   points: number;
   wins: number;
 }
@@ -145,6 +146,7 @@ export interface WordChainWin {
   username: string;
   fullName?: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   word: string;
   previousWord: string;
   createdAt: string;

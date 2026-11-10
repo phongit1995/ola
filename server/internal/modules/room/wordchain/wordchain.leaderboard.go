@@ -63,11 +63,13 @@ func (s *Service) Leaderboard(ctx context.Context, userID uuid.UUID, sort, perio
 	}
 	users := s.userCache.GetUsersBatch(ids, true)
 
+	now := time.Now()
 	resp := &LeaderboardResponse{Items: make([]LeaderboardEntry, 0, len(rows)), Sort: sort, Period: period}
 	for _, row := range rows {
 		entry := LeaderboardEntry{Rank: int(row.Rank), UserID: row.UserID.String(), Points: row.Points, Wins: row.Wins}
 		if u := users[row.UserID]; u != nil {
 			entry.Username, entry.FullName, entry.Avatar = u.Username, u.FullName, u.Avatar
+			entry.AvatarFrameID = u.ActiveAvatarFrameID(now)
 		}
 		resp.Total = row.Total
 		if row.Rank <= WordChainLeaderboardLimit {
@@ -124,6 +126,7 @@ func (s *Service) winList(ctx context.Context, filter *uuid.UUID, before string,
 	}
 	users := s.userCache.GetUsersBatch(ids, true)
 
+	now := time.Now()
 	items := make([]WinEntry, 0, len(rows))
 	for _, row := range rows {
 		item := WinEntry{
@@ -135,6 +138,7 @@ func (s *Service) winList(ctx context.Context, filter *uuid.UUID, before string,
 		}
 		if u := users[row.UserID]; u != nil {
 			item.Username, item.FullName, item.Avatar = u.Username, u.FullName, u.Avatar
+			item.AvatarFrameID = u.ActiveAvatarFrameID(now)
 		}
 		items = append(items, item)
 	}

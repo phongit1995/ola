@@ -24,6 +24,7 @@ export function GiftRecipientDialog({ onClose, onPick }: GiftRecipientDialogProp
       name: user.fullName || user.username,
       username: user.username,
       avatar: user.avatar,
+      avatarFrameId: user.avatarFrameId,
       color: colorForName(user.username),
     });
   }

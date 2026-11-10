@@ -150,10 +150,11 @@ type RoomBlockUserRequest struct {
 }
 
 type RoomBlockedUser struct {
-	UserID   string `json:"userId"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
+	UserID        string  `json:"userId"`
+	Username      string  `json:"username"`
+	FullName      string  `json:"fullName,omitempty"`
+	Avatar        string  `json:"avatar,omitempty"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty"`
 }
 
 type RoomBlockedUsersResponse struct {

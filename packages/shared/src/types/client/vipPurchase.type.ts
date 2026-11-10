@@ -1,6 +1,12 @@
-import type { VipPackageItem } from '../api/vip.type';
+import type { VipDayTransferConfig, VipPackageItem } from '../api/vip.type';
 
-export type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
+export type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'transferDays' | 'extend';
+
+export interface VipDayTransferConfigState {
+  config: VipDayTransferConfig | null;
+  load: () => Promise<void>;
+  refresh: () => Promise<void>;
+}
 
 export interface VipConfirmInput {
   mode: BuyVipMode;

@@ -9,7 +9,8 @@ import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { EggPack as ApiEggPack } from '@/types'
 import { EggPackBuilder } from './EggPackBuilder'
-import { EggRewardFormModal, type EggItemFormValues } from './EggRewardFormModal'
+import { EggRewardFormModal } from './EggRewardFormModal'
+import type { EggItemFormValues } from './types'
 import {
   categoryTemplate,
   loadPack,

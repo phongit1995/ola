@@ -1,4 +1,4 @@
-import type { WordChainCode, WordChainMessageType, WordChainSetting } from '@/types'
+import type { WordChainCode, WordChainMessageType, WordChainPurchaseType, WordChainSetting } from '@/types'
 
 export const WORD_CHAIN_SETTING_KEY = 'word_chain'
 
@@ -30,3 +30,8 @@ export const BOT_TYPE_LABEL: Record<WordChainMessageType, string> = {
 }
 
 export const TAB_KEYS = ['history', 'wins', 'purchases', 'settings'] as const
+
+export const WORD_CHAIN_PURCHASE_TYPE_TAG: Record<WordChainPurchaseType, { label: string; color: string }> = {
+  hint: { label: 'Gợi ý', color: 'blue' },
+  guess: { label: 'Mua lượt', color: 'purple' },
+}

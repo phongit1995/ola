@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
-import { createTimeFormatter, formatDateDMY, formatKen, vipName } from '@ola/shared/lib';
+import {
+  createTimeFormatter,
+  formatDateDMY,
+  formatKen,
+  isVipDayTransferSource,
+  vipName,
+} from '@ola/shared/lib';
 import { VipService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { VipPurchaseHistoryItem, VipTransferHistoryItem } from '@ola/shared/types';
@@ -25,6 +31,8 @@ const SOURCE_KEYS = [
   'wheel',
   'admin',
   'gift_code',
+  'day_transfer_out',
+  'day_transfer_in',
 ] as const;
 
 type SourceKey = (typeof SOURCE_KEYS)[number];
@@ -148,26 +156,33 @@ export function VipHistoryDialog({ visible, onClose }: VipHistoryDialogProps) {
                     </Text>
                     <Text className="text-xs" style={{ color: TEXT_SECONDARY }} numberOfLines={1}>
                       {t(`vip.historyDialog.source.${sourceKeyOf(item.source)}`)}
-                      {item.days > 0
-                        ? ` · ${t('vip.historyDialog.until', { date: formatDateDMY(item.vipEndTime) })}`
+                      {item.days > 0 && !isVipDayTransferSource(item.source)
+                        ? ` ·${t('vip.historyDialog.until', { date: formatDateDMY(item.vipEndTime) })}`
                         : ''}
                     </Text>
                   </View>
                 </View>
                 <View className="items-end">
                   {item.days > 0 && (
-                    <Text className="text-sm font-semibold" style={{ color: '#1f8a3b' }}>
+                    <Text className="text-sm font-semibold text-ola-credit">
                       {t('vip.historyDialog.days', { count: item.days })}
+                    </Text>
+                  )}
+                  {item.days < 0 && (
+                    <Text className="text-sm font-semibold text-ola-debit">
+                      {t('vip.historyDialog.daysLost', { count: -item.days })}
                     </Text>
                   )}
                   <Text className="text-xs" style={{ color: '#9a9a9c' }}>
                     {formatTime(item.createdAt)}
                   </Text>
-                  <Text className="text-xs" style={{ color: '#c0392b' }}>
-                    {item.kenPrice > 0
-                      ? `-${formatKen(item.kenPrice)} KEN`
-                      : t('vip.historyDialog.free')}
-                  </Text>
+                  {!isVipDayTransferSource(item.source) && (
+                    <Text className="text-xs text-ola-debit">
+                      {item.kenPrice > 0
+                        ? `-${formatKen(item.kenPrice)} KEN`
+                        : t('vip.historyDialog.free')}
+                    </Text>
+                  )}
                 </View>
               </View>
             );

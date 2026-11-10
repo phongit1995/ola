@@ -1,5 +1,16 @@
-import type { AdminGameMatch, AdminGameMatchPlayer } from '@/types'
+import type { AdminGameMatch, AdminGameMatchPlayer, CreateMiniGameRequest, UpdateMiniGameRequest } from '@/types'
 import { GAME_ID_LABEL } from './constants'
+
+export function toUpdateMiniGameRequest(values: CreateMiniGameRequest): UpdateMiniGameRequest {
+  return {
+    name: values.name,
+    description: values.description,
+    iconUrl: values.iconUrl,
+    gameUrl: values.gameUrl,
+    isEnabled: values.isEnabled,
+    sortOrder: values.sortOrder,
+  }
+}
 
 export function gameLabel(gameId: string, names?: Record<string, string>) {
   return names?.[gameId] ?? GAME_ID_LABEL[gameId] ?? gameId

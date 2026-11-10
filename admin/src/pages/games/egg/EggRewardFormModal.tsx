@@ -3,17 +3,7 @@ import { Form, Input, InputNumber, Modal, Select, Space, Switch, Typography } fr
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { kenNumberInputProps } from '@/lib/format'
 import { rebalanceWeights } from './utils'
-import type { EggCategoryType, EggReward } from './types'
-
-export interface EggItemFormValues {
-  label: string
-  weight: number
-  vipTypeId?: number
-  kenAmount?: number
-  vipDays?: number
-  isSuperLucky: boolean
-  isActive: boolean
-}
+import type { EggCategoryType, EggItemFormValues, EggReward } from './types'
 
 interface EggRewardFormModalProps {
   open: boolean

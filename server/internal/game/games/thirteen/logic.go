@@ -42,6 +42,8 @@ func (Logic) MinPlayers() int { return 2 }
 
 func (Logic) MaxPlayers() int { return 4 }
 
+func (Logic) KeepsSeatsBetweenRounds() bool { return true }
+
 func (Logic) TurnSeconds() int { return TurnSeconds }
 
 func (Logic) TimeoutSkipsTurn() bool { return true }
@@ -116,7 +118,7 @@ func (Logic) OnTurnSkipped(state any, playerIdx int) {
 		return
 	}
 	s.Steps = nil
-	if !s.isActive(playerIdx) || !s.hasCards(playerIdx) {
+	if !s.canAct(playerIdx) {
 		return
 	}
 	if s.Table == nil {
@@ -149,7 +151,7 @@ func (Logic) OnPlayerQuit(state any, playerIdx int) {
 	if s.RequireThreeSpades && containsCard(s.Hands[playerIdx], ThreeOfSpades) {
 		s.RequireThreeSpades = false
 	}
-	alreadyRanked := false
+	alreadyRanked := s.isCong(playerIdx)
 	for _, idx := range s.FinishOrder {
 		if idx == playerIdx {
 			alreadyRanked = true
@@ -179,7 +181,13 @@ func (Logic) Rankings(state any) []int {
 		}
 	}
 	for idx := 0; idx < n; idx++ {
-		if !seen[idx] && s.isActive(idx) {
+		if !seen[idx] && s.isActive(idx) && !s.isCong(idx) {
+			ranked = append(ranked, idx)
+			seen[idx] = true
+		}
+	}
+	for _, idx := range s.Cong {
+		if !seen[idx] {
 			ranked = append(ranked, idx)
 			seen[idx] = true
 		}
@@ -220,7 +228,7 @@ func (Logic) TurnStartDelay(state any, previousPlayerIdx, nextPlayerIdx int) tim
 			}
 		case StepClear:
 			delay += 500 * time.Millisecond
-		case StepFinish:
+		case StepFinish, StepCong:
 			delay += 600 * time.Millisecond
 		}
 	}

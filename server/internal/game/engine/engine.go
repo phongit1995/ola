@@ -2060,10 +2060,7 @@ func (e *Engine) startMatchWithRoom(
 	if bet > 0 && settlement == nil {
 		return fmt.Errorf("betting is temporarily unavailable")
 	}
-	players = append([]protocol.PlayerInfo(nil), players...)
-	rand.Shuffle(len(players), func(i, j int) {
-		players[i], players[j] = players[j], players[i]
-	})
+	players = seatPlayers(gameLogic, players, room)
 
 	seed := time.Now().UnixNano()
 	initialState := gameLogic.Init(seed)
@@ -3249,6 +3246,7 @@ func cloneRoom(room *Room) *Room {
 	cloned := *room
 	cloned.normalize()
 	cloned.Guests = append([]RoomGuest(nil), cloned.Guests...)
+	cloned.SeatOrder = append([]string(nil), cloned.SeatOrder...)
 	return &cloned
 }
 
@@ -3270,4 +3268,51 @@ func seatOf(players []protocol.PlayerInfo, userID string) int {
 		}
 	}
 	return -1
+}
+
+func keepsSeats(gameLogic logic.GameLogic) bool {
+	keeper, ok := gameLogic.(logic.SeatKeeper)
+	return ok && keeper.KeepsSeatsBetweenRounds()
+}
+
+func seatPlayers(gameLogic logic.GameLogic, players []protocol.PlayerInfo, room *Room) []protocol.PlayerInfo {
+	players = append([]protocol.PlayerInfo(nil), players...)
+	keeper := room != nil && keepsSeats(gameLogic)
+	if keeper && len(room.SeatOrder) > 0 {
+		players = keepSeatOrder(players, room.SeatOrder)
+	} else {
+		rand.Shuffle(len(players), func(i, j int) {
+			players[i], players[j] = players[j], players[i]
+		})
+	}
+	if !keeper {
+		return players
+	}
+	room.SeatOrder = make([]string, len(players))
+	for i, p := range players {
+		room.SeatOrder[i] = p.ID
+	}
+	return players
+}
+
+func keepSeatOrder(players []protocol.PlayerInfo, seatOrder []string) []protocol.PlayerInfo {
+	byID := make(map[string]protocol.PlayerInfo, len(players))
+	for _, p := range players {
+		byID[p.ID] = p
+	}
+	ordered := make([]protocol.PlayerInfo, 0, len(players))
+	placed := make(map[string]bool, len(players))
+	for _, id := range seatOrder {
+		if p, ok := byID[id]; ok && !placed[id] {
+			ordered = append(ordered, p)
+			placed[id] = true
+		}
+	}
+	for _, p := range players {
+		if !placed[p.ID] {
+			ordered = append(ordered, p)
+			placed[p.ID] = true
+		}
+	}
+	return ordered
 }

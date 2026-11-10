@@ -64,6 +64,7 @@ export interface MatchResult {
   winnerId?: string;
   reason: string;
   instantWin?: string;
+  congIds?: string[];
 }
 
 interface ThirteenStore {
@@ -90,6 +91,7 @@ interface ThirteenStore {
   passed: boolean[];
   quit: boolean[];
   finishOrder: number[];
+  cong: number[];
   turn: number;
   deadlineAt: number;
   animating: boolean;
@@ -100,6 +102,8 @@ interface ThirteenStore {
   tableEvent: TableEvent | null;
   passFxSeat: number;
   finishFx: { seat: number; place: number } | null;
+  congFx: number | null;
+  revealHands: number[][] | null;
   dealing: boolean;
   matchChat: ChatMessageData[];
   chatOpen: boolean;
@@ -161,6 +165,54 @@ const STEP_MS: Record<string, number> = {
   instant: 900,
 };
 
+const MATCH_OVER_SETTLE_MS = 600;
+const REVEAL_HANDS_MS = 2800;
+
+interface FinalSnapshot {
+  present: boolean;
+  hands: number[][] | null;
+  table: ServerPlay | null;
+  passed: boolean[] | null;
+  quit: boolean[] | null;
+  finishOrder: number[] | null;
+  cong: number[];
+  moveCount: number;
+  steps: ServerStep[];
+  instantWin?: string;
+}
+
+const integers = (raw: unknown): number[] | null =>
+  Array.isArray(raw) ? raw.filter((value): value is number => Number.isInteger(value)) : null;
+
+const flags = (raw: unknown): boolean[] | null => (Array.isArray(raw) ? raw.map(Boolean) : null);
+
+function parseFinalSnapshot(raw: unknown): FinalSnapshot {
+  const present = raw != null && typeof raw === 'object';
+  const state = (present ? raw : {}) as Record<string, unknown>;
+  const table = state.table as { cards?: unknown; by?: unknown } | null | undefined;
+  const tableCards = integers(table?.cards);
+  return {
+    present,
+    hands: Array.isArray(state.hands) ? state.hands.map((hand) => integers(hand) ?? []) : null,
+    table: tableCards && tableCards.length > 0 && Number.isInteger(table?.by) ? { cards: tableCards, by: table!.by as number } : null,
+    passed: flags(state.passed),
+    quit: flags(state.quit),
+    finishOrder: integers(state.finishOrder),
+    cong: integers(state.cong) ?? [],
+    moveCount: typeof state.moveCount === 'number' ? state.moveCount : 0,
+    steps: Array.isArray(state.steps) ? (state.steps as ServerStep[]) : [],
+    instantWin: typeof state.instantWin === 'string' ? state.instantWin : undefined,
+  };
+}
+
+const hasCardsLeft = (hands: number[][] | null): hands is number[][] => hands != null && hands.some((hand) => hand.length > 0);
+
+const matchEndFxReset = {
+  cong: [] as number[],
+  congFx: null,
+  revealHands: null,
+} satisfies Partial<ThirteenStore>;
+
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const RECORD_REQUEST_TIMEOUT_MS = 8000;
@@ -192,6 +244,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     toastTimer: 0,
     historyTimer: 0 as ReturnType<typeof setTimeout> | 0,
     leaderboardTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    appliedMoveCount: -1,
     disposed: false,
   };
 
@@ -262,6 +315,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
   const toPerfDeadline = (deadline: number): number => performance.now() + (deadline - Date.now());
 
   const snapState = (state: ServerState, turn: number, deadline: number): void => {
+    refs.appliedMoveCount = state.moveCount;
     set((s) => ({
       you: state.you,
       hand: sortHand(state.yourHand),
@@ -272,6 +326,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       passed: state.passed,
       quit: state.quit,
       finishOrder: state.finishOrder,
+      cong: state.cong ?? [],
       require3s: state.require3s,
       openingLead: Boolean(state.ledByWinner) && state.moveCount === 0 && turn === state.starter,
       turn,
@@ -321,6 +376,11 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         set({ finishFx: { seat: step.by, place: step.place ?? 0 } });
         await sleep(STEP_MS.finish);
         set({ finishFx: null });
+        return;
+      case 'cong':
+        set((s) => ({ cong: s.cong.includes(step.by) ? s.cong : [...s.cong, step.by], congFx: step.by }));
+        await sleep(STEP_MS.finish);
+        set({ congFx: null });
         return;
       case 'instant':
         await sleep(STEP_MS.instant);
@@ -388,6 +448,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       result: null,
       selfDisconnected: false,
       tableEvent: null,
+      ...matchEndFxReset,
     });
     if (data.resumed || !fresh) {
       queueReplay(async () => {
@@ -438,6 +499,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       result: null,
       selfDisconnected: false,
       tableEvent: null,
+      ...(rejoined ? {} : matchEndFxReset),
       ...(rejoined ? {} : { matchChat: [], chatOpen: false, chatUnread: 0, chatBubbles: [], reactions: [] }),
     });
     queueReplay(async () => {
@@ -465,6 +527,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     awaySeats: {},
     animating: false,
     selfDisconnected: false,
+    ...matchEndFxReset,
   } satisfies Partial<ThirteenStore>;
 
   const leaveWatchedMatch = (): void => {
@@ -515,15 +578,54 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     dropRoomWatch();
   };
 
+  const applyFinalSnapshot = (final: FinalSnapshot): void => {
+    refs.appliedMoveCount = Math.max(refs.appliedMoveCount, final.moveCount);
+    set((s) => ({
+      ...(final.hands
+        ? {
+            handCounts: final.hands.map((hand) => hand.length),
+            hand: s.you >= 0 && final.hands[s.you] ? sortHand(final.hands[s.you]) : s.hand,
+          }
+        : {}),
+      table: final.table,
+      lastPlaySeat: final.table?.by ?? -1,
+      ...(final.passed ? { passed: final.passed } : {}),
+      ...(final.quit ? { quit: final.quit } : {}),
+      ...(final.finishOrder ? { finishOrder: final.finishOrder } : {}),
+      cong: final.cong,
+      selected: [],
+      turn: -1,
+      deadlineAt: 0,
+      movePending: false,
+      animating: true,
+    }));
+  };
+
   const handleMatchOver = (data: MatchOverData<unknown>): void => {
     if (data.matchId === refs.leftMatchId) return;
     if (!refs.handledMatchOvers.mark(data.matchId)) return;
     if (get().matchId && get().matchId !== data.matchId) return;
-    const final = data.state as { instantWin?: string } | undefined;
+    const final = parseFinalSnapshot(data.state);
     const epoch = refs.replayEpoch;
     queueReplay(async () => {
-      await sleep(600);
       if (refs.replayEpoch !== epoch) return;
+      set({ animating: true, movePending: false, selected: [], turn: -1, deadlineAt: 0 });
+      if (final.moveCount > refs.appliedMoveCount) {
+        const you = get().you;
+        for (const step of final.steps) {
+          if (refs.replayEpoch !== epoch) return;
+          await replayStep(step, you);
+        }
+      }
+      if (refs.replayEpoch !== epoch) return;
+      if (final.present) applyFinalSnapshot(final);
+      await sleep(MATCH_OVER_SETTLE_MS);
+      if (refs.replayEpoch !== epoch) return;
+      if (hasCardsLeft(final.hands)) {
+        set({ revealHands: final.hands });
+        await sleep(REVEAL_HANDS_MS);
+        if (refs.replayEpoch !== epoch) return;
+      }
       if (get().spectating) {
         if (get().watchingRoomId) enterWatchedRoom();
         else leaveSpectating({ toast: WATCH_ENDED_TEXT });
@@ -537,7 +639,8 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
           expGains: data.expGains ?? [],
           winnerId: data.winnerId,
           reason: data.reason,
-          instantWin: final?.instantWin,
+          instantWin: final.instantWin,
+          congIds: final.cong.map((seat) => get().players[seat]?.id).filter((id): id is string => !!id),
         },
         animating: false,
         movePending: false,
@@ -811,6 +914,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     passed: [],
     quit: [],
     finishOrder: [],
+    cong: [],
     turn: 0,
     deadlineAt: 0,
     animating: false,
@@ -821,6 +925,8 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     tableEvent: null,
     passFxSeat: -1,
     finishFx: null,
+    congFx: null,
+    revealHands: null,
     dealing: false,
     matchChat: [],
     chatOpen: false,
@@ -998,7 +1104,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         refs.practice?.forfeit(s.matchId);
         stopPractice();
         refs.replayEpoch += 1;
-        set({ phase: 'lobby', matchId: '', result: null, room: null, selected: [], matchChat: [], chatOpen: false, chatUnread: 0, chatBubbles: [] });
+        set({ phase: 'lobby', matchId: '', result: null, room: null, selected: [], matchChat: [], chatOpen: false, chatUnread: 0, chatBubbles: [], ...matchEndFxReset });
         refs.session?.listRooms();
         return;
       }
@@ -1006,7 +1112,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
         refs.leftMatchId = s.matchId;
         refs.session?.forfeit(s.matchId, true);
         refs.replayEpoch += 1;
-        set({ phase: 'lobby', matchId: '', result: null, room: null });
+        set({ phase: 'lobby', matchId: '', result: null, room: null, ...matchEndFxReset });
         refs.session?.listRooms();
         return;
       }
@@ -1016,7 +1122,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     closeResult(stayInRoom) {
       if (get().practice) {
         refs.replayEpoch += 1;
-        set({ result: null, matchId: '', selected: [], chatOpen: false, chatUnread: 0, chatBubbles: [] });
+        set({ result: null, matchId: '', selected: [], chatOpen: false, chatUnread: 0, chatBubbles: [], ...matchEndFxReset });
         if (stayInRoom && refs.practice) {
           refs.practice.joinQueue();
           return;
@@ -1031,6 +1137,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       set({
         result: null,
         matchId: '',
+        ...matchEndFxReset,
         phase: stayInRoom && roomId ? 'room' : 'lobby',
         selected: [],
         matchChat: [],

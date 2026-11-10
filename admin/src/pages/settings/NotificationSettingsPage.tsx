@@ -30,7 +30,7 @@ import {
 import { MailSettingsCard } from './MailSettingsCard'
 import { PushComposeModal } from './PushComposeModal'
 import { PushHistoryCard } from './PushHistoryCard'
-import { parseServiceAccount } from './utils'
+import { isPushReady, parseServiceAccount } from './utils'
 
 type TabKey = (typeof NOTIFICATION_TAB_KEYS)[number]
 
@@ -87,17 +87,6 @@ export function NotificationSettingsPage() {
       ]}
     />
   )
-}
-
-function isPushReady(settings?: AppSetting[]): boolean {
-  const status = settings?.find((item) => item.key === CREDENTIAL_KEY)?.value as
-    | PushFirebaseSettingStatus
-    | null
-    | undefined
-  const toggle = settings?.find((item) => item.key === TOGGLE_KEY)?.value as
-    | PushNotificationSetting
-    | undefined
-  return status?.configured === true && toggle?.enabled === true
 }
 
 function PushTab({ settings }: { settings?: AppSetting[] }) {

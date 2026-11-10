@@ -3,7 +3,7 @@ import { Pressable, Text, Vibration, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import {
   callPeerNameView,
   colorForName,
@@ -74,11 +74,12 @@ export function IncomingCallCard() {
       }}
     >
         <View className="items-center gap-4 px-6">
-        <Avatar
+        <AvatarWithFrame
           name={name}
           uri={incoming.caller.avatar}
           size={112}
           color={colorForName(name)}
+          frameId={incoming.caller.avatarFrameId}
         />
         <Text className="text-xl font-bold text-white" numberOfLines={1}>
           {nameView.title}

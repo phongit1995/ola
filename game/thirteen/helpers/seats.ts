@@ -1,15 +1,15 @@
 export type SeatSlot = 'bottom' | 'left' | 'top' | 'right';
 
-// Vị trí tương đối quanh bàn: mình luôn ngồi dưới, các ghế khác xếp theo chiều
-// kim đồng hồ tính từ mình.
+// Vị trí tương đối quanh bàn: mình luôn ngồi dưới, các ghế khác xếp ngược chiều
+// kim đồng hồ tính từ mình, nên người đánh sau mình ngồi bên phải.
 export function seatSlots(playerCount: number, myIdx: number): Map<number, SeatSlot> {
   const slots = new Map<number, SeatSlot>();
   const order: SeatSlot[][] = [
     [],
     ['bottom'],
     ['bottom', 'top'],
-    ['bottom', 'left', 'right'],
-    ['bottom', 'left', 'top', 'right'],
+    ['bottom', 'right', 'left'],
+    ['bottom', 'right', 'top', 'left'],
   ];
   const layout = order[Math.min(playerCount, 4)] ?? order[4];
   for (let i = 0; i < playerCount; i += 1) {

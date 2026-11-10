@@ -14,6 +14,7 @@ import (
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/relationships"
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
@@ -44,6 +45,11 @@ var (
 	ErrShopTypeExists     = errors.New("vip already in shop")
 	ErrBlockedGift        = errors.New("cannot gift to blocked user")
 	ErrBlockedTransfer    = errors.New("cannot transfer vip to a blocked user")
+
+	ErrDayTransferDisabled    = utils.NewHTTPErrorWithCode(http.StatusForbidden, "vip day transfer is disabled", ErrorCodeDayTransferOff)
+	ErrDayTransferInvalidDays = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "invalid vip day transfer amount", ErrorCodeDayTransferDays)
+	ErrDayTransferNotEnough   = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "not enough vip days to transfer", ErrorCodeDayTransferBalance)
+	ErrDayTransferRateChanged = utils.NewHTTPErrorWithCode(http.StatusConflict, "vip day transfer rate changed", ErrorCodeDayTransferRate)
 )
 
 type Service struct {
@@ -53,10 +59,11 @@ type Service struct {
 	cache     *services.CacheService
 	wsServer  *websocket.Server
 	notifSvc  *notification.Service
+	settings  *setting.Service
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, notifSvc *notification.Service, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, notifSvc *notification.Service, settings *setting.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		relRepo:   relRepo,
@@ -64,6 +71,7 @@ func NewService(repo *Repository, relRepo *relationships.Repository, userCache *
 		cache:     cache,
 		wsServer:  wsServer,
 		notifSvc:  notifSvc,
+		settings:  settings,
 		logger:    logger.Named("[vip_service]"),
 	}
 }
@@ -681,6 +689,72 @@ func (s *Service) GiftPackage(fromID, packageID uuid.UUID, toUsername, password 
 		KenSpent:         pkg.KenPrice,
 		KenBalance:       giver.Ken,
 		VipEndTime:       purchase.VipEndTimeAfter.Format(time.RFC3339),
+	}, nil
+}
+
+func (s *Service) TransferDays(fromID uuid.UUID, req TransferDaysRequest, client setting.Client) (*TransferDaysResponse, error) {
+	cfg, err := s.settings.GetVipDayTransfer()
+	if err != nil {
+		return nil, err
+	}
+	if !cfg.EnabledFor(client) {
+		return nil, ErrDayTransferDisabled
+	}
+	receiverDays, valid := cfg.ReceiverDaysFor(req.SenderDays)
+	if !valid {
+		return nil, ErrDayTransferInvalidDays
+	}
+	if receiverDays != req.ReceiverDays {
+		return nil, ErrDayTransferRateChanged
+	}
+
+	sender, err := s.repo.GetUser(fromID)
+	if err != nil {
+		return nil, err
+	}
+	if bcrypt.CompareHashAndPassword([]byte(sender.Password), []byte(req.Password)) != nil {
+		return nil, ErrWrongPassword
+	}
+
+	receiver, err := s.repo.FindByUsername(strings.TrimSpace(req.ToUsername))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrReceiverNotFound
+		}
+		return nil, err
+	}
+	if receiver.ID == fromID {
+		return nil, ErrCannotGiftSelf
+	}
+	blocked, err := s.relRepo.IsBlockedEither(fromID, receiver.ID)
+	if err != nil {
+		return nil, err
+	}
+	if blocked {
+		return nil, ErrBlockedGift
+	}
+
+	senderEnd, err := s.repo.TransferDays(DayTransfer{
+		SenderID:         fromID,
+		SenderUsername:   sender.Username,
+		ReceiverID:       receiver.ID,
+		ReceiverUsername: receiver.Username,
+		SenderDays:       req.SenderDays,
+		ReceiverDays:     receiverDays,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	s.invalidate(fromID)
+	s.invalidate(receiver.ID)
+	s.notifSvc.Create(receiver.ID, &fromID, models.AppNotificationVipReceived, nil, models.AppNotificationTransfer{Days: receiverDays}.Preview())
+
+	return &TransferDaysResponse{
+		ReceiverUsername: receiver.Username,
+		SenderDays:       req.SenderDays,
+		ReceiverDays:     receiverDays,
+		VipEndTime:       senderEnd.Format(time.RFC3339),
 	}, nil
 }
 

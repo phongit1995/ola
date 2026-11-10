@@ -1,11 +1,12 @@
 import dayjs from 'dayjs'
 import { vipName } from '@/lib/vipCatalog'
 import { avatarFrameName } from '@/pages/avatar-frames/utils'
-import type { GiftCodeCampaign, GiftCodeCampaignRequest, GiftCodeReward } from '@/types'
+import type { GiftCodeCampaign, GiftCodeCampaignRequest, GiftCodePlatform, GiftCodeReward } from '@/types'
 import {
   GIFT_CODE_ALPHABET,
   GIFT_CODE_DEFAULT_LENGTH,
   GIFT_CODE_DEFAULT_MESSAGE,
+  GIFT_CODE_PLATFORM_LABEL,
   GIFT_CODE_RANDOM_SHARED_LENGTH,
   GIFT_CODE_REWARD_PLACEHOLDER,
   GIFT_CODE_SAMPLE_SEED,
@@ -163,4 +164,9 @@ export function csvFileName(name: string, suffix: string): string {
     .replace(/^-|-$/g, '')
     .toLowerCase()
   return `${slug || 'gift-code'}-${suffix}-${dayjs().format('YYYYMMDD-HHmm')}.csv`
+}
+
+export function attemptDeviceLabel(platform: GiftCodePlatform, name: string) {
+  const label = GIFT_CODE_PLATFORM_LABEL[platform] ?? platform
+  return name ? `${label} · ${name}` : label
 }

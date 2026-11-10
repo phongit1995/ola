@@ -8,6 +8,7 @@ type PlayerView struct {
 	Passed             []bool `json:"passed"`
 	Quit               []bool `json:"quit"`
 	FinishOrder        []int  `json:"finishOrder"`
+	Cong               []int  `json:"cong,omitempty"`
 	Turn               int    `json:"turn"`
 	Starter            int    `json:"starter"`
 	RequireThreeSpades bool   `json:"require3s"`
@@ -46,6 +47,7 @@ func publicView(s *State, you int) PlayerView {
 		Passed:             append([]bool(nil), s.Passed...),
 		Quit:               append([]bool(nil), s.Quit...),
 		FinishOrder:        append([]int(nil), s.FinishOrder...),
+		Cong:               append([]int(nil), s.Cong...),
 		Turn:               s.Turn,
 		Starter:            s.Starter,
 		RequireThreeSpades: s.RequireThreeSpades,

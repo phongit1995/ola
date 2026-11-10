@@ -43,7 +43,7 @@ func checkMove(s *State, playerIdx int, mv Move) (Combo, error) {
 	if s.InstantWin != "" {
 		return Combo{}, errors.New("the round already ended")
 	}
-	if !s.isActive(playerIdx) || !s.hasCards(playerIdx) {
+	if !s.canAct(playerIdx) {
 		return Combo{}, errors.New("player can no longer act")
 	}
 	if mv.Type == MoveTypePass {
@@ -126,11 +126,16 @@ func applyMove(s *State, playerIdx int, mv Move) error {
 	if len(remaining) == 0 {
 		s.FinishOrder = append(s.FinishOrder, playerIdx)
 		s.Steps = append(s.Steps, Step{Kind: StepFinish, By: playerIdx, Place: len(s.FinishOrder)})
+		if len(s.FinishOrder) == 1 {
+			s.markCong(playerIdx)
+		}
 	}
-	if active := s.activeWithCards(); len(active) == 1 {
-		last := active[0]
-		s.FinishOrder = append(s.FinishOrder, last)
-		s.Steps = append(s.Steps, Step{Kind: StepFinish, By: last, Place: len(s.FinishOrder)})
+	if active := s.activeWithCards(); len(active) <= 1 {
+		if len(active) == 1 {
+			last := active[0]
+			s.FinishOrder = append(s.FinishOrder, last)
+			s.Steps = append(s.Steps, Step{Kind: StepFinish, By: last, Place: len(s.FinishOrder)})
+		}
 		return nil
 	}
 	s.advanceAfter(playerIdx)
@@ -143,6 +148,7 @@ func cloneState(s *State) *State {
 		Passed:             append([]bool(nil), s.Passed...),
 		Quit:               append([]bool(nil), s.Quit...),
 		FinishOrder:        append([]int(nil), s.FinishOrder...),
+		Cong:               append([]int(nil), s.Cong...),
 		QuitOrder:          append([]int(nil), s.QuitOrder...),
 		Turn:               s.Turn,
 		Starter:            s.Starter,

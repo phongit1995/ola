@@ -19,9 +19,15 @@ const (
 	PurchaseSourceGift     = "gift"
 	PurchaseSourceGiftCode = "gift_code"
 
+	PurchaseSourceDayTransferOut = "day_transfer_out"
+	PurchaseSourceDayTransferIn  = "day_transfer_in"
+
 	IconSourceGiftCode = "gift_code"
 
 	iconPurchaseNameFormat = "VIP #%d"
+
+	dayTransferOutNameFormat = "Chuyển cho @%s, nhận %d ngày"
+	dayTransferInNameFormat  = "Nhận ngày VIP từ @%s"
 
 	PurchasePaidExpr     = "COALESCE(kt.amount, vp.ken_price)"
 	PurchasePayerExpr    = "CASE WHEN vp.source = 'gift' THEN kt.user_id ELSE vp.user_id END"
@@ -31,6 +37,8 @@ const (
 )
 
 var PurchaseBuySources = []string{PurchaseSourcePackage, PurchaseSourceIcon, PurchaseSourceGift}
+
+var PurchaseDayTransferSources = []string{PurchaseSourceDayTransferOut, PurchaseSourceDayTransferIn}
 
 func IconPurchaseName(vipTypeID int16) string {
 	return fmt.Sprintf(iconPurchaseNameFormat, vipTypeID)
@@ -676,6 +684,89 @@ func (r *Repository) GiftPackage(fromID uuid.UUID, receiver *models.User, pkg *m
 		return nil, nil, err
 	}
 	return &purchase, &giver, nil
+}
+
+type DayTransfer struct {
+	SenderID         uuid.UUID
+	SenderUsername   string
+	ReceiverID       uuid.UUID
+	ReceiverUsername string
+	SenderDays       int
+	ReceiverDays     int
+}
+
+func lockUserPair(tx *gorm.DB, first, second uuid.UUID) (*models.User, *models.User, error) {
+	order := []uuid.UUID{first, second}
+	if order[0].String() > order[1].String() {
+		order[0], order[1] = order[1], order[0]
+	}
+	locked := make(map[uuid.UUID]*models.User, 2)
+	for _, id := range order {
+		var u models.User
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", id).Error; err != nil {
+			return nil, nil, err
+		}
+		locked[id] = &u
+	}
+	return locked[first], locked[second], nil
+}
+
+func (r *Repository) TransferDays(transfer DayTransfer) (time.Time, error) {
+	var senderEnd time.Time
+
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		sender, receiver, err := lockUserPair(tx, transfer.SenderID, transfer.ReceiverID)
+		if err != nil {
+			return err
+		}
+
+		now := time.Now()
+		if sender.VipEndTime == nil || !sender.VipEndTime.After(now) {
+			return ErrDayTransferNotEnough
+		}
+		wholeDays := int(sender.VipEndTime.Sub(now) / (24 * time.Hour))
+		if transfer.SenderDays > wholeDays {
+			return ErrDayTransferNotEnough
+		}
+
+		senderEnd = sender.VipEndTime.Add(-time.Duration(transfer.SenderDays) * 24 * time.Hour)
+		receiverBase := now
+		if receiver.VipEndTime != nil && receiver.VipEndTime.After(now) {
+			receiverBase = *receiver.VipEndTime
+		}
+		receiverEnd := receiverBase.Add(time.Duration(transfer.ReceiverDays) * 24 * time.Hour)
+
+		if err := tx.Model(&models.User{}).Where("id = ?", transfer.SenderID).Update("vip_end_time", senderEnd).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&models.User{}).Where("id = ?", transfer.ReceiverID).Update("vip_end_time", receiverEnd).Error; err != nil {
+			return err
+		}
+
+		rows := []models.VipPurchase{
+			{
+				UserID:          transfer.SenderID,
+				PackageName:     fmt.Sprintf(dayTransferOutNameFormat, transfer.ReceiverUsername, transfer.ReceiverDays),
+				Days:            -transfer.SenderDays,
+				KenBalanceAfter: sender.Ken,
+				VipEndTimeAfter: senderEnd,
+				Source:          PurchaseSourceDayTransferOut,
+			},
+			{
+				UserID:          transfer.ReceiverID,
+				PackageName:     fmt.Sprintf(dayTransferInNameFormat, transfer.SenderUsername),
+				Days:            transfer.ReceiverDays,
+				KenBalanceAfter: receiver.Ken,
+				VipEndTimeAfter: receiverEnd,
+				Source:          PurchaseSourceDayTransferIn,
+			},
+		}
+		return tx.Create(&rows).Error
+	})
+	if err != nil {
+		return time.Time{}, err
+	}
+	return senderEnd, nil
 }
 
 func (r *Repository) Purchase(userID uuid.UUID, pkg *models.VipPackage) (*models.VipPurchase, *models.User, error) {

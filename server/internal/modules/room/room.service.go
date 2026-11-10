@@ -1239,14 +1239,17 @@ func (s *Service) emitBlockListChanged(userID, blockedUserID uuid.UUID, blocked 
 func toRoomBlockedUsersResponse(rows []BlockedUserRow) *RoomBlockedUsersResponse {
 	userIDs := make([]string, 0, len(rows))
 	users := make([]RoomBlockedUser, 0, len(rows))
+	now := time.Now()
 	for _, row := range rows {
 		id := row.UserID.String()
 		userIDs = append(userIDs, id)
+		frameOwner := models.User{AvatarFrameID: row.AvatarFrameID, VipEndTime: row.VipEndTime}
 		users = append(users, RoomBlockedUser{
-			UserID:   id,
-			Username: row.Username,
-			FullName: row.FullName,
-			Avatar:   row.Avatar,
+			UserID:        id,
+			Username:      row.Username,
+			FullName:      row.FullName,
+			Avatar:        row.Avatar,
+			AvatarFrameID: frameOwner.ActiveAvatarFrameID(now),
 		})
 	}
 	return &RoomBlockedUsersResponse{UserIDs: userIDs, Users: users}

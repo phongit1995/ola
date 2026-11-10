@@ -25,7 +25,7 @@ import { MoveToTopButton, RenumberButton } from '@/components/ListOrderButtons'
 import { PositionField } from '@/components/PositionField'
 import { SortableTable } from '@/components/SortableTable'
 import { errorMessage } from '@/lib/apiError'
-import { kenNumberInputProps } from '@/lib/format'
+import { formatCount, kenNumberInputProps } from '@/lib/format'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { VipShopItem } from '@/types'
 import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
@@ -49,7 +49,7 @@ export function VipShopPage() {
   const updateItem = useUpdateVipShopItem()
   const deleteItem = useDeleteVipShopItem()
 
-  const items = data ?? []
+  const items = useMemo(() => data ?? [], [data])
   const order = useVipShopOrder(items)
   const isEdit = editing != null
 
@@ -159,7 +159,7 @@ export function VipShopPage() {
       title: 'Giá (KEN)',
       dataIndex: 'kenPrice',
       width: 140,
-      render: (v: number) => v.toLocaleString('vi-VN'),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Thứ tự',

@@ -661,14 +661,16 @@ func (s *Service) ListFollowing(callerID, userID uuid.UUID, limit, offset int) (
 func (s *Service) buildFollowList(users []*models.User, total int64, limit, offset int) *FollowListResponse {
 	items := make([]FollowUser, len(users))
 	ids := make([]string, len(users))
+	now := time.Now()
 	for i, u := range users {
 		ids[i] = u.ID.String()
 		items[i] = FollowUser{
-			ID:       u.ID.String(),
-			Username: u.Username,
-			FullName: u.FullName,
-			Avatar:   u.Avatar,
-			Bio:      u.Bio,
+			ID:            u.ID.String(),
+			Username:      u.Username,
+			FullName:      u.FullName,
+			Avatar:        u.Avatar,
+			Bio:           u.Bio,
+			AvatarFrameID: u.ActiveAvatarFrameID(now),
 		}
 	}
 

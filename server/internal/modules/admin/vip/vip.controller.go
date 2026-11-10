@@ -63,6 +63,16 @@ func (ctrl *Controller) ListPurchases(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+func (ctrl *Controller) ListDayTransfers(c *gin.Context) (interface{}, error) {
+	limit := utils.ParseLimit(c, 20, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.adminService.ListDayTransfers(strings.TrimSpace(c.Query("search")), limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // PurchaseStats godoc
 // @Summary      Thống kê doanh thu mua VIP (gói ngày + icon) theo ngày/tháng (admin)
 // @Tags         admin-vip

@@ -81,6 +81,19 @@ function useInvalidateGiftCodes() {
   return () => queryClient.invalidateQueries({ queryKey: [GIFT_CODE_QUERY_KEY] })
 }
 
+export function useExportGiftCodes() {
+  return useMutation({
+    mutationFn: ({ id, params }: { id: string; params: GiftCodeListParams }) => AdminGiftCodeService.exportCodes(id, params),
+  })
+}
+
+export function useExportGiftCodeRedemptions() {
+  return useMutation({
+    mutationFn: ({ id, params }: { id: string; params: GiftCodeRedemptionListParams }) =>
+      AdminGiftCodeService.exportRedemptions(id, params),
+  })
+}
+
 export function useSaveGiftCodeCampaign() {
   const invalidate = useInvalidateGiftCodes()
   return useMutation({

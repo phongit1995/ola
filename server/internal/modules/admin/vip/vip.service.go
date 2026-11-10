@@ -129,6 +129,40 @@ func toPurchaseTotals(row totalsRow) PurchaseTotals {
 	}
 }
 
+func (s *Service) ListDayTransfers(search string, limit, offset int) (*DayTransferListResponse, error) {
+	rows, total, err := s.repo.ListDayTransfers(search, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	idSet := make(map[uuid.UUID]struct{}, len(rows))
+	for i := range rows {
+		idSet[rows[i].UserID] = struct{}{}
+	}
+	ids := make([]uuid.UUID, 0, len(idSet))
+	for id := range idSet {
+		ids = append(ids, id)
+	}
+	users, err := s.repo.FindUsersByIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]DayTransferItem, 0, len(rows))
+	for i := range rows {
+		items = append(items, DayTransferItem{
+			ID:         rows[i].ID.String(),
+			Source:     rows[i].Source,
+			Name:       rows[i].PackageName,
+			Days:       rows[i].Days,
+			VipEndTime: rows[i].VipEndTimeAfter.UTC().Format(time.RFC3339),
+			User:       toUserInfo(users, rows[i].UserID),
+			CreatedAt:  rows[i].CreatedAt.UTC().Format(time.RFC3339),
+		})
+	}
+	return &DayTransferListResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
+}
+
 func toUserInfo(users map[uuid.UUID]models.User, id uuid.UUID) *UserInfo {
 	u, ok := users[id]
 	if !ok {

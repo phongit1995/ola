@@ -4,7 +4,7 @@ import { ActivityIndicator, Image, Pressable, ScrollView, Switch, Text, TextInpu
 import { formatKen, giftDisplayName, senderCharmGain } from '@ola/shared/lib';
 import { useGiftPicker } from '@ola/shared/stores/gift/useGiftPicker';
 import type { Gift, GiftSource, SendGiftResult } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CachedImage } from '@components/ui/CachedImage';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY, WARNING } from '@constants';
@@ -27,6 +27,7 @@ export interface GiftReceiver {
   name: string;
   username?: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   color?: string;
 }
 
@@ -83,7 +84,7 @@ function GiftTile({
 function ReceiverIdentity({ receiver }: { receiver: GiftReceiver }) {
   return (
     <>
-      <Avatar name={receiver.name} uri={receiver.avatar} color={receiver.color} size={36} />
+      <AvatarWithFrame name={receiver.name} uri={receiver.avatar} color={receiver.color} size={36} frameId={receiver.avatarFrameId} />
       <View className="min-w-0 flex-1">
         <Text numberOfLines={1} className="text-base" style={{ color: TEXT_PRIMARY }}>
           {receiver.name}

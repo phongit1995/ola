@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Avatar,
   FullScreenOverlay,
   ScreenHeader,
   Spinner,
   UserName,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { clanErrorText, colorForName, toast } from '@lib';
 import { ClanService } from '@services';
 import type { ClanBan } from '@app-types';
@@ -74,11 +74,12 @@ export function ClanBansView({ clanId, onClose }: ClanBansViewProps) {
                     index > 0 ? 'border-t border-black/12' : ''
                   }`}
                 >
-                  <Avatar
+                  <AvatarWithFrame
                     name={username}
                     src={ban.user?.avatar !== '' ? ban.user?.avatar : undefined}
                     color={colorForName(username)}
                     size={40}
+                    frameId={ban.user?.avatarFrameId}
                   />
                   <UserName
                     name={username}

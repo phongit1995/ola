@@ -56,3 +56,7 @@ export const MODERATION_POINTS_MAX = 20
 export const MODERATION_HOURS_MAX = 24 * 365 * 10
 
 export const MODERATION_LOCK_STEPS_MAX = 5
+
+export const MODERATION_SETTINGS_TITLE = 'Cài đặt điểm vi phạm'
+
+export const REPORT_ALERT_SETTINGS_TITLE = 'Thông báo báo cáo vi phạm'

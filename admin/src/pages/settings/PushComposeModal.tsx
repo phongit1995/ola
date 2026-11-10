@@ -2,17 +2,11 @@ import { Alert, App, Button, Form, Input, Modal, Radio, Space, Typography } from
 import { SendOutlined } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
 import { errorMessage, toApiError } from '@/lib/apiError'
+import { HTTP_NOT_FOUND } from '@/lib/constants'
 import { formatCount } from '@/lib/format'
-import type { CreatePushCampaignRequest, PushAudience } from '@/types'
+import type { CreatePushCampaignRequest } from '@/types'
 import { useCreatePushCampaign, usePushAudience } from './usePushCampaignQueries'
-import { PUSH_AUDIENCE_LABEL, PUSH_BODY_MAX, PUSH_TITLE_MAX } from './constants'
-
-const HTTP_NOT_FOUND = 404
-
-const AUDIENCE_OPTIONS = (Object.keys(PUSH_AUDIENCE_LABEL) as PushAudience[]).map((value) => ({
-  value,
-  label: PUSH_AUDIENCE_LABEL[value],
-}))
+import { PUSH_AUDIENCE_LABEL, PUSH_AUDIENCE_OPTIONS, PUSH_BODY_MAX, PUSH_TITLE_MAX } from './constants'
 
 interface PushComposeModalProps {
   open: boolean
@@ -90,7 +84,7 @@ function PushComposeForm({ onClose }: { onClose: () => void }) {
       />
       <Form form={form} layout="vertical" requiredMark={false} initialValues={{ audience: 'all' }}>
         <Form.Item name="audience" label="Gửi tới">
-          <Radio.Group options={AUDIENCE_OPTIONS} optionType="button" />
+          <Radio.Group options={PUSH_AUDIENCE_OPTIONS} optionType="button" />
         </Form.Item>
         {audience === 'user' && (
           <Form.Item

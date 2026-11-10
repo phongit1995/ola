@@ -55,3 +55,8 @@ export const APP_UPDATE_PLATFORMS: { key: AppUpdatePlatform; label: string }[] =
 ]
 
 export const DEFAULT_APP_UPDATE_SETTING: AppUpdateSetting = { android: [], ios: [] }
+
+export const PUSH_AUDIENCE_OPTIONS = (Object.keys(PUSH_AUDIENCE_LABEL) as PushAudience[]).map((value) => ({
+  value,
+  label: PUSH_AUDIENCE_LABEL[value],
+}))

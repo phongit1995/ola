@@ -1,12 +1,16 @@
 import { useTranslation } from 'react-i18next';
+import { Avatar } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { MOMENT_TYPE } from '@constants';
 import { cn, colorForName, momentPreviewMedia } from '@lib';
+import { visibleAvatarFrame } from '@ola/shared/lib/avatarFrame';
 import type { Moment } from '@app-types';
 import { MomentCanvas } from './MomentCanvas';
 import { MomentPlusIcon, MomentVideoIcon } from './MomentIcons';
 
 const CARD_CLASS = 'relative h-40 w-[90px] shrink-0 overflow-hidden rounded-xl';
+const AVATAR_SIZE = 30;
+const FRAMED_AVATAR_SLOT = 37;
 
 interface MomentTrayCardProps {
   moment: Moment;
@@ -37,19 +41,30 @@ export function MomentTrayCard({
         overlays={moment.overlays}
       />
       <span className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/75 to-transparent" />
-      <span
-        className={`absolute top-2 left-2 rounded-full p-[2px] ${ringed ? 'bg-ola-primary' : 'bg-white/80'}`}
-      >
-        <span className="block rounded-full bg-white p-[1.5px]">
+      {visibleAvatarFrame(FRAMED_AVATAR_SLOT, author.avatarFrameId) != null ? (
+        <span className="absolute top-2 left-2">
           <AvatarWithFrame
             name={author.username}
             color={colorForName(author.username)}
             src={author.avatar ?? undefined}
-            size={30}
+            size={FRAMED_AVATAR_SLOT}
             frameId={author.avatarFrameId}
           />
         </span>
-      </span>
+      ) : (
+        <span
+          className={`absolute top-2 left-2 rounded-full p-[2px] ${ringed ? 'bg-ola-primary' : 'bg-white/80'}`}
+        >
+          <span className="block rounded-full bg-white p-[1.5px]">
+            <Avatar
+              name={author.username}
+              color={colorForName(author.username)}
+              src={author.avatar ?? undefined}
+              size={AVATAR_SIZE}
+            />
+          </span>
+        </span>
+      )}
       {moment.type === MOMENT_TYPE.video && (
         <span className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/45 text-white">
           <MomentVideoIcon className="h-3.5 w-3.5" />

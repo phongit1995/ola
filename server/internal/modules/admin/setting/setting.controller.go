@@ -274,6 +274,10 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateMomentMediaPurgeValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyVipDayTransfer:
+		if err := setting.ValidateVipDayTransferValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
 	case setting.KeyGiftCode:
 		kept, err := ctrl.service.KeepStoredPlatforms(setting.KeyGiftCode, value)
 		if err != nil {

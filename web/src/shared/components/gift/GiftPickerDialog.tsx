@@ -5,7 +5,7 @@ import { cn, formatKen, giftDisplayName, senderCharmGain } from '@lib';
 import type { GiftSource, SendGiftResult } from '@app-types';
 import giftIcon from '@/assets/icons/apps/gift.webp';
 import kenIcon from '@/assets/icons/apps/ken.png';
-import { Avatar } from '../ui/Avatar';
+import { AvatarWithFrame } from '../ui/AvatarWithFrame';
 import { CharmIcon } from './CharmIcon';
 import { Dialog, DialogButton } from '../ui/Dialog';
 import { Spinner } from '../ui/Spinner';
@@ -16,6 +16,7 @@ export interface GiftReceiver {
   name: string;
   username?: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   color: string;
 }
 
@@ -38,6 +39,7 @@ function ReceiverRow({ receiver }: { receiver: GiftReceiver }) {
       name={receiver.name}
       username={receiver.username}
       avatar={receiver.avatar}
+      frameId={receiver.avatarFrameId}
       color={receiver.color}
     />
   );
@@ -222,11 +224,12 @@ function GiftPickerContent({
     >
       <div className="flex flex-col gap-2.5 px-1 py-1">
         <div className="flex items-center gap-3 rounded border border-black/12 px-3 py-2">
-          <Avatar
+          <AvatarWithFrame
             name={receiver.name}
             src={receiver.avatar}
             color={receiver.color}
             size={36}
+            frameId={receiver.avatarFrameId}
           />
           <div className="min-w-0 flex-1">
             <p className="truncate text-base text-black/87">{receiver.name}</p>

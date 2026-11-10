@@ -12,7 +12,6 @@ import type {
   GiftCodeAttemptRange,
   GiftCodeAttemptReason,
   GiftCodeAttemptUser,
-  GiftCodePlatform,
 } from '@/types'
 import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
 import { GIFT_CODE_SECTION_LINKS } from '@/pages/shop/sections'
@@ -20,7 +19,6 @@ import {
   GIFT_CODE_ATTEMPT_RANGE_OPTIONS,
   GIFT_CODE_HEAVY_FAILURES,
   GIFT_CODE_MULTI_ACCOUNT,
-  GIFT_CODE_PLATFORM_LABEL,
   GIFT_CODE_REASON_META,
   GIFT_CODE_REASON_OPTIONS,
 } from './constants'
@@ -30,6 +28,7 @@ import {
   useGiftCodeAttemptUsers,
   useGiftCodeAttempts,
 } from './useGiftCodeQueries'
+import { attemptDeviceLabel } from './utils'
 
 type AttemptView = 'users' | 'devices' | 'log'
 
@@ -38,11 +37,6 @@ const DANGER = '#d4380d'
 function ReasonTag({ reason }: { reason: GiftCodeAttemptReason }) {
   const meta = GIFT_CODE_REASON_META[reason] ?? { label: reason }
   return <Tag color={meta.color}>{meta.label}</Tag>
-}
-
-function deviceLabel(platform: GiftCodePlatform, name: string) {
-  const label = GIFT_CODE_PLATFORM_LABEL[platform] ?? platform
-  return name ? `${label} · ${name}` : label
 }
 
 export function GiftCodeAttemptsPage() {
@@ -80,7 +74,7 @@ export function GiftCodeAttemptsPage() {
 
   const userColumns: TableColumnsType<GiftCodeAttemptUser> = [
     { title: 'Người dùng', dataIndex: 'user', width: 220, render: (_, row) => <UserBriefCell user={row.user} /> },
-    { title: 'Thiết bị', key: 'device', width: 180, render: (_, row) => deviceLabel(row.platform, row.deviceName) },
+    { title: 'Thiết bị', key: 'device', width: 180, render: (_, row) => attemptDeviceLabel(row.platform, row.deviceName) },
     {
       title: 'Số lần lỗi',
       dataIndex: 'failures',
@@ -124,7 +118,7 @@ export function GiftCodeAttemptsPage() {
       key: 'device',
       render: (_, row) => (
         <div>
-          <b>{deviceLabel(row.platform, row.deviceName)}</b>
+          <b>{attemptDeviceLabel(row.platform, row.deviceName)}</b>
           <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12, fontFamily: 'monospace' }}>
             {row.deviceId.length > 24 ? `${row.deviceId.slice(0, 12)}…${row.deviceId.slice(-6)}` : row.deviceId}
           </Typography.Text>
@@ -162,7 +156,7 @@ export function GiftCodeAttemptsPage() {
     { title: 'Người dùng', dataIndex: 'user', width: 220, render: (_, row) => <UserBriefCell user={row.user} /> },
     { title: 'Mã đã nhập', dataIndex: 'codeInput', render: (value: string) => <Typography.Text code>{value}</Typography.Text> },
     { title: 'Lý do', dataIndex: 'reason', width: 180, render: (value: GiftCodeAttemptReason) => <ReasonTag reason={value} /> },
-    { title: 'Thiết bị', key: 'device', width: 190, render: (_, row) => deviceLabel(row.platform, row.deviceName) },
+    { title: 'Thiết bị', key: 'device', width: 190, render: (_, row) => attemptDeviceLabel(row.platform, row.deviceName) },
     {
       title: 'IP',
       dataIndex: 'ipAddress',

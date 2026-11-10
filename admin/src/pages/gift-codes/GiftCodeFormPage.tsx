@@ -14,24 +14,20 @@ import {
   InputNumber,
   Row,
   Segmented,
-  Select,
   Space,
   Spin,
   Switch,
   Typography,
 } from 'antd'
-import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined, SaveOutlined, ThunderboltOutlined } from '@ant-design/icons'
-import { AVATAR_FRAMES } from '@ola/shared/lib/avatarFrame'
+import { ArrowLeftOutlined, SaveOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import { errorMessage } from '@/lib/apiError'
 import { formatCount } from '@/lib/format'
-import { VIP_CATALOG, vipIconUrl } from '@/lib/vipCatalog'
 import {
   GIFT_CODE_DATE_FORMAT,
   GIFT_CODE_DEFAULT_LENGTH,
   GIFT_CODE_LENGTH_MAX,
   GIFT_CODE_LENGTH_MIN,
   GIFT_CODE_MAX_BATCH,
-  GIFT_CODE_MAX_REWARDS,
   GIFT_CODE_MAX_SHARED_USES,
   GIFT_CODE_MESSAGE_MAX,
   GIFT_CODE_PLATFORM_OPTIONS,
@@ -54,36 +50,7 @@ import {
   sampleGiftCode,
   successMessagePreview,
 } from './utils'
-
-const REWARD_TYPE_OPTIONS = [
-  { value: 'vip_days', label: 'Ngày VIP' },
-  { value: 'vip_icon', label: 'Icon VIP' },
-  { value: 'avatar_frame', label: 'Khung avatar' },
-]
-
-const VIP_ICON_OPTIONS = VIP_CATALOG.map((entry) => ({
-  value: entry.id,
-  name: `#${entry.id} ${entry.name}`,
-  label: (
-    <Space>
-      <img src={vipIconUrl(entry.id)} alt="" width={22} height={22} style={{ objectFit: 'contain' }} />
-      <span>
-        #{entry.id} — {entry.name}
-      </span>
-    </Space>
-  ),
-}))
-
-const AVATAR_FRAME_OPTIONS = AVATAR_FRAMES.map((frame) => ({
-  value: frame.id,
-  name: `#${frame.id} ${frame.name}`,
-  label: (
-    <Space>
-      <img src={frame.url} alt="" width={24} height={24} loading="lazy" style={{ objectFit: 'contain' }} />
-      <span>{frame.name ? `#${frame.id} — ${frame.name}` : `#${frame.id}`}</span>
-    </Space>
-  ),
-}))
+import { GiftCodeRewardsField } from './GiftCodeRewardsField'
 
 export function GiftCodeFormPage() {
   const { message } = App.useApp()
@@ -321,46 +288,7 @@ export function GiftCodeFormPage() {
           </Col>
         </Row>
 
-        <Divider titlePlacement="start" plain style={{ margin: '4px 0 16px' }}>
-          Quà nhận được
-        </Divider>
-        <Form.List
-          name="rewards"
-          rules={[
-            {
-              validator: async (_, value) => {
-                if (cleanRewards(value).length === 0) throw new Error('Thêm ít nhất một món quà')
-              },
-            },
-          ]}
-        >
-          {(fields, { add, remove }, { errors }) => (
-            <>
-              {fields.map((field) => (
-                <RewardRow
-                  key={field.key}
-                  name={field.name}
-                  disabled={locked}
-                  onRemove={fields.length > 1 ? () => remove(field.name) : undefined}
-                />
-              ))}
-              <Button
-                type="dashed"
-                icon={<PlusOutlined />}
-                disabled={locked || fields.length >= GIFT_CODE_MAX_REWARDS}
-                onClick={() => add({ type: 'vip_icon' })}
-                style={{ marginBottom: 8 }}
-              >
-                Thêm quà
-              </Button>
-              <Form.ErrorList errors={errors} />
-            </>
-          )}
-        </Form.List>
-        <Typography.Paragraph type="secondary" style={{ fontSize: 13 }}>
-          Ngày VIP tính từ lúc nhận, đang có VIP thì cộng dồn. Icon và khung giữ vĩnh viễn nhưng không chuyển được cho người khác.
-          Khung cần còn VIP mới đeo được. Ai đã có sẵn khung thì chỉ nhận các quà còn lại; mã chỉ có khung thì họ không nhận được và không mất lượt.
-        </Typography.Paragraph>
+        <GiftCodeRewardsField locked={locked} />
 
         <Divider titlePlacement="start" plain style={{ margin: '4px 0 16px' }}>
           Thông báo cho người nhận
@@ -455,43 +383,5 @@ export function GiftCodeFormPage() {
         </Space>
       </Form>
     </Card>
-  )
-}
-
-function RewardRow({ name, disabled, onRemove }: { name: number; disabled: boolean; onRemove?: () => void }) {
-  const form = Form.useFormInstance<GiftCodeFormValues>()
-  const type = Form.useWatch(['rewards', name, 'type'], form)
-  return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-      <Form.Item name={[name, 'type']} style={{ width: 160, marginBottom: 12 }}>
-        <Select disabled={disabled} options={REWARD_TYPE_OPTIONS} />
-      </Form.Item>
-      {type === 'avatar_frame' ? (
-        <Form.Item name={[name, 'frameId']} style={{ flex: 1, marginBottom: 12 }} rules={[{ required: true, message: 'Chọn khung avatar' }]}>
-          <Select
-            disabled={disabled}
-            showSearch
-            placeholder="Tìm và chọn khung avatar..."
-            options={AVATAR_FRAME_OPTIONS}
-            filterOption={(input, option) => String(option?.name ?? '').toLowerCase().includes(input.toLowerCase())}
-          />
-        </Form.Item>
-      ) : type === 'vip_icon' ? (
-        <Form.Item name={[name, 'vipIconId']} style={{ flex: 1, marginBottom: 12 }} rules={[{ required: true, message: 'Chọn icon VIP' }]}>
-          <Select
-            disabled={disabled}
-            showSearch
-            placeholder="Tìm và chọn icon VIP..."
-            options={VIP_ICON_OPTIONS}
-            filterOption={(input, option) => String(option?.name ?? '').toLowerCase().includes(input.toLowerCase())}
-          />
-        </Form.Item>
-      ) : (
-        <Form.Item name={[name, 'days']} style={{ flex: 1, marginBottom: 12 }} rules={[{ required: true, message: 'Nhập số ngày' }]}>
-          <InputNumber disabled={disabled} min={1} max={3650} addonAfter="ngày" style={{ width: '100%' }} />
-        </Form.Item>
-      )}
-      <Button type="text" danger icon={<DeleteOutlined />} disabled={disabled || onRemove == null} onClick={onRemove} />
-    </div>
   )
 }

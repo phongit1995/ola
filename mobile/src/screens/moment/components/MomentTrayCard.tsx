@@ -4,6 +4,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import { MOMENT_TYPE } from '@ola/shared/constants';
 import { colorForName, momentPreviewMedia } from '@ola/shared/lib';
 import type { Moment } from '@ola/shared/types';
+import { visibleAvatarFrame } from '@ola/shared/lib/avatarFrame';
+import { Avatar } from '@components/ui/Avatar';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { MOMENT_TRAY_CARD_HEIGHT, MOMENT_TRAY_CARD_WIDTH } from '../constants';
@@ -12,6 +14,7 @@ import { MomentPlusIcon, MomentVideoIcon } from './MomentIcons';
 
 const CARD_RADIUS = 12;
 const AVATAR_SIZE = 30;
+const FRAMED_AVATAR_SLOT = 37;
 
 const CARD_SIZE = { width: MOMENT_TRAY_CARD_WIDTH, height: MOMENT_TRAY_CARD_HEIGHT };
 
@@ -27,6 +30,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
   },
   shade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 64 },
+  avatarSlot: { position: 'absolute', top: 8, left: 8 },
   ring: { position: 'absolute', top: 8, left: 8, borderRadius: 999, padding: 2 },
   ringInner: { borderRadius: 999, backgroundColor: '#ffffff', padding: 1.5 },
   videoBadge: {
@@ -71,20 +75,31 @@ export function MomentTrayCard({ moment, label, ringed, onPress }: MomentTrayCar
         colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.75)']}
         style={styles.shade}
       />
-      <View
-        pointerEvents="none"
-        style={[styles.ring, { backgroundColor: ringed ? colors.primary : 'rgba(255,255,255,0.8)' }]}
-      >
-        <View style={styles.ringInner}>
+      {visibleAvatarFrame(FRAMED_AVATAR_SLOT, author.avatarFrameId) != null ? (
+        <View pointerEvents="none" style={styles.avatarSlot}>
           <AvatarWithFrame
             name={author.username}
             color={colorForName(author.username)}
             uri={author.avatar ?? undefined}
-            size={AVATAR_SIZE}
+            size={FRAMED_AVATAR_SLOT}
             frameId={author.avatarFrameId}
           />
         </View>
-      </View>
+      ) : (
+        <View
+          pointerEvents="none"
+          style={[styles.ring, { backgroundColor: ringed ? colors.primary : 'rgba(255,255,255,0.8)' }]}
+        >
+          <View style={styles.ringInner}>
+            <Avatar
+              name={author.username}
+              color={colorForName(author.username)}
+              uri={author.avatar ?? undefined}
+              size={AVATAR_SIZE}
+            />
+          </View>
+        </View>
+      )}
       {moment.type === MOMENT_TYPE.video && (
         <View pointerEvents="none" style={styles.videoBadge}>
           <MomentVideoIcon size={14} />

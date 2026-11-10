@@ -11,7 +11,7 @@ import {
 } from 'antd'
 import { useKenChestClaims } from './useKenChestQueries'
 import { useDebounce } from '@/hooks/useDebounce'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'
 import { UserCell } from '@/components/UserCell'
 import type { KenChest, KenChestClaim } from '@/types'
@@ -51,7 +51,7 @@ function DetailContent({ chest }: { chest: KenChest }) {
           <Tag color="default">Rỗng</Tag>
         ) : (
           <Typography.Text strong style={{ color: '#d48806' }}>
-            {claim.kenAmount.toLocaleString('vi-VN')} KEN
+            {formatCount(claim.kenAmount)} KEN
           </Typography.Text>
         ),
     },
@@ -80,7 +80,7 @@ function DetailContent({ chest }: { chest: KenChest }) {
           </Space>
         </Descriptions.Item>
         <Descriptions.Item label="Tổng KEN đã phát">
-          {chest.totalKenGiven.toLocaleString('vi-VN')}
+          {formatCount(chest.totalKenGiven)}
         </Descriptions.Item>
         <Descriptions.Item label="Thời hạn">{chest.durationSeconds}s</Descriptions.Item>
         <Descriptions.Item label="Tạo lúc">{formatDateTime(chest.createdAt)}</Descriptions.Item>

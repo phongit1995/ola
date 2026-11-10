@@ -105,7 +105,9 @@ export function PullToRefresh({
           'flex min-h-full flex-col',
           snapping && 'transition-transform duration-200'
         )}
-        style={{ transform: `translateY(${pull}px)` }}
+        style={
+          pull !== 0 ? { transform: `translateY(${pull}px)` } : undefined
+        }
         onTransitionEnd={() => setSnapping(false)}
       >
         {children}

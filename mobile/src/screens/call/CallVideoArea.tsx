@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Track } from 'livekit-client';
 import { isTrackReference, useTracks } from '@livekit/components-react';
 import { VideoTrack } from '@livekit/react-native';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName } from '@ola/shared/lib';
 import type { CallerBrief } from '@ola/shared/types';
 
@@ -52,11 +52,12 @@ export function CallVideoArea({
           style={{ flex: 1, alignSelf: 'stretch' }}
         />
       ) : (
-        <Avatar
+        <AvatarWithFrame
           name={peerName}
           uri={peer.avatar}
           size={112}
           color={colorForName(peerName)}
+          frameId={peer.avatarFrameId}
         />
       )}
 

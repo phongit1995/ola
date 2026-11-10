@@ -6,7 +6,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import type { AdminWheelSpin, WheelSegmentKind } from '@/types'
 import { OUTCOME_OPTIONS, WHEEL_KINDS } from './constants'
 import { kindMeta, rewardText } from './utils'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { PAGE_SIZE } from '@/lib/constants'
 
 interface WheelHistoryModalProps {
@@ -85,7 +85,7 @@ export function WheelHistoryModal({ open, onClose }: WheelHistoryModalProps) {
       width: 110,
       align: 'right',
       render: (value: number, spin) =>
-        spin.isFree ? <Tag color="blue">Miễn phí</Tag> : `${value.toLocaleString('vi-VN')} Ken`,
+        spin.isFree ? <Tag color="blue">Miễn phí</Tag> : `${formatCount(value)} Ken`,
     },
   ]
 

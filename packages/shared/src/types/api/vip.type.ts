@@ -56,6 +56,26 @@ export interface GiftVipPackageResult {
   vipEndTime: string;
 }
 
+export interface VipDayTransferConfig {
+  enabled: boolean;
+  rate: number;
+  minSenderDays: number;
+}
+
+export interface TransferVipDaysBody {
+  toUsername: string;
+  receiverDays: number;
+  senderDays: number;
+  password: string;
+}
+
+export interface TransferVipDaysResult {
+  receiverUsername: string;
+  senderDays: number;
+  receiverDays: number;
+  vipEndTime: string;
+}
+
 export interface GiftVipIconResult {
   receiverUsername: string;
   kenSpent: number;

@@ -12,9 +12,10 @@ import { RoomListScreen } from './screens/RoomListScreen';
 import { useTycoon } from './store/useTycoon';
 
 export function App() {
-  const { boardMode, roomsOpen, leaderboardOpen, historyOpen, rulesOpen, setupOpen, result, toast, notice, noticeId, init, dispose } = useTycoon(
+  const { boardMode, matchSeq, roomsOpen, leaderboardOpen, historyOpen, rulesOpen, setupOpen, result, toast, notice, noticeId, init, dispose } = useTycoon(
     useShallow((s) => ({
       boardMode: s.boardMode,
+      matchSeq: s.matchSeq,
       roomsOpen: s.roomsOpen,
       leaderboardOpen: s.leaderboardOpen,
       historyOpen: s.historyOpen,
@@ -36,7 +37,7 @@ export function App() {
 
   return (
     <div className={roomsOpen && boardMode !== 'playing' ? 'ty-app ty-app-rooms' : 'ty-app'}>
-      {boardMode === 'playing' ? <BoardScreen /> : roomsOpen ? <RoomListScreen /> : leaderboardOpen ? <LeaderboardScreen /> : historyOpen ? <HistoryScreen /> : <LobbyScreen />}
+      {boardMode === 'playing' ? <BoardScreen key={matchSeq} /> : roomsOpen ? <RoomListScreen /> : leaderboardOpen ? <LeaderboardScreen /> : historyOpen ? <HistoryScreen /> : <LobbyScreen />}
       {setupOpen ? <BotSetupModal /> : null}
       {rulesOpen ? <RulesModal /> : null}
       {result ? <ResultScreen /> : null}

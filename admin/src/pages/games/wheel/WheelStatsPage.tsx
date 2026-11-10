@@ -210,8 +210,8 @@ export function WheelStatsPage() {
   const wheelColumns: ColumnsType<WheelStatsWheel> = [
     { title: 'Vòng quay', dataIndex: 'wheelName' },
     { title: 'Lượt', dataIndex: 'spins', align: 'right' },
-    { title: 'Ken thu', dataIndex: 'kenIn', align: 'right', render: (v: number) => v.toLocaleString('vi-VN') },
-    { title: 'Ken trả', dataIndex: 'kenOut', align: 'right', render: (v: number) => v.toLocaleString('vi-VN') },
+    { title: 'Ken thu', dataIndex: 'kenIn', align: 'right', render: (v: number) => formatCount(v) },
+    { title: 'Ken trả', dataIndex: 'kenOut', align: 'right', render: (v: number) => formatCount(v) },
     {
       title: 'RTP',
       dataIndex: 'rtp',

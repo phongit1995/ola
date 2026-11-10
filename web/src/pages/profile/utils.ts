@@ -56,6 +56,7 @@ export function mapFollowing(users: FollowUser[]): ProfileFriend[] {
     name: user.username,
     fullName: user.fullName,
     avatar: user.avatar,
+    avatarFrameId: user.avatarFrameId,
     color: colorForName(user.username),
   }));
 }

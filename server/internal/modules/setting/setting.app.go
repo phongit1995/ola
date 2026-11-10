@@ -23,6 +23,7 @@ const (
 	AppConfigKeyGift           = "gift"
 	AppConfigKeyMegaphone      = "megaphone"
 	AppConfigKeyGiftCode       = "giftCode"
+	AppConfigKeyVipDayTransfer = "vipDayTransfer"
 )
 
 type appConfigSource struct {
@@ -41,6 +42,7 @@ func (ctrl *Controller) appConfigSources() []appConfigSource {
 		{AppConfigKeyGift, func(client Client) (interface{}, error) { return ctrl.giftConfigFor(client) }},
 		{AppConfigKeyMegaphone, func(client Client) (interface{}, error) { return ctrl.megaphoneConfigFor(client) }},
 		{AppConfigKeyGiftCode, func(client Client) (interface{}, error) { return ctrl.giftCodeConfigFor(client) }},
+		{AppConfigKeyVipDayTransfer, func(client Client) (interface{}, error) { return ctrl.vipDayTransferConfigFor(client) }},
 	}
 }
 

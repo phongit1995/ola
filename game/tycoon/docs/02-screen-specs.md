@@ -275,7 +275,7 @@ Width 360: bàn 336, pod 4 × 79. Width ≥ 480: bàn 456–480, pod đủ rộn
   3. **giá** sát mép dưới ô (`220 tr`); ô Thuế hiện `−10%` màu coral; ô Cơ hội/Khí vận không có dòng giá.
 - **Dải màu nhóm** luôn nằm ở mép **phía trong** bàn: hàng trên → dải ở đáy ô; hàng dưới → dải ở đỉnh ô; cột trái → dải ở mép phải ô; cột phải → dải ở mép trái ô. Cấp nhà (1–2 nhà hoặc khách sạn) đặt trên dải. Ô không phải đất không có dải.
 - Ô có chủ: nền nhạt màu ghế + vạch 3 px màu ghế ở mép **ngoài**, để không lẫn với dải nhóm ở mép trong. Dòng giá đổi thành viên tiền thuê hiện tại (nền paper sáng, viền màu chủ).
-- Quân: con tốt màu ghế (03 §3). Đế quân đứng trên mép **trong** của ô; thân nhô vào vùng trong bàn, không che tên/giá. Ô 8: quân trong tù đứng trong tranh phòng giam, quân thăm tù đứng dải `Thăm tù`.
+- Quân: con tốt màu ghế (03 §3), viền trắng, đứng **giữa ô** và đè lên tranh ô. Nhiều quân cùng ô thì xếp chồng lệch nhẹ, người đang tới lượt nằm trên cùng (`helpers/pawnLayout.ts`).
 - Tap ô bất kỳ (kể cả ô góc, ô đặc biệt) → S7. Vùng chạm mở rộng 4 px mỗi phía.
 
 ### 6.3 Vùng trong bàn — chồng thẻ và cụm lượt

@@ -33,5 +33,6 @@ export const STEP_KINDS = [
   "clear",
   "finish",
   "instant",
+  "cong",
 ] as const;
 export type StepKind = (typeof STEP_KINDS)[number];

@@ -20,11 +20,11 @@ import {
 import {
   ScreenHeader,
   FullScreenOverlay,
-  Avatar,
   Spinner,
   ConfirmDialog,
   UserName,
 } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { APP_NOTIFICATION_TYPE, isSystemNotice } from '@constants';
 import { MarriageService, RelationshipService } from '@services';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
@@ -263,10 +263,11 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                     {system ? (
                       <SystemAvatar />
                     ) : (
-                      <Avatar
+                      <AvatarWithFrame
                         name={name}
                         src={item.actor?.avatar}
                         color={colorForName(name)}
+                        frameId={item.actor?.avatarFrameId}
                       />
                     )}
                     <div className="ml-4 min-w-0 flex-1">

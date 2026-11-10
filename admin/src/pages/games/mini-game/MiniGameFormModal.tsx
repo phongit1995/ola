@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { App, Button, Form, Image, Input, Modal, Space, Switch, Upload } from 'antd'
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { useCreateMiniGame, useUpdateMiniGame } from './useMiniGameQueries'
 import { PositionField } from '@/components/PositionField'
-import { AdminUploadService } from '@/services/adminUpload.service'
+import { useImageUpload } from '@/hooks/useImageUpload'
+import { toUpdateMiniGameRequest } from './utils'
 import { errorMessage } from '@/lib/apiError'
 import type { CreateMiniGameRequest, MiniGame } from '@/types'
 
@@ -19,7 +20,7 @@ export function MiniGameFormModal({ open, game, nextPosition, onClose }: MiniGam
   const [form] = Form.useForm<CreateMiniGameRequest>()
   const createGame = useCreateMiniGame()
   const updateGame = useUpdateMiniGame()
-  const [uploading, setUploading] = useState(false)
+  const imageUpload = useImageUpload()
   const isEdit = game != null
   const iconUrl = Form.useWatch('iconUrl', form)
 
@@ -38,15 +39,12 @@ export function MiniGameFormModal({ open, game, nextPosition, onClose }: MiniGam
   }, [open, game, nextPosition, form])
 
   async function handleUpload(file: File) {
-    setUploading(true)
     try {
-      const url = await AdminUploadService.image(file)
+      const url = await imageUpload.mutateAsync(file)
       form.setFieldValue('iconUrl', url)
       message.success('Đã tải icon lên')
     } catch (err) {
       message.error(errorMessage(err, 'Tải icon thất bại'))
-    } finally {
-      setUploading(false)
     }
   }
 
@@ -54,8 +52,7 @@ export function MiniGameFormModal({ open, game, nextPosition, onClose }: MiniGam
     const values = await form.validateFields()
     try {
       if (isEdit && game) {
-        const { slug: _slug, ...payload } = values
-        await updateGame.mutateAsync({ id: game.id, payload })
+        await updateGame.mutateAsync({ id: game.id, payload: toUpdateMiniGameRequest(values) })
         message.success('Đã cập nhật mini game')
       } else {
         await createGame.mutateAsync(values)
@@ -134,7 +131,7 @@ export function MiniGameFormModal({ open, game, nextPosition, onClose }: MiniGam
                   return false
                 }}
               >
-                <Button icon={<UploadOutlined />} loading={uploading}>
+                <Button icon={<UploadOutlined />} loading={imageUpload.isPending}>
                   {iconUrl ? 'Đổi icon' : 'Tải icon lên'}
                 </Button>
               </Upload>
