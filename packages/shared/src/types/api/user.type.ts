@@ -88,6 +88,7 @@ export interface FollowUser {
   fullName?: string;
   avatar?: string;
   bio?: string;
+  avatarFrameId?: string | null;
   isOnline: boolean;
   lastActiveAt?: string;
 }

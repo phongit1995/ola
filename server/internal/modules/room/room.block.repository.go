@@ -2,6 +2,7 @@ package room
 
 import (
 	"ola-chat-server/internal/models"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -17,16 +18,18 @@ func NewBlockRepository(db *gorm.DB) *BlockRepository {
 }
 
 type BlockedUserRow struct {
-	UserID   uuid.UUID
-	Username string
-	FullName string
-	Avatar   string
+	UserID        uuid.UUID
+	Username      string
+	FullName      string
+	Avatar        string
+	AvatarFrameID *string
+	VipEndTime    *time.Time
 }
 
 func (r *BlockRepository) ListBlocked(userID uuid.UUID) ([]BlockedUserRow, error) {
 	rows := make([]BlockedUserRow, 0)
 	err := r.db.Table("room_user_blocks AS b").
-		Select("b.blocked_user_id AS user_id, u.username, u.full_name, u.avatar").
+		Select("b.blocked_user_id AS user_id, u.username, u.full_name, u.avatar, u.avatar_frame_id, u.vip_end_time").
 		Joins("LEFT JOIN users u ON u.id = b.blocked_user_id").
 		Where("b.user_id = ?", userID).
 		Order("b.created_at ASC").

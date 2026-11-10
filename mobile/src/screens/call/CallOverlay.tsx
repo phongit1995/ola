@@ -15,7 +15,7 @@ import {
   useTracks,
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import {
   callPeerNameView,
   colorForName,
@@ -113,11 +113,12 @@ function CallLayout({
     <View className="flex-1" style={{ backgroundColor: CALL_BG }}>
       {videoArea ?? (
         <View className="absolute inset-0 items-center justify-center">
-          <Avatar
+          <AvatarWithFrame
             name={peerName}
             uri={peer.avatar}
             size={112}
             color={colorForName(peerName)}
+            frameId={peer.avatarFrameId}
           />
         </View>
       )}
@@ -192,11 +193,12 @@ function PipCallLayer({
           style={{ flex: 1, alignSelf: 'stretch' }}
         />
       ) : (
-        <Avatar
+        <AvatarWithFrame
           name={peerName}
           uri={peer.avatar}
           size={64}
           color={colorForName(peerName)}
+          frameId={peer.avatarFrameId}
         />
       )}
     </View>

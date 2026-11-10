@@ -16,6 +16,7 @@ export interface ProfileFriend {
   name: string;
   fullName?: string;
   avatar?: string;
+  avatarFrameId?: string | null;
   color: string;
 }
 

@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Spinner } from '@components';
+import { Spinner } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName } from '@lib';
 
 export function WordChainUserRow({
   name,
   avatar,
+  frameId,
   highlighted,
   leading,
   trailing,
@@ -13,6 +15,7 @@ export function WordChainUserRow({
 }: {
   name: string;
   avatar?: string;
+  frameId?: string | null;
   highlighted: boolean;
   leading?: ReactNode;
   trailing: ReactNode;
@@ -25,7 +28,13 @@ export function WordChainUserRow({
       }`}
     >
       {leading}
-      <Avatar name={name} color={colorForName(name)} src={avatar} size={36} />
+      <AvatarWithFrame
+        name={name}
+        color={colorForName(name)}
+        src={avatar}
+        size={36}
+        frameId={frameId}
+      />
       <span className="flex min-w-0 flex-1 flex-col">{children}</span>
       {trailing}
     </li>

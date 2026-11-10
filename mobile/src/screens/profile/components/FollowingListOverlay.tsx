@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UserService } from '@ola/shared/services';
 import type { FollowUser } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { FOLLOW_PAGE_SIZE } from '../constants';
@@ -121,11 +121,12 @@ function FollowingListBody({
                 borderBottomColor: 'rgba(0,0,0,0.08)',
               }}
             >
-              <Avatar
+              <AvatarWithFrame
                 name={item.username}
                 uri={item.avatar ?? undefined}
                 size={40}
                 rounded={false}
+                frameId={item.avatarFrameId}
               />
               <UserName
                 name={`@${item.username}`}

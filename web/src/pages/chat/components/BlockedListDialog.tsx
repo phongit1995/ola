@@ -77,6 +77,7 @@ export function BlockedListDialog({ open, onClose }: BlockedListDialogProps) {
               name={name}
               color={colorForName(name)}
               avatar={relationship.addressee?.avatar}
+              frameId={relationship.addressee?.avatarFrameId}
               layout="inline"
               trailing={
                 <ActionButton

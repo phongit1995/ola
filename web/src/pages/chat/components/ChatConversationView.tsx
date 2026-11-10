@@ -1058,6 +1058,7 @@ export function ChatConversationView({
             name,
             username,
             avatar: peerProfile?.avatar ?? avatar,
+            avatarFrameId: peerFrameId,
             color,
           }}
         />

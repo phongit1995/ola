@@ -6,7 +6,7 @@ import {
   isTrackReference,
   useTracks,
 } from '@livekit/components-react';
-import { Avatar } from '@components';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName } from '@lib';
 import type { CallerBrief } from '@app-types';
 import { useCallStore } from '@/store/callStore';
@@ -72,11 +72,12 @@ export function CallVideoArea({
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
-        <Avatar
+        <AvatarWithFrame
           name={peerName}
           color={colorForName(peerName)}
           src={peer.avatar}
           size={112}
+          frameId={peer.avatarFrameId}
         />
       )}
 

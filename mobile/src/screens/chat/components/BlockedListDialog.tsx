@@ -5,7 +5,7 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { RelationshipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { Relationship } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { UserListDialog } from '@components/ui/UserListDialog';
 import { BLOCKED_PAGE_SIZE } from '../constants';
 
@@ -70,7 +70,7 @@ export function BlockedListDialog({ onClose }: { onClose: () => void }) {
         const name = blockedName(item);
         return (
           <View key={item.id} className="flex-row items-center gap-3 py-2">
-            <Avatar name={name} uri={item.addressee?.avatar ?? undefined} size={40} />
+            <AvatarWithFrame name={name} uri={item.addressee?.avatar ?? undefined} size={40} frameId={item.addressee?.avatarFrameId} />
             <Text
               numberOfLines={1}
               className="min-w-0 flex-1 text-base text-ola-ink"

@@ -242,6 +242,7 @@ export function ProfilePage({
             name: profile.nick,
             username: profile.username,
             avatar: profile.avatar,
+            avatarFrameId: profile.avatarFrameId,
             color: profile.color,
           }}
           onSent={(result) => {

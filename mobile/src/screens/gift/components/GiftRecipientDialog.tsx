@@ -30,6 +30,7 @@ export function GiftRecipientDialog({ visible, onClose, onDismiss, onPick }: Gif
       name: user.fullName || user.username,
       username: user.username,
       avatar: user.avatar,
+      avatarFrameId: user.avatarFrameId,
       color: colorForName(user.username),
     });
   }

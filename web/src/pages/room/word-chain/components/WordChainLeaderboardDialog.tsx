@@ -53,6 +53,7 @@ function LeaderboardRow({
     <WordChainUserRow
       name={entry.username}
       avatar={entry.avatar}
+      frameId={entry.avatarFrameId}
       highlighted={highlighted}
       leading={<RankBadge rank={entry.rank} />}
       trailing={

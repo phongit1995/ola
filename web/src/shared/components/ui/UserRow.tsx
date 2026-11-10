@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Avatar } from './Avatar';
+import { AvatarWithFrame } from './AvatarWithFrame';
 import { PresenceBadge } from './PresenceBadge';
 import { UserName } from './UserName';
 
@@ -8,6 +8,7 @@ interface UserRowProps {
   username?: string;
   fullName?: string;
   avatar?: string;
+  frameId?: string | null;
   color: string;
   online?: boolean;
   deviceIcon?: string;
@@ -22,6 +23,7 @@ export function UserRow({
   username,
   fullName,
   avatar,
+  frameId,
   color,
   online = false,
   deviceIcon,
@@ -33,12 +35,13 @@ export function UserRow({
   const content = (
     <>
       <span className="relative shrink-0">
-        <Avatar
+        <AvatarWithFrame
           name={name}
           color={color}
           src={avatar}
           size={40}
           rounded={rounded}
+          frameId={frameId}
         />
         {online && (
           <PresenceBadge

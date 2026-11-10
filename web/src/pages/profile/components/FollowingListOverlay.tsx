@@ -103,6 +103,7 @@ export function FollowingListOverlay({
                 name={`@${friend.name}`}
                 fullName={friend.fullName}
                 avatar={friend.avatar}
+                frameId={friend.avatarFrameId}
                 color={friend.color}
                 layout="inline"
                 rounded={false}

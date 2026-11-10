@@ -85,6 +85,7 @@ export function RoomBlockedListDialog({
               name={name}
               color={colorForName(name)}
               avatar={user.avatar}
+              frameId={user.avatarFrameId}
               layout="inline"
               trailing={
                 <ActionButton

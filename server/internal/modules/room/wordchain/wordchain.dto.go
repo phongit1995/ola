@@ -106,13 +106,14 @@ type HintResponse struct {
 }
 
 type LeaderboardEntry struct {
-	Rank     int    `json:"rank"`
-	UserID   string `json:"userId"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-	Points   int64  `json:"points"`
-	Wins     int64  `json:"wins"`
+	Rank          int     `json:"rank"`
+	UserID        string  `json:"userId"`
+	Username      string  `json:"username"`
+	FullName      string  `json:"fullName,omitempty"`
+	Avatar        string  `json:"avatar,omitempty"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty"`
+	Points        int64   `json:"points"`
+	Wins          int64   `json:"wins"`
 }
 
 type LeaderboardResponse struct {
@@ -124,14 +125,15 @@ type LeaderboardResponse struct {
 }
 
 type WinEntry struct {
-	ID           string `json:"id"`
-	UserID       string `json:"userId"`
-	Username     string `json:"username"`
-	FullName     string `json:"fullName,omitempty"`
-	Avatar       string `json:"avatar,omitempty"`
-	Word         string `json:"word"`
-	PreviousWord string `json:"previousWord"`
-	CreatedAt    string `json:"createdAt"`
+	ID            string  `json:"id"`
+	UserID        string  `json:"userId"`
+	Username      string  `json:"username"`
+	FullName      string  `json:"fullName,omitempty"`
+	Avatar        string  `json:"avatar,omitempty"`
+	AvatarFrameID *string `json:"avatarFrameId,omitempty"`
+	Word          string  `json:"word"`
+	PreviousWord  string  `json:"previousWord"`
+	CreatedAt     string  `json:"createdAt"`
 }
 
 type WinListResponse struct {

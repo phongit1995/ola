@@ -537,6 +537,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     name: title,
     username: conversation?.otherUser?.username ?? peerProfile?.username,
     avatar: peerProfile?.avatar ?? peerAvatar,
+    avatarFrameId: peerAvatarFrameId,
   };
 
   const renderPeerCard = () => (

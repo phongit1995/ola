@@ -29,6 +29,7 @@ export function ChatCallButtons() {
           username: otherUser.username,
           fullName: otherUser.fullName,
           avatar: otherUser.avatar,
+          avatarFrameId: otherUser.avatarFrameId,
         }
       : draftRecipient != null
         ? {

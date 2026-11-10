@@ -26,7 +26,7 @@ import {
   CALL_MINI_WIDTH,
 } from '@ola/shared/constants';
 import { colorForName } from '@ola/shared/lib';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { useCallStore } from '@store/callStore';
 import { CALL_BG } from './constants';
 import { EndCallIcon, ExpandIcon, MicIcon, MicOffIcon } from './icons';
@@ -55,6 +55,7 @@ export function CallMiniWidget({
   const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const peerAvatar = useCallStore(s => s.active?.peer.avatar);
+  const peerAvatarFrameId = useCallStore(s => s.active?.peer.avatarFrameId);
   const miniPos = useCallStore(s => s.miniPos);
   const setMiniPos = useCallStore(s => s.setMiniPos);
   const setExpanded = useCallStore(s => s.setExpanded);
@@ -152,11 +153,12 @@ export function CallMiniWidget({
           <View style={styles.scrim} pointerEvents="box-none">
             <View style={styles.headerRow} pointerEvents="none">
               {!showVideo && (
-                <Avatar
+                <AvatarWithFrame
                   name={peerName}
                   uri={peerAvatar}
                   size={32}
                   color={colorForName(peerName)}
+                  frameId={peerAvatarFrameId}
                 />
               )}
               <View style={styles.headerText}>

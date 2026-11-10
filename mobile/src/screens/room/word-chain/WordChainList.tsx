@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { useThemeColors } from '@hooks/useThemeColors';
 
 export const WORD_CHAIN_ROW_DIVIDER = 'rgba(0,0,0,0.06)';
@@ -9,6 +9,7 @@ export const WORD_CHAIN_ROW_DIVIDER = 'rgba(0,0,0,0.06)';
 export function WordChainUserRow({
   name,
   avatar,
+  frameId,
   highlighted,
   divider = true,
   leading,
@@ -17,6 +18,7 @@ export function WordChainUserRow({
 }: {
   name: string;
   avatar?: string;
+  frameId?: string | null;
   highlighted: boolean;
   divider?: boolean;
   leading?: ReactNode;
@@ -34,7 +36,7 @@ export function WordChainUserRow({
       }}
     >
       {leading}
-      <Avatar name={name} uri={avatar} size={36} />
+      <AvatarWithFrame name={name} uri={avatar} size={36} frameId={frameId} />
       <View className="min-w-0 flex-1">{children}</View>
       {trailing}
     </View>

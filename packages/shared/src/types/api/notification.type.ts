@@ -14,6 +14,7 @@ export interface AppNotificationActor {
   username: string;
   fullName?: string;
   avatar?: string;
+  avatarFrameId?: string | null;
 }
 
 export interface AppNotification {

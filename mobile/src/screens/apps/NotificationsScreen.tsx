@@ -19,7 +19,7 @@ import {
   transferNotificationContent,
 } from '@ola/shared/lib';
 import type { AppNotification } from '@ola/shared/types';
-import { Avatar } from '@components/ui/Avatar';
+import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { VipIcon } from '@components/ui/VipIcon';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
@@ -212,7 +212,12 @@ export function NotificationsScreen() {
                 {system ? (
                   <SystemAvatar />
                 ) : (
-                  <Avatar name={name} uri={item.actor?.avatar ?? undefined} size={40} />
+                  <AvatarWithFrame
+                    name={name}
+                    uri={item.actor?.avatar ?? undefined}
+                    size={40}
+                    frameId={item.actor?.avatarFrameId}
+                  />
                 )}
                 <View className="ml-4 min-w-0 flex-1">
                   <View className="flex-row items-center gap-2">

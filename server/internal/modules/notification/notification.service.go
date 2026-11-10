@@ -197,10 +197,11 @@ func toAppNotificationResponse(n *models.AppNotification) AppNotificationRespons
 	}
 	if n.Actor != nil {
 		resp.Actor = &ActorResponse{
-			ID:       n.Actor.ID.String(),
-			Username: n.Actor.Username,
-			FullName: n.Actor.FullName,
-			Avatar:   n.Actor.Avatar,
+			ID:            n.Actor.ID.String(),
+			Username:      n.Actor.Username,
+			FullName:      n.Actor.FullName,
+			Avatar:        n.Actor.Avatar,
+			AvatarFrameID: n.Actor.ActiveAvatarFrameID(time.Now()),
 		}
 	}
 	return resp
