@@ -76,3 +76,5 @@ export const EVENT_LABEL: Record<string, string> = {
   app_review_prompt: 'Hiện lời mời đánh giá',
   app_review_manual: 'Bấm đánh giá app',
 }
+
+export const ANALYTICS_REALTIME_TITLE = 'Đang hoạt động trong 30 phút qua'

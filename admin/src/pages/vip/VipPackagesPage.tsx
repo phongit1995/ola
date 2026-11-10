@@ -24,6 +24,7 @@ import { VipPackageFormModal } from './VipPackageFormModal'
 import type { VipPackage } from '@/types'
 import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
 import { VIP_SECTION_LINKS } from '@/pages/shop/sections'
+import { formatCount } from '@/lib/format'
 
 export function VipPackagesPage() {
   const { message, modal } = App.useApp()
@@ -106,7 +107,7 @@ export function VipPackagesPage() {
       title: 'Giá (KEN)',
       dataIndex: 'kenPrice',
       width: 130,
-      render: (v: number) => v.toLocaleString('vi-VN'),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Thứ tự',

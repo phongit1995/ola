@@ -19,14 +19,8 @@ import {
   GIFT_STARS,
   type GiftEffect,
 } from '@ola/shared/lib/giftAnimationVariants'
-import type { GiftAnimationKey } from '@ola/shared/types'
 import { GIFT_ANIMATION_LABEL } from './constants'
-
-export interface GiftPreview {
-  imageUrl: string
-  name: string
-  animation: GiftAnimationKey
-}
+import type { GiftPreview } from './types'
 
 const PREVIEW_Z_INDEX = 2000
 const GIFT_IMAGE_SIZE = 'min(62vw, 240px)'

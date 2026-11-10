@@ -9,12 +9,11 @@ import {
   DISCORD_WEBHOOK_PLACEHOLDER,
   REPORT_ALERT_CHANNEL_LABEL,
   REPORT_ALERT_KEY,
+  REPORT_ALERT_SETTINGS_TITLE,
   TELEGRAM_CHAT_ID_PLACEHOLDER,
   TELEGRAM_GET_UPDATES_URL,
   TELEGRAM_TOKEN_PLACEHOLDER,
 } from './constants'
-
-const MODAL_TITLE = 'Thông báo báo cáo vi phạm'
 
 interface ReportAlertSettingsModalProps {
   onClose: () => void
@@ -24,11 +23,11 @@ export function ReportAlertSettingsModal({ onClose }: ReportAlertSettingsModalPr
   const { data: settings, isLoading, isError, refetch, isRefetching } = useAppSettings()
 
   if (isLoading) {
-    return <Modal open loading title={MODAL_TITLE} onCancel={onClose} footer={null} />
+    return <Modal open loading title={REPORT_ALERT_SETTINGS_TITLE} onCancel={onClose} footer={null} />
   }
   if (isError || settings == null) {
     return (
-      <Modal open title={MODAL_TITLE} onCancel={onClose} footer={null}>
+      <Modal open title={REPORT_ALERT_SETTINGS_TITLE} onCancel={onClose} footer={null}>
         <Alert
           type="error"
           showIcon
@@ -142,7 +141,7 @@ function ReportAlertSettingsForm({ setting, onClose }: ReportAlertSettingsFormPr
   )
 
   return (
-    <Modal open title={MODAL_TITLE} onCancel={onClose} footer={footer} width={640} destroyOnHidden>
+    <Modal open title={REPORT_ALERT_SETTINGS_TITLE} onCancel={onClose} footer={footer} width={640} destroyOnHidden>
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Alert
           type="info"

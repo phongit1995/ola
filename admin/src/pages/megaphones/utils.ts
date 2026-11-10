@@ -25,3 +25,7 @@ export function parseBannedWords(text: string): string[] {
   }
   return words
 }
+
+export function megaphoneTiersAreValid(tiers: MegaphoneSetting['giftTiers']) {
+  return tiers[0]?.minKen === 0 && tiers.every((tier, index) => index === 0 || tier.minKen > tiers[index - 1].minKen)
+}

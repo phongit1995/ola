@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { App, Button, Form, Image, Input, InputNumber, Modal, Select, Space, Switch, Upload } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import { useCreateGift, useUpdateGift } from './useGiftQueries'
 import { PositionField } from '@/components/PositionField'
 import { GIFT_ANIMATION_OPTIONS, GIFT_KEN_PRICE_MAX, GIFT_SENDER_CHARM_PERCENT_DEFAULT } from './constants'
 import { GIFT_ANIMATION_RANDOM } from '@ola/shared/constants'
-import { AdminUploadService } from '@/services/adminUpload.service'
+import { useImageUpload } from '@/hooks/useImageUpload'
 import { errorMessage } from '@/lib/apiError'
 import { kenNumberInputProps } from '@/lib/format'
 import type { AdminGift, CreateGiftRequest } from '@/types'
@@ -26,7 +26,7 @@ export function GiftFormModal({ open, gift, nextPosition, onClose }: GiftFormMod
   const [form] = Form.useForm<GiftFormValues>()
   const createGift = useCreateGift()
   const updateGift = useUpdateGift()
-  const [uploading, setUploading] = useState(false)
+  const imageUpload = useImageUpload()
   const isEdit = gift != null
   const imageUrl = Form.useWatch('imageUrl', form)
   const kenPrice = Form.useWatch('kenPrice', form)
@@ -49,16 +49,13 @@ export function GiftFormModal({ open, gift, nextPosition, onClose }: GiftFormMod
   }, [open, gift, nextPosition, form])
 
   async function handleUpload(file: File) {
-    setUploading(true)
     try {
-      const url = await AdminUploadService.image(file)
+      const url = await imageUpload.mutateAsync(file)
       form.setFieldValue('imageUrl', url)
       void form.validateFields(['imageUrl'])
       message.success('Đã tải ảnh quà lên')
     } catch (err) {
       message.error(errorMessage(err, 'Tải ảnh thất bại'))
-    } finally {
-      setUploading(false)
     }
   }
 
@@ -108,7 +105,7 @@ export function GiftFormModal({ open, gift, nextPosition, onClose }: GiftFormMod
                 return false
               }}
             >
-              <Button icon={<UploadOutlined />} loading={uploading}>
+              <Button icon={<UploadOutlined />} loading={imageUpload.isPending}>
                 {imageUrl ? 'Đổi ảnh' : 'Tải ảnh lên'}
               </Button>
             </Upload>

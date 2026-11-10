@@ -7,22 +7,21 @@ import { formatCount, formatDateTime } from '@/lib/format'
 import type { AnalyticsNamedRow, AnalyticsRealtime } from '@/types'
 import { countryColumns, realtimeEventColumns } from './columns'
 import {
+  ANALYTICS_REALTIME_TITLE,
   REALTIME_EVENT_ROWS,
   REALTIME_EVENTS_TRUNCATED_HINT,
   REALTIME_METRIC_META,
   REALTIME_METRIC_OPTIONS,
-  SOURCE_LABEL,
   type RealtimeMetric,
+  SOURCE_LABEL,
 } from './constants'
 import { formatMinutesAgo, minutesAgoLabel, platformColor, platformLabel } from './utils'
-
-const REALTIME_TITLE = 'Đang hoạt động trong 30 phút qua'
 
 function RealtimeTitle({ complete }: { complete: boolean }) {
   return (
     <Space size={8}>
       {complete ? <Badge status="processing" color="#52c41a" /> : <Badge status="warning" />}
-      {REALTIME_TITLE}
+      {ANALYTICS_REALTIME_TITLE}
     </Space>
   )
 }
@@ -37,7 +36,7 @@ export function AnalyticsRealtimeCard({ realtime }: AnalyticsRealtimeCardProps) 
 
   if (!data) {
     return (
-      <Card title={REALTIME_TITLE}>
+      <Card title={ANALYTICS_REALTIME_TITLE}>
         {realtime.isError ? (
           <Alert type="error" showIcon title={errorMessage(realtime.error, 'Không gọi được server')} />
         ) : (

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Avatar, Modal, Table, type TableColumnsType } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
 import { useKenTransactions } from '@/hooks/useKenQueries'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { kenTypeLabel } from './utils'
 import type { KenTransaction } from '@/types'
 import { MODAL_PAGE_SIZE } from './constants'
@@ -41,7 +41,7 @@ export function KenHistoryModal({ open, userId, username, onClose }: KenHistoryM
       render: (amount: number, r) => (
         <span style={{ color: r.direction === 'credit' ? '#389e0d' : '#cf1322', fontWeight: 600 }}>
           {r.direction === 'credit' ? '+' : '−'}
-          {amount.toLocaleString('vi-VN')}
+          {formatCount(amount)}
         </span>
       ),
     },
@@ -50,7 +50,7 @@ export function KenHistoryModal({ open, userId, username, onClose }: KenHistoryM
       dataIndex: 'balanceAfter',
       width: 110,
       align: 'right',
-      render: (v: number) => v.toLocaleString('vi-VN'),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Đối tác',

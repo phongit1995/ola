@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { App, Divider, Input, InputNumber, Modal, Switch, Typography } from 'antd'
 import { useCreateWheel, useSaveWheelConfig, useUpdateWheel } from './useWheelQueries'
 import { errorMessage } from '@/lib/apiError'
@@ -26,15 +26,19 @@ export function WheelEditorModal({ open, wheel, nextSortOrder, onClose }: WheelE
   const [isEnabled, setIsEnabled] = useState(true)
   const [segments, setSegments] = useState<WheelSegment[]>([])
 
-  useEffect(() => {
-    if (!open) return
-    const loaded = loadWheel(wheel)
-    setName(loaded.name)
-    setKenCost(loaded.kenCost)
-    setFreeDailyEnabled(loaded.freeDailyEnabled)
-    setIsEnabled(loaded.isEnabled)
-    setSegments(loaded.segments)
-  }, [open, wheel])
+  const loadKey = open ? (wheel?.id ?? 'new') : null
+  const [loadedKey, setLoadedKey] = useState<string | null>(null)
+  if (loadKey !== loadedKey) {
+    setLoadedKey(loadKey)
+    if (loadKey != null) {
+      const loaded = loadWheel(wheel)
+      setName(loaded.name)
+      setKenCost(loaded.kenCost)
+      setFreeDailyEnabled(loaded.freeDailyEnabled)
+      setIsEnabled(loaded.isEnabled)
+      setSegments(loaded.segments)
+    }
+  }
 
   const saving = createWheel.isPending || updateWheel.isPending || saveConfig.isPending
 

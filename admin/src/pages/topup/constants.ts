@@ -1,4 +1,5 @@
 import type { TopupBankSetting, TopupBonusTierSetting, TopupSetting, TopupTxStatus } from '@/types'
+import type { TopupSettingsField, TopupTab } from './types'
 
 export const BONUS_PERCENT_MAX = 500
 
@@ -39,3 +40,21 @@ export const CREDITABLE_STATUSES: TopupTxStatus[] = [
   'SKIPPED_DISABLED',
   'FAILED',
 ]
+
+export const TOPUP_SETTINGS_TAB_ORDER: TopupTab[] = ['display', 'bank', 'amounts', 'integrations']
+
+export const TOPUP_SETTINGS_TAB_FIELDS: Record<TopupTab, TopupSettingsField[]> = {
+  display: ['enabled', 'platforms'],
+  bank: ['bankBin', 'accountNumber', 'accountName', 'memoTemplate'],
+  amounts: ['minAmount', 'stepAmount', 'presetAmounts', 'bonusTiers'],
+  integrations: ['sieuthicodeSecret', 'discordWebhookUrl'],
+}
+
+export const TOPUP_SETTINGS_TAB_LABEL: Record<TopupTab, string> = {
+  display: 'Hiển thị',
+  bank: 'Tài khoản nhận tiền',
+  amounts: 'Mệnh giá & thưởng',
+  integrations: 'Tích hợp',
+}
+
+export const TOPUP_MEMO_PREVIEW_USERNAME = 'minhanh'

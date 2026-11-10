@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Image, Modal, Space, Table, Tag, Typography, type TableColumnsType } from 'antd'
 import { useUserPosts } from '@/hooks/useMeQueries'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { VISIBILITY } from '../me/constants'
 import { MeDetailModal } from '../me/MeDetailModal'
 import type { MeListItem } from '@/types'
@@ -85,7 +85,7 @@ export function UserMeModal({ open, userId, username, onClose }: UserMeModalProp
       dataIndex: 'commentCount',
       width: 90,
       align: 'right',
-      render: (v: number) => (v ?? 0).toLocaleString('vi-VN'),
+      render: (v: number) => formatCount(v ?? 0),
     },
     {
       title: 'Ngày tạo',

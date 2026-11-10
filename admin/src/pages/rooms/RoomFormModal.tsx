@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Switch, Upload } from 'antd'
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { useCreateRoom, useUpdateRoom } from './useRoomQueries'
 import { PositionField } from '@/components/PositionField'
-import { AdminUploadService } from '@/services/adminUpload.service'
+import { useImageUpload } from '@/hooks/useImageUpload'
 import { errorMessage } from '@/lib/apiError'
 import type { CreateRoomRequest, Room } from '@/types'
 
@@ -19,7 +19,7 @@ export function RoomFormModal({ open, room, nextPosition, onClose }: RoomFormMod
   const [form] = Form.useForm<CreateRoomRequest>()
   const createRoom = useCreateRoom()
   const updateRoom = useUpdateRoom()
-  const [uploading, setUploading] = useState(false)
+  const imageUpload = useImageUpload()
   const isEdit = room != null
   const imageUrl = Form.useWatch('imageUrl', form)
   const vipRequired = Form.useWatch('vipRequired', form)
@@ -39,15 +39,12 @@ export function RoomFormModal({ open, room, nextPosition, onClose }: RoomFormMod
   }, [open, room, nextPosition, form])
 
   async function handleUpload(file: File) {
-    setUploading(true)
     try {
-      const url = await AdminUploadService.image(file)
+      const url = await imageUpload.mutateAsync(file)
       form.setFieldValue('imageUrl', url)
       message.success('Đã tải ảnh lên')
     } catch (err) {
       message.error(errorMessage(err, 'Tải ảnh thất bại'))
-    } finally {
-      setUploading(false)
     }
   }
 
@@ -117,7 +114,7 @@ export function RoomFormModal({ open, room, nextPosition, onClose }: RoomFormMod
                   return false
                 }}
               >
-                <Button icon={<UploadOutlined />} loading={uploading}>
+                <Button icon={<UploadOutlined />} loading={imageUpload.isPending}>
                   {imageUrl ? 'Đổi ảnh' : 'Tải ảnh lên'}
                 </Button>
               </Upload>

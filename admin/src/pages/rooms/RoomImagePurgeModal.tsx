@@ -3,19 +3,14 @@ import { Alert, App, Button, InputNumber, Modal, Space, Typography } from 'antd'
 import { CalculatorOutlined, DeleteOutlined } from '@ant-design/icons'
 import { formatBytes, formatCount, formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
-import type { RoomImagePurgePreview, RoomImagePurgeResult } from '@/types'
+import type { RoomImagePurgePreview } from '@/types'
 import { ROOM_IMAGE_PURGE_MAX_DAYS, ROOM_IMAGE_PURGE_MIN_DAYS } from './constants'
 import { usePreviewRoomImagePurge, usePurgeRoomImages } from './useRoomQueries'
+import { roomPurgeResultText } from './utils'
 
 interface RoomImagePurgeModalProps {
   open: boolean
   onClose: () => void
-}
-
-function purgeResultText(result: RoomImagePurgeResult): string {
-  const done = `Đã xoá ${formatCount(result.files)} ảnh, giải phóng ${formatBytes(result.bytes)}`
-  if (result.failed === 0) return done
-  return `${done}. Còn ${formatCount(result.failed)} ảnh chưa xoá được, bấm tính lại rồi xoá tiếp`
 }
 
 export function RoomImagePurgeModal({ open, onClose }: RoomImagePurgeModalProps) {
@@ -67,9 +62,9 @@ export function RoomImagePurgeModal({ open, onClose }: RoomImagePurgeModalProps)
         try {
           const result = await purge.mutateAsync(target.before)
           if (result.failed > 0) {
-            message.warning(purgeResultText(result))
+            message.warning(roomPurgeResultText(result))
           } else {
-            message.success(purgeResultText(result))
+            message.success(roomPurgeResultText(result))
           }
           close()
         } catch (err) {

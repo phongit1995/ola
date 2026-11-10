@@ -31,6 +31,7 @@ import {
   momentExcerpt,
   momentHiddenByLabel,
   momentPageLabel,
+  momentTagOptions,
 } from './utils'
 import {
   MOMENT_SORT_OPTIONS,
@@ -43,13 +44,6 @@ import {
 } from './constants'
 
 type AnyOr<T> = 'all' | T
-
-function tagOptions<K extends string>(allLabel: string, tags: Record<K, { label: string }>) {
-  return [
-    { value: 'all', label: allLabel },
-    ...(Object.keys(tags) as K[]).map((key) => ({ value: key, label: tags[key].label })),
-  ]
-}
 
 const pickAll = <T,>(value: AnyOr<T>): T | undefined => (value === 'all' ? undefined : value)
 
@@ -293,19 +287,19 @@ export function MomentsTab() {
           value={type}
           onChange={resetPage(setType)}
           style={{ width: 130 }}
-          options={tagOptions('Mọi loại', MOMENT_TYPE_TAG)}
+          options={momentTagOptions('Mọi loại', MOMENT_TYPE_TAG)}
         />
         <Select
           value={state}
           onChange={resetPage(setState)}
           style={{ width: 170 }}
-          options={tagOptions('Mọi tình trạng', MOMENT_STATE_TAG)}
+          options={momentTagOptions('Mọi tình trạng', MOMENT_STATE_TAG)}
         />
         <Select
           value={visibility}
           onChange={resetPage(setVisibility)}
           style={{ width: 150 }}
-          options={tagOptions('Mọi quyền xem', MOMENT_VISIBILITY_TAG)}
+          options={momentTagOptions('Mọi quyền xem', MOMENT_VISIBILITY_TAG)}
         />
         <Select
           value={shown}

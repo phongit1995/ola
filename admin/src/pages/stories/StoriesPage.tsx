@@ -1,29 +1,6 @@
 import { useState, type Key } from 'react'
-import {
-  App,
-  Button,
-  Card,
-  Col,
-  Image,
-  Input,
-  Row,
-  Select,
-  Space,
-  Statistic,
-  Switch,
-  Table,
-  Tag,
-  Typography,
-  type TableColumnsType,
-} from 'antd'
-import {
-  ClearOutlined,
-  DeleteOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
-  MessageOutlined,
-  UnorderedListOutlined,
-} from '@ant-design/icons'
+import { App, Button, Card, Input, Select, Space, Table, Typography } from 'antd'
+import { ClearOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons'
 import type { StoryKind, StorySort } from '@ola/shared/types'
 import { useDebounce } from '@/hooks/useDebounce'
 import {
@@ -33,12 +10,13 @@ import {
   useStories,
   useStoryGenres,
   useStorySources,
-  useStorySummary,
 } from './useStoryQueries'
-import { formatCount, formatDate, formatDateTime } from '@/lib/format'
+import { formatCount } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { StoryChaptersModal } from './StoryChaptersModal'
 import { StoryCommentsModal } from './StoryCommentsModal'
+import { StorySummaryCard } from './StorySummaryCard'
+import { storyColumns } from './columns'
 import type {
   AdminStory,
   AdminStoryBulkVisibilityInput,
@@ -47,18 +25,8 @@ import type {
   AdminStoryVisibility,
 } from '@/types'
 import { PAGE_SIZE } from '@/lib/constants'
-import {
-  ALL,
-  COVER_HEIGHT,
-  COVER_WIDTH,
-  KIND_LABEL,
-  KIND_OPTIONS,
-  SORT_OPTIONS,
-  STATUS_OPTIONS,
-  STORY_STATUS_TAG,
-  VISIBILITY_OPTIONS,
-} from './constants'
-import { describeFilter, percent, sourceLabel } from './utils'
+import { ALL, KIND_OPTIONS, SORT_OPTIONS, STATUS_OPTIONS, VISIBILITY_OPTIONS } from './constants'
+import { describeFilter, sourceLabel } from './utils'
 
 export function StoriesPage() {
   const { message, modal } = App.useApp()
@@ -90,7 +58,6 @@ export function StoriesPage() {
     offset: (page - 1) * PAGE_SIZE,
   }
   const { data, isFetching, isPlaceholderData } = useStories(params)
-  const { data: summary } = useStorySummary()
   const { data: genres } = useStoryGenres()
   const { data: sources } = useStorySources()
   const setHidden = useSetStoryHidden()
@@ -211,177 +178,17 @@ export function StoriesPage() {
     })
   }
 
-  const columns: TableColumnsType<AdminStory> = [
-    {
-      title: 'Truyện',
-      dataIndex: 'title',
-      render: (_, story) => (
-        <Space align="start">
-          <Image
-            src={story.coverUrl ?? undefined}
-            width={COVER_WIDTH}
-            height={COVER_HEIGHT}
-            style={{ objectFit: 'cover', borderRadius: 4 }}
-            preview={story.coverUrl ? undefined : false}
-            fallback="data:image/gif;base64,R0lGODlhAQABAAAAACw="
-          />
-          <div style={{ lineHeight: 1.35, maxWidth: 360 }}>
-            <div style={{ fontWeight: 600, opacity: story.isHidden ? 0.5 : 1 }}>{story.title}</div>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              {story.authorName || '—'}
-            </Typography.Text>
-            <div style={{ marginTop: 4 }}>
-              {story.genres.map((name) => (
-                <Tag key={name} style={{ marginBottom: 2 }}>
-                  {name}
-                </Tag>
-              ))}
-            </div>
-          </div>
-        </Space>
-      ),
-    },
-    {
-      title: 'Nguồn',
-      dataIndex: 'source',
-      width: 110,
-      render: (value: string, story) => (
-        <Space orientation="vertical" size={2}>
-          <Tag color="cyan">{sourceLabel(value)}</Tag>
-          <Typography.Link
-            href={story.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={{ fontSize: 12 }}
-          >
-            ID {story.sourceStoryId}
-          </Typography.Link>
-        </Space>
-      ),
-    },
-    {
-      title: 'Loại',
-      dataIndex: 'kind',
-      width: 120,
-      render: (value: StoryKind, story) => (
-        <Space orientation="vertical" size={4}>
-          <Tag color={value === 'long' ? 'blue' : 'purple'}>{KIND_LABEL[value]}</Tag>
-          <Tag color={STORY_STATUS_TAG[story.status].color}>{STORY_STATUS_TAG[story.status].label}</Tag>
-        </Space>
-      ),
-    },
-    {
-      title: 'Chương',
-      dataIndex: 'chapterCount',
-      width: 140,
-      render: (value: number, story) => (
-        <div style={{ lineHeight: 1.35 }}>
-          <div>{formatCount(value)} chương</div>
-          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-            {formatCount(story.contentChapters)} đã có nội dung
-          </Typography.Text>
-        </div>
-      ),
-    },
-    {
-      title: 'Lượt xem',
-      dataIndex: 'viewCount',
-      width: 90,
-      render: (value: number) => formatCount(value),
-    },
-    {
-      title: 'Chương mới nhất',
-      dataIndex: 'lastChapterAt',
-      width: 120,
-      render: (_, story) => formatDate(story.lastChapterAt ?? story.updatedAt),
-    },
-    {
-      title: 'Hiện',
-      dataIndex: 'isHidden',
-      width: 70,
-      render: (isHidden: boolean, story) => (
-        <Switch
-          checked={!isHidden}
-          loading={setHidden.isPending && setHidden.variables?.id === story.id}
-          onChange={(value) => toggleVisible(story, value)}
-        />
-      ),
-    },
-    {
-      title: 'Thao tác',
-      key: 'actions',
-      width: 250,
-      render: (_, story) => (
-        <Space>
-          <Button
-            size="small"
-            icon={<UnorderedListOutlined />}
-            onClick={() => setChaptersStory(story)}
-          >
-            Chương
-          </Button>
-          <Button
-            size="small"
-            icon={<MessageOutlined />}
-            onClick={() => setCommentsStory(story)}
-          >
-            Bình luận ({formatCount(story.commentCount ?? 0)})
-          </Button>
-          <Button
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => removeStory(story)}
-          />
-        </Space>
-      ),
-    },
-  ]
+  const columns = storyColumns({
+    hidingId: setHidden.isPending ? setHidden.variables?.id : undefined,
+    onToggleVisible: toggleVisible,
+    onOpenChapters: setChaptersStory,
+    onOpenComments: setCommentsStory,
+    onRemove: removeStory,
+  })
 
   return (
     <Space orientation="vertical" size={16} style={{ width: '100%' }}>
-      <Card>
-        <Row gutter={[16, 16]}>
-          <Col xs={12} md={6}>
-            <Statistic
-              groupSeparator="."
-              title="Truyện"
-              value={summary?.stories ?? 0}
-              suffix={
-                <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                  ({formatCount(summary?.longStories ?? 0)} dài ·{' '}
-                  {formatCount(summary?.shortStories ?? 0)} ngắn)
-                </Typography.Text>
-              }
-            />
-          </Col>
-          <Col xs={12} md={4}>
-            <Statistic groupSeparator="." title="Đang ẩn" value={summary?.hiddenStories ?? 0} />
-          </Col>
-          <Col xs={12} md={4}>
-            <Statistic groupSeparator="." title="Chương" value={summary?.chapters ?? 0} />
-          </Col>
-          <Col xs={12} md={5}>
-            <Statistic
-              groupSeparator="."
-              title="Chương đã có nội dung"
-              value={summary?.contentChapters ?? 0}
-              suffix={
-                <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                  ({percent(summary?.contentChapters ?? 0, summary?.chapters ?? 0)}%)
-                </Typography.Text>
-              }
-            />
-          </Col>
-          <Col xs={24} md={5}>
-            <Statistic
-              title="Lần nạp gần nhất"
-              value={formatDateTime(summary?.lastCrawledAt)}
-              styles={{ content: { fontSize: 18 } }}
-            />
-          </Col>
-        </Row>
-      </Card>
+      <StorySummaryCard />
       <Card>
         <div style={{ marginBottom: 12, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <Input.Search

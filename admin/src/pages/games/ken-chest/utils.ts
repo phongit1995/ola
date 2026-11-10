@@ -1,4 +1,5 @@
 import type { KenChestAutoJob, KenChestAutoJobRequest } from '@/types'
+import { formatCount } from '@/lib/format'
 
 export function jobToRequest(job: KenChestAutoJob): KenChestAutoJobRequest {
   return {
@@ -20,9 +21,9 @@ export function jobToRequest(job: KenChestAutoJob): KenChestAutoJobRequest {
 
 export function rewardText(job: KenChestAutoJob): string {
   if (job.rewardMode === 'fixed') {
-    return `${(job.kenAmount ?? 0).toLocaleString('vi-VN')} KEN`
+    return `${formatCount(job.kenAmount ?? 0)} KEN`
   }
-  return `${(job.kenMin ?? 0).toLocaleString('vi-VN')} – ${(job.kenMax ?? 0).toLocaleString('vi-VN')} KEN`
+  return `${formatCount(job.kenMin ?? 0)} – ${formatCount(job.kenMax ?? 0)} KEN`
 }
 
 export function scheduleText(job: KenChestAutoJob): string {

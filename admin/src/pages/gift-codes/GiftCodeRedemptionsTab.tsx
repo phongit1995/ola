@@ -6,11 +6,10 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { errorMessage } from '@/lib/apiError'
 import { PAGE_SIZE } from '@/lib/constants'
 import { formatDateTime } from '@/lib/format'
-import { AdminGiftCodeService } from '@/services/adminGiftCode.service'
 import type { GiftCodeCampaign, GiftCodePlatform, GiftCodeRedemption } from '@/types'
 import { GIFT_CODE_PLATFORM_LABEL, GIFT_CODE_PLATFORM_OPTIONS } from './constants'
 import { GiftCodeRewardTags } from './GiftCodeBadges'
-import { useGiftCodeRedemptions } from './useGiftCodeQueries'
+import { useExportGiftCodeRedemptions, useGiftCodeRedemptions } from './useGiftCodeQueries'
 import { csvFileName, downloadCsv, rewardsText } from './utils'
 
 export function GiftCodeRedemptionsTab({ campaign }: { campaign: GiftCodeCampaign }) {
@@ -18,7 +17,7 @@ export function GiftCodeRedemptionsTab({ campaign }: { campaign: GiftCodeCampaig
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState<GiftCodePlatform>()
   const [page, setPage] = useState(1)
-  const [exporting, setExporting] = useState(false)
+  const exportRedemptions = useExportGiftCodeRedemptions()
   const debouncedSearch = useDebounce(search.trim())
   const params = { search: debouncedSearch || undefined, platform }
   const { data, isFetching } = useGiftCodeRedemptions(campaign.id, {
@@ -28,9 +27,8 @@ export function GiftCodeRedemptionsTab({ campaign }: { campaign: GiftCodeCampaig
   })
 
   async function exportCsv() {
-    setExporting(true)
     try {
-      const all = await AdminGiftCodeService.exportRedemptions(campaign.id, params)
+      const all = await exportRedemptions.mutateAsync({ id: campaign.id, params })
       downloadCsv(
         csvFileName(campaign.name, 'nguoi-nhan'),
         ['Thời gian', 'Nickname', 'Tên', 'Mã', 'Nền tảng', 'Thiết bị', 'IP', 'Quà'],
@@ -47,8 +45,6 @@ export function GiftCodeRedemptionsTab({ campaign }: { campaign: GiftCodeCampaig
       )
     } catch (err) {
       message.error(errorMessage(err, 'Xuất CSV thất bại'))
-    } finally {
-      setExporting(false)
     }
   }
 
@@ -90,7 +86,7 @@ export function GiftCodeRedemptionsTab({ campaign }: { campaign: GiftCodeCampaig
             setPage(1)
           }}
         />
-        <Button icon={<DownloadOutlined />} loading={exporting} disabled={(data?.total ?? 0) === 0} onClick={() => void exportCsv()}>
+        <Button icon={<DownloadOutlined />} loading={exportRedemptions.isPending} disabled={(data?.total ?? 0) === 0} onClick={() => void exportCsv()}>
           Xuất CSV
         </Button>
       </Space>

@@ -4,14 +4,13 @@ import { ArrowLeftOutlined, CopyOutlined, EditOutlined } from '@ant-design/icons
 import { errorMessage } from '@/lib/apiError'
 import { formatCount, formatDateTime } from '@/lib/format'
 import type { GiftCodeAdminBrief } from '@/types'
-import { GIFT_CODE_PLATFORM_LABEL } from './constants'
+import { GIFT_CODE_DETAIL_TABS, GIFT_CODE_PLATFORM_LABEL } from './constants'
 import { GiftCodeCodesTab } from './GiftCodeCodesTab'
 import { GiftCodeKindTag, GiftCodeRewardTags, GiftCodeStatusBadge } from './GiftCodeBadges'
 import { GiftCodeRedemptionsTab } from './GiftCodeRedemptionsTab'
 import { useGiftCodeCampaign, useSetGiftCodeEnabled } from './useGiftCodeQueries'
 
-const DETAIL_TABS = ['redemptions', 'codes'] as const
-type DetailTab = (typeof DETAIL_TABS)[number]
+type DetailTab = (typeof GIFT_CODE_DETAIL_TABS)[number]
 
 function AdminStamp({ admin, at }: { admin?: GiftCodeAdminBrief; at: string }) {
   return (
@@ -27,7 +26,7 @@ export function GiftCodeDetailPage() {
   const { id = '' } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const activeTab: DetailTab = DETAIL_TABS.includes(tabParam as DetailTab) ? (tabParam as DetailTab) : 'redemptions'
+  const activeTab: DetailTab = GIFT_CODE_DETAIL_TABS.includes(tabParam as DetailTab) ? (tabParam as DetailTab) : 'redemptions'
   const { data: campaign, isLoading, isError } = useGiftCodeCampaign(id)
   const setEnabled = useSetGiftCodeEnabled()
 

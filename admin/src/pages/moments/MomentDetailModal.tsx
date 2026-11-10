@@ -17,7 +17,6 @@ import {
 } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
 import { UserBriefCell } from '@/components/UserBriefCell'
-import { errorMessage, toApiError } from '@/lib/apiError'
 import { reactionLabel } from '@/pages/rooms/utils'
 import { formatDateTime } from '@/lib/format'
 import { BRAND } from '@/theme'
@@ -42,10 +41,10 @@ import {
   canToggleMoment,
   hasMomentSwitch,
   momentHiddenByLabel,
+  momentLoadErrorText,
   videoSummary,
 } from './utils'
 import {
-  HTTP_NOT_FOUND,
   MOMENT_COMMENT_PAGE_SIZE,
   MOMENT_DETAIL_PREVIEW_WIDTH,
   MOMENT_PAGE_THUMB_WIDTH,
@@ -339,12 +338,6 @@ function MomentInfo({
   )
 }
 
-function loadErrorText(error: unknown): string {
-  return toApiError(error).status === HTTP_NOT_FOUND
-    ? 'Khoảnh khắc không còn tồn tại'
-    : errorMessage(error, 'Không tải được khoảnh khắc')
-}
-
 export function MomentDetailModal({ momentId, onClose }: MomentDetailModalProps) {
   const [selection, setSelection] = useState({ openedId: momentId, shownId: momentId })
   if (selection.openedId !== momentId) {
@@ -375,7 +368,7 @@ export function MomentDetailModal({ momentId, onClose }: MomentDetailModalProps)
       ]}
     >
       {error ? (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={loadErrorText(error)} />
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={momentLoadErrorText(error)} />
       ) : isLoading || !data ? (
         <Skeleton active avatar paragraph={{ rows: 8 }} />
       ) : (

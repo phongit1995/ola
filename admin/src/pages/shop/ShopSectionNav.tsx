@@ -1,12 +1,6 @@
-import type { ReactNode } from 'react'
 import { Segmented } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
-
-export interface ShopSectionLink {
-  path: string
-  label: string
-  icon: ReactNode
-}
+import type { ShopSectionLink } from './types'
 
 export function ShopSectionNav({ links }: { links: ShopSectionLink[] }) {
   const navigate = useNavigate()

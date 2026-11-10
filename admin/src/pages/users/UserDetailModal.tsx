@@ -13,7 +13,7 @@ import {
   WarningOutlined,
 } from '@ant-design/icons'
 import { useUserDetail } from '@/hooks/useUserQueries'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { GENDER, VIOLATION_LOCK_LABEL } from './constants'
 import { KenAdjustModal } from './KenAdjustModal'
@@ -64,7 +64,7 @@ function StatBox({ label, value }: { label: string; value: number }) {
         borderRadius: 10,
       }}
     >
-      <div style={{ fontSize: 18, fontWeight: 700 }}>{value.toLocaleString('vi-VN')}</div>
+      <div style={{ fontSize: 18, fontWeight: 700 }}>{formatCount(value)}</div>
       <div style={{ fontSize: 12, color: '#6b7785' }}>{label}</div>
     </div>
   )

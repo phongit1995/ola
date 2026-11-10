@@ -9,9 +9,9 @@ import {
   MODERATION_LOCK_STEPS_MAX,
   MODERATION_POINTS_MAX,
   MODERATION_POINTS_MIN,
+  MODERATION_SETTINGS_TITLE,
 } from './constants'
-
-const MODAL_TITLE = 'Cài đặt điểm vi phạm'
+import { moderationPointsRules, moderationHoursRules, moderationLockStepsProblem } from './utils'
 
 interface ModerationSettingsModalProps {
   onClose: () => void
@@ -21,11 +21,11 @@ export function ModerationSettingsModal({ onClose }: ModerationSettingsModalProp
   const { data: settings, isLoading, isError, refetch, isRefetching } = useAppSettings()
 
   if (isLoading) {
-    return <Modal open loading title={MODAL_TITLE} onCancel={onClose} footer={null} />
+    return <Modal open loading title={MODERATION_SETTINGS_TITLE} onCancel={onClose} footer={null} />
   }
   if (isError || settings == null) {
     return (
-      <Modal open title={MODAL_TITLE} onCancel={onClose} footer={null}>
+      <Modal open title={MODERATION_SETTINGS_TITLE} onCancel={onClose} footer={null}>
         <Alert
           type="error"
           showIcon
@@ -57,43 +57,10 @@ interface ModerationSettingsFormProps {
   onClose: () => void
 }
 
-function pointsRules(label: string) {
-  return [
-    { required: true, message: `Nhập ${label}` },
-    {
-      type: 'number' as const,
-      min: MODERATION_POINTS_MIN,
-      max: MODERATION_POINTS_MAX,
-      message: `Từ ${MODERATION_POINTS_MIN} đến ${MODERATION_POINTS_MAX} điểm`,
-    },
-  ]
-}
-
-function hoursRules(label: string) {
-  return [
-    { required: true, message: `Nhập ${label}` },
-    {
-      type: 'number' as const,
-      min: 0,
-      max: MODERATION_HOURS_MAX,
-      message: `Từ 0 đến ${MODERATION_HOURS_MAX} giờ`,
-    },
-  ]
-}
-
-function lockStepsProblem(steps: readonly ModerationLockStep[] | undefined): string | null {
-  if (steps == null || steps.length === 0) return 'Cần ít nhất 1 mốc khoá'
-  for (let i = 1; i < steps.length; i += 1) {
-    if (steps[i].points <= steps[i - 1].points) return 'Điểm của các mốc phải tăng dần'
-  }
-  if (steps.slice(0, -1).some((step) => step.hours === 0)) return 'Mốc khoá vĩnh viễn (0 giờ) phải là mốc cuối cùng'
-  return null
-}
-
 const lockStepsRules = [
   {
     validator: (_: unknown, steps: ModerationLockStep[] | undefined) => {
-      const problem = lockStepsProblem(steps)
+      const problem = moderationLockStepsProblem(steps)
       return problem == null ? Promise.resolve() : Promise.reject(new Error(problem))
     },
   },
@@ -132,7 +99,7 @@ function ModerationSettingsForm({ setting, initial, onClose }: ModerationSetting
   )
 
   return (
-    <Modal open title={MODAL_TITLE} onCancel={onClose} footer={footer} width={600} destroyOnHidden>
+    <Modal open title={MODERATION_SETTINGS_TITLE} onCancel={onClose} footer={footer} width={600} destroyOnHidden>
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Alert
           type="info"
@@ -155,7 +122,7 @@ function ModerationSettingsForm({ setting, initial, onClose }: ModerationSetting
               <>
                 {fields.map((field) => (
                   <Space key={field.key} align="baseline" wrap>
-                    <Form.Item name={[field.name, 'points']} rules={pointsRules('số điểm')}>
+                    <Form.Item name={[field.name, 'points']} rules={moderationPointsRules('số điểm')}>
                       <InputNumber<number>
                         min={MODERATION_POINTS_MIN}
                         max={MODERATION_POINTS_MAX}
@@ -165,7 +132,7 @@ function ModerationSettingsForm({ setting, initial, onClose }: ModerationSetting
                         style={{ width: 150 }}
                       />
                     </Form.Item>
-                    <Form.Item name={[field.name, 'hours']} rules={hoursRules('thời gian khoá')}>
+                    <Form.Item name={[field.name, 'hours']} rules={moderationHoursRules('thời gian khoá')}>
                       <InputNumber<number>
                         min={0}
                         max={MODERATION_HOURS_MAX}
@@ -200,7 +167,7 @@ function ModerationSettingsForm({ setting, initial, onClose }: ModerationSetting
           <Form.Item
             name="deliberatePoints"
             label='Điểm cho mức "Cố tình vi phạm"'
-            rules={pointsRules('điểm cố tình vi phạm')}
+            rules={moderationPointsRules('điểm cố tình vi phạm')}
           >
             <InputNumber<number>
               min={MODERATION_POINTS_MIN}
@@ -213,7 +180,7 @@ function ModerationSettingsForm({ setting, initial, onClose }: ModerationSetting
           <Form.Item
             name="expireHours"
             label="Vi phạm hết hạn sau"
-            rules={hoursRules('thời gian hết hạn')}
+            rules={moderationHoursRules('thời gian hết hạn')}
             extra="0 = không hết hạn, vi phạm được tính mãi. Chỉ cộng điểm các vi phạm trong khoảng này."
             style={{ marginBottom: 0 }}
           >

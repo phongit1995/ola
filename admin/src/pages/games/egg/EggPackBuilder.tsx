@@ -24,6 +24,7 @@ import { EggOddsSunburst } from './EggOddsSunburst'
 import { CATEGORY_COLORS, CATEGORY_TEMPLATES } from './constants'
 import { categoryTemplate, formatPercent, percent, sumActiveWeight } from './utils'
 import type { EggCategory, EggCategoryType, EggReward } from './types'
+import { formatCount } from '@/lib/format'
 
 interface EggPackBuilderProps {
   categories: EggCategory[]
@@ -56,7 +57,7 @@ function rewardDetail(category: EggCategory, reward: EggReward) {
   }
   const suffix =
     category.type === 'ken'
-      ? `${(reward.kenAmount ?? 0).toLocaleString('vi-VN')} Ken`
+      ? `${formatCount(reward.kenAmount ?? 0)} Ken`
       : `${reward.vipDays ?? 0} ngày VIP`
   return (
     <Space>

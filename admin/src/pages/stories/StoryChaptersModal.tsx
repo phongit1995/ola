@@ -21,7 +21,7 @@ import {
   useStoryChapter,
   useStoryChapters,
 } from './useStoryQueries'
-import { formatDate, formatDateTime } from '@/lib/format'
+import { formatCount, formatDate, formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import type { AdminStory, AdminStoryChapter } from '@/types'
 import { CHAPTER_PAGE_SIZE, POLL_GRACE_MS, POLL_MS_PER_CHAPTER } from './constants'
@@ -113,7 +113,7 @@ export function StoryChaptersModal({ story, open, onClose }: StoryChaptersModalP
       dataIndex: 'wordCount',
       width: 90,
       render: (value: number, chapter) =>
-        chapter.hasContent ? value.toLocaleString('vi-VN') : '—',
+        chapter.hasContent ? formatCount(value) : '—',
     },
     {
       title: 'Ngày đăng',

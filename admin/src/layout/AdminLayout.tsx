@@ -36,7 +36,7 @@ import {
   UserOutlined,
   WarningOutlined,
 } from '@ant-design/icons'
-import { AdminAuthService } from '@/services/adminAuth.service'
+import { useAdminLogout } from '@/hooks/useAuthQueries'
 import { ChangePasswordModal } from '@/pages/auth/ChangePasswordModal'
 import { useAuthStore } from '@/store/authStore'
 import { ApiError } from '@/lib/apiError'
@@ -194,6 +194,7 @@ const PAGE_TITLES: Record<string, string> = {
 
 export function AdminLayout() {
   const { message } = App.useApp()
+  const adminLogout = useAdminLogout()
   const navigate = useNavigate()
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
@@ -236,7 +237,7 @@ export function AdminLayout() {
 
   async function logout() {
     try {
-      await AdminAuthService.logout()
+      await adminLogout.mutateAsync()
     } catch (err) {
       if (!(err instanceof ApiError && err.status === 401)) {
         message.warning(

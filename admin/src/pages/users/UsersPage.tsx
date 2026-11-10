@@ -21,7 +21,7 @@ import {
 } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useDeleteUser, useUpdateUserStatus, useUsers } from '@/hooks/useUserQueries'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { UserDetailModal } from './UserDetailModal'
 import { GENDER, SORT_OPTIONS, VIOLATION_LOCK_LABEL } from './constants'
@@ -168,7 +168,7 @@ export function UsersPage() {
       title: 'Ken',
       dataIndex: 'ken',
       width: 100,
-      render: (v: number) => (v ?? 0).toLocaleString('vi-VN'),
+      render: (v: number) => formatCount(v ?? 0),
     },
     {
       title: 'Trạng thái',

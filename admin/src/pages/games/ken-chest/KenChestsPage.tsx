@@ -3,7 +3,7 @@ import { App, Button, Card, Space, Table, Tabs, Tag, Typography, type TableColum
 import { DeleteOutlined, EyeOutlined, GiftOutlined, PlusOutlined } from '@ant-design/icons'
 import { useDeleteKenChest, useKenChests } from './useKenChestQueries'
 import { errorMessage } from '@/lib/apiError'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'
 import { KenChestFormModal } from './KenChestFormModal'
 import { KenChestDetailModal } from './KenChestDetailModal'
@@ -91,7 +91,7 @@ export function KenChestsPage() {
       title: 'Tổng KEN đã phát',
       dataIndex: 'totalKenGiven',
       width: 150,
-      render: (v: number) => v.toLocaleString('vi-VN'),
+      render: (v: number) => formatCount(v),
     },
     {
       title: 'Nguồn',

@@ -1,5 +1,8 @@
-import type { AdminReport } from '@/types'
+import type { AdminReport, ModerationLockStep } from '@/types'
 import {
+  MODERATION_HOURS_MAX,
+  MODERATION_POINTS_MAX,
+  MODERATION_POINTS_MIN,
   REPORT_CONTENT_ACTION_LABEL,
   REPORT_EXCERPT_MAX,
   REPORT_TARGETS_WITHOUT_CONTEXT,
@@ -28,4 +31,37 @@ export function contentActionLabel(report: AdminReport): string | null {
   if (label == null) return null
   const needsContext = !REPORT_TARGETS_WITHOUT_CONTEXT.includes(report.targetType)
   return needsContext && !report.contextId ? null : label
+}
+
+export function moderationPointsRules(label: string) {
+  return [
+    { required: true, message: `Nhập ${label}` },
+    {
+      type: 'number' as const,
+      min: MODERATION_POINTS_MIN,
+      max: MODERATION_POINTS_MAX,
+      message: `Từ ${MODERATION_POINTS_MIN} đến ${MODERATION_POINTS_MAX} điểm`,
+    },
+  ]
+}
+
+export function moderationHoursRules(label: string) {
+  return [
+    { required: true, message: `Nhập ${label}` },
+    {
+      type: 'number' as const,
+      min: 0,
+      max: MODERATION_HOURS_MAX,
+      message: `Từ 0 đến ${MODERATION_HOURS_MAX} giờ`,
+    },
+  ]
+}
+
+export function moderationLockStepsProblem(steps: readonly ModerationLockStep[] | undefined): string | null {
+  if (steps == null || steps.length === 0) return 'Cần ít nhất 1 mốc khoá'
+  for (let i = 1; i < steps.length; i += 1) {
+    if (steps[i].points <= steps[i - 1].points) return 'Điểm của các mốc phải tăng dần'
+  }
+  if (steps.slice(0, -1).some((step) => step.hours === 0)) return 'Mốc khoá vĩnh viễn (0 giờ) phải là mốc cuối cùng'
+  return null
 }

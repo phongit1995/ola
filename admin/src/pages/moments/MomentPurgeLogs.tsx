@@ -15,7 +15,6 @@ import {
   type TableColumnsType,
 } from 'antd'
 import { ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
-import { useQueryClient } from '@tanstack/react-query'
 import { formatBytes, formatCount, formatDateTime, formatDuration } from '@/lib/format'
 import type { MomentMediaPurgeLog, MomentMediaPurgeTotals } from '@/types'
 import {
@@ -25,7 +24,7 @@ import {
   MOMENT_PURGE_STATUS_TAG,
   MOMENT_PURGE_TRIGGER_TAG,
 } from './constants'
-import { MOMENTS_QUERY_KEY, useMomentPurgeLogs, useRunMomentPurge } from './useMomentQueries'
+import { useInvalidateMoments, useMomentPurgeLogs, useRunMomentPurge } from './useMomentQueries'
 import { hoursInDays, momentPurgeResult } from './utils'
 
 const MUTED = { fontSize: 12, color: '#6b7785' }
@@ -143,7 +142,7 @@ const COLUMNS: TableColumnsType<MomentMediaPurgeLog> = [
 
 export function MomentPurgeLogs({ enabled, afterHours }: { enabled: boolean; afterHours: number }) {
   const { modal } = App.useApp()
-  const queryClient = useQueryClient()
+  const invalidateMoments = useInvalidateMoments()
   const [page, setPage] = useState(1)
   const { data, isLoading, isError, isFetching, refetch } = useMomentPurgeLogs(page)
   const purge = useRunMomentPurge()
@@ -157,9 +156,9 @@ export function MomentPurgeLogs({ enabled, afterHours }: { enabled: boolean; aft
     seenRunId.current = lastRunId
     if (seen === undefined || lastRunId === undefined || lastRunId === seen) return
     if (last && (last.purged > 0 || last.files > 0)) {
-      void queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY] })
+      void invalidateMoments()
     }
-  }, [lastRunId, last, queryClient])
+  }, [lastRunId, last, invalidateMoments])
 
   function confirmRun() {
     modal.confirm({

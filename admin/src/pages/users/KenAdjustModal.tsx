@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { App, Form, Input, InputNumber, Modal, Segmented } from 'antd'
 import { useAdjustKen } from '@/hooks/useKenQueries'
 import { errorMessage } from '@/lib/apiError'
-import { kenNumberInputProps } from '@/lib/format'
+import { formatCount, kenNumberInputProps } from '@/lib/format'
 import type { KenAdjustRequest } from '@/types'
 
 interface KenAdjustModalProps {
@@ -36,7 +36,7 @@ export function KenAdjustModal({
     try {
       const res = await adjust.mutateAsync({ userId, payload: values })
       message.success(
-        `${values.action === 'grant' ? 'Đã cộng' : 'Đã trừ'} ${values.amount.toLocaleString('vi-VN')} ken — số dư mới: ${res.balanceAfter.toLocaleString('vi-VN')}`,
+        `${values.action === 'grant' ? 'Đã cộng' : 'Đã trừ'} ${formatCount(values.amount)} ken — số dư mới: ${formatCount(res.balanceAfter)}`,
       )
       onClose()
     } catch (err) {
@@ -58,7 +58,7 @@ export function KenAdjustModal({
       <Form form={form} layout="vertical" requiredMark={false} initialValues={{ action: 'grant' }}>
         {currentKen != null && (
           <div style={{ marginBottom: 12, color: '#6b7785' }}>
-            Số dư hiện tại: <b>{currentKen.toLocaleString('vi-VN')}</b> ken
+            Số dư hiện tại: <b>{formatCount(currentKen)}</b> ken
           </div>
         )}
         <Form.Item name="action" label="Hành động">

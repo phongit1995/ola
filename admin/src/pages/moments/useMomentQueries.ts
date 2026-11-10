@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { App } from 'antd'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminMomentService } from '@/services/adminMoment.service'
@@ -126,6 +127,11 @@ export function usePurgeMomentMedia() {
 }
 
 export const MOMENT_PURGE_LOGS_QUERY_KEY = [MOMENTS_QUERY_KEY, 'purge-logs']
+
+export function useInvalidateMoments() {
+  const queryClient = useQueryClient()
+  return useCallback(() => queryClient.invalidateQueries({ queryKey: [MOMENTS_QUERY_KEY] }), [queryClient])
+}
 
 export function useMomentPurgeLogs(page: number) {
   const params = {

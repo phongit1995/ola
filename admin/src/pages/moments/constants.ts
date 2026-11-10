@@ -78,8 +78,6 @@ export const MOMENT_PAGE_THUMB_WIDTH = 64
 export const MOMENT_VIEWER_PAGE_SIZE = 20
 export const MOMENT_COMMENT_PAGE_SIZE = 20
 
-export const HTTP_NOT_FOUND = 404
-
 export const MOMENT_EXCERPT_SEPARATOR = ' · '
 
 export const MOMENT_DISPLAY_SETTING_KEY = 'moment'

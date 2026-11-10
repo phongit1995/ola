@@ -4,21 +4,13 @@ import { ReloadOutlined } from '@ant-design/icons'
 import type { Dayjs } from 'dayjs'
 import { UserCell } from '@/components/UserCell'
 import { useDebounce } from '@/hooks/useDebounce'
-import { formatDateTime } from '@/lib/format'
+import { formatCount, formatDateTime } from '@/lib/format'
 import { PAGE_SIZE } from '@/lib/constants'
 import type { WordChainPurchase, WordChainPurchaseType } from '@/types'
 import { useWordChainPurchases } from './useWordChainQueries'
+import { WORD_CHAIN_PURCHASE_TYPE_TAG } from './constants'
 
 type TypeFilter = WordChainPurchaseType | 'all'
-
-const TYPE_TAG: Record<WordChainPurchaseType, { label: string; color: string }> = {
-  hint: { label: 'Gợi ý', color: 'blue' },
-  guess: { label: 'Mua lượt', color: 'purple' },
-}
-
-function formatKen(value: number) {
-  return value.toLocaleString('vi-VN')
-}
 
 export function WordChainPurchasesTab() {
   const [type, setType] = useState<TypeFilter>('all')
@@ -61,7 +53,7 @@ export function WordChainPurchasesTab() {
       title: 'Loại',
       dataIndex: 'type',
       width: 100,
-      render: (value: WordChainPurchaseType) => <Tag color={TYPE_TAG[value].color}>{TYPE_TAG[value].label}</Tag>,
+      render: (value: WordChainPurchaseType) => <Tag color={WORD_CHAIN_PURCHASE_TYPE_TAG[value].color}>{WORD_CHAIN_PURCHASE_TYPE_TAG[value].label}</Tag>,
     },
     {
       title: 'Từ đang nối',
@@ -84,7 +76,7 @@ export function WordChainPurchasesTab() {
       dataIndex: 'amount',
       width: 110,
       align: 'right',
-      render: (value: number) => <Typography.Text type="danger">-{formatKen(value)}</Typography.Text>,
+      render: (value: number) => <Typography.Text type="danger">-{formatCount(value)}</Typography.Text>,
     },
   ]
 
@@ -95,8 +87,8 @@ export function WordChainPurchasesTab() {
           <Card size="small">
             <Statistic
               title="Tổng KEN thu được"
-              value={summary ? formatKen(summary.hintKen + summary.guessKen) : '—'}
-              suffix={summary ? `· ${formatKen(summary.hintCount + summary.guessCount)} lần mua` : undefined}
+              value={summary ? formatCount(summary.hintKen + summary.guessKen) : '—'}
+              suffix={summary ? `· ${formatCount(summary.hintCount + summary.guessCount)} lần mua` : undefined}
             />
           </Card>
         </Col>
@@ -104,8 +96,8 @@ export function WordChainPurchasesTab() {
           <Card size="small">
             <Statistic
               title="Gợi ý"
-              value={summary ? formatKen(summary.hintKen) : '—'}
-              suffix={summary ? `KEN · ${formatKen(summary.hintCount)} lần` : undefined}
+              value={summary ? formatCount(summary.hintKen) : '—'}
+              suffix={summary ? `KEN · ${formatCount(summary.hintCount)} lần` : undefined}
             />
           </Card>
         </Col>
@@ -113,8 +105,8 @@ export function WordChainPurchasesTab() {
           <Card size="small">
             <Statistic
               title="Mua lượt"
-              value={summary ? formatKen(summary.guessKen) : '—'}
-              suffix={summary ? `KEN · ${formatKen(summary.guessCount)} lần` : undefined}
+              value={summary ? formatCount(summary.guessKen) : '—'}
+              suffix={summary ? `KEN · ${formatCount(summary.guessCount)} lần` : undefined}
             />
           </Card>
         </Col>
@@ -165,7 +157,7 @@ export function WordChainPurchasesTab() {
           pageSize: PAGE_SIZE,
           total: data?.total ?? 0,
           showSizeChanger: false,
-          showTotal: (total) => `${formatKen(total)} lượt mua`,
+          showTotal: (total) => `${formatCount(total)} lượt mua`,
           onChange: setPage,
         }}
       />
