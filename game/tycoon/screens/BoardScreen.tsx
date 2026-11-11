@@ -209,7 +209,7 @@ export function BoardScreen() {
       <div className="ty-s6-banner" id="ty-s6-banner" hidden />
       <img className="ty-s6-bust" id="ty-s6-bust" alt="" hidden />
 
-      {!state.result && state.sheet?.kind === 'tile' ? <TileSheet idx={state.sheet.idx} /> : null}
+      {!state.result && state.sheet?.kind === 'tile' ? <TileSheet key={state.sheet.idx} idx={state.sheet.idx} /> : null}
       {!state.result && state.sheet?.kind === 'assets' ? <AssetsSheet seat={state.sheet.seat} /> : null}
       {!state.result && state.sheet?.kind === 'log' ? <LogSheet /> : null}
       {!state.result ? <BuyModal /> : null}

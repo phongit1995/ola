@@ -13,6 +13,7 @@ import { MAX_BOTS, botName, type BotSetupItem } from '../helpers/bot';
 import { formatMoney } from '../helpers/format';
 import { botHistoryEntry, saveBotHistory } from '../helpers/history';
 import { avatarIconUrl } from '../helpers/player';
+import { houseArt } from '../components/art';
 import { MOCK_PROFILE, type LobbyProfile } from '../helpers/profile';
 import { playSound, setSoundEnabled } from '../audio';
 import * as fx from '../fx/boardFx';
@@ -272,7 +273,7 @@ function reasonLabel(reason: string | undefined, amount: number, tile?: number):
   }
 }
 
-interface LevelUp {
+interface LevelChange {
   from: number;
   to: number;
 }
@@ -450,7 +451,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     return fx.stampDeed(tile, by, () => commitTiles(withOwner(tile, by)), complete ? members : null);
   };
 
-  const replayStep = async (step: Step, epoch: number, levelUp?: LevelUp): Promise<void> => {
+  const replayStep = async (step: Step, epoch: number, levelChange?: LevelChange): Promise<void> => {
     const alive = () => refs.replayEpoch === epoch;
     const you = get().you;
     switch (step.kind) {
@@ -504,6 +505,9 @@ export const useTycoon = create<TycoonState>((set, get) => {
         } else if (from >= 0 && to >= 0) pushLog(`${seatName(from)} trả ${seatName(to)} ${formatMoney(amount)} ${label}`, from === you ? 'down' : to === you ? 'up' : 'neutral');
         else if (from >= 0) pushLog(`${seatName(from)} trả ${formatMoney(amount)} ${label}`, from === you ? 'down' : 'neutral');
         else if (to >= 0) pushLog(`${seatName(to)} nhận ${formatMoney(amount)} ${label}`, to === you ? 'up' : 'neutral');
+        const payerPos = step.reason === 'rent' && from >= 0 ? get().positions[from] : undefined;
+        const rentTile = payerPos != null ? ((payerPos % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE : undefined;
+        if (rentTile != null) fx.tileCallout(rentTile, to, `${seatName(from)} trả thuê`, formatMoney(amount), from === you ? 'down' : to === you ? 'up' : 'neutral');
         await fx.payMoney({ from, to, amount, reason: step.reason, tile: step.tile, debit: () => addCash(from, -amount), credit: () => addCash(to, amount) });
         return;
       }
@@ -517,7 +521,9 @@ export const useTycoon = create<TycoonState>((set, get) => {
       case 'takeover': {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
+        const houses = step.houses ?? 0;
         pushLog(`${seatName(step.by)} mua lại ${BOARD[tile].name} của ${seatName(step.target ?? -1)}`, step.by === you ? 'up' : step.target === you ? 'down' : 'neutral');
+        fx.tileCallout(tile, step.by, step.target === you ? `${seatName(step.by)} mua lại ô của bạn` : `${seatName(step.by)} mua lại`, `Lv${houses}`, step.target === you ? 'down' : step.by === you ? 'up' : 'neutral', houseArt(houses));
         await stampTile(tile, step.by);
         return;
       }
@@ -549,17 +555,17 @@ export const useTycoon = create<TycoonState>((set, get) => {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
         const houses = step.houses ?? 0;
-        if (levelUp) pushLog(`${seatName(step.by)} nâng cấp ${BOARD[tile].name}: Lv${levelUp.from} → Lv${levelUp.to}`);
+        if (levelChange) pushLog(`${seatName(step.by)} nâng cấp ${BOARD[tile].name}: Lv${levelChange.from} → Lv${levelChange.to}`);
         commitTiles((tiles) => tiles.map((item, idx) => (idx === tile ? { ...item, houses } : item)));
-        await fx.buildHouse(tile, houses, step.by, levelUp);
+        await fx.buildHouse(tile, houses, step.by, levelChange);
         return;
       }
       case 'sell': {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
         const houses = step.houses ?? 0;
-        pushLog(`${seatName(step.by)} hạ cấp ${BOARD[tile].name}: Lv${houses + 1} → Lv${houses}`);
-        await fx.sellHouse(tile, step.by, houses);
+        if (levelChange) pushLog(`${seatName(step.by)} hạ cấp ${BOARD[tile].name}: Lv${levelChange.from} → Lv${levelChange.to}`);
+        await fx.sellHouse(tile, step.by, levelChange);
         commitTiles((tiles) => tiles.map((item, idx) => (idx === tile ? { ...item, houses } : item)));
         return;
       }
@@ -616,22 +622,24 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
   const replaySteps = async (steps: Step[], epoch: number): Promise<void> => {
     flushSync(() => set({ replaying: true }));
-    const levelUps = new Map<number, LevelUp>();
-    const firstLevel = new Map<number, number>();
-    const lastBuild = new Map<number, number>();
+    const levelChanges = new Map<number, LevelChange>();
+    const firstLevel = new Map<string, number>();
+    const lastChange = new Map<string, number>();
     steps.forEach((step, i) => {
-      if (step.kind !== 'build' || step.tile == null) return;
+      if ((step.kind !== 'build' && step.kind !== 'sell') || step.tile == null) return;
+      const key = `${step.kind}:${step.tile}`;
       const to = step.houses ?? 0;
-      if (!firstLevel.has(step.tile)) firstLevel.set(step.tile, to - 1);
-      const previous = lastBuild.get(step.tile);
-      if (previous != null) levelUps.delete(previous);
-      levelUps.set(i, { from: firstLevel.get(step.tile) ?? to - 1, to });
-      lastBuild.set(step.tile, i);
+      const before = step.kind === 'build' ? to - 1 : to + 1;
+      if (!firstLevel.has(key)) firstLevel.set(key, before);
+      const previous = lastChange.get(key);
+      if (previous != null) levelChanges.delete(previous);
+      levelChanges.set(i, { from: firstLevel.get(key) ?? before, to });
+      lastChange.set(key, i);
     });
     for (const [i, step] of steps.entries()) {
       if (refs.replayEpoch !== epoch) return;
       refs.feedSeat = step.kind === 'pay' && step.by < 0 ? step.target ?? -1 : step.by ?? -1;
-      await replayStep(step, epoch, levelUps.get(i));
+      await replayStep(step, epoch, levelChanges.get(i));
     }
     fx.clearMovingPawns();
   };

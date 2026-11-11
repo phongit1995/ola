@@ -165,7 +165,7 @@ export function BoardCenter() {
       </div>
       <TurnChip />
       <Dice hidden={hideDice} />
-      {hideDice ? <p className="ty-s6-say">{view.phase === 'festival' ? 'Chạm thành phố của bạn để mở Lễ hội' : 'Chạm ô bất kỳ để bay tới'}</p> : null}
+      {hideDice ? <p className="ty-s6-say">{view.phase === 'festival' ? 'Chạm thành phố của bạn để mở Lễ hội · thuê ×2' : 'Chạm ô bất kỳ để bay tới'}</p> : null}
       <Feed hidden={false} />
       <CardBox />
     </div>

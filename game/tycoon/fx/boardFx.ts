@@ -359,16 +359,19 @@ export async function stampDeed(tile: number, seat: number, commit: () => void, 
   await sleep(220);
 }
 
-function tileCallout(tile: number, seat: number, title: string, from: number, to: number): void {
+export type CalloutTone = 'up' | 'down' | 'neutral';
+
+export function tileCallout(tile: number, seat: number, title: string, value: string, tone: CalloutTone = 'up', art?: string | null): void {
   const host = document.querySelector('.ty-board-screen');
   const at = tilePoint(tile);
   if (!host) return;
+  host.querySelectorAll(`.ty-s6-callout[data-callout="${tile}"]`).forEach((old) => old.remove());
   const tag = document.createElement('div');
-  tag.className = `ty-s6-callout ${to < from ? 'ty-s6-callout-down' : ''}`;
+  tag.className = `ty-s6-callout ty-s6-callout-${tone}`;
+  tag.dataset.callout = String(tile);
   tag.style.left = `${at.x}px`;
   tag.style.top = `${at.y}px`;
   tag.style.setProperty('--seat', seatColor(seat));
-  const art = houseArt(Math.max(from, to));
   if (art) {
     const img = document.createElement('img');
     img.src = art;
@@ -377,10 +380,13 @@ function tileCallout(tile: number, seat: number, title: string, from: number, to
   }
   const label = document.createElement('span');
   label.textContent = title;
-  const levels = document.createElement('b');
-  levels.textContent = `Lv${from} → Lv${to}`;
-  tag.append(label, levels);
+  const amount = document.createElement('b');
+  amount.textContent = value;
+  tag.append(label, amount);
   host.append(tag);
+  const bounds = host.getBoundingClientRect();
+  const half = tag.offsetWidth / 2 + 6;
+  tag.style.left = `${Math.min(Math.max(at.x, bounds.left + half), bounds.right - half)}px`;
   const hold = Math.max(700, scaled(1300));
   const remove = () => tag.remove();
   if (reducedMotion()) {
@@ -407,7 +413,7 @@ export async function buildHouse(tile: number, houses: number, seat: number, lev
   const at = tilePoint(tile);
   const unit = boardUnit();
   playSound(hotel ? 'double' : 'pop');
-  if (levelUp) tileCallout(tile, seat, 'Nâng cấp', levelUp.from, levelUp.to);
+  if (levelUp) tileCallout(tile, seat, 'Nâng cấp', `Lv${levelUp.from} → Lv${levelUp.to}`, 'up', houseArt(levelUp.to));
   dust({ x: at.x, y: at.y + unit }, 7);
   sparks(at, hotel ? 10 : 3, hotel ? '#E4573D' : '#2FA86F', 2.6);
   await animate(
@@ -426,9 +432,9 @@ export async function buildHouse(tile: number, houses: number, seat: number, lev
   }
 }
 
-export async function sellHouse(tile: number, seat: number, houses: number): Promise<void> {
+export async function sellHouse(tile: number, seat: number, levelDown?: { from: number; to: number }): Promise<void> {
   const at = tilePoint(tile);
-  tileCallout(tile, seat, 'Hạ cấp', houses + 1, houses);
+  if (levelDown) tileCallout(tile, seat, 'Hạ cấp', `Lv${levelDown.from} → Lv${levelDown.to}`, 'down', houseArt(levelDown.from));
   shards(at, 6, '#2FA86F');
   coinFlight(at, seatPoint(seat), 3);
   playSound('crack');

@@ -49,11 +49,11 @@ Chốt 11/11/2026: **cảnh pixel, UI mượt** (giữ nguyên tắc 2 trong `RE
 
 ## Giai đoạn 3 — Modal và sheet (nhỏ gọn)
 
-- [x] Hỏi mua / mua lại: modal giữa màn (`BuyModal`) có tranh ô, giá, chấm nhóm, bậc thuê; dock chỉ nhắc "Mua ô này?".
+- [x] Hỏi mua / mua lại: modal giữa màn (`BuyModal`) có tranh ô, giá, chấm nhóm, bậc thuê; mua lại ghi rõ nhận luôn nhà cấp mấy; dock chỉ nhắc "Mua ô này?". Sheet ô của người khác chỉ hiện "Đáp vào trả" và "Mua lại".
 - [x] Sheet ô đất: cầu thang 4 nấc thuê có hình nhà, nút Hạ / Nâng.
 - [ ] Làm nổi ô đang xem trên bàn khi mở sheet.
-- [x] Sheet tài sản: 3 ô số, nhóm theo màu, nút "Hạ" và "Nâng" có giá.
-- [x] Chọn cấp muốn nâng: chạm bậc trong sheet ô đất, `buildPlan` (logic/rules-hint.ts) tính chuỗi nước BUILD nâng đều cả nhóm, `sendMoves` gửi một lần và diễn liền; nút ghi tổng giá + dòng "Nâng đều cả nhóm: …".
+- [x] Sheet tài sản: 3 ô số, nhóm theo màu, mỗi dòng có Lv + tiền thuê hiện tại; nút Hạ (+tiền nhận) / Nâng (giá) chỉ hiện khi trọn nhóm.
+- [x] Chọn cấp muốn nâng hoặc hạ: chạm bậc trong sheet ô đất (bậc hạ tô đỏ, `sellPlan` hạ đều cả nhóm), nút Hạ ghi số tiền nhận lại; `buildPlan` (logic/rules-hint.ts) tính chuỗi nước BUILD nâng đều cả nhóm, `sendMoves` gửi một lần và diễn liền; nút ghi tổng giá + dòng "Nâng đều cả nhóm: …".
 - [x] Hộp nợ: số nợ to, thanh tiền / bán nhà, danh sách bán thẳng cột, "Bán tự động và trả" là nút chính, Phá sản phụ có xác nhận.
 - [x] Xác nhận / thông báo, kết quả (bục 1-2-3 với quân), menu ⋯ (tốc độ, tự kết thúc lượt, về sảnh, bỏ cuộc).
 
@@ -64,7 +64,7 @@ Chốt 11/11/2026: **cảnh pixel, UI mượt** (giữ nguyên tắc 2 trong `RE
 - [x] Băng rôn chỉ lượt của mình; xúc xắc ~0,9 s; đi 112–140 ms/ô (chia theo nhịp).
 - [ ] Lượt máy ≤ 3,5 s mọi trường hợp: đo 11/11 được 2,7–5,4 s (trước 6–8,5 s); lượt có đôi hoặc thẻ còn dài.
 - [ ] Dẫn mắt theo quân: giữa bàn mờ khi quân đi, bong bóng kết quả cạnh ô vừa đáp.
-- [x] Nâng / hạ nhà (của mình và người khác): nhãn nổi trên ô gồm hình nhà + "Nâng cấp Lv x → Lv y" (hạ cấp số màu đỏ); nâng nhiều cấp liền thì gộp một thông báo mỗi ô; bong bóng giữa bàn và diễn biến cùng dạng.
+- [x] Nhãn nổi trên ô (luôn nằm trong màn, nhãn mới thay nhãn cũ cùng ô): trả thuê (số tiền), bị mua lại ("… mua lại ô của bạn", đỏ), nâng / hạ nhà (của mình và người khác): nhãn nổi trên ô gồm hình nhà + "Nâng cấp Lv x → Lv y" (hạ cấp số màu đỏ); nâng nhiều cấp liền thì gộp một thông báo mỗi ô; bong bóng giữa bàn và diễn biến cùng dạng.
 - [x] Trọn nhóm có băng rôn "TRỌN NHÓM!" + pháo giấy; khách sạn rung + vòng sáng; phá sản giữ hiệu ứng cũ.
 - [ ] Cảnh báo khi một người còn 1 ô là thắng ngay.
 - [x] Xu bay người trả → người nhận; mua đất thì ô lật + cắm cờ.

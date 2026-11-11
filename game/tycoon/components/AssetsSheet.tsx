@@ -1,15 +1,15 @@
 import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
-import { GROUPS, LEVEL_NAMES } from '../logic/constants';
-import { canBuild, canSell, worthOf } from '../logic/rules-hint';
+import { GROUPS, MAX_HOUSES } from '../logic/constants';
+import { canBuild, canSell, currentRent, worthOf } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { seatColor, SEAT_TINTS } from '../helpers/player';
 import { shortName } from '../helpers/tiles';
 import { BottomSheet } from './BottomSheet';
 import { landValue, TileThumb } from './DeedParts';
 import { houseArt } from './art';
-import { UiAvatar, UiButton, UiIconButton } from './Ui';
+import { UiAvatar, UiButton } from './Ui';
 import { useTycoon } from '../store/useTycoon';
 
 export function AssetsSheet({ seat }: { seat: number }) {
@@ -86,30 +86,40 @@ export function AssetsSheet({ seat }: { seat: number }) {
                     <TileThumb idx={idx} />
                     <span>
                       <b>{tile.name}</b>
-                      <small>{street ? LEVEL_NAMES[level] : 'Sân bay'}</small>
+                      <small>
+                        {street ? `Lv${level}` : 'Sân bay'} · <em>Thuê {currentRent(view, idx)}</em>
+                      </small>
                     </span>
                     {art ? <img className="ty-holding-house" src={art} alt="" draggable={false} /> : null}
                   </button>
-                  {street && manageAllowed ? (
+                  {street && manageAllowed && (full || level > 0) ? (
                     <span className="ty-holding-controls">
-                      <UiIconButton
-                        icon="minus"
-                        size="sm"
-                        label={`Hạ cấp ${tile.name}, thu về ${formatMoney((tile.houseCost ?? 0) / 2)}`}
-                        disabled={busy || !sellHint?.ok}
-                        title={sellHint && !sellHint.ok ? sellHint.reason : undefined}
-                        onClick={() => sendMove({ type: 'SELL_HOUSE', tile: idx })}
-                      />
-                      <UiButton
-                        tone="gold"
-                        size="sm"
-                        icon="plus"
-                        price={tile.houseCost ?? 0}
-                        aria-label={`Nâng cấp ${tile.name}, ${formatMoney(tile.houseCost ?? 0)}`}
-                        disabled={busy || !buildHint?.ok}
-                        title={buildHint && !buildHint.ok ? buildHint.reason : undefined}
-                        onClick={() => sendMove({ type: 'BUILD', tile: idx })}
-                      />
+                      {level > 0 ? (
+                        <UiButton
+                          size="sm"
+                          icon="minus"
+                          className="ty-holding-sell"
+                          aria-label={`Hạ cấp ${tile.name}, thu về ${formatMoney(Math.floor((tile.houseCost ?? 0) / 2))}`}
+                          disabled={busy || !sellHint?.ok}
+                          title={sellHint && !sellHint.ok ? sellHint.reason : undefined}
+                          onClick={() => sendMove({ type: 'SELL_HOUSE', tile: idx })}
+                        >
+                          +{Math.floor((tile.houseCost ?? 0) / 2)}
+                        </UiButton>
+                      ) : null}
+                      {full && level < MAX_HOUSES ? (
+                        <UiButton
+                          tone="gold"
+                          size="sm"
+                          icon="plus"
+                          aria-label={`Nâng cấp ${tile.name}, ${formatMoney(tile.houseCost ?? 0)}`}
+                          disabled={busy || !buildHint?.ok}
+                          title={buildHint && !buildHint.ok ? buildHint.reason : undefined}
+                          onClick={() => sendMove({ type: 'BUILD', tile: idx })}
+                        >
+                          {tile.houseCost ?? 0}
+                        </UiButton>
+                      ) : null}
                     </span>
                   ) : null}
                 </div>

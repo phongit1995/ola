@@ -1,11 +1,13 @@
 import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
+import { LEVEL_NAMES } from '../logic/constants';
 import { takeoverPrice } from '../logic/engine';
 import { currentRent } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { useTycoon } from '../store/useTycoon';
 import { groupColor, RentLadder, SeatTag, TileThumb } from './DeedParts';
+import { houseArt } from './art';
 import { MoneyBadge, UiButton, UiModal } from './Ui';
 
 export function BuyModal() {
@@ -29,6 +31,8 @@ export function BuyModal() {
   const tile = BOARD[idx];
   const takeover = view.phase === 'takeover';
   const owner = view.tiles[idx].owner;
+  const houses = view.tiles[idx].houses;
+  const art = houseArt(houses);
   const price = takeover ? takeoverPrice(view, idx) : tile.price ?? 0;
   const myCash = cash[you] ?? me.cash;
   const short = myCash < price;
@@ -76,6 +80,18 @@ export function BuyModal() {
             </>
           )}
         </div>
+        {takeover ? (
+          <p className="ty-buy-take">
+            {houses > 0 ? (
+              <>
+                {art ? <img src={art} alt="" draggable={false} /> : null}
+                Nhận luôn <b>Lv{houses} · {LEVEL_NAMES[houses]}</b>
+              </>
+            ) : (
+              <>Nhận đất trống, chưa có nhà</>
+            )}
+          </p>
+        ) : null}
         <RentLadder view={view} idx={idx} />
         {short ? <p className="ty-buy-note">Thiếu {formatMoney(price - myCash)}</p> : null}
       </div>

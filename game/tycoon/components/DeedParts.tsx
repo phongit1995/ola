@@ -97,6 +97,7 @@ export interface LadderPick {
   target: number;
   can: (houses: number) => boolean;
   onPick: (houses: number) => void;
+  selling?: boolean;
 }
 
 export function RentLadder({ view, idx, pick }: { view: GameState; idx: number; pick?: LadderPick }) {
@@ -116,17 +117,20 @@ export function RentLadder({ view, idx, pick }: { view: GameState; idx: number; 
             <span className="ty-ladder-bar">
               <strong>{step.rent}</strong>
             </span>
-            <span className="ty-ladder-label">{label}</span>
+            <span className="ty-ladder-label">
+              {label}
+              {street ? <small>Lv{step.houses}</small> : null}
+            </span>
           </>
         );
         return (
           <li
             key={step.label}
-            className={[step.active ? 'ty-ladder-on' : '', can ? 'ty-ladder-can' : '', picked ? 'ty-ladder-picked' : ''].join(' ')}
+            className={[step.active ? 'ty-ladder-on' : '', can ? 'ty-ladder-can' : '', picked ? 'ty-ladder-picked' : '', picked && pick?.selling ? 'ty-ladder-picked-sell' : ''].join(' ')}
             style={{ '--h': `${Math.round(30 + (step.rent / maxRent) * 70)}%` } as CSSProperties}
           >
             {can ? (
-              <button type="button" aria-pressed={picked} aria-label={`Chọn nâng lên ${label}, thuê ${step.rent} tr`} onClick={() => pick?.onPick(step.houses)}>
+              <button type="button" aria-pressed={picked} aria-label={`Chọn Lv${step.houses} ${label}, thuê ${step.rent} tr`} onClick={() => pick?.onPick(step.houses)}>
                 {body}
               </button>
             ) : (

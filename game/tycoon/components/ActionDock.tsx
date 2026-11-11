@@ -85,16 +85,18 @@ export function ActionDock() {
       return (
         <div className="ty-dock">
           <p className="ty-dock-say">Đang ở tù · lần {me.jailTurns + 1}/{JAIL_MAX_TURNS}</p>
-          <div className="ty-dock-row ty-dock-row-3">
+          <div className={`ty-dock-row ${me.jailCards.length > 0 ? 'ty-dock-row-3' : ''}`}>
             <UiButton tone="gold" icon="dice" onClick={() => sendMove({ type: 'JAIL_ROLL' })}>
               Gieo đôi
             </UiButton>
             <UiButton price={JAIL_FINE} disabled={myCash < JAIL_FINE} onClick={() => sendMove({ type: 'JAIL_PAY' })}>
               Nộp
             </UiButton>
-            <UiButton icon="key" disabled={me.jailCards.length === 0} onClick={() => sendMove({ type: 'JAIL_CARD' })}>
-              {me.jailCards.length}
-            </UiButton>
+            {me.jailCards.length > 0 ? (
+              <UiButton icon="key" aria-label={`Dùng thẻ ra tù, còn ${me.jailCards.length} thẻ`} onClick={() => sendMove({ type: 'JAIL_CARD' })}>
+                Thẻ
+              </UiButton>
+            ) : null}
           </div>
         </div>
       );
@@ -108,7 +110,6 @@ export function ActionDock() {
     case 'festival':
       return (
         <div className="ty-dock">
-          <p className="ty-dock-say">Chạm thành phố của bạn trên bàn · thuê ×2</p>
           <UiButton block onClick={() => sendMove({ type: 'DECLINE' })}>
             Bỏ qua
           </UiButton>
@@ -117,7 +118,6 @@ export function ActionDock() {
     case 'travel':
       return (
         <div className="ty-dock">
-          <p className="ty-dock-say">Chạm ô bất kỳ trên bàn để bay tới</p>
           <UiButton block icon="dice" onClick={() => sendMove({ type: 'ROLL' })}>
             Không bay, gieo xúc xắc
           </UiButton>

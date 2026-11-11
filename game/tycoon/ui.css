@@ -170,6 +170,14 @@
   background: rgba(31, 42, 68, 0.12);
   font-size: 14px;
 }
+.ui-money-gain {
+  color: #1f7a4d;
+}
+.ui-btn-red .ui-money-gain,
+.ui-btn-green .ui-money-gain,
+.ui-btn-blue .ui-money-gain {
+  color: var(--ui-white);
+}
 .ui-btn-red .ui-money,
 .ui-btn-green .ui-money,
 .ui-btn-blue .ui-money {

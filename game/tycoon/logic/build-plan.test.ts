@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyMove, newGame } from './engine';
-import { buildPlan } from './rules-hint';
+import { buildPlan, sellPlan } from './rules-hint';
 import type { GameState } from './types';
 
 function owning(houses: [number, number]): GameState {
@@ -38,5 +38,28 @@ describe('buildPlan', () => {
     expect(s.tiles[31].houses).toBe(3);
     expect(s.tiles[30].houses).toBeGreaterThanOrEqual(2);
     expect(s.players[0].cash).toBe(5000 - (plan?.cost ?? 0));
+  });
+});
+
+describe('sellPlan', () => {
+  it('sells the group evenly down to the chosen level', () => {
+    expect(sellPlan(owning([3, 3]), 0, 30, 1)).toEqual({ tiles: [30, 31, 30], cost: 300 });
+  });
+
+  it('lowers the higher tile first when the target tile is behind', () => {
+    expect(sellPlan(owning([2, 3]), 0, 30, 1)?.tiles).toEqual([31, 30]);
+  });
+
+  it('returns null when nothing to sell', () => {
+    expect(sellPlan(owning([0, 0]), 0, 30, 0)).toBeNull();
+  });
+
+  it('every planned sale is legal in the engine', () => {
+    let s = owning([3, 2]);
+    const plan = sellPlan(s, 0, 31, 0);
+    for (const tile of plan?.tiles ?? []) s = applyMove(s, 0, { type: 'SELL_HOUSE', tile });
+    expect(s.tiles[31].houses).toBe(0);
+    expect(s.tiles[30].houses).toBeLessThanOrEqual(1);
+    expect(s.players[0].cash).toBe(5000 + (plan?.cost ?? 0));
   });
 });

@@ -11,20 +11,22 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   block?: boolean;
   icon?: TyIconName;
   price?: number;
+  gain?: number;
 };
 
-export function UiButton({ tone = 'paper', size = 'md', block, icon, price, className = '', children, type = 'button', ...rest }: ButtonProps) {
+export function UiButton({ tone = 'paper', size = 'md', block, icon, price, gain, className = '', children, type = 'button', ...rest }: ButtonProps) {
   const classes = ['ui-btn', tone === 'paper' ? '' : `ui-btn-${tone}`, size === 'md' ? '' : `ui-btn-${size}`, block ? 'ui-btn-block' : '', className].filter(Boolean).join(' ');
   return (
     <button type={type} className={classes} {...rest}>
       {icon ? <TyIcon name={icon} size={size === 'lg' ? 22 : size === 'sm' ? 16 : 18} className="ui-icon" /> : null}
       {children}
       {price != null ? <MoneyBadge amount={price} /> : null}
+      {gain != null ? <MoneyBadge amount={gain} signed className="ui-money-gain" /> : null}
     </button>
   );
 }
 
-export function UiIconButton({ icon, label, tone = 'paper', size = 'md', className = '', ...rest }: Omit<ButtonProps, 'children' | 'price'> & { icon: TyIconName; label: string }) {
+export function UiIconButton({ icon, label, tone = 'paper', size = 'md', className = '', ...rest }: Omit<ButtonProps, 'children' | 'price' | 'gain'> & { icon: TyIconName; label: string }) {
   return (
     <button type="button" className={['ui-btn', 'ui-btn-icon', tone === 'paper' ? '' : `ui-btn-${tone}`, size === 'sm' ? 'ui-btn-sm' : '', className].filter(Boolean).join(' ')} aria-label={label} {...rest}>
       <TyIcon name={icon} size={size === 'sm' ? 16 : 20} className="ui-icon" />

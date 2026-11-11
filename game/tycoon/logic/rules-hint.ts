@@ -102,3 +102,21 @@ export function buildPlan(view: GameState, seat: number, idx: number, target: nu
   }
   return { tiles, cost };
 }
+
+export function sellPlan(view: GameState, seat: number, idx: number, target: number): BuildPlan | null {
+  const tile = BOARD[idx];
+  if (tile.kind !== 'street' || !tile.group || view.tiles[idx].owner !== seat) return null;
+  if (target < 0 || target >= view.tiles[idx].houses) return null;
+  const group = tilesOfGroup(tile.group).filter((g) => view.tiles[g].owner === seat);
+  const level = new Map(group.map((g) => [g, view.tiles[g].houses]));
+  const tiles: number[] = [];
+  let cost = 0;
+  while ((level.get(idx) ?? 0) > target) {
+    const max = Math.max(...group.map((g) => level.get(g) ?? 0));
+    const pick = level.get(idx) === max ? idx : group.find((g) => level.get(g) === max) ?? idx;
+    tiles.push(pick);
+    cost += Math.floor((BOARD[pick].houseCost ?? 0) / 2);
+    level.set(pick, (level.get(pick) ?? 0) - 1);
+  }
+  return { tiles, cost };
+}

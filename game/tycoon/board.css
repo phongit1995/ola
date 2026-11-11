@@ -1159,6 +1159,9 @@
 }
 .ty-s6-callout b {
   font-variant-numeric: tabular-nums;
+  color: var(--ty-navy);
+}
+.ty-s6-callout-up b {
   color: var(--ty-jade);
 }
 .ty-s6-callout-down b {
@@ -1220,6 +1223,26 @@
 .ui-modal:has(.ty-buy) .ui-actions {
   grid-auto-flow: row;
   grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+}
+.ty-buy-take {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: var(--ui-r-sm);
+  background: var(--ty-paper-dim);
+  font-family: var(--ty-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ui-ink-2);
+}
+.ty-buy-take img {
+  height: 22px;
+  width: auto;
+}
+.ty-buy-take b {
+  color: var(--ty-navy);
 }
 .ty-buy-note {
   margin: 0;
@@ -1653,6 +1676,10 @@
   background: linear-gradient(180deg, #8fe0b5, var(--ty-jade-light));
   box-shadow: 0 0 0 3px rgba(47, 168, 111, 0.35);
 }
+.ty-ladder-picked-sell .ty-ladder-bar::before {
+  background: linear-gradient(180deg, #ffb8a8, var(--ty-coral-light));
+  box-shadow: 0 0 0 3px rgba(228, 87, 61, 0.3);
+}
 .ty-ladder-picked .ty-ladder-icon img {
   animation: ty-ladder-bob 0.9s ease-in-out infinite;
 }
@@ -1676,6 +1703,13 @@
   line-height: 1.2;
   color: var(--ui-mute);
   white-space: nowrap;
+}
+.ty-ladder-label small {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--ui-mute);
+  opacity: 0.8;
 }
 .ty-deed-facts {
   display: flex;
@@ -1703,7 +1737,7 @@
 }
 .ty-manage-actions {
   grid-auto-flow: row;
-  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 .ty-sheet-reason.ty-sheet-reason-info {
   color: var(--ui-ink-2);
@@ -1863,13 +1897,22 @@
   font-weight: 700;
   line-height: 1.2;
   color: var(--ui-mute);
+  white-space: nowrap;
+}
+.ty-holding-name em {
+  font-style: normal;
+  color: var(--ui-ink-2);
 }
 .ty-holding-house {
   height: 20px;
   width: auto;
   margin-left: auto;
 }
+.ty-holding-sell {
+  color: #1f7a4d;
+}
 .ty-holding-controls {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 4px;
