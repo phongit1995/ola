@@ -296,7 +296,7 @@ func (s *State) pay(from, to, amount int, reason, after string) bool {
 		return true
 	}
 	if p.Cash+s.liquidationValue(from) < amount {
-		s.bankrupt(from, to)
+		s.bankrupt(from, to, amount)
 		return false
 	}
 	s.enterDebt(Debt{Creditor: to, Amount: amount, By: from, ReturnTo: s.Turn, After: after, Reason: reason})
@@ -588,7 +588,7 @@ func (s *State) jailRoll(seat int) {
 	}
 }
 
-func (s *State) bankrupt(seat, creditor int) {
+func (s *State) bankrupt(seat, creditor, amount int) {
 	p := &s.Players[seat]
 	tiles := []int{}
 	for idx := range s.Tiles {
@@ -625,7 +625,11 @@ func (s *State) bankrupt(seat, creditor int) {
 	p.InJail = false
 	p.Doubles = 0
 	s.BankruptOrder = append(s.BankruptOrder, seat)
-	s.push(Step{Kind: StepBankrupt, By: seat, Creditor: intp(newOwner), Tiles: tiles})
+	step := Step{Kind: StepBankrupt, By: seat, Creditor: intp(newOwner), Tiles: tiles}
+	if amount > 0 {
+		step.Amount = intp(amount)
+	}
+	s.push(step)
 	pending := []Debt{}
 	for _, d := range s.PendingDebts {
 		if d.By != seat {
@@ -911,7 +915,7 @@ func applyMove(input *State, seat int, mv Move) (*State, error) {
 		if p.Cash >= s.Debt.Amount {
 			s.settleDebt(seat)
 		} else {
-			s.bankrupt(seat, s.Debt.Creditor)
+			s.bankrupt(seat, s.Debt.Creditor, s.Debt.Amount)
 		}
 	case MoveDeclareBankrupt:
 		if err := needPhase(PhaseDebt); err != nil {
@@ -920,7 +924,7 @@ func applyMove(input *State, seat int, mv Move) (*State, error) {
 		if s.Debt == nil {
 			return nil, ruleError(ErrWrongPhase)
 		}
-		s.bankrupt(seat, s.Debt.Creditor)
+		s.bankrupt(seat, s.Debt.Creditor, s.Debt.Amount)
 	case MoveEndTurn:
 		if err := needPhase(PhaseManage); err != nil {
 			return nil, err
@@ -966,5 +970,5 @@ func quitPlayer(s *State, seat int) {
 		return
 	}
 	s.Players[seat].Quit = true
-	s.bankrupt(seat, -1)
+	s.bankrupt(seat, -1, 0)
 }

@@ -283,7 +283,7 @@ Server nối `steps` cho mỗi Apply (kể cả `MoveOnTimeout`); client replay 
 | `jail-in` / `jail-out` | by, how: dice3\|card \| pay\|card\|double\|forced | quân vào/ra ô 8, badge song sắt trên pod |
 | `build` / `sell` | by, tile, houses (cấp sau khi nâng/hạ) | chấm nhà pop/fade |
 | `debt` | by, creditor, amount | O3 cho con nợ; pod pulse coral cho người khác |
-| `bankrupt` | by, creditor, tilesTransferred[] | pod mờ, chấm chủ đổi màu/mất |
+| `bankrupt` | by, creditor, tiles[], amount? (số nợ; không có khi bỏ cuộc) | pod mờ, chấm chủ đổi màu/mất |
 | `round` | round | chip vòng đổi số; banner vòng cuối |
 | `finish` | rankings[], worth[] | chuyển S9 sau MATCH_OVER |
 
@@ -301,7 +301,7 @@ Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* →
 
 ### 9.1 Bảng xếp hạng và cấp độ
 
-**Trạng thái 01/11/2026: bảng thắng đã làm, bảng cấp độ chưa.** `Repository.Leaderboard` cho `tycoon` dùng chung nhánh của Tiến Lên: đếm mọi ghế qua `game_matches` + ghế 3–4, chỉ người có ≥ 1 ván Nhất, xếp `wins DESC, losses ASC, ken DESC, username` (thắng bằng nhau thì ít ván thua hơn, tương đương ít ván hơn), bàn cược 0 vẫn tính. Mục 2–5 dưới đây (bảng `level`, `me`, hợp đồng `board`) vẫn chưa làm. UI ở [02 §S11](./02-screen-specs.md#s11-bảng-xếp-hạng).
+**Trạng thái 11/11/2026: đã làm đủ** — bảng thắng (nhánh chung Tiến Lên, item có `matches`), `board: 'level'` (bất kỳ game nào, xếp `exp DESC`), `me` có hạng thật; test sqlmock ở `game.repository_test.go`. Phần mô tả dưới giữ làm thiết kế gốc. `Repository.Leaderboard` cho `tycoon` dùng chung nhánh của Tiến Lên: đếm mọi ghế qua `game_matches` + ghế 3–4, chỉ người có ≥ 1 ván Nhất, xếp `wins DESC, losses ASC, ken DESC, username` (thắng bằng nhau thì ít ván thua hơn, tương đương ít ván hơn), bàn cược 0 vẫn tính. Mục 2–5 dưới đây (bảng `level`, `me`, hợp đồng `board`) vẫn chưa làm. UI ở [02 §S11](./02-screen-specs.md#s11-bảng-xếp-hạng).
 
 **Hiện có.** `Repository.Leaderboard` (`server/internal/game/game.repository.go`) trả top 100 theo kỳ `day`/`week` (GMT+7). Caro, War God, Tiến Lên, Cờ tướng đếm thắng/thua theo `winner_id`/`loser_id`; mọi game khác, gồm `tycoon`, rơi vào nhánh xếp theo **tổng KEN thắng > 0**. Bàn Tycoon mặc định cược 0 (11 §1.4) nên với nhánh này **bàn giao lưu không bao giờ lên BXH**. EXP lưu ở `user_game_levels(user_id, game_id, exp, level)`, cộng trong `settleFinish` (một lần mỗi ván); item BXH đã có `level` nhưng chưa có bảng xếp theo EXP.
 
@@ -325,7 +325,7 @@ Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* →
 
 ### 9.2 Lịch sử ván
 
-**Trạng thái 01/11/2026: dùng được phần chung, phần riêng chưa làm.** `MatchHistory` hiện đã tìm cả ghế 3–4 qua `game_match_players` và trả `place`, `playerCount`, `players` cho mọi game (làm cho Tiến Lên), nên Tycoon có lịch sử 2–4 người ngay. Còn thiếu: migration `end_reason` / `exit_reason` và field `endReason` / `exitReason` dưới đây. UI ở [02 §S10](./02-screen-specs.md#s10-lịch-sử).
+**Trạng thái 11/11/2026: đã làm đủ** — migration `20261113000001`, `logic.ResultDescriber`, ván 2 người tycoon cũng có `game_match_players`, item có `endReason`/`exitReason`, người chơi có `kenDelta`/`exitReason`. `exitReason` hiện chỉ có `forfeit` (bỏ cuộc, rời ván, bị loại vì treo máy) và `bankrupt`. `MatchHistory` hiện đã tìm cả ghế 3–4 qua `game_match_players` và trả `place`, `playerCount`, `players` cho mọi game (làm cho Tiến Lên), nên Tycoon có lịch sử 2–4 người ngay. Còn thiếu: migration `end_reason` / `exit_reason` và field `endReason` / `exitReason` dưới đây. UI ở [02 §S10](./02-screen-specs.md#s10-lịch-sử).
 
 **Hiện có.** `Repository.MatchHistory` (`server/internal/game/game.repository.go`) trả 100 ván `finished` gần nhất, bỏ `void`, nhưng theo mô hình **2 người**: chỉ tìm ván có mình ở `player0_id`/`player1_id`, mỗi mục một đối thủ, `outcome` thắng/thua/hòa, `kenDelta` = `game_matches.ken_delta` nếu thắng, `−bet` nếu thua. Với Tycoon:
 

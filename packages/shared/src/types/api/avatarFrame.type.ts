@@ -1,6 +1,6 @@
 export type AvatarFramePrivacy = 0 | 1 | 2;
 
-export type AvatarFrameSource = 'purchase' | 'gift' | 'transfer' | 'gift_code';
+export type AvatarFrameSource = 'purchase' | 'gift' | 'transfer' | 'gift_code' | 'admin';
 
 export type AvatarFramePurchaseSource = 'purchase' | 'gift';
 

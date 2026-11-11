@@ -79,6 +79,15 @@ export interface GameState {
   steps: Step[];
 }
 
+export type ViewState = Omit<GameState, 'chanceDeck' | 'chestDeck' | 'rng'>;
+
+export interface TycoonView extends ViewState {
+  you: number;
+  chanceLeft: number;
+  chestLeft: number;
+  startedAt?: number;
+}
+
 export interface Move {
   type: MoveType;
   tile?: number;

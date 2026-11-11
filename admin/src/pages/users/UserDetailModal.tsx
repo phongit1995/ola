@@ -8,6 +8,7 @@ import {
   HistoryOutlined,
   LockOutlined,
   PlusOutlined,
+  SkinOutlined,
   UserOutlined,
   WalletOutlined,
   WarningOutlined,
@@ -20,6 +21,7 @@ import { KenAdjustModal } from './KenAdjustModal'
 import { KenHistoryModal } from './KenHistoryModal'
 import { UserMeModal } from './UserMeModal'
 import { UserVipIconsModal } from './UserVipIconsModal'
+import { UserAvatarFramesModal } from './UserAvatarFramesModal'
 import { UserVipHistoryModal } from './UserVipHistoryModal'
 import { UserSessionsModal } from './UserSessionsModal'
 import { UserViolationsModal } from './UserViolationsModal'
@@ -87,6 +89,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const [sessionsOpen, setSessionsOpen] = useState(false)
   const [meOpen, setMeOpen] = useState(false)
   const [vipsOpen, setVipsOpen] = useState(false)
+  const [framesOpen, setFramesOpen] = useState(false)
   const [vipHistoryOpen, setVipHistoryOpen] = useState(false)
   const [usernameOpen, setUsernameOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
@@ -111,6 +114,9 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
           </Button>
           <Button icon={<CrownOutlined />} disabled={!userId} onClick={() => setVipsOpen(true)}>
             VIP đang có
+          </Button>
+          <Button icon={<SkinOutlined />} disabled={!userId} onClick={() => setFramesOpen(true)}>
+            Khung avatar
           </Button>
           <Button icon={<CrownOutlined />} disabled={!userId} onClick={() => setVipHistoryOpen(true)}>
             Lịch sử VIP
@@ -333,6 +339,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setVipsOpen(false)}
+    />
+    <UserAvatarFramesModal
+      open={framesOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setFramesOpen(false)}
     />
     <UserVipHistoryModal
       open={vipHistoryOpen}

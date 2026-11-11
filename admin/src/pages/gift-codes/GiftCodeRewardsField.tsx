@@ -1,6 +1,6 @@
 import { Button, Divider, Form, InputNumber, Select, Space, Typography } from 'antd'
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
-import { AVATAR_FRAMES } from '@ola/shared/lib/avatarFrame'
+import { AvatarFrameSelect } from '@/components/AvatarFrameSelect'
 import { VIP_CATALOG, vipIconUrl } from '@/lib/vipCatalog'
 import { GIFT_CODE_MAX_REWARDS, GIFT_CODE_REWARD_TYPE_OPTIONS } from './constants'
 import type { GiftCodeFormValues } from './types'
@@ -19,17 +19,6 @@ const VIP_ICON_OPTIONS = VIP_CATALOG.map((entry) => ({
   ),
 }))
 
-const AVATAR_FRAME_OPTIONS = AVATAR_FRAMES.map((frame) => ({
-  value: frame.id,
-  name: `#${frame.id} ${frame.name}`,
-  label: (
-    <Space>
-      <img src={frame.url} alt="" width={24} height={24} loading="lazy" style={{ objectFit: 'contain' }} />
-      <span>{frame.name ? `#${frame.id} — ${frame.name}` : `#${frame.id}`}</span>
-    </Space>
-  ),
-}))
-
 function GiftCodeRewardRow({ name, disabled, onRemove }: { name: number; disabled: boolean; onRemove?: () => void }) {
   const form = Form.useFormInstance<GiftCodeFormValues>()
   const type = Form.useWatch(['rewards', name, 'type'], form)
@@ -40,13 +29,7 @@ function GiftCodeRewardRow({ name, disabled, onRemove }: { name: number; disable
       </Form.Item>
       {type === 'avatar_frame' ? (
         <Form.Item name={[name, 'frameId']} style={{ flex: 1, marginBottom: 12 }} rules={[{ required: true, message: 'Chọn khung avatar' }]}>
-          <Select
-            disabled={disabled}
-            showSearch
-            placeholder="Tìm và chọn khung avatar..."
-            options={AVATAR_FRAME_OPTIONS}
-            filterOption={(input, option) => String(option?.name ?? '').toLowerCase().includes(input.toLowerCase())}
-          />
+          <AvatarFrameSelect disabled={disabled} />
         </Form.Item>
       ) : type === 'vip_icon' ? (
         <Form.Item name={[name, 'vipIconId']} style={{ flex: 1, marginBottom: 12 }} rules={[{ required: true, message: 'Chọn icon VIP' }]}>

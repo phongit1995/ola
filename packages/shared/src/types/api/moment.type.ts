@@ -36,6 +36,12 @@ export interface MomentOverlay {
   align: MomentTextAlign;
 }
 
+export interface MomentMusic {
+  url: string;
+  title: string;
+  durationMs: number;
+}
+
 export interface Moment {
   id: string;
   author: MomentAuthor;
@@ -49,6 +55,7 @@ export interface Moment {
   width?: number;
   height?: number;
   duration?: number;
+  music?: MomentMusic;
   visibility: MomentVisibility;
   viewerCount?: number;
   reactionCount?: number;

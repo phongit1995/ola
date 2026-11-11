@@ -112,6 +112,12 @@ type Moment struct {
 	Duration             float64        `gorm:"not null;default:0"`
 	Size                 int64          `gorm:"not null;default:0"`
 	MimeType             string         `gorm:"type:varchar(50);not null;default:''"`
+	MusicURL             string         `gorm:"column:music_url;type:text;not null;default:''"`
+	MusicObject          string         `gorm:"column:music_object;type:varchar(500);not null;default:''"`
+	MusicTitle           string         `gorm:"column:music_title;type:varchar(80);not null;default:''"`
+	MusicStartMs         int            `gorm:"column:music_start_ms;not null;default:0"`
+	MusicDurationMs      int            `gorm:"column:music_duration_ms;not null;default:0"`
+	MusicSourceHash      string         `gorm:"column:music_source_hash;type:varchar(64);not null;default:''"`
 	Visibility           string         `gorm:"type:varchar(20);not null;default:'friend'"`
 	Status               string         `gorm:"type:varchar(20);not null;default:'ready'"`
 	Enabled              bool           `gorm:"not null;default:true"`

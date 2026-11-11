@@ -57,6 +57,7 @@ export function MomentsTab() {
   const [visibility, setVisibility] = useState<AnyOr<MomentVisibility>>('all')
   const [shown, setShown] = useState<TriState>('all')
   const [pendingReports, setPendingReports] = useState<TriState>('all')
+  const [hasMusic, setHasMusic] = useState<TriState>('all')
   const [sort, setSort] = useState('newest')
   const [detailId, setDetailId] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -75,6 +76,7 @@ export function MomentsTab() {
     visibility !== 'all' ||
     shown !== 'all' ||
     pendingReports !== 'all' ||
+    hasMusic !== 'all' ||
     sort !== 'newest'
 
   function clearFilters() {
@@ -84,6 +86,7 @@ export function MomentsTab() {
     setVisibility('all')
     setShown('all')
     setPendingReports('all')
+    setHasMusic('all')
     setSort('newest')
     setPage(1)
   }
@@ -97,6 +100,7 @@ export function MomentsTab() {
     visibility: pickAll(visibility),
     enabled: triToBool(shown),
     hasPendingReports: triToBool(pendingReports),
+    hasMusic: triToBool(hasMusic),
     ...sortParams,
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
@@ -319,6 +323,16 @@ export function MomentsTab() {
             { value: 'all', label: 'Báo cáo: tất cả' },
             { value: 'yes', label: 'Có báo cáo chờ xử lý' },
             { value: 'no', label: 'Không có báo cáo chờ' },
+          ]}
+        />
+        <Select
+          value={hasMusic}
+          onChange={resetPage(setHasMusic)}
+          style={{ width: 150 }}
+          options={[
+            { value: 'all', label: 'Nhạc: tất cả' },
+            { value: 'yes', label: 'Có nhạc' },
+            { value: 'no', label: 'Không có nhạc' },
           ]}
         />
         <Select

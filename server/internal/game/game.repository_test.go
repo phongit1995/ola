@@ -53,7 +53,7 @@ func TestThirteenLeaderboardCountsEverySeat(t *testing.T) {
 			AddRow(firstID.String(), "vua_bai", nil, nil, int64(0), int64(5), int64(7), int64(900)).
 			AddRow(secondID.String(), "tay_moi", nil, nil, int64(28_500), int64(5), int64(9), int64(0)))
 
-	data, err := repo.Leaderboard("thirteen", "month")
+	data, err := repo.Leaderboard("thirteen", "month", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,7 +85,7 @@ func TestCaroLeaderboardReturnsWinLossRankingAndOnlyActiveVip(t *testing.T) {
 			AddRow(activeID.String(), "vua_caro", activeVip, time.Now().Add(time.Hour), int64(50000), int64(12), int64(3)).
 			AddRow(expiredID.String(), "co_thu", expiredVip, time.Now().Add(-time.Hour), int64(25000), int64(10), int64(2)))
 
-	data, err := repo.Leaderboard("caro", "unexpected")
+	data, err := repo.Leaderboard("caro", "unexpected", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +116,7 @@ func TestWarGodLeaderboardReturnsWinLossRanking(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"user_id", "username", "vip_type", "vip_end_time", "ken", "wins", "losses"}).
 			AddRow(userID.String(), "chien_than", nil, nil, int64(80000), int64(9), int64(1)))
 
-	data, err := repo.Leaderboard("war-god", "day")
+	data, err := repo.Leaderboard("war-god", "day", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,7 +137,7 @@ func TestOtherGameLeaderboardKeepsKenRanking(t *testing.T) {
 		WithArgs("other-game", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), leaderboardLimit).
 		WillReturnRows(sqlmock.NewRows([]string{"user_id", "username", "vip_type", "vip_end_time", "ken"}))
 
-	data, err := repo.Leaderboard("other-game", "day")
+	data, err := repo.Leaderboard("other-game", "day", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -272,5 +272,106 @@ func TestMatchHistoryIncludesMultiPlayerSeats(t *testing.T) {
 	if three.PlayerCount != 3 || three.Place != 1 || three.Outcome != "win" || three.KenDelta != 0 ||
 		three.Players[0].UserID != userID.String() || three.Players[1].Place != 0 || three.Players[2].Place != 0 {
 		t.Fatalf("unexpected unranked three-player entry: %+v", three)
+	}
+}
+
+func TestLevelLeaderboardRanksByExpAndReturnsExp(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &Repository{db: db}
+	topID := uuid.New()
+
+	mock.ExpectQuery(`SELECT .* FROM user_game_levels AS levels JOIN users ON users\.id = levels\.user_id WHERE levels\.game_id = \$1 AND levels\.exp > 0 .*ORDER BY levels\.exp DESC, users\.username ASC, levels\.user_id ASC LIMIT \$2`).
+		WithArgs("tycoon", leaderboardLimit).
+		WillReturnRows(sqlmock.NewRows([]string{"user_id", "username", "vip_type", "vip_end_time", "ken", "wins", "losses", "game_exp"}).
+			AddRow(topID.String(), "cay_cap", nil, nil, int64(0), int64(0), int64(0), int64(900)))
+
+	data, err := repo.Leaderboard("tycoon", "week", "level", topID.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if data.Board != "level" || len(data.Items) != 1 {
+		t.Fatalf("unexpected data: %+v", data)
+	}
+	if got := data.Items[0]; got.Exp != 900 || got.Level < 2 || got.Matches != 0 {
+		t.Fatalf("unexpected entry: %+v", got)
+	}
+	if data.Me == nil || data.Me.Rank != 1 || data.Me.UserID != topID.String() {
+		t.Fatalf("me=%+v, want the top row", data.Me)
+	}
+}
+
+func TestTycoonLeaderboardFindsMeOutsideTop(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &Repository{db: db}
+	meID := uuid.New()
+	columns := []string{"user_id", "username", "vip_type", "vip_end_time", "ken", "wins", "losses", "game_exp"}
+	top := sqlmock.NewRows(columns)
+	for i := 0; i < leaderboardLimit; i++ {
+		top.AddRow(uuid.New().String(), "top", nil, nil, int64(0), int64(3), int64(1), int64(0))
+	}
+
+	mock.ExpectQuery(`SELECT .* FROM "game_matches" CROSS JOIN LATERAL .* ORDER BY wins DESC, losses ASC, ken DESC.*LIMIT \$5`).
+		WithArgs("tycoon", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), leaderboardLimit).
+		WillReturnRows(top)
+	mock.ExpectQuery(`SELECT \* FROM \(SELECT board_rows\.\*, ROW_NUMBER\(\) OVER \(ORDER BY wins DESC, losses ASC, ken DESC, username ASC, user_id ASC\) AS board_rank FROM \(SELECT .*\) AS board_rows\) AS ranked WHERE ranked\.user_id = \$5 LIMIT \$6`).
+		WithArgs("tycoon", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), meID, 1).
+		WillReturnRows(sqlmock.NewRows(append(columns, "board_rank")).
+			AddRow(meID.String(), "toi", nil, nil, int64(0), int64(1), int64(4), int64(0), 137))
+
+	data, err := repo.Leaderboard("tycoon", "day", "", meID.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if data.Board != "wins" || len(data.Items) != leaderboardLimit || data.Items[0].Matches != 4 {
+		t.Fatalf("unexpected board=%q items=%d first=%+v", data.Board, len(data.Items), data.Items[0])
+	}
+	if data.Me == nil || data.Me.Rank != 137 || data.Me.Wins != 1 || data.Me.Matches != 5 {
+		t.Fatalf("me=%+v, want rank 137 with 5 matches", data.Me)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestTycoonMatchHistoryReturnsEndAndExitReasons(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &Repository{db: db}
+	userID := uuid.New()
+	winnerID := uuid.New()
+	rowID := uuid.New()
+	matchID := uuid.NewString()
+	now := time.Now()
+	place1, place2 := 1, 2
+	forfeit := "forfeit"
+	endReason := "groups"
+
+	mock.ExpectQuery(`SELECT .*game_matches\.end_reason.* FROM "game_matches" .*game_matches\.game_id = \$1.*LIMIT \$7`).
+		WithArgs("tycoon", matchStatusFinished, userID, userID, userID, reasonVoid, matchHistoryLimit).
+		WillReturnRows(sqlmock.NewRows([]string{
+			"game_match_id", "match_id", "played_at", "player_count", "player0_id", "player1_id", "winner_id",
+			"bet", "ken_delta", "end_reason", "player0_name", "player1_name",
+		}).AddRow(rowID, matchID, now, 2, winnerID, userID, winnerID, 5_000, 4_750, endReason, "chu_dat", "you"))
+	mock.ExpectQuery(`SELECT seats\.game_match_id, seats\.user_id, seats\.place, seats\.exit_reason.* FROM game_match_players AS seats .*WHERE seats\.game_match_id IN \(\$1\)`).
+		WithArgs(rowID).
+		WillReturnRows(sqlmock.NewRows([]string{"game_match_id", "user_id", "place", "exit_reason", "username"}).
+			AddRow(rowID, winnerID, place1, nil, "chu_dat").
+			AddRow(rowID, userID, place2, forfeit, "you"))
+
+	data, err := repo.MatchHistory("tycoon", userID.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data.Items) != 1 {
+		t.Fatalf("items=%d, want 1", len(data.Items))
+	}
+	got := data.Items[0]
+	if got.EndReason != endReason || got.ExitReason != forfeit || got.Place != 2 || got.KenDelta != -5_000 || got.OpponentID != winnerID.String() {
+		t.Fatalf("unexpected entry: %+v", got)
+	}
+	if len(got.Players) != 2 || got.Players[0].KenDelta != 4_750 || got.Players[1].ExitReason != forfeit || got.Players[1].KenDelta != -5_000 {
+		t.Fatalf("unexpected players: %+v", got.Players)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
 	}
 }

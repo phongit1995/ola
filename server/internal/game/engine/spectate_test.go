@@ -168,11 +168,19 @@ func spectatorThirteenView(t *testing.T, label string, state any) thirteen.Playe
 	return view
 }
 
+type privateViewLogic struct {
+	logic.GameLogic
+	logic.StateViewer
+}
+
 func TestSpectateHiddenInformationNeedsSpectatorView(t *testing.T) {
 	if !spectatable(thirteen.Logic{}) {
 		t.Fatal("tien len exposes a spectator view and should be watchable")
 	}
-	if spectatable(tycoon.Logic{}) {
+	if !spectatable(tycoon.Logic{}) {
+		t.Fatal("tycoon exposes a spectator view and should be watchable")
+	}
+	if spectatable(privateViewLogic{GameLogic: tycoon.Logic{}, StateViewer: tycoon.Logic{}}) {
 		t.Fatal("a hidden-information game without a spectator view must stay unwatchable")
 	}
 }

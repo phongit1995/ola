@@ -73,6 +73,9 @@ func (c *Cleaner) RunOnce(ctx context.Context) (int, error) {
 	if cleared > 0 {
 		c.logger.Infow("Leftover moment video sources removed", "count", cleared)
 	}
+	if retried := c.retryMusicDeletes(ctx); retried > 0 {
+		c.logger.Infow("Removed moment music deleted from storage", "count", retried)
+	}
 	c.autoPurge(ctx)
 	return cleared, nil
 }

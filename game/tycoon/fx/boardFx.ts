@@ -4,8 +4,10 @@ import { pawnLayout, type PawnSpot } from '../helpers/pawnLayout';
 import { tileCenter } from '../helpers/boardGeometry';
 import { playSound } from '../audio';
 import { coinFlight, coinFountain, confettiBurst, confettiRain, dust, ring, shards, sparks } from './particles';
-import { animate, boardCenter, boardUnit, byId, centerOf, pawnEl, pawnFoot, podEl, reducedMotion, seatPoint, sleep, tileEl, tilePoint, type Point } from './runtime';
+import { animate, boardCenter, boardUnit, byId, centerOf, pawnEl, pawnFoot, podEl, reducedMotion, scaled, seatPoint, sleep, tileEl, tilePoint, type Point } from './runtime';
 import charUrls from './charArt';
+import { houseArt } from '../components/art';
+import { MAX_HOUSES } from '../logic/constants';
 
 const EASE_UP = 'cubic-bezier(.33,.66,.66,1)';
 const EASE_DOWN = 'cubic-bezier(.33,0,.66,.34)';
@@ -86,84 +88,55 @@ function diceWraps(): HTMLElement[] {
   return Array.from(document.querySelectorAll<HTMLElement>('[data-die]'));
 }
 
-const FACE_ROTATION: Record<number, [number, number]> = { 1: [0, 0], 6: [0, 180], 2: [0, -90], 5: [0, 90], 3: [-90, 0], 4: [90, 0] };
-
-export function cubeTransform(value: number, spinX = 0, spinY = 0, spinZ = 0): string {
-  const [x, y] = FACE_ROTATION[value] ?? FACE_ROTATION[1];
-  return `rotateX(${x + spinX}deg) rotateY(${y + spinY}deg) rotateZ(${spinZ}deg)`;
-}
-
 export async function rollDice(values: [number, number]): Promise<void> {
   const wraps = diceWraps();
   const unit = boardUnit();
+  const faces = wraps.map((wrap) => wrap.querySelector<HTMLElement>('[data-face]'));
   playSound('shake');
-  await Promise.all(
-    wraps.map((wrap, index) =>
-      animate(
-        wrap,
-        [0, 1, 2, 3, 4, 5, 6].map((i) => ({
-          transform: i === 6 ? 'none' : `translate(${(i % 2 ? -1 : 1) * unit * 1.3}px,${((i % 3) - 1) * unit * 0.7}px) rotate(${(i % 2 ? -1 : 1) * (10 + index * 3)}deg)`,
-        })),
-        { duration: 240, easing: 'linear' },
-      ),
-    ),
-  );
-  playSound('roll');
+  const spin = reducedMotion()
+    ? 0
+    : setInterval(() => faces.forEach((face) => face && (face.dataset.face = String(1 + Math.floor(Math.random() * 6)))), scaled(70));
+  setTimeout(() => playSound('roll'), scaled(260));
   await Promise.all(
     wraps.map((wrap, index) => {
       const dir = index ? 1 : -1;
-      const delay = index * 110;
-      const cube = wrap.querySelector<HTMLElement>('[data-cube]');
-      const extraX = 720 + Math.round(Math.random() * 2) * 360;
-      const extraY = dir * (1080 + Math.round(Math.random() * 2) * 360);
-      animate(cube, [{ transform: cubeTransform(values[index], extraX, extraY, dir * 180) }, { transform: cubeTransform(values[index]) }], { duration: 740, delay, easing: 'cubic-bezier(.16,.72,.24,1)', fill: 'backwards' });
-      animate(
-        wrap.querySelector('[data-die-shadow]'),
-        [
-          { transform: 'scale(1)', opacity: 1 },
-          { transform: 'scale(1.5)', opacity: 0.3, offset: 0.25 },
-          { transform: 'scale(.9)', opacity: 1, offset: 0.5 },
-          { transform: 'scale(1.2)', opacity: 0.5, offset: 0.68 },
-          { transform: 'scale(1)', opacity: 1, offset: 0.85 },
-          { transform: 'scale(1)', opacity: 1 },
-        ],
-        { duration: 760, delay, easing: 'linear' },
-      );
       return animate(
         wrap,
         [
-          { transform: `translate(${dir * unit * 8}px,${unit * 3}px) scale(1)`, easing: 'cubic-bezier(.2,.7,.4,1)' },
-          { transform: `translate(${dir * unit * 3}px,${-unit * 14}px) scale(1.42)`, offset: 0.27, easing: 'cubic-bezier(.6,0,.9,.5)' },
-          { transform: 'translate(0,0) scale(1.12,.92)', offset: 0.52, easing: 'cubic-bezier(.2,.7,.4,1)' },
-          { transform: `translate(0,${-unit * 5}px) scale(1.04)`, offset: 0.68, easing: 'cubic-bezier(.6,0,.9,.5)' },
-          { transform: 'translate(0,0) scale(1.1,.9)', offset: 0.84, easing: 'cubic-bezier(.2,.7,.4,1)' },
-          { transform: `translate(0,${-unit * 1.3}px) scale(1)`, offset: 0.92, easing: 'ease-in' },
-          { transform: 'translate(0,0) scale(1)' },
+          { transform: `translate(${dir * unit * 8}px,${unit * 3}px) rotate(${dir * -90}deg)` },
+          { transform: `translate(${dir * unit * 4}px,${-unit * 12}px) rotate(${dir * -45}deg) scale(1.2)`, offset: 0.34 },
+          { transform: 'translate(0,0) rotate(0deg) scale(1.18,.82)', offset: 0.6 },
+          { transform: `translate(0,${-unit * 3.5}px) scale(1.04)`, offset: 0.76 },
+          { transform: 'translate(0,0) scale(1.1,.9)', offset: 0.9 },
+          { transform: 'none' },
         ],
-        { duration: 760, delay, fill: 'backwards' },
-      ).then(() => dust(centerOf(wrap), 5));
+        { duration: 600, delay: index * 70, easing: 'cubic-bezier(.2,.75,.3,1)' },
+      );
     }),
   );
+  if (spin) clearInterval(spin);
+  faces.forEach((face, index) => face && (face.dataset.face = String(values[index])));
+  wraps.forEach((wrap) => dust({ x: centerOf(wrap).x, y: wrap.getBoundingClientRect().bottom }, 5));
 }
 
 export async function revealDiceTotal(double: boolean): Promise<void> {
   const total = byId('ty-s6-dice-total');
   if (double) {
     playSound('double');
-    diceWraps().forEach((wrap) => sparks(centerOf(wrap), 12));
+    diceWraps().forEach((wrap) => sparks(centerOf(wrap), 10, '#F7C531', 3.6));
     const dice = byId('ty-s6-dice');
-    if (dice) ring(centerOf(dice), boardUnit() * 22);
+    if (dice) ring(centerOf(dice), boardUnit() * 20, '#F7C531');
   }
   animate(
     total,
     [
-      { transform: 'translateY(-50%) scale(.3)', opacity: 0 },
-      { transform: 'translateY(-50%) scale(1.24)', opacity: 1, offset: 0.62 },
+      { transform: 'translateY(-50%) scale(.2)', opacity: 0 },
+      { transform: 'translateY(-50%) scale(1.3)', opacity: 1, offset: 0.6 },
       { transform: 'translateY(-50%) scale(1)', opacity: 1 },
     ],
-    { duration: 280, easing: 'ease-out' },
+    { duration: 240, easing: 'cubic-bezier(.22,1.2,.36,1)' },
   );
-  await sleep(double ? 560 : 440);
+  await sleep(double ? 460 : 300);
 }
 
 // --- Quân cờ ---
@@ -180,7 +153,7 @@ export interface WalkOptions {
 }
 
 function hopDurations(count: number): number[] {
-  const base = count > 7 ? 150 : count > 4 ? 175 : 205;
+  const base = count > 7 ? 112 : count > 4 ? 124 : 140;
   return Array.from({ length: count }, (_, i) => {
     if (i === 0) return Math.round(base * 1.2);
     if (i === count - 1) return Math.round(base * 1.3);
@@ -219,8 +192,8 @@ export async function walkPawn({ seat, from, count, positions, bankrupt, turn, c
   const perX = parent.clientWidth / 100;
   const perY = parent.clientHeight / 100;
   const hopHeight = unit * (count > 7 ? 3.4 : 4.4);
-  const tail = 200;
-  const durations = hopDurations(count);
+  const tail = scaled(160);
+  const durations = hopDurations(count).map(scaled);
   const times = [0];
   durations.forEach((duration) => times.push(times[times.length - 1] + duration));
   const total = times[count];
@@ -321,16 +294,17 @@ export interface PayFx {
   to: number;
   amount: number;
   reason?: string;
+  tile?: number;
   debit: () => void;
   credit: () => void;
 }
 
 const POSE_FOR_REASON = new Set(['tax', 'fine', 'repair']);
 
-export async function payMoney({ from, to, amount, reason, debit, credit }: PayFx): Promise<void> {
+export async function payMoney({ from, to, amount, reason, tile, debit, credit }: PayFx): Promise<void> {
   const big = amount >= 500;
-  const start = from >= 0 ? seatPoint(from) : reason === 'salary' ? tilePoint(0) : boardCenter();
-  const end = to >= 0 ? seatPoint(to) : boardCenter();
+  const start = from >= 0 ? seatPoint(from) : reason === 'salary' ? tilePoint(0) : tile != null ? tilePoint(tile) : boardCenter();
+  const end = to >= 0 ? seatPoint(to) : tile != null ? tilePoint(tile) : boardCenter();
   if (reason === 'salary') {
     coinFountain(start, 8);
     ring(start, boardUnit() * 13);
@@ -359,52 +333,87 @@ export async function payMoney({ from, to, amount, reason, debit, credit }: PayF
 
 // --- Đất và nhà ---
 
-async function flyDeed(tile: number, seat: number, name: string): Promise<void> {
-  if (reducedMotion()) return;
-  const chip = document.createElement('span');
-  chip.className = 'ty-s6-flydeed';
-  chip.style.setProperty('--seat', seatColor(seat));
-  chip.textContent = name;
-  document.body.append(chip);
-  const from = boardCenter();
-  const to = tilePoint(tile);
-  await animate(
-    chip,
-    [
-      { transform: `translate(${from.x}px,${from.y}px) translate(-50%,-50%) scale(1.5) rotate(-6deg)`, opacity: 0, easing: 'ease-out' },
-      { transform: `translate(${from.x}px,${from.y - 18}px) translate(-50%,-50%) scale(1.7) rotate(0)`, opacity: 1, offset: 0.25, easing: 'cubic-bezier(.5,0,.8,.5)' },
-      { transform: `translate(${to.x}px,${to.y}px) translate(-50%,-50%) scale(.5) rotate(8deg)`, opacity: 1 },
-    ],
-    { duration: 460 },
-  );
-  chip.remove();
-}
-
-export async function stampDeed(tile: number, seat: number, name: string, commit: () => void, fullGroup: number[] | null): Promise<void> {
-  await flyDeed(tile, seat, name);
-  commit();
+export async function stampDeed(tile: number, seat: number, commit: () => void, fullGroup: number[] | null): Promise<void> {
   const el = tileEl(tile);
   const at = tilePoint(tile);
+  const unit = boardUnit();
+  await animate(el, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: 120, easing: 'cubic-bezier(.5,0,.9,.5)' });
+  commit();
   playSound('stamp');
-  animate(el, [{ transform: 'scale(1.55) rotate(-4deg)', zIndex: 8 }, { transform: 'scale(.92)', zIndex: 8, offset: 0.55 }, { transform: 'scale(1)', zIndex: 8 }], { duration: 300, easing: 'cubic-bezier(.3,.9,.4,1)' });
-  animate(el?.querySelector('[data-owner-dot]'), [{ transform: 'scale(0)' }, { transform: 'scale(1.5)', offset: 0.6 }, { transform: 'scale(1)' }], { duration: 280, delay: 90, easing: 'ease-out', fill: 'backwards' });
-  ring(at, boardUnit() * 13, seatColor(seat));
-  confettiBurst(at, 16, [seatColor(seat), '#FFD34D', '#FFFFFF']);
+  await animate(el, [{ transform: 'scale(0,1.3)', zIndex: 8 }, { transform: 'scale(1.3,1.3)', zIndex: 8, offset: 0.5 }, { transform: 'scale(1)', zIndex: 8 }], { duration: 220, easing: 'cubic-bezier(.22,1.2,.36,1)' });
+  animate(el?.querySelector('[data-owner-dot]'), [{ transform: 'translateY(-220%)', opacity: 0 }, { transform: 'translateY(15%)', opacity: 1, offset: 0.7 }, { transform: 'none', opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.22,1.2,.36,1)' });
+  ring(at, unit * 12, seatColor(seat));
+  confettiBurst(at, 18, [seatColor(seat), '#F7C531', '#FFFFFF']);
   if (fullGroup) {
-    playSound('double');
-    fullGroup.forEach((idx) => {
-      animate(tileEl(idx), [0, 1, 2, 3, 4, 5, 6].map((i) => ({ filter: i % 2 ? 'brightness(1.35)' : 'brightness(1)' })), { duration: 640 });
-      confettiBurst(tilePoint(idx), 10, [seatColor(seat), '#FFD34D']);
+    playSound('fanfare');
+    shakeBoard(unit * 0.6);
+    void sweepBanner('TRỌN NHÓM!', 'gold', 1000);
+    fullGroup.forEach((idx, i) => {
+      setTimeout(() => {
+        animate(tileEl(idx), [0, 1, 2, 3, 4, 5].map((n) => ({ filter: n % 2 ? 'brightness(1.4)' : 'brightness(1)' })), { duration: 480, easing: 'cubic-bezier(.22,1.2,.36,1)' });
+        confettiBurst(tilePoint(idx), 14, [seatColor(seat), '#F7C531']);
+      }, scaled(i * 90));
     });
+    await sleep(520);
   }
-  await sleep(320);
+  await sleep(220);
 }
 
-export async function buildHouse(tile: number, hotel: boolean): Promise<void> {
+export type CalloutTone = 'up' | 'down' | 'neutral';
+
+export function tileCallout(tile: number, seat: number, title: string, value: string, tone: CalloutTone = 'up', art?: string | null): void {
+  const host = document.querySelector('.ty-board-screen');
+  const at = tilePoint(tile);
+  if (!host) return;
+  host.querySelectorAll(`.ty-s6-callout[data-callout="${tile}"]`).forEach((old) => old.remove());
+  const tag = document.createElement('div');
+  tag.className = `ty-s6-callout ty-s6-callout-${tone}`;
+  tag.dataset.callout = String(tile);
+  tag.style.left = `${at.x}px`;
+  tag.style.top = `${at.y}px`;
+  tag.style.setProperty('--seat', seatColor(seat));
+  if (art) {
+    const img = document.createElement('img');
+    img.src = art;
+    img.alt = '';
+    tag.append(img);
+  }
+  const label = document.createElement('span');
+  label.textContent = title;
+  const amount = document.createElement('b');
+  amount.textContent = value;
+  tag.append(label, amount);
+  host.append(tag);
+  const bounds = host.getBoundingClientRect();
+  const half = tag.offsetWidth / 2 + 6;
+  tag.style.left = `${Math.min(Math.max(at.x, bounds.left + half), bounds.right - half)}px`;
+  const hold = Math.max(700, scaled(1300));
+  const remove = () => tag.remove();
+  if (reducedMotion()) {
+    setTimeout(remove, hold);
+    return;
+  }
+  tag
+    .animate(
+      [
+        { transform: 'translate(-50%, -40%) scale(.6)', opacity: 0 },
+        { transform: 'translate(-50%, -115%) scale(1.06)', opacity: 1, offset: 0.12 },
+        { transform: 'translate(-50%, -110%) scale(1)', opacity: 1, offset: 0.2 },
+        { transform: 'translate(-50%, -118%) scale(1)', opacity: 1, offset: 0.85 },
+        { transform: 'translate(-50%, -150%) scale(.96)', opacity: 0 },
+      ],
+      { duration: hold, easing: 'cubic-bezier(.22,1,.36,1)' },
+    )
+    .finished.then(remove, remove);
+}
+
+export async function buildHouse(tile: number, houses: number, seat: number, levelUp?: { from: number; to: number }): Promise<void> {
+  const hotel = houses >= MAX_HOUSES;
   const el = tileEl(tile);
   const at = tilePoint(tile);
   const unit = boardUnit();
   playSound(hotel ? 'double' : 'pop');
+  if (levelUp) tileCallout(tile, seat, 'Nâng cấp', `Lv${levelUp.from} → Lv${levelUp.to}`, 'up', houseArt(levelUp.to));
   dust({ x: at.x, y: at.y + unit }, 7);
   sparks(at, hotel ? 10 : 3, hotel ? '#E4573D' : '#2FA86F', 2.6);
   await animate(
@@ -415,12 +424,17 @@ export async function buildHouse(tile: number, hotel: boolean): Promise<void> {
       { transform: 'translateY(0) scale(.9,1.2)', offset: 0.78 },
       { transform: 'translateY(0) scale(1)' },
     ],
-    { duration: 300 },
+    { duration: 300, easing: 'cubic-bezier(.22,1.2,.36,1)' },
   );
+  if (hotel) {
+    shakeBoard(unit * 0.6);
+    ring(at, unit * 16, '#F7C531');
+  }
 }
 
-export async function sellHouse(tile: number, seat: number): Promise<void> {
+export async function sellHouse(tile: number, seat: number, levelDown?: { from: number; to: number }): Promise<void> {
   const at = tilePoint(tile);
+  if (levelDown) tileCallout(tile, seat, 'Hạ cấp', `Lv${levelDown.from} → Lv${levelDown.to}`, 'down', houseArt(levelDown.from));
   shards(at, 6, '#2FA86F');
   coinFlight(at, seatPoint(seat), 3);
   playSound('crack');
@@ -615,4 +629,10 @@ export async function showTurnBanner({ seat, mine, name, avatar, tip }: TurnBann
 export function celebrateResult(won: boolean, winnerSeat: number): void {
   playSound('fanfare');
   confettiRain([seatColor(winnerSeat), '#FFD34D', '#FFFFFF', '#E4573D', '#39ABEF'], won ? 110 : 60);
+}
+
+export function winBanner(text: string): Promise<void> {
+  playSound('fanfare');
+  shakeBoard(boardUnit() * 0.5);
+  return sweepBanner(text, 'gold', 1800);
 }

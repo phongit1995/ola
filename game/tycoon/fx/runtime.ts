@@ -5,13 +5,24 @@ export interface Point {
 
 export const reducedMotion = (): boolean => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
+let tempo = 1;
+
+export function setTempo(value: number): void {
+  tempo = Math.max(0.25, value);
+}
+
+export function scaled(ms: number): number {
+  return ms / tempo;
+}
+
 export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, reducedMotion() ? Math.min(ms, 30) : ms));
+  return new Promise((resolve) => setTimeout(resolve, reducedMotion() ? Math.min(ms, 30) : scaled(ms)));
 }
 
 export function animate(el: Element | null | undefined, keyframes: Keyframe[], options: KeyframeAnimationOptions): Promise<void> {
   if (!el || reducedMotion()) return Promise.resolve();
-  return el.animate(keyframes, options).finished.then(
+  const timing = { ...options, duration: typeof options.duration === 'number' ? scaled(options.duration) : options.duration, delay: options.delay ? scaled(options.delay) : options.delay };
+  return el.animate(keyframes, timing).finished.then(
     () => undefined,
     () => undefined,
   );

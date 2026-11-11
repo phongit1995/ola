@@ -47,7 +47,7 @@ export function AvatarWithFrame({
         name={name}
         uri={uri}
         size={avatarSize}
-        rounded={rounded}
+        rounded
         color={color}
         showLoader={showLoader}
       />

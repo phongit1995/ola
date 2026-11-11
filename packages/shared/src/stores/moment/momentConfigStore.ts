@@ -8,6 +8,7 @@ import { useAuthStore } from '../auth/authStore';
 export const useMomentConfigStore = create<MomentConfigState>((set, get) => ({
   enabled: null,
   videoVipRequired: false,
+  musicEnabled: false,
 
   load: async () => {
     const config = await loadAppConfig('moment');
@@ -15,6 +16,7 @@ export const useMomentConfigStore = create<MomentConfigState>((set, get) => ({
       set({
         enabled: config.enabled,
         videoVipRequired: config.videoVipRequired === true,
+        musicEnabled: config.musicEnabled === true,
       });
       return;
     }
@@ -33,6 +35,11 @@ function useLoadMomentConfig() {
 export function useMomentEnabled(): boolean {
   useLoadMomentConfig();
   return useMomentConfigStore((state) => state.enabled) === true;
+}
+
+export function useMomentMusicEnabled(): boolean {
+  useLoadMomentConfig();
+  return useMomentConfigStore((state) => state.musicEnabled);
 }
 
 export function useMomentVideoLocked(): boolean {

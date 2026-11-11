@@ -37,6 +37,11 @@ export const AdminMomentService = {
     return data.data
   },
 
+  async removeMusic(id: string, block: boolean): Promise<AdminMomentDetail> {
+    const { data } = await http.post<ApiResponse<AdminMomentDetail>>(`/admin/moments/${id}/remove-music`, { block })
+    return data.data
+  },
+
   async purgeLogs(params: ListParams = {}): Promise<MomentMediaPurgeLogs> {
     const { data } = await http.get<ApiResponse<MomentMediaPurgeLogs>>(
       '/admin/moment-media-purge/logs',

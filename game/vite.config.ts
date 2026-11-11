@@ -48,7 +48,7 @@ export default defineConfig({
     port: 5174,
     proxy: {
       '/socket.io': {
-        target: 'http://localhost:8082',
+        target: process.env.GAME_SERVER ?? 'http://localhost:8082',
         ws: true,
       },
     },

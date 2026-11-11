@@ -146,14 +146,20 @@ export interface LeaderboardEntry {
   ken: number;
   wins?: number;
   losses?: number;
+  matches?: number;
   level?: number;
+  exp?: number;
 }
+
+export type LeaderboardBoard = 'wins' | 'level';
 
 export interface LeaderboardData {
   period: LeaderboardPeriod;
+  board?: LeaderboardBoard;
   from: number;
   to: number;
   items: LeaderboardEntry[];
+  me?: LeaderboardEntry;
   error?: string;
 }
 
@@ -170,6 +176,8 @@ export interface MatchHistoryEntry {
   kenDelta: number;
   playerCount?: number;
   place?: number;
+  endReason?: string;
+  exitReason?: string;
   players?: MatchHistoryPlayer[];
 }
 
@@ -178,6 +186,8 @@ export interface MatchHistoryPlayer {
   username: string;
   vipType?: string | null;
   place?: number;
+  kenDelta?: number;
+  exitReason?: string;
 }
 
 export interface MatchHistoryData {

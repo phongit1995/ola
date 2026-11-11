@@ -1,5 +1,6 @@
 import { END_REASONS, MAX_ROUNDS, STATION_RENT, TIME_LIMIT_MS, WIN_GROUPS, type EndReason } from '../logic/constants';
-import type { BotLevel, GameState } from '../logic/types';
+import type { MatchHistoryEntry, MatchHistoryPlayer } from '../../src/sdk';
+import type { BotLevel, ViewState } from '../logic/types';
 import { botName, type BotSetupItem } from './bot';
 import { formatKen } from './format';
 import { placeLabel } from './player';
@@ -175,7 +176,7 @@ export function saveBotHistory(userId: string, entry: HistoryEntry): void {
 }
 
 export function botHistoryEntry(
-  state: GameState,
+  state: ViewState,
   ranked: readonly number[],
   you: number,
   me: Pick<LobbyProfile, 'id' | 'username' | 'vipType'>,
@@ -209,6 +210,43 @@ export function botHistoryEntry(
     exitReason: mine.exitReason,
     bet: 0,
     kenDelta: 0,
+    players,
+  };
+}
+
+function toEndReason(reason: string | undefined): EndReason | null {
+  return reason && (END_REASONS as readonly string[]).includes(reason) ? (reason as EndReason) : null;
+}
+
+function toExitReason(reason: string | undefined): HistoryExitReason | null {
+  return reason && (EXIT_REASONS as readonly string[]).includes(reason) ? (reason as HistoryExitReason) : null;
+}
+
+export function historyFromServer(entry: MatchHistoryEntry, meId: string, me?: Pick<LobbyProfile, 'username' | 'vipType'>): HistoryEntry {
+  const place = entry.place ?? (entry.outcome === 'win' ? 1 : 2);
+  const listed: MatchHistoryPlayer[] = entry.players?.length
+    ? entry.players
+    : [
+        { userId: meId, username: me?.username ?? '', vipType: me?.vipType ?? null, place },
+        { userId: entry.opponentId, username: entry.opponentName, vipType: entry.opponentVipType ?? null, place: place === 1 ? 2 : 1 },
+      ];
+  const players = listed
+    .map((player, index): HistoryPlayer => {
+      const playerPlace = player.place ?? index + 1;
+      const kenDelta = player.userId === meId ? entry.kenDelta : (player.kenDelta ?? (playerPlace === 1 || entry.bet <= 0 ? 0 : -entry.bet));
+      return { userId: player.userId, username: player.username, vipType: player.vipType ?? null, place: playerPlace, kenDelta, exitReason: toExitReason(player.exitReason) };
+    })
+    .sort((a, b) => a.place - b.place);
+  return {
+    id: entry.id,
+    playedAt: entry.playedAt,
+    source: 'online',
+    place,
+    playerCount: entry.playerCount ?? players.length,
+    endReason: toEndReason(entry.endReason),
+    exitReason: toExitReason(entry.exitReason),
+    bet: entry.bet,
+    kenDelta: entry.kenDelta,
     players,
   };
 }

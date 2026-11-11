@@ -47,6 +47,8 @@ const ROOM_TOAST_TEXT = new Map<string, string>([
   [GAME_ERROR_CODE.SpectateOwnMatch, 'Bạn đang trong một ván khác'],
   [GAME_ERROR_CODE.MatchNotFound, 'Ván đã kết thúc'],
   ['SPECTATE_NOT_ALLOWED', 'Bàn này không cho người ngoài xem'],
+  [GAME_ERROR_CODE.SpectateNotSupported, 'Bàn này chưa xem được'],
+  [GAME_ERROR_CODE.SpectateFailed, 'Không vào xem được, vui lòng thử lại'],
 ]);
 
 export function roomToastText(code: string): string {
@@ -62,7 +64,7 @@ export function roomSeatsLabel(room: TycoonRoom): string {
 }
 
 export function roomAction(room: TycoonRoom): RoomAction {
-  if (room.status === 'playing') return room.allowSpectators ? 'watch' : 'playing';
+  if (room.status === 'playing') return room.matchId ? 'watch' : 'playing';
   return room.full || room.players >= roomMaxPlayers(room) ? 'full' : 'join';
 }
 

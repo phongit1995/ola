@@ -48,7 +48,7 @@ const (
 	reactionCooldown   = 800 * time.Millisecond
 )
 
-var playingRoomGames = map[string]bool{"war-god": true, "thirteen": true}
+var playingRoomGames = map[string]bool{"war-god": true, "thirteen": true, "tycoon": true}
 
 type Engine struct {
 	// mu protects only the match registries. Match state is protected by Match.mu.
@@ -2617,6 +2617,7 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 		MoveCount:  matchMoveCount(m),
 		FinishedAt: m.finishedAt,
 	}
+	outcome.EndReason, outcome.ExitReasons = describeResult(m.logic, m.state, len(m.players))
 	snapshot, snapshotErr := e.snapshotForMatch(m)
 	if snapshotErr != nil {
 		e.logger.Errorw("Failed to prepare final match snapshot for settlement retry", "match_id", m.ID, "error", snapshotErr)

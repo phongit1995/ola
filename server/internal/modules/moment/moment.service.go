@@ -34,15 +34,17 @@ var (
 )
 
 type Service struct {
-	repo      *Repository
-	store     *RedisStore
-	s3        *services.S3Service
-	processor *Processor
-	settings  momentVideoSettings
-	users     momentVipUsers
-	notifier  Notifier
-	logger    *zap.SugaredLogger
-	now       func() time.Time
+	repo       *Repository
+	store      *RedisStore
+	s3         *services.S3Service
+	processor  *Processor
+	settings   momentVideoSettings
+	music      momentMusicSettings
+	musicSlots chan struct{}
+	users      momentVipUsers
+	notifier   Notifier
+	logger     *zap.SugaredLogger
+	now        func() time.Time
 }
 
 type Notifier interface {
@@ -53,15 +55,17 @@ type Notifier interface {
 
 func NewService(repo *Repository, store *RedisStore, s3 *services.S3Service, processor *Processor, settings *setting.Service, users *userModule.CacheService, notifier Notifier, logger *zap.SugaredLogger) *Service {
 	return &Service{
-		repo:      repo,
-		store:     store,
-		s3:        s3,
-		processor: processor,
-		settings:  settings,
-		users:     users,
-		notifier:  notifier,
-		logger:    logger.Named("[moment_service]"),
-		now:       func() time.Time { return time.Now().UTC() },
+		repo:       repo,
+		store:      store,
+		s3:         s3,
+		processor:  processor,
+		settings:   settings,
+		music:      settings,
+		musicSlots: make(chan struct{}, MomentMusicConcurrency),
+		users:      users,
+		notifier:   notifier,
+		logger:     logger.Named("[moment_service]"),
+		now:        func() time.Time { return time.Now().UTC() },
 	}
 }
 
@@ -86,6 +90,9 @@ func (s *Service) Create(ctx context.Context, userID uuid.UUID, input *CreateMom
 	if err := validateFiles(momentType, input, drafts); err != nil {
 		return nil, err
 	}
+	if err := s.checkMusic(momentType, input); err != nil {
+		return nil, err
+	}
 
 	now := s.now()
 	release, err := s.store.ReserveQuota(ctx, userID, len(drafts), now)
@@ -108,12 +115,19 @@ func (s *Service) Create(ctx context.Context, userID uuid.UUID, input *CreateMom
 	if err := s.attachMedia(ctx, uploadFolder(momentType, now), momentType, input, drafts, uploads); err != nil {
 		return fail(err)
 	}
+	if input.Music != nil {
+		if err := s.attachMusic(ctx, musicFolder(now), input.Music, drafts, uploads); err != nil {
+			return fail(err)
+		}
+	}
 	for _, draft := range drafts {
 		draft.CreatedAt = now
 		draft.ExpiresAt = now.Add(MomentLifetime)
 	}
 	if err := s.repo.CreateBatch(drafts); err != nil {
-		s.logger.Errorw("Failed to save moments", "user_id", userID, "error", err)
+		if !errors.Is(err, errMusicBlocked) {
+			s.logger.Errorw("Failed to save moments", "user_id", userID, "error", err)
+		}
 		return fail(err)
 	}
 	if drafts[0].Status == MomentStatusProcessing {
@@ -743,6 +757,7 @@ func toMomentResponse(moment *models.Moment, author MomentAuthorResponse) Moment
 	if !moment.Enabled && moment.HiddenBy != nil {
 		resp.HiddenBy = *moment.HiddenBy
 	}
+	resp.Music = musicResponse(moment)
 	return resp
 }
 

@@ -138,6 +138,31 @@ func (Logic) Rankings(state any) []int {
 	return s.rankings()
 }
 
+func (Logic) EndReason(state any) string {
+	s, ok := state.(*State)
+	if !ok || s.EndReason == nil {
+		return ""
+	}
+	return *s.EndReason
+}
+
+func (Logic) ExitReasons(state any) []string {
+	s, ok := state.(*State)
+	if !ok {
+		return nil
+	}
+	reasons := make([]string, len(s.Players))
+	for seat, p := range s.Players {
+		switch {
+		case p.Quit:
+			reasons[seat] = ExitForfeit
+		case p.Bankrupt:
+			reasons[seat] = ExitBankrupt
+		}
+	}
+	return reasons
+}
+
 func (Logic) MoveCount(state any) int {
 	s, ok := state.(*State)
 	if !ok {

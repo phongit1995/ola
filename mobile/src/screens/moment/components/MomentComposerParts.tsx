@@ -547,22 +547,26 @@ export function MomentSlideChoice({ width, height, onPickPhoto, onPickColor }: M
   );
 }
 
-export function MomentPhotoBar({ onChange }: { onChange: () => void }) {
+export function MomentPhotoBar({ onChange, end }: { onChange?: () => void; end?: ReactNode }) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   return (
-    <View className="flex-row items-center justify-center py-1.5">
-      <Pressable
-        accessibilityRole="button"
-        onPress={onChange}
-        className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5 active:opacity-70"
-        style={CHIP}
-      >
-        <MomentImageIcon size={16} color={colors.primaryInk} />
-        <Text className="text-sm font-medium" style={{ color: colors.primaryInk }}>
-          {t('moment.changePhoto')}
-        </Text>
-      </Pressable>
+    <View className="flex-row items-center py-1.5" style={{ gap: 8 }}>
+      <View style={{ flex: 1 }} />
+      {onChange != null && (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onChange}
+          className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5 active:opacity-70"
+          style={CHIP}
+        >
+          <MomentImageIcon size={16} color={colors.primaryInk} />
+          <Text className="text-sm font-medium" style={{ color: colors.primaryInk }}>
+            {t('moment.changePhoto')}
+          </Text>
+        </Pressable>
+      )}
+      <View style={{ flex: 1, minWidth: 0, flexDirection: 'row', justifyContent: 'flex-end' }}>{end}</View>
     </View>
   );
 }

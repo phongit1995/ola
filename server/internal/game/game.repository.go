@@ -120,6 +120,7 @@ type leaderboardRow struct {
 	Wins       int64      `gorm:"column:wins"`
 	Losses     int64      `gorm:"column:losses"`
 	GameExp    int64      `gorm:"column:game_exp"`
+	BoardRank  int        `gorm:"column:board_rank"`
 }
 
 type matchHistoryRow struct {
@@ -137,6 +138,7 @@ type matchHistoryRow struct {
 	Player0VipEnd *time.Time `gorm:"column:player0_vip_end"`
 	Player1VipEnd *time.Time `gorm:"column:player1_vip_end"`
 	Bet           int        `gorm:"column:bet"`
+	EndReason     *string    `gorm:"column:end_reason"`
 	KenDelta      int        `gorm:"column:ken_delta"`
 }
 
@@ -147,6 +149,7 @@ type matchSeatRow struct {
 	Username    string     `gorm:"column:username"`
 	VipType     *string    `gorm:"column:vip_type"`
 	VipEndTime  *time.Time `gorm:"column:vip_end_time"`
+	ExitReason  *string    `gorm:"column:exit_reason"`
 }
 
 func normalizeLeaderboardPeriod(period string) string {
@@ -171,19 +174,24 @@ func leaderboardRangeAt(now time.Time, period string) (time.Time, time.Time) {
 	return start.UTC(), localNow.UTC()
 }
 
-func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardData, error) {
-	period = normalizeLeaderboardPeriod(period)
-	from, to := leaderboardRangeAt(time.Now(), period)
-	data := protocol.LeaderboardData{
-		Period: period,
-		From:   from.UnixMilli(),
-		To:     to.UnixMilli(),
-		Items:  []protocol.LeaderboardEntry{},
+func normalizeLeaderboardBoard(board string) string {
+	if board == protocol.LeaderboardBoardLevel {
+		return board
 	}
+	return protocol.LeaderboardBoardWins
+}
 
-	var query *gorm.DB
+func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) (*gorm.DB, string, string) {
+	if board == protocol.LeaderboardBoardLevel {
+		query := r.db.Table("user_game_levels AS levels").
+			Select(`levels.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
+				0 AS ken, 0 AS wins, 0 AS losses, levels.exp AS game_exp`).
+			Joins("JOIN users ON users.id = levels.user_id").
+			Where("levels.game_id = ? AND levels.exp > 0 AND users.deleted_at IS NULL", gameID)
+		return query, "levels.exp DESC, users.username ASC, levels.user_id ASC", "game_exp DESC, username ASC, user_id ASC"
+	}
 	if gameID == thirteen.GameID || gameID == tycoon.GameID {
-		query = r.db.Table("game_matches").
+		query := r.db.Table("game_matches").
 			Select(`seats.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
 				COALESCE(SUM(CASE WHEN seats.user_id = game_matches.winner_id THEN game_matches.ken_delta ELSE 0 END), 0) AS ken,
 				COUNT(*) FILTER (WHERE seats.user_id = game_matches.winner_id) AS wins,
@@ -197,10 +205,11 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 				AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL`,
 				gameID, matchStatusFinished, from, to).
 			Group("seats.user_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
-			Having("COUNT(*) FILTER (WHERE seats.user_id = game_matches.winner_id) > 0").
-			Order("wins DESC, losses ASC, ken DESC, users.username ASC, seats.user_id ASC")
-	} else if gameID == "caro" || gameID == "war-god" || gameID == "xiangqi" {
-		query = r.db.Table("game_matches").
+			Having("COUNT(*) FILTER (WHERE seats.user_id = game_matches.winner_id) > 0")
+		return query, "wins DESC, losses ASC, ken DESC, users.username ASC, seats.user_id ASC", "wins DESC, losses ASC, ken DESC, username ASC, user_id ASC"
+	}
+	if gameID == "caro" || gameID == "war-god" || gameID == "xiangqi" {
+		query := r.db.Table("game_matches").
 			Select(`results.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
 				COALESCE(SUM(results.ken), 0) AS ken,
 				COALESCE(SUM(results.wins), 0) AS wins,
@@ -218,48 +227,89 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 				AND results.user_id IS NOT NULL`,
 				gameID, matchStatusFinished, from, to).
 			Group("results.user_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
-			Having("COALESCE(SUM(results.wins), 0) > 0").
-			Order("wins DESC, losses ASC, ken DESC, users.username ASC, results.user_id ASC")
+			Having("COALESCE(SUM(results.wins), 0) > 0")
+		return query, "wins DESC, losses ASC, ken DESC, users.username ASC, results.user_id ASC", "wins DESC, losses ASC, ken DESC, username ASC, user_id ASC"
+	}
+	query := r.db.Table("game_matches").
+		Select(`game_matches.winner_id AS user_id, users.username, users.vip_used AS vip_type,
+			users.vip_end_time, COALESCE(SUM(game_matches.ken_delta), 0) AS ken,
+			COALESCE(levels.exp, 0) AS game_exp, COUNT(*) AS matches`).
+		Joins("JOIN users ON users.id = game_matches.winner_id").
+		Joins("LEFT JOIN user_game_levels AS levels ON levels.user_id = game_matches.winner_id AND levels.game_id = game_matches.game_id").
+		Where(`game_matches.game_id = ? AND game_matches.status = ? AND game_matches.winner_id IS NOT NULL
+			AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
+			AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL`,
+			gameID, matchStatusFinished, from, to).
+		Group("game_matches.winner_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
+		Having("COALESCE(SUM(game_matches.ken_delta), 0) > 0")
+	return query, "ken DESC, COUNT(*) DESC, users.username ASC, game_matches.winner_id ASC", "ken DESC, matches DESC, username ASC, user_id ASC"
+}
+
+func leaderboardEntry(row leaderboardRow, rank int, board string, to time.Time) protocol.LeaderboardEntry {
+	vipType := row.VipType
+	if row.VipEndTime == nil || !row.VipEndTime.After(to) {
+		vipType = nil
+	}
+	entry := protocol.LeaderboardEntry{
+		Rank:     rank,
+		UserID:   row.UserID.String(),
+		Username: row.Username,
+		VipType:  vipType,
+		Ken:      row.Ken,
+		Wins:     row.Wins,
+		Losses:   row.Losses,
+		Level:    progression.LevelFromExp(row.GameExp),
+	}
+	if board == protocol.LeaderboardBoardLevel {
+		entry.Exp = row.GameExp
 	} else {
-		query = r.db.Table("game_matches").
-			Select(`game_matches.winner_id AS user_id, users.username, users.vip_used AS vip_type,
-				users.vip_end_time, COALESCE(SUM(game_matches.ken_delta), 0) AS ken,
-				COALESCE(levels.exp, 0) AS game_exp`).
-			Joins("JOIN users ON users.id = game_matches.winner_id").
-			Joins("LEFT JOIN user_game_levels AS levels ON levels.user_id = game_matches.winner_id AND levels.game_id = game_matches.game_id").
-			Where(`game_matches.game_id = ? AND game_matches.status = ? AND game_matches.winner_id IS NOT NULL
-				AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
-				AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL`,
-				gameID, matchStatusFinished, from, to).
-			Group("game_matches.winner_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
-			Having("COALESCE(SUM(game_matches.ken_delta), 0) > 0").
-			Order("ken DESC, COUNT(*) DESC, users.username ASC, game_matches.winner_id ASC")
+		entry.Matches = row.Wins + row.Losses
+	}
+	return entry
+}
+
+func (r *Repository) Leaderboard(gameID, period, board, userID string) (protocol.LeaderboardData, error) {
+	period = normalizeLeaderboardPeriod(period)
+	board = normalizeLeaderboardBoard(board)
+	from, to := leaderboardRangeAt(time.Now(), period)
+	data := protocol.LeaderboardData{
+		Period: period,
+		Board:  board,
+		From:   from.UnixMilli(),
+		To:     to.UnixMilli(),
+		Items:  []protocol.LeaderboardEntry{},
 	}
 
+	query, order, rankOrder := r.leaderboardQuery(gameID, board, from, to)
 	var rows []leaderboardRow
-	err := query.
-		Limit(leaderboardLimit).
-		Scan(&rows).Error
-	if err != nil {
+	if err := query.Order(order).Limit(leaderboardLimit).Scan(&rows).Error; err != nil {
 		return data, err
 	}
 
 	data.Items = make([]protocol.LeaderboardEntry, len(rows))
 	for i, row := range rows {
-		vipType := row.VipType
-		if row.VipEndTime == nil || !row.VipEndTime.After(to) {
-			vipType = nil
+		data.Items[i] = leaderboardEntry(row, i+1, board, to)
+		if data.Items[i].UserID == userID {
+			me := data.Items[i]
+			data.Me = &me
 		}
-		data.Items[i] = protocol.LeaderboardEntry{
-			Rank:     i + 1,
-			UserID:   row.UserID.String(),
-			Username: row.Username,
-			VipType:  vipType,
-			Ken:      row.Ken,
-			Wins:     row.Wins,
-			Losses:   row.Losses,
-			Level:    progression.LevelFromExp(row.GameExp),
-		}
+	}
+	if data.Me != nil || userID == "" || len(rows) < leaderboardLimit {
+		return data, nil
+	}
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return data, nil
+	}
+	base, _, _ := r.leaderboardQuery(gameID, board, from, to)
+	ranked := r.db.Table("(?) AS board_rows", base).Select("board_rows.*, ROW_NUMBER() OVER (ORDER BY " + rankOrder + ") AS board_rank")
+	var mine []leaderboardRow
+	if err := r.db.Table("(?) AS ranked", ranked).Where("ranked.user_id = ?", uid).Limit(1).Scan(&mine).Error; err != nil {
+		return data, err
+	}
+	if len(mine) > 0 {
+		me := leaderboardEntry(mine[0], mine[0].BoardRank, board, to)
+		data.Me = &me
 	}
 	return data, nil
 }
@@ -282,7 +332,7 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 	err = r.db.Table("game_matches").
 		Select(`game_matches.id AS game_match_id, game_matches.match_id, game_matches.finished_at AS played_at,
 			game_matches.player_count, game_matches.player0_id, game_matches.player1_id, game_matches.winner_id,
-			game_matches.bet, game_matches.ken_delta,
+			game_matches.bet, game_matches.ken_delta, game_matches.end_reason,
 			player0.username AS player0_name, player1.username AS player1_name,
 			player0.vip_used AS player0_vip, player0.vip_end_time AS player0_vip_end,
 			player1.vip_used AS player1_vip, player1.vip_end_time AS player1_vip_end`).
@@ -298,7 +348,7 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 		return data, err
 	}
 
-	seats, err := r.matchSeats(rows)
+	seats, err := r.matchSeats(rows, gameID == tycoon.GameID)
 	if err != nil {
 		return data, err
 	}
@@ -314,9 +364,13 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 			PlayerCount: max(row.PlayerCount, 2),
 			Players:     players,
 		}
+		if row.EndReason != nil {
+			entry.EndReason = *row.EndReason
+		}
 		for _, p := range players {
 			if p.UserID == userID {
 				entry.Place = p.Place
+				entry.ExitReason = p.ExitReason
 				continue
 			}
 			if entry.OpponentID == "" {
@@ -339,10 +393,10 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 	return data, nil
 }
 
-func (r *Repository) matchSeats(rows []matchHistoryRow) (map[uuid.UUID][]matchSeatRow, error) {
+func (r *Repository) matchSeats(rows []matchHistoryRow, pairSeats bool) (map[uuid.UUID][]matchSeatRow, error) {
 	ids := make([]uuid.UUID, 0, len(rows))
 	for _, row := range rows {
-		if row.PlayerCount > 2 {
+		if pairSeats || row.PlayerCount > 2 {
 			ids = append(ids, row.GameMatchID)
 		}
 	}
@@ -351,7 +405,7 @@ func (r *Repository) matchSeats(rows []matchHistoryRow) (map[uuid.UUID][]matchSe
 	}
 	var seats []matchSeatRow
 	err := r.db.Table("game_match_players AS seats").
-		Select(`seats.game_match_id, seats.user_id, seats.place,
+		Select(`seats.game_match_id, seats.user_id, seats.place, seats.exit_reason,
 			users.username, users.vip_used AS vip_type, users.vip_end_time`).
 		Joins("LEFT JOIN users ON users.id = seats.user_id").
 		Where("seats.game_match_id IN ?", ids).
@@ -368,7 +422,7 @@ func (r *Repository) matchSeats(rows []matchHistoryRow) (map[uuid.UUID][]matchSe
 }
 
 func historyPlayers(row matchHistoryRow, seats []matchSeatRow) []protocol.MatchHistoryPlayer {
-	if row.PlayerCount <= 2 || len(seats) == 0 {
+	if len(seats) == 0 {
 		seats = []matchSeatRow{
 			{UserID: row.Player0ID, Username: row.Player0Name, VipType: row.Player0Vip, VipEndTime: row.Player0VipEnd},
 			{UserID: row.Player1ID, Username: row.Player1Name, VipType: row.Player1Vip, VipEndTime: row.Player1VipEnd},
@@ -400,12 +454,26 @@ func historyPlayers(row matchHistoryRow, seats []matchSeatRow) []protocol.MatchH
 			Username: name,
 			VipType:  activeVipType(seat.VipType, seat.VipEndTime),
 			Place:    place,
+			KenDelta: seatKenDelta(row, seat.UserID),
+		}
+		if seat.ExitReason != nil {
+			players[i].ExitReason = *seat.ExitReason
 		}
 	}
 	sort.SliceStable(players, func(i, j int) bool {
 		return placeOrder(players[i].Place) < placeOrder(players[j].Place)
 	})
 	return players
+}
+
+func seatKenDelta(row matchHistoryRow, userID uuid.UUID) int {
+	if row.WinnerID == nil {
+		return 0
+	}
+	if *row.WinnerID == userID {
+		return row.KenDelta
+	}
+	return -row.Bet
 }
 
 func placeOrder(place int) int {

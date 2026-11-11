@@ -1,6 +1,11 @@
 import { VIP_CATALOG } from '@/lib/vipCatalog'
-import type { ViolationSource } from '@/types'
-import type { ViolationState } from './types'
+import type { UserAvatarFrameSource, ViolationSource } from '@/types'
+import type {
+  UserFramePurchaseRole,
+  UserFramesTab,
+  UserFrameTransferDirection,
+  ViolationState,
+} from './types'
 
 export const KEN_TX_TYPE: Record<string, string> = {
   VIP_PACKAGE: 'Mua gói VIP',
@@ -63,6 +68,33 @@ export const VIP_ICON_SOURCE_LABEL: Record<string, string> = {
   gift: 'Tặng',
   admin: 'Admin',
   gift_code: 'Mã quà tặng',
+}
+
+export const USER_AVATAR_FRAME_SOURCE_LABEL: Record<UserAvatarFrameSource, string> = {
+  purchase: 'Mua',
+  gift: 'Được tặng',
+  transfer: 'Nhận chuyển',
+  gift_code: 'Mã quà tặng',
+  admin: 'Admin',
+}
+
+export const USER_FRAMES_TAB_OPTIONS: { value: UserFramesTab; label: string }[] = [
+  { value: 'owned', label: 'Đang có' },
+  { value: 'purchases', label: 'Lịch sử mua / tặng' },
+  { value: 'transfers', label: 'Lịch sử chuyển' },
+]
+
+export const USER_FRAME_HISTORY_PAGE_SIZE = 10
+
+export const USER_FRAME_PURCHASE_ROLE_TAG: Record<UserFramePurchaseRole, { label: string; color: string }> = {
+  self: { label: 'Tự mua', color: 'blue' },
+  sent: { label: 'Tặng đi', color: 'orange' },
+  received: { label: 'Được tặng', color: 'green' },
+}
+
+export const USER_FRAME_TRANSFER_DIRECTION_TAG: Record<UserFrameTransferDirection, { label: string; color: string }> = {
+  out: { label: 'Chuyển đi', color: 'orange' },
+  in: { label: 'Nhận chuyển', color: 'green' },
 }
 
 export const LOCK_REASON_VIOLATIONS = 'violations'

@@ -5,6 +5,8 @@ import { worthOf } from '../logic/rules-hint';
 import { formatDelta, formatMoney } from '../helpers/format';
 import { seatColor, SEAT_TINTS } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
+import { TyIcon } from './TyIcon';
+import { pawnArt } from './art';
 
 const COUNT_MS = 520;
 const BIG_FLOAT = 500;
@@ -51,25 +53,43 @@ export function PlayerPods() {
         if (!player) return null;
         const name = seat === you ? 'Bạn' : info.name;
         const money = cash[seat] ?? player.cash;
+        const owned = view.tiles.filter((tile) => tile.owner === seat).length;
         return (
           <button
             key={info.id}
             type="button"
-            className={['ty-s6-pod', view.turn === seat && !result ? 'ty-s6-pod-active' : '', player.bankrupt ? 'ty-s6-pod-out' : ''].join(' ')}
+            className={['ty-s6-pod', view.turn === seat && !result ? 'ty-s6-pod-active' : '', player.bankrupt ? 'ty-s6-pod-out' : '', seat === you ? 'ty-s6-pod-me' : ''].join(' ')}
             data-pod={seat}
             style={{ '--seat': seatColor(seat), '--soft': SEAT_TINTS[seat] } as CSSProperties}
             onClick={() => openSheet({ kind: 'assets', seat })}
-            aria-label={`${name}, tiền mặt ${formatMoney(money)}, tổng tài sản ${formatMoney(worthOf(view, seat))}${player.bankrupt ? ', phá sản' : ''}`}
+            aria-label={`${name}, tiền mặt ${formatMoney(money)}, ${owned} ô, tổng tài sản ${formatMoney(worthOf(view, seat))}${player.bankrupt ? ', phá sản' : ''}`}
           >
             <span className="ty-s6-av">
               <img src={info.avatar} alt="" draggable={false} />
+              <img className="ty-s6-av-pawn" src={pawnArt(seat)} alt="" draggable={false} />
             </span>
-            <b className="ty-s6-pod-name">{name}</b>
-            <span className="ty-s6-cash">
-              <i className="ty-s6-coin" />
-              {player.bankrupt ? 'Phá sản' : <PodCash value={money} />}
+            <span className="ty-s6-pod-copy">
+              <b className="ty-s6-pod-name">{name}</b>
+              <span className="ty-s6-cash">{player.bankrupt ? 'Phá sản' : <PodCash value={money} />}</span>
             </span>
-            {player.inJail && !player.bankrupt ? <span className="ty-s6-jailchip">Tù</span> : null}
+            <span className="ty-s6-pod-tags">
+              {owned > 0 && !player.bankrupt ? (
+                <span className="ty-s6-pod-tag">
+                  <TyIcon name="flag" size={10} />
+                  {owned}
+                </span>
+              ) : null}
+              {player.inJail && !player.bankrupt ? (
+                <span className="ty-s6-pod-tag ty-s6-pod-tag-jail">
+                  <TyIcon name="jail-bars" size={10} />
+                </span>
+              ) : null}
+              {player.jailCards.length > 0 && !player.bankrupt ? (
+                <span className="ty-s6-pod-tag">
+                  <TyIcon name="key" size={10} />
+                </span>
+              ) : null}
+            </span>
             <svg className="ty-s6-crack" data-crack viewBox="0 0 100 60" aria-hidden="true">
               <path d="M58 0 46 18l12 8-14 14 8 20M46 18 26 22M44 40 20 50" />
             </svg>

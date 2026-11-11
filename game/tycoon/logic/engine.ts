@@ -19,7 +19,7 @@ import {
   type EndReason,
   type PayReason,
 } from './constants';
-import { RuleError, type CardRef, type Debt, type GameState, type Move, type Step } from './types';
+import { RuleError, type CardRef, type Debt, type GameState, type Move, type Step, type ViewState } from './types';
 
 const MASK = (1n << 64n) - 1n;
 
@@ -96,7 +96,7 @@ export function cloneState(s: GameState): GameState {
   };
 }
 
-export function isActive(s: GameState, seat: number): boolean {
+export function isActive(s: ViewState, seat: number): boolean {
   const p = s.players[seat];
   return !!p && !p.bankrupt && !p.quit;
 }
@@ -118,30 +118,30 @@ function push(s: GameState, step: Step): void {
   s.steps.push(step);
 }
 
-export function ownsGroup(s: GameState, seat: number, group: string): boolean {
+export function ownsGroup(s: ViewState, seat: number, group: string): boolean {
   const tiles = tilesOfGroup(group);
   return tiles.length > 0 && tiles.every((idx) => s.tiles[idx].owner === seat);
 }
 
-export function ownedCount(s: GameState, seat: number, group: string): number {
+export function ownedCount(s: ViewState, seat: number, group: string): number {
   return tilesOfGroup(group).filter((idx) => s.tiles[idx].owner === seat).length;
 }
 
-export function houseValue(s: GameState, seat: number): number {
+export function houseValue(s: ViewState, seat: number): number {
   return s.tiles.reduce((sum, t, idx) => (t.owner === seat && t.houses > 0 ? sum + t.houses * (BOARD[idx].houseCost ?? 0) : sum), 0);
 }
 
-export function worth(s: GameState, seat: number): number {
+export function worth(s: ViewState, seat: number): number {
   const p = s.players[seat];
   if (!p || p.bankrupt) return 0;
   return s.tiles.reduce((sum, t, idx) => (t.owner === seat ? sum + (BOARD[idx].price ?? 0) + t.houses * (BOARD[idx].houseCost ?? 0) : sum), p.cash);
 }
 
-export function liquidationValue(s: GameState, seat: number): number {
+export function liquidationValue(s: ViewState, seat: number): number {
   return Math.floor(houseValue(s, seat) / 2);
 }
 
-export function computeRent(s: GameState, idx: number, owner: number): number {
+export function computeRent(s: ViewState, idx: number, owner: number): number {
   const tile = BOARD[idx];
   switch (tile.kind) {
     case 'street': {
@@ -192,7 +192,7 @@ export function festivalPick(s: GameState, seat: number): number {
   return best;
 }
 
-export function takeoverPrice(s: GameState, idx: number): number {
+export function takeoverPrice(s: ViewState, idx: number): number {
   return TAKEOVER_MULTIPLIER * ((BOARD[idx].price ?? 0) + s.tiles[idx].houses * (BOARD[idx].houseCost ?? 0));
 }
 
@@ -205,9 +205,9 @@ export function canTakeoverError(s: GameState, seat: number, idx: number): strin
   return null;
 }
 
-const STREET_GROUPS = [...new Set(BOARD.filter((t) => t.kind === 'street').map((t) => t.group as string))];
+export const STREET_GROUPS = [...new Set(BOARD.filter((t) => t.kind === 'street').map((t) => t.group as string))];
 
-const SIDE_STREETS = [0, 1, 2, 3].map((side) =>
+export const SIDE_STREETS = [0, 1, 2, 3].map((side) =>
   BOARD.filter((t, idx) => t.kind === 'street' && Math.floor(idx / SIDE_TILES) === side).map((t) => t.idx),
 );
 
@@ -268,7 +268,7 @@ function pay(s: GameState, from: number, to: number, amount: number, reason: Pay
     return true;
   }
   if (p.cash + liquidationValue(s, from) < amount) {
-    bankrupt(s, from, to);
+    bankrupt(s, from, to, amount);
     return false;
   }
   enterDebt(s, { creditor: to, amount, by: from, returnTo: s.turn, after, reason });
@@ -528,7 +528,7 @@ function jailRoll(s: GameState, seat: number): void {
   }
 }
 
-export function bankrupt(s: GameState, seat: number, creditor: number): void {
+export function bankrupt(s: GameState, seat: number, creditor: number, amount = 0): void {
   const p = s.players[seat];
   const tiles: number[] = [];
   s.tiles.forEach((t, idx) => {
@@ -550,7 +550,7 @@ export function bankrupt(s: GameState, seat: number, creditor: number): void {
   p.inJail = false;
   p.doubles = 0;
   s.bankruptOrder.push(seat);
-  push(s, { kind: 'bankrupt', by: seat, creditor: toCreditor ? creditor : -1, tiles });
+  push(s, { kind: 'bankrupt', by: seat, creditor: toCreditor ? creditor : -1, tiles, ...(amount > 0 ? { amount } : {}) });
   s.pendingDebts = s.pendingDebts.filter((d) => d.by !== seat);
   if (s.turn === seat) s.card = null;
   if (activeSeats(s).length <= 1) {
@@ -736,13 +736,13 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
       if (!s.debt) throw new RuleError('wrong_phase');
       autoSellForDebt(s, seat);
       if (p.cash >= s.debt.amount) settleDebt(s, seat);
-      else bankrupt(s, seat, s.debt.creditor);
+      else bankrupt(s, seat, s.debt.creditor, s.debt.amount);
       break;
     }
     case 'DECLARE_BANKRUPT':
       needPhase('debt');
       if (!s.debt) throw new RuleError('wrong_phase');
-      bankrupt(s, seat, s.debt.creditor);
+      bankrupt(s, seat, s.debt.creditor, s.debt.amount);
       break;
     case 'END_TURN':
       needPhase('manage');

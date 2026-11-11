@@ -165,6 +165,16 @@ export function MomentPlayIcon({ className }: IconProps) {
   );
 }
 
+export function MomentMusicIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M9 18V6l11-2v12" />
+      <circle cx="6.5" cy="18" r="2.5" />
+      <circle cx="17.5" cy="16" r="2.5" />
+    </Svg>
+  );
+}
+
 export function MomentSoundIcon({
   className,
   muted,
@@ -196,6 +206,14 @@ export function MomentImageIcon({ className }: IconProps) {
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <circle cx="9" cy="10" r="2" />
       <path d="M21 16l-5-5-9 9" />
+    </Svg>
+  );
+}
+
+export function MomentPencilIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4" />
     </Svg>
   );
 }

@@ -126,6 +126,41 @@ export function usePurgeMomentMedia() {
   return { purge, pendingId }
 }
 
+export function useRemoveMomentMusic() {
+  const { message, modal } = App.useApp()
+  const invalidateMoments = useInvalidateMoments()
+  const mutation = useMutation({
+    mutationFn: ({ id, block }: { id: string; block: boolean }) => AdminMomentService.removeMusic(id, block),
+    onSuccess: () => {
+      void invalidateMoments()
+    },
+  })
+
+  function remove(moment: AdminMoment, block: boolean) {
+    modal.confirm({
+      title: block ? 'Gỡ nhạc và chặn file này?' : 'Gỡ nhạc khỏi khoảnh khắc này?',
+      content: block
+        ? 'Nhạc bị gỡ khỏi mọi khoảnh khắc đang dùng cùng file, và file này không đăng lại được nữa. Khoảnh khắc vẫn giữ lại.'
+        : 'Nhạc bị gỡ khỏi tất cả các trang của lần đăng này và không khôi phục được. Khoảnh khắc vẫn giữ lại.',
+      okText: block ? 'Gỡ và chặn' : 'Gỡ nhạc',
+      okButtonProps: { danger: true },
+      cancelText: 'Huỷ',
+      onOk: async () => {
+        try {
+          await mutation.mutateAsync({ id: moment.id, block })
+          message.success(block ? 'Đã gỡ nhạc và chặn file' : 'Đã gỡ nhạc')
+        } catch (err) {
+          message.error(errorMessage(err, 'Không gỡ được nhạc'))
+        }
+      },
+    })
+  }
+
+  const pendingId = mutation.isPending ? mutation.variables?.id : undefined
+
+  return { remove, pendingId }
+}
+
 export const MOMENT_PURGE_LOGS_QUERY_KEY = [MOMENTS_QUERY_KEY, 'purge-logs']
 
 export function useInvalidateMoments() {

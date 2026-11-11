@@ -18,6 +18,7 @@ import (
 var (
 	errMomentNotFound   = utils.NewHTTPError(http.StatusNotFound, "moment not found")
 	errTextNotPurgeable = utils.NewHTTPError(http.StatusBadRequest, "text moments keep their content")
+	errNoMusic          = utils.NewHTTPError(http.StatusBadRequest, "moment has no music")
 	errStillProcessing  = utils.NewHTTPError(http.StatusConflict, "moment is still processing")
 )
 
@@ -42,6 +43,7 @@ type ListFilter struct {
 	State             string
 	Enabled           *bool
 	HasPendingReports *bool
+	HasMusic          *bool
 	SortBy            string
 	SortDir           string
 	Limit             int
@@ -119,6 +121,21 @@ func (s *Service) PurgeMedia(ctx context.Context, id uuid.UUID) (*MomentDetail, 
 			return nil, err
 		}
 	}
+	return s.GetByID(ctx, id)
+}
+
+func (s *Service) RemoveMusic(ctx context.Context, id uuid.UUID, block bool) (*MomentDetail, error) {
+	found, err := s.getMoment(id)
+	if err != nil {
+		return nil, err
+	}
+	if found.MusicObject == "" {
+		return nil, errNoMusic
+	}
+	if err := s.cleaner.RemoveMusic(ctx, found, block); err != nil {
+		return nil, err
+	}
+	s.logger.Infow("Admin removed moment music", "moment_id", id, "block", block)
 	return s.GetByID(ctx, id)
 }
 
@@ -280,11 +297,23 @@ func toMomentItem(r *models.Moment, now time.Time) MomentItem {
 	if !r.Enabled && r.HiddenAt != nil {
 		item.HiddenAt = r.HiddenAt.UTC().Format(time.RFC3339)
 	}
+	item.Music = toMusicItem(r)
 	if r.PurgedAt != nil {
 		item.PurgedAt = r.PurgedAt.UTC().Format(time.RFC3339)
 	}
 	if r.DeletedAt.Valid {
 		item.DeletedAt = r.DeletedAt.Time.UTC().Format(time.RFC3339)
+	}
+	return item
+}
+
+func toMusicItem(r *models.Moment) *MomentMusicItem {
+	if r.MusicTitle == "" {
+		return nil
+	}
+	item := &MomentMusicItem{Title: r.MusicTitle, StartMs: r.MusicStartMs, DurationMs: r.MusicDurationMs}
+	if r.Status == moment.MomentStatusReady {
+		item.URL = r.MusicURL
 	}
 	return item
 }

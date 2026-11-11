@@ -370,15 +370,13 @@ Khi màn dư chỗ (6.1 mục 2), dòng sự kiện thành thẻ Diễn biến n
 
 ## S7. Sheet chi tiết ô
 
-Bottom sheet 100% × auto (max 62% chiều cao), paper, radius 28 trên, handle 36×4.
+Bottom sheet 100% × auto (max 66% chiều cao), nền `#fcfdf0`, viền navy 2, radius 22 trên, vạch 6 px màu nhóm trên cùng, handle 40×5, nút đóng tròn trắng viền navy. Nút hành động nằm ở chân sheet, không cuộn theo nội dung (`components/TileSheet.tsx`).
 
 ### 7.1 Ô đất (`street`)
-- Dải màu nhóm cao 44 trên cùng, tên nhóm 12.5/500 navy trên dải màu sáng hoặc cream trên dải tối.
-- Tên ô 20/800, chip chủ sở hữu (avatar VIP 20 + `@username`; của mình ghi `Bạn`) hoặc `Chưa có chủ`.
-- Dòng giá `Giá 220 tr` · `Nhà 150 tr`.
-- Dòng `Giá nâng mỗi cấp 150 tr`.
-- Bảng tiền thuê 4 hàng: `Đất trống` (ghi `×2 khi trọn nhóm`), `Cấp 1 · Nhà`, `Cấp 2 · Biệt thự`, `Cấp 3 · Khách sạn`; hàng đang áp dụng (theo cấp hiện tại và chủ) highlight gold 30%.
-- Hàng `Cấp hiện tại`: 1–2 glyph nhà hoặc 1 khách sạn + tên cấp.
+- Đầu sheet: tranh pixel của ô 108×80 viền navy, bên phải nhãn nhóm (ô màu + tên nhóm in hoa), tên ô 22/800, chip chủ (avatar VIP + tên, viền màu ghế) hoặc `Chưa có chủ · giá 220 tr`.
+- Ô của người khác: khung coral `Đáp vào lúc này phải trả 320 tr`. Ô có Lễ hội: khung vàng `★ Đang có Lễ hội thuê ×2`.
+- Thang tiền thuê 4 thẻ ngang: `Đất trống` (ghi `×2 khi trọn nhóm` / `đã ×2 trọn nhóm`), `Nhà`, `Biệt thự`, `Khách sạn`, mỗi thẻ có icon cấp và số thuê; thẻ đang áp dụng nền vàng nhạt, nổi lên, nhãn `Hiện tại`.
+- Lưới thông tin 2 cột: `Giá đất`, `Nâng mỗi cấp`, `Hạ cấp thu về`, `Mua lại ×2` (ô có chủ, chưa lên Khách sạn).
 - Nút theo ngữ cảnh: `Mua 220 tr` (khi `decide` và là ô đang đứng), `Nâng cấp (150 tr)` / `Hạ cấp (+75 tr)` (khi của mình + pha manage/debt + hợp lệ), disabled kèm lý do 12.5 coral (`Cần sở hữu trọn nhóm — thiếu Huế`, `Nâng đều: Huế mới ở cấp 1`, `Đã đạt cấp tối đa (cấp 3)`).
 
 ### 7.2 Sân bay
@@ -398,9 +396,9 @@ Bottom sheet 100% × auto (max 62% chiều cao), paper, radius 28 trên, handle 
 ## S8. Sheet quản lý tài sản
 
 Bottom sheet max 70%.
-- Header: `Tài sản của bạn` + tổng `2.340 tr` 22/800 (tiền mặt + đất + nhà) + dòng `Tiền mặt 820 tr`.
-- Danh sách theo nhóm: header nhóm = chip màu + tên + `2/2` (sở hữu/tổng; mỗi nhóm 2 thành phố); hàng ô: tên, nhà hiện có, nút `+` (xây) / `−` (bán) 36×36 với giá bên cạnh; disabled kèm tooltip lý do.
-- Nhóm chưa trọn: hiện mờ, chú thích `Thiếu Đà Nẵng`.
+- Header: thẻ màu ghế, avatar 48, `Tài sản của bạn` + tổng `2.340 tr` 26/800, dưới là 3 phần `Tiền mặt` · `Đất` · `Nhà`.
+- Danh sách theo nhóm: mỗi nhóm một thẻ trắng có viền trái màu nhóm; đầu thẻ = tên nhóm + chấm sở hữu (tô màu nhóm) + `Trọn nhóm · thuê ×2` hoặc `Thiếu Đà Nẵng`; hàng ô: tranh nhỏ 52×40, tên + tên cấp, 3 ô cấp (2 nhà + khách sạn), nút `−` trắng / `+ 50` vàng 38×38; disabled kèm tooltip lý do.
+- Nhóm chưa trọn: viền nhạt, chữ thiếu ô màu xám.
 - Sân bay liệt kê cuối, không nút.
 - Mọi `BUILD/SELL_HOUSE` gửi ngay, sheet không đóng; số cập nhật khi STATE về (có `movePending` theo ô).
 
@@ -535,7 +533,7 @@ Người khác thấy thẻ không có nút; thẻ tự ẩn khi có STATE kế 
 
 ## O3. Trả nợ
 
-Modal 340: `Bạn cần trả {amount} tr cho @username/ngân hàng` (có icon VIP trước `@username`), dòng `Tiền mặt {cash} tr`, dòng `Bán nhà có thể thu tối đa {x} tr`. Danh sách ô có nhà với nút `Bán −` (+ giá). Nút `Trả nợ` CTA vàng enabled khi `cash ≥ amount`; `Phá sản` danger (O5 confirm). Đồng hồ 30 s hiện trong modal. Khi tổng khả năng < amount: chỉ hiện `Phá sản` + giải thích.
+Modal 360, đầu coral dính trên cùng: icon tiền, `Thiếu tiền` / `Cần trả {amount} tr`, vòng đồng hồ 30 s. Dòng `Trả cho` + chip người nhận (hoặc `Ngân hàng`). Thanh đo: phần xanh = tiền mặt, phần sọc vàng = tiền hạ cấp nhà tối đa, vạch coral = số phải trả; chú thích hai dòng bên dưới. Danh sách ô có nhà: tranh nhỏ, tên + cấp, 3 ô cấp, nút `Bán +25 tr`. Chân modal: `Phá sản` đỏ (O5 confirm) + CTA vàng `Trả {amount} tr` (khi `cash ≥ amount`) hoặc `Bán vừa đủ rồi trả`. Khi tổng khả năng < amount: chỉ còn `Phá sản` + khung coral giải thích.
 
 ## O4. Banner mất kết nối
 

@@ -11,6 +11,7 @@ import {
   type Envelope,
   type ErrorData,
   type LeaderboardData,
+  type LeaderboardBoard,
   type LeaderboardPeriod,
   type MatchHistoryData,
   type MatchFoundData,
@@ -53,7 +54,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   setRoomReady(roomId: string, ready: boolean): void;
   startRoom(roomId: string): void;
   listRooms(): void;
-  getLeaderboard(period: LeaderboardPeriod): void;
+  getLeaderboard(period: LeaderboardPeriod, board?: LeaderboardBoard): void;
   getHistory(): void;
   spectateList(): void;
   spectateJoin(matchId: string): void;
@@ -156,7 +157,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     setRoomReady: (roomId, ready) => send(C2S.RoomReady, { roomId, ready }),
     startRoom: (roomId) => send(C2S.RoomStart, { roomId }),
     listRooms: () => send(C2S.RoomList),
-    getLeaderboard: (period) => send(C2S.Leaderboard, { period }),
+    getLeaderboard: (period, board) => send(C2S.Leaderboard, board ? { period, board } : { period }),
     getHistory: () => send(C2S.History),
     spectateList: () => send(C2S.SpectateList),
     spectateJoin: (matchId) => send(C2S.SpectateJoin, { matchId }),

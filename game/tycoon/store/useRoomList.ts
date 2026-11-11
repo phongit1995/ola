@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { GAME_ERROR_CODE } from '../../src/sdk';
+import { GAME_ERROR_CODE, type ErrorData, type RoomInfo } from '../../src/sdk';
 import { formatKen } from '../helpers/format';
 import {
   BET_NOT_ALLOWED_TEXT,
@@ -15,7 +15,6 @@ import {
   type FieldError,
   type TycoonRoom,
 } from '../helpers/room';
-import { RoomRequestError, mockCreateRoom, mockFetchRooms, mockJoinRoom, mockSpectate } from '../helpers/roomMock';
 import { playSound } from '../audio';
 import { useTycoon } from './useTycoon';
 
@@ -63,15 +62,33 @@ const FIELD_ERRORS = new Map<string, FieldError>([
 
 const REFRESH_AFTER = new Set<string>([GAME_ERROR_CODE.RoomFull, GAME_ERROR_CODE.RoomNotFound, GAME_ERROR_CODE.MatchNotFound]);
 
-const errorCode = (error: unknown): string => (error instanceof RoomRequestError ? error.code : NETWORK_ERROR);
+const REQUEST_TIMEOUT_MS = 10_000;
 
 const tycoon = () => useTycoon.getState();
 
 const playerKen = (): number => tycoon().profile?.ken ?? 0;
 
 export const useRoomList = create<RoomListState>((set, get) => {
-  let loadSeq = 0;
-  let session = 0;
+  let unsubs: Array<() => void> = [];
+  let waitOnline: (() => void) | null = null;
+  let pending: RoomRequest | null = null;
+  let pendingTimer: ReturnType<typeof setTimeout> | 0 = 0;
+
+  const toRoom = (room: RoomInfo): TycoonRoom => room;
+
+  const clearPending = () => {
+    pending = null;
+    if (pendingTimer) clearTimeout(pendingTimer);
+    pendingTimer = 0;
+    set({ pendingId: null });
+  };
+
+  const detach = () => {
+    unsubs.forEach((off) => off());
+    unsubs = [];
+    waitOnline?.();
+    waitOnline = null;
+  };
 
   const showInsufficientKen = (bet: number) => {
     tycoon().showNotice({
@@ -145,53 +162,79 @@ export const useRoomList = create<RoomListState>((set, get) => {
     tycoon().showToast(roomToastText(code));
   };
 
-  const succeed = (request: RoomRequest, room: TycoonRoom) => {
+  const succeed = () => {
+    clearPending();
     closeModals();
     playSound('click');
-    if (request.kind === 'spectate') tycoon().showToast(`Đang xem bàn của @${room.owner}. Chế độ xem đang được làm`);
-    else if (request.kind === 'create') tycoon().showToast('Đã tạo bàn. Phòng chờ đang được làm');
-    else tycoon().showToast(`Đã vào bàn của @${room.owner}. Phòng chờ đang được làm`);
-    void get().refresh();
   };
 
-  const send = (request: RoomRequest): Promise<TycoonRoom> => {
-    if (request.kind === 'create') return mockCreateRoom(request.input);
-    if (request.kind === 'spectate') return mockSpectate(request.room.id);
-    return mockJoinRoom(request.room.id, request.password);
+  const fail = (code: string) => {
+    const request = pending;
+    clearPending();
+    if (request) handleFailure(code, request);
   };
 
-  async function run(request: RoomRequest): Promise<void> {
+  function run(request: RoomRequest): void {
     if (get().pendingId) return;
-    const owner = session;
-    set({ pendingId: request.kind === 'create' ? 'create' : request.room.id });
-    try {
-      const room = await send(request);
-      if (owner !== session) return;
-      set({ pendingId: null });
-      succeed(request, room);
-    } catch (error) {
-      if (owner !== session) return;
-      set({ pendingId: null });
-      handleFailure(errorCode(error), request);
+    const session = tycoon().session();
+    if (!session || tycoon().online !== 'ready') {
+      handleFailure(NETWORK_ERROR, request);
+      return;
     }
+    if (request.kind === 'spectate' && !request.room.matchId) {
+      handleFailure(GAME_ERROR_CODE.MatchNotFound, request);
+      return;
+    }
+    pending = request;
+    set({ pendingId: request.kind === 'create' ? 'create' : request.room.id });
+    pendingTimer = setTimeout(() => fail(NETWORK_ERROR), REQUEST_TIMEOUT_MS);
+    if (request.kind === 'create') session.createRoom(request.input.bet, request.input.password || undefined, request.input.maxPlayers);
+    else if (request.kind === 'spectate') tycoon().watchMatch(request.room.matchId ?? '');
+    else session.joinRoom(request.room.id, request.password);
   }
 
-  const fetchRooms = async (mode: 'load' | 'refresh') => {
-    const seq = ++loadSeq;
-    set(mode === 'load' ? { status: 'loading', refreshing: false } : { refreshing: true });
-    try {
-      const rooms = await mockFetchRooms();
-      if (seq !== loadSeq) return;
-      set((state) => ({ rooms, status: 'ready', refreshing: false, page: Math.min(state.page, pageCount(rooms.length) - 1) }));
-    } catch {
-      if (seq !== loadSeq) return;
-      if (get().status === 'ready') {
-        set({ refreshing: false });
-        tycoon().showToast('Chưa làm mới được danh sách bàn');
+  const attach = () => {
+    detach();
+    const session = tycoon().session();
+    if (!session || tycoon().online !== 'ready') {
+      if (tycoon().online === 'offline') {
+        set({ status: 'error', refreshing: false });
         return;
       }
-      set({ status: 'error', refreshing: false });
+      waitOnline = useTycoon.subscribe((state) => {
+        if (state.online === 'ready' && state.session()) attach();
+        else if (state.online === 'offline') {
+          detach();
+          set({ status: 'error', refreshing: false });
+        }
+      });
+      return;
     }
+    unsubs = [
+      session.onRoomList((data) => {
+        const rooms = data.rooms.map(toRoom);
+        set((state) => ({ rooms, status: 'ready', refreshing: false, page: Math.min(state.page, pageCount(rooms.length) - 1) }));
+      }),
+      session.onRoomUpsert((data) => {
+        set((state) => ({ rooms: [toRoom(data.room), ...state.rooms.filter((room) => room.id !== data.room.id)] }));
+      }),
+      session.onRoomRemoved((data) => {
+        set((state) => {
+          const rooms = state.rooms.filter((room) => room.id !== data.roomId);
+          return { rooms, page: Math.min(state.page, pageCount(rooms.length) - 1) };
+        });
+      }),
+      session.onRoomState((data) => {
+        if (!data.watcher && pending && pending.kind !== 'spectate') succeed();
+      }),
+      session.onSpectateJoined(() => {
+        if (pending?.kind === 'spectate') succeed();
+      }),
+      session.onError((data: ErrorData) => {
+        if (pending) fail(data.code);
+      }),
+    ];
+    session.listRooms();
   };
 
   return {
@@ -208,25 +251,30 @@ export const useRoomList = create<RoomListState>((set, get) => {
     errorSeq: 0,
 
     load() {
-      session += 1;
-      set({ page: 0, pendingId: null });
+      if (tycoon().online === 'offline') tycoon().connect();
+      set({ page: 0, status: 'loading', refreshing: false });
+      clearPending();
       closeModals();
-      return fetchRooms('load');
+      attach();
+      return Promise.resolve();
     },
 
     leave() {
-      session += 1;
-      loadSeq += 1;
-      set({ pendingId: null, refreshing: false });
+      detach();
+      clearPending();
+      set({ refreshing: false });
       closeModals();
     },
 
     async refresh() {
-      if (get().status !== 'ready') {
-        await fetchRooms('load');
+      const session = tycoon().session();
+      if (!session || tycoon().online !== 'ready') {
+        attach();
         return;
       }
-      await fetchRooms('refresh');
+      if (unsubs.length === 0) attach();
+      set(get().status === 'ready' ? { refreshing: true } : { status: 'loading' });
+      session.listRooms();
     },
 
     setPage(page: number) {
@@ -244,14 +292,14 @@ export const useRoomList = create<RoomListState>((set, get) => {
         set({ lockedRoom: room, lockedError: null });
         return;
       }
-      await run({ kind: 'join', room });
+      run({ kind: 'join', room });
     },
 
     async submitPassword(password: string) {
       const room = get().lockedRoom;
       if (!room || !password) return;
       set({ lockedError: null });
-      await run({ kind: 'join', room, password });
+      run({ kind: 'join', room, password });
     },
 
     clearLockedError() {
@@ -265,7 +313,7 @@ export const useRoomList = create<RoomListState>((set, get) => {
 
     async spectate(room: TycoonRoom) {
       if (get().pendingId) return;
-      await run({ kind: 'spectate', room });
+      run({ kind: 'spectate', room });
     },
 
     openCreate() {
@@ -288,7 +336,7 @@ export const useRoomList = create<RoomListState>((set, get) => {
 
     async submitCreate(input: CreateRoomInput) {
       set({ createError: null });
-      await run({ kind: 'create', input });
+      run({ kind: 'create', input });
     },
   };
 });

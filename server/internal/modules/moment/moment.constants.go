@@ -34,6 +34,7 @@ const (
 	MomentVideoSourceExtension    = ".source"
 	MomentVideoSourceContentType  = "application/octet-stream"
 	MomentSourceCleanupBatchSize  = 100
+	MomentMusicDeleteBatchSize    = 100
 	MomentTonemapFilter           = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p"
 	MomentProbeRotationQuarterDeg = 90
 
@@ -68,6 +69,24 @@ const (
 	MomentVideoDurationTolerance = 0.5
 	MaxMomentsPerDay             = 30
 	MaxMomentSeenBatch           = 50
+
+	MaxMomentMusicUploadSize  = 30 * 1024 * 1024
+	MinMomentMusicMs          = 5000
+	MaxMomentMusicMs          = 10 * 60 * 1000
+	MaxMomentMusicTitleRunes  = 80
+	MomentMusicTotalMs        = 15000
+	MomentMusicBitrate        = "128k"
+	MomentMusicSampleRate     = "44100"
+	MomentMusicChannels       = "2"
+	MomentMusicThreads        = "1"
+	MomentMusicExtension      = ".m4a"
+	MomentMusicContentType    = "audio/mp4"
+	MomentMusicTimeout        = 30 * time.Second
+	MomentMusicConcurrency    = 2
+	MomentMusicTempPattern    = "moment-music-*"
+	MomentMusicSourceName     = "source"
+	MomentMusicClipNameFormat = "clip-%d.m4a"
+
 	MomentReactionMaxPerType     = 99
 	MomentReactionMaxPerRequest  = 20
 	MaxMomentCommentRunes        = 500
@@ -88,6 +107,7 @@ const (
 	MomentSeenTTL                = 25 * time.Hour
 	MomentQuotaTTL               = 48 * time.Hour
 	MomentCleanupInterval        = 10 * time.Minute
+	MomentMusicDeleteRetryDelay  = 10 * time.Minute
 	MomentCleanupStartDelay      = time.Minute
 	MomentCleanupLockTTL         = 9 * time.Minute
 	MomentViewerSyncGrace        = time.Hour
@@ -119,6 +139,7 @@ const (
 	MomentPurgeTotalBytes        = "bytes"
 	UploadFolderMoments          = "moments"
 	MomentUploadImagesFolder     = "images"
+	MomentUploadMusicFolder      = "music"
 	MomentUploadVideosFolder     = "videos"
 	MomentVideoContentType       = "video/mp4"
 	MomentVideoExtension         = ".mp4"
@@ -144,6 +165,17 @@ const (
 	ErrorCodeMomentVideoNotMP4   = "MOMENT_VIDEO_NOT_MP4"
 	ErrorCodeMomentVideoVipOnly  = "MOMENT_VIDEO_VIP_REQUIRED"
 	ErrorCodeMomentCommentExists = "MOMENT_COMMENT_EXISTS"
+
+	ErrorCodeMomentMusicNotAllowed  = "MOMENT_MUSIC_NOT_ALLOWED"
+	ErrorCodeMomentMusicDisabled    = "MOMENT_MUSIC_DISABLED"
+	ErrorCodeMomentMusicUnavailable = "MOMENT_MUSIC_UNAVAILABLE"
+	ErrorCodeMomentMusicTooLarge    = "MOMENT_MUSIC_TOO_LARGE"
+	ErrorCodeMomentMusicInvalid     = "MOMENT_MUSIC_INVALID"
+	ErrorCodeMomentMusicTooShort    = "MOMENT_MUSIC_TOO_SHORT"
+	ErrorCodeMomentMusicTooLong     = "MOMENT_MUSIC_TOO_LONG"
+	ErrorCodeMomentMusicRange       = "MOMENT_MUSIC_RANGE"
+	ErrorCodeMomentMusicBlocked     = "MOMENT_MUSIC_BLOCKED"
+	ErrorCodeMomentMusicTitle       = "MOMENT_MUSIC_TITLE"
 )
 
 var AllowedMomentVideoCodecs = []string{"avc1", "avc3"}

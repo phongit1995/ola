@@ -1,33 +1,16 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { BOARD, cardById } from '../logic/board';
-import { JAIL_FINE, JAIL_MAX_TURNS, LEVEL_NAMES, STATION_RENT, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
-import { takeoverPrice } from '../logic/engine';
-import { hasAnyFullGroup } from '../logic/rules-hint';
-import { cubeTransform } from '../fx/boardFx';
+import { cardById } from '../logic/board';
+import { TURN_SECONDS } from '../logic/constants';
 import { animate, reducedMotion } from '../fx/runtime';
-import { formatMoney } from '../helpers/format';
 import { seatColor } from '../helpers/player';
-import { shortName } from '../helpers/tiles';
 import { useTycoon } from '../store/useTycoon';
-import { TileMark } from './TileMark';
-import { TILE_ART } from './tileArt';
+import { cardArt } from './art';
+import { MoneyBadge, UiAvatar, UiButton } from './Ui';
 
-const PIPS: Record<number, number[]> = { 1: [5], 2: [3, 7], 3: [3, 5, 7], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };
 const CELLS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-const FACES = [1, 2, 3, 4, 5, 6];
-const NO_DICE_PHASES = new Set(['decide', 'takeover', 'festival', 'travel', 'debt']);
-const WHITE = '#FFFFFF';
-
-function DiceFace({ value }: { value: number }) {
-  return (
-    <span className={`ty-s6-face ty-s6-f${value}`} aria-hidden="true">
-      {CELLS.map((cell) => (
-        <i key={cell} className={PIPS[value].includes(cell) ? 'ty-s6-pip' : undefined} />
-      ))}
-    </span>
-  );
-}
+const TIMER_BLOCKS = 10;
+const NO_DICE_PHASES = new Set(['festival', 'travel']);
 
 function Dice({ hidden }: { hidden: boolean }) {
   const diceFx = useTycoon((s) => s.diceFx);
@@ -37,12 +20,10 @@ function Dice({ hidden }: { hidden: boolean }) {
       {diceFx.values.map((value, index) => (
         <span className="ty-s6-dwrap" data-die key={index}>
           <span className="ty-s6-dshadow" data-die-shadow />
-          <span className="ty-s6-die">
-            <span className="ty-s6-cube" data-cube style={{ transform: cubeTransform(value) }}>
-              {FACES.map((face) => (
-                <DiceFace key={face} value={face} />
-              ))}
-            </span>
+          <span className="ty-s6-die" data-face={value}>
+            {CELLS.map((cell) => (
+              <i key={cell} />
+            ))}
           </span>
         </span>
       ))}
@@ -54,30 +35,18 @@ function Dice({ hidden }: { hidden: boolean }) {
   );
 }
 
-function TimerRing({ leftMs, hidden }: { leftMs: number; hidden: boolean }) {
+function TimerBar({ leftMs }: { leftMs: number }) {
   const seconds = Math.max(0, Math.ceil(leftMs / 1000));
+  const lit = Math.ceil((Math.max(0, Math.min(1, leftMs / (TURN_SECONDS * 1000))) * TIMER_BLOCKS));
   const urgent = seconds <= 10;
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    if (hidden || !urgent || seconds === 0) return;
-    animate(ref.current, [{ transform: 'scale(1)' }, { transform: `scale(${seconds <= 3 ? 1.22 : 1.1})` }, { transform: 'scale(1)' }], { duration: 300, easing: 'ease-out' });
-  }, [hidden, seconds, urgent]);
   return (
-    <span ref={ref} className="ty-s6-ring" style={{ visibility: hidden ? 'hidden' : 'visible' }} role="timer" aria-label={`Còn ${seconds} giây`}>
-      <svg viewBox="0 0 36 36" aria-hidden="true">
-        <circle cx="18" cy="18" r="15.9" stroke="#E9E6D3" />
-        <circle
-          className="ty-s6-ring-bar"
-          cx="18"
-          cy="18"
-          r="15.9"
-          stroke={urgent ? '#E4573D' : '#F2B807'}
-          pathLength={100}
-          strokeDasharray="100"
-          strokeDashoffset={100 - Math.max(0, Math.min(1, leftMs / (TURN_SECONDS * 1000))) * 100}
-        />
-      </svg>
-      <b>0:{String(seconds).padStart(2, '0')}</b>
+    <span className={`ty-s6-timer ${urgent ? 'ty-s6-timer-urgent' : ''}`} role="timer" aria-label={`Còn ${seconds} giây`}>
+      <span className="ty-s6-timer-bar" aria-hidden="true">
+        {Array.from({ length: TIMER_BLOCKS }, (_, i) => (
+          <i key={i} className={i < lit ? 'ty-s6-timer-on' : undefined} />
+        ))}
+      </span>
+      <b>{seconds}</b>
     </span>
   );
 }
@@ -94,173 +63,26 @@ function TurnChip() {
       first.current = false;
       return;
     }
-    animate(chip.current, [{ transform: 'scale(.7) translateY(6px)', opacity: 0 }, { transform: 'scale(1.08)', opacity: 1, offset: 0.7 }, { transform: 'scale(1)', opacity: 1 }], { duration: 300, easing: 'ease-out' });
+    animate(chip.current, [{ transform: 'translateY(-60%)', opacity: 0 }, { transform: 'translateY(10%)', opacity: 1, offset: 0.6 }, { transform: 'none', opacity: 1 }], { duration: 240, easing: 'cubic-bezier(.22,1.2,.36,1)' });
   }, [turn]);
   const mine = myTurn && !view?.players[you]?.bankrupt;
+  const showTimer = mine && !replaying && deadline !== 0;
   return (
     <div className="ty-s6-chiprow">
       <span ref={chip} className={`ty-s6-chip ${mine ? 'ty-s6-chip-me' : ''}`} style={{ '--seat': seatColor(turn) } as CSSProperties}>
-        <img src={players[turn]?.avatar} alt="" draggable={false} />
-        <span>{mine ? 'Lượt của bạn' : `Lượt của ${players[turn]?.name ?? '?'}`}</span>
+        <UiAvatar src={players[turn]?.avatar} size={22} ring={seatColor(turn)} />
+        <span>{mine ? 'Lượt của bạn' : players[turn]?.name ?? '?'}</span>
+        {mine ? null : (
+          <span className="ty-s6-thinking" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+        )}
       </span>
-      <TimerRing leftMs={timerLeftMs} hidden={!mine || replaying || deadline === 0} />
-      {mine ? null : (
-        <span className="ty-s6-thinking" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
-      )}
+      {showTimer ? <TimerBar leftMs={timerLeftMs} /> : null}
     </div>
   );
-}
-
-function Deed({ idx, owner }: { idx: number; owner?: number }) {
-  const { view, players, you, openSheet } = useTycoon(useShallow((s) => ({ view: s.view, players: s.players, you: s.you, openSheet: s.openSheet })));
-  if (!view) return null;
-  const tile = BOARD[idx];
-  const stripe = tile.group && tile.kind === 'street' ? `var(--ty-g-${tile.group})` : '#9AA6BC';
-  const baseRent = tile.kind === 'station' ? STATION_RENT[1] : tile.rent?.[0] ?? 0;
-  const ownerName = owner === you ? 'bạn' : owner != null ? players[owner]?.name ?? '?' : '';
-  const detail = owner == null ? `Giá ${formatMoney(tile.price ?? 0)} · Thuê ${baseRent} tr` : `Của ${ownerName} · ${LEVEL_NAMES[view.tiles[idx].houses] ?? ''} · Mua lại ${formatMoney(takeoverPrice(view, idx))}`;
-  return (
-    <button type="button" className="ty-s6-deed" onClick={() => openSheet({ kind: 'tile', idx })} aria-label={`Xem chi tiết ${tile.name}`}>
-      <i style={{ background: stripe }} />
-      <span className="ty-s6-dart" style={{ backgroundImage: `url(${TILE_ART[idx]})` }} />
-      <span className="ty-s6-dtxt">
-        <b>{shortName(idx)}</b>
-        <small>{detail}</small>
-      </span>
-    </button>
-  );
-}
-
-function BuyButton({ label, price, cash, move }: { label: string; price: number; cash: number; move: 'BUY' | 'TAKEOVER' }) {
-  const { busy, sendMove } = useTycoon(useShallow((s) => ({ busy: s.movePending || s.replaying, sendMove: s.sendMove })));
-  const affordable = cash >= price;
-  return (
-    <button type="button" className="ty-s6-cta" disabled={busy || !affordable} onClick={() => sendMove({ type: move })}>
-      {label} {price} tr
-      <small>{affordable ? `còn lại ${formatMoney(cash - price)}` : `cần ${formatMoney(price - cash)}`}</small>
-    </button>
-  );
-}
-
-function usePhaseView() {
-  return useTycoon(useShallow((s) => ({ view: s.view, you: s.you, cash: s.cash, busy: s.movePending || s.replaying, sendMove: s.sendMove, openSheet: s.openSheet })));
-}
-
-function Prompt() {
-  const { view, you, openSheet } = usePhaseView();
-  if (!view) return null;
-  const me = view.players[you];
-  switch (view.phase) {
-    case 'decide':
-      return <Deed idx={me.pos} />;
-    case 'takeover':
-      return <Deed idx={me.pos} owner={view.tiles[me.pos].owner} />;
-    case 'festival':
-      return (
-        <>
-          <p className="ty-s6-say">Chọn thành phố của bạn để tổ chức Lễ hội, thuê ×2</p>
-          <div className="ty-s6-chips">
-            {BOARD.filter((tile) => tile.kind === 'street' && view.tiles[tile.idx].owner === you).map((tile) => (
-              <button key={tile.idx} type="button" className={view.festival === tile.idx ? 'ty-s6-chip-on' : undefined} onClick={() => openSheet({ kind: 'tile', idx: tile.idx })}>
-                {shortName(tile.idx)}
-              </button>
-            ))}
-          </div>
-        </>
-      );
-    case 'travel':
-      return <p className="ty-s6-say">Du lịch: chạm ô bất kỳ để bay tới</p>;
-    case 'debt':
-      return <p className="ty-s6-say ty-s6-warn">Bạn đang nợ {formatMoney(view.debt?.amount ?? 0)}</p>;
-    default:
-      return null;
-  }
-}
-
-function Actions() {
-  const { view, you, cash, busy, sendMove, openSheet } = usePhaseView();
-  if (!view) return null;
-  const me = view.players[you];
-  const myCash = cash[you] ?? me.cash;
-  switch (view.phase) {
-    case 'roll':
-      return (
-        <button type="button" className="ty-s6-cta" disabled={busy} onClick={() => sendMove({ type: 'ROLL' })}>
-          {me.doubles > 0 ? 'Gieo thêm lượt (đôi!)' : 'Gieo xúc xắc'}
-        </button>
-      );
-    case 'jail':
-      return (
-        <div className="ty-s6-trio">
-          <button type="button" className="ty-s6-cta ty-s6-mini" disabled={busy} onClick={() => sendMove({ type: 'JAIL_ROLL' })}>
-            Gieo đôi
-            <small>
-              lần {me.jailTurns + 1}/{JAIL_MAX_TURNS}
-            </small>
-          </button>
-          <button type="button" className="ty-s6-ghost ty-s6-mini" disabled={busy || myCash < JAIL_FINE} onClick={() => sendMove({ type: 'JAIL_PAY' })}>
-            Nộp phạt
-            <small>{JAIL_FINE} tr</small>
-          </button>
-          <button type="button" className="ty-s6-ghost ty-s6-mini" disabled={busy || me.jailCards.length === 0} onClick={() => sendMove({ type: 'JAIL_CARD' })}>
-            Dùng thẻ
-            <small>còn {me.jailCards.length}</small>
-          </button>
-        </div>
-      );
-    case 'decide':
-      return (
-        <div className="ty-s6-pair">
-          <button type="button" className="ty-s6-ghost" disabled={busy} onClick={() => sendMove({ type: 'DECLINE' })}>
-            Bỏ qua
-          </button>
-          <BuyButton label="Mua" price={BOARD[me.pos].price ?? 0} cash={myCash} move="BUY" />
-        </div>
-      );
-    case 'takeover':
-      return (
-        <div className="ty-s6-pair">
-          <button type="button" className="ty-s6-ghost" disabled={busy} onClick={() => sendMove({ type: 'DECLINE' })}>
-            Bỏ qua
-          </button>
-          <BuyButton label="Mua lại" price={takeoverPrice(view, me.pos)} cash={myCash} move="TAKEOVER" />
-        </div>
-      );
-    case 'festival':
-      return (
-        <button type="button" className="ty-s6-ghost ty-s6-wide" disabled={busy} onClick={() => sendMove({ type: 'DECLINE' })}>
-          Bỏ qua
-        </button>
-      );
-    case 'travel':
-      return (
-        <button type="button" className="ty-s6-ghost ty-s6-wide" disabled={busy} onClick={() => sendMove({ type: 'ROLL' })}>
-          Không bay, gieo xúc xắc
-        </button>
-      );
-    case 'manage': {
-      const end = (
-        <button type="button" className="ty-s6-cta" disabled={busy} onClick={() => sendMove({ type: 'END_TURN' })}>
-          {me.doubles > 0 && !me.inJail ? 'Gieo tiếp (đôi!)' : 'Kết thúc lượt ›'}
-        </button>
-      );
-      if (!hasAnyFullGroup(view, you)) return end;
-      return (
-        <div className="ty-s6-pair">
-          <button type="button" className="ty-s6-ghost" disabled={busy} onClick={() => openSheet({ kind: 'assets', seat: you })}>
-            Nâng cấp
-          </button>
-          {end}
-        </div>
-      );
-    }
-    default:
-      return null;
-  }
 }
 
 function Feed({ hidden }: { hidden: boolean }) {
@@ -272,7 +94,7 @@ function Feed({ hidden }: { hidden: boolean }) {
     if (!feed || reducedMotion()) root.replaceChildren();
     else
       Array.from(root.children).forEach((old) => {
-        void animate(old, [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-55%) scale(.96)', opacity: 0 }], { duration: 170, easing: 'ease-in', fill: 'forwards' }).then(() => old.remove());
+        void animate(old, [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-60%)', opacity: 0 }], { duration: 150, easing: 'cubic-bezier(.22,1.2,.36,1)', fill: 'forwards' }).then(() => old.remove());
       });
     if (!feed || feed.text.startsWith('Vòng ')) return;
     const line = document.createElement('div');
@@ -283,14 +105,12 @@ function Feed({ hidden }: { hidden: boolean }) {
       img.src = avatar;
       img.alt = '';
       line.append(img);
-    } else {
-      line.classList.add('ty-s6-fline-plain');
     }
     const text = document.createElement('span');
     text.textContent = feed.text;
     line.append(text);
     root.append(line);
-    animate(line, [{ transform: 'translateY(55%) scale(.94)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 230, easing: 'cubic-bezier(.2,.9,.3,1.12)' });
+    animate(line, [{ transform: 'translateY(60%)', opacity: 0 }, { transform: 'translateY(-8%)', opacity: 1, offset: 0.7 }, { transform: 'none', opacity: 1 }], { duration: 200, easing: 'cubic-bezier(.22,1.2,.36,1)' });
   }, [feed]);
   return <div ref={box} className="ty-s6-feed" hidden={hidden} aria-live="polite" />;
 }
@@ -302,26 +122,25 @@ function CardBox() {
   if (!cardFx) return null;
   const chance = cardFx.deck === 'chance';
   const label = chance ? 'CƠ HỘI' : 'KHÍ VẬN';
+  const card = cardById(cardFx.id);
   const canAck = myTurn && view?.phase === 'card' && view.turn === you && !replaying;
+  const amount = card?.effect === 'cash' ? card.amount ?? 0 : null;
   return (
     <div className="ty-s6-cardbox" id="ty-s6-cardbox" key={cardFx.seq}>
       <div className={`ty-s6-card3d ${chance ? 'ty-s6-card-chance' : 'ty-s6-card-chest'}`} data-card>
         <div className="ty-s6-cback">
-          <b>
-            <TileMark name={cardFx.deck} color={WHITE} />
-            <span>{label}</span>
-          </b>
+          <b>?</b>
+          <span>{label}</span>
         </div>
         <div className="ty-s6-cfront">
-          <header>
-            <TileMark name={cardFx.deck} color={WHITE} />
-            <b>{label}</b>
-          </header>
-          <p>{cardById(cardFx.id)?.text ?? ''}</p>
+          <header>{label}</header>
+          <img className="ty-s6-cart" src={cardArt(card)} alt="" draggable={false} />
+          <p>{card?.text ?? ''}</p>
+          {amount != null ? <MoneyBadge amount={amount} signed className={amount < 0 ? 'ty-s6-camt-neg' : 'ty-s6-camt-pos'} /> : null}
           {canAck ? (
-            <button type="button" className="ty-s6-cta" disabled={movePending} onClick={() => sendMove({ type: 'CARD_ACK' })}>
+            <UiButton tone="gold" size="sm" disabled={movePending} onClick={() => sendMove({ type: 'CARD_ACK' })}>
               Làm theo thẻ
-            </button>
+            </UiButton>
           ) : null}
         </div>
       </div>
@@ -330,41 +149,24 @@ function CardBox() {
 }
 
 export function BoardCenter() {
-  const { view, you, myTurn, replaying, movePending, turnExpired } = useTycoon(
-    useShallow((s) => ({ view: s.view, you: s.you, myTurn: s.myTurn, replaying: s.replaying, movePending: s.movePending, turnExpired: s.turnExpired })),
+  const { view, you, myTurn, replaying, movePending } = useTycoon(
+    useShallow((s) => ({ view: s.view, you: s.you, myTurn: s.myTurn, replaying: s.replaying, movePending: s.movePending })),
   );
   if (!view) return null;
   const canAct = myTurn && !replaying && !movePending && !view.players[you]?.bankrupt;
-  const showActions = canAct && !turnExpired && view.phase !== 'card' && view.phase !== 'debt';
-  const showPrompt = canAct && !turnExpired;
-  const hideDice = showPrompt && NO_DICE_PHASES.has(view.phase);
+  const hideDice = canAct && NO_DICE_PHASES.has(view.phase);
   return (
     <div className="ty-s6-inner">
-      <div className="ty-s6-deck ty-s6-deck-chance" id="ty-s6-deck-chance">
-        <b>CƠ HỘI</b>
-        <i>?</i>
+      <div className="ty-s6-deck ty-s6-deck-chance" id="ty-s6-deck-chance" aria-hidden="true">
+        <b>?</b>
       </div>
-      <div className="ty-s6-deck ty-s6-deck-chest" id="ty-s6-deck-chest">
-        <b>KHÍ VẬN</b>
-        <TileMark name="chest" color={WHITE} />
+      <div className="ty-s6-deck ty-s6-deck-chest" id="ty-s6-deck-chest" aria-hidden="true">
+        <b>$</b>
       </div>
       <TurnChip />
       <Dice hidden={hideDice} />
-      {showPrompt && hideDice ? (
-        <div className="ty-s6-mid">
-          <Prompt />
-        </div>
-      ) : null}
-      {showActions ? (
-        <div className="ty-s6-actions">
-          <Actions />
-        </div>
-      ) : null}
-      {turnExpired && myTurn ? <p className="ty-s6-say ty-s6-warn">Hết giờ, hệ thống đang đi thay bạn…</p> : null}
-      <Feed hidden={showActions || (turnExpired && myTurn)} />
-      <p className="ty-s6-hint" style={{ visibility: showActions && view.phase === 'roll' ? 'visible' : 'hidden' }}>
-        Thắng ngay: {WIN_GROUPS} nhóm · 1 cạnh · 4 sân bay
-      </p>
+      {hideDice ? <p className="ty-s6-say">{view.phase === 'festival' ? 'Chạm thành phố của bạn để mở Lễ hội · thuê ×2' : 'Chạm ô bất kỳ để bay tới'}</p> : null}
+      <Feed hidden={false} />
       <CardBox />
     </div>
   );
