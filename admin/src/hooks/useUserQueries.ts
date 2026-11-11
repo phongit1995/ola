@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminUserService } from '@/services/adminUser.service'
 import type {
   AddVipDaysRequest,
+  GrantUserAvatarFrameRequest,
   GrantVipRequest,
   ListParams,
   UserListParams,
@@ -112,6 +113,25 @@ export function useResetPassword() {
   return useMutation({
     mutationFn: ({ id, password }: { id: string; password: string }) =>
       AdminUserService.resetPassword(id, password),
+  })
+}
+
+export function useUserAvatarFrames(id: string | null) {
+  return useQuery({
+    queryKey: [USERS_KEY, 'avatar-frames', id],
+    queryFn: () => AdminUserService.listAvatarFrames(id as string, { limit: 100 }),
+    enabled: id != null,
+  })
+}
+
+export function useGrantUserAvatarFrame() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: GrantUserAvatarFrameRequest }) =>
+      AdminUserService.grantAvatarFrame(id, payload),
+    onSuccess: (_, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY, 'avatar-frames', id] })
+    },
   })
 }
 

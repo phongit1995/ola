@@ -5,8 +5,10 @@ import type {
   AddVipDaysResult,
   AdminUserDetail,
   AdminUserListItem,
+  AdminUserAvatarFrameStore,
   AdminUserSession,
   AdminUserVipIcon,
+  GrantUserAvatarFrameRequest,
   GrantVipRequest,
   ListParams,
   ListResult,
@@ -74,6 +76,18 @@ export const AdminUserService = {
       `/admin/users/${id}/violations/${violationId}`,
     )
     return data.data
+  },
+
+  async listAvatarFrames(id: string, params: ListParams = {}): Promise<AdminUserAvatarFrameStore> {
+    const { data } = await http.get<ApiResponse<AdminUserAvatarFrameStore>>(
+      `/admin/users/${id}/avatar-frames`,
+      { params },
+    )
+    return data.data
+  },
+
+  async grantAvatarFrame(id: string, payload: GrantUserAvatarFrameRequest): Promise<void> {
+    await http.post(`/admin/users/${id}/avatar-frames`, payload)
   },
 
   async grantVip(id: string, payload: GrantVipRequest): Promise<AdminUserVipIcon> {

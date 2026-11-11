@@ -93,3 +93,26 @@ export interface AvatarFrameTransferListParams {
   limit?: number
   offset?: number
 }
+
+export type UserAvatarFrameSource = 'purchase' | 'gift' | 'transfer' | 'gift_code' | 'admin'
+
+export interface AdminUserAvatarFrame {
+  frameId: string
+  source: UserAvatarFrameSource
+  acquiredAt: string
+  isEquipped: boolean
+}
+
+export interface AdminUserAvatarFrameStore {
+  userId: string
+  equippedFrameId: string | null
+  vipActive: boolean
+  total: number
+  limit: number
+  offset: number
+  items: AdminUserAvatarFrame[]
+}
+
+export interface GrantUserAvatarFrameRequest {
+  frameId: string
+}

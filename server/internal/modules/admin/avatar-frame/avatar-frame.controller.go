@@ -249,3 +249,54 @@ func (ctrl *Controller) ReorderShopItems(c *gin.Context) (interface{}, error) {
 	}
 	return map[string]string{"message": "order updated"}, nil
 }
+
+// ListUserFrames godoc
+// @Summary      Kho khung avatar của một user, kể cả khi user để riêng tư (admin)
+// @Tags         admin-avatar-frame
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "User ID"
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  avatarframe.StoreResponse
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/avatar-frames [get]
+func (ctrl *Controller) ListUserFrames(c *gin.Context) (interface{}, error) {
+	userID, err := utils.ParseUUIDParam(c, "id", "user id")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.AdminStore(userID, utils.ParseLimit(c, avatarframe.DefaultStoreLimit, avatarframe.MaxStoreLimit), utils.ParseOffset(c))
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// GrantUserFrame godoc
+// @Summary      Tặng một khung avatar vào kho của user (admin)
+// @Tags         admin-avatar-frame
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path string                true "User ID"
+// @Param        body body GrantUserFrameRequest true "Mã khung"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Failure      409  {object}  utils.APIError
+// @Router       /admin/users/{id}/avatar-frames [post]
+func (ctrl *Controller) GrantUserFrame(c *gin.Context) (interface{}, error) {
+	userID, err := utils.ParseUUIDParam(c, "id", "user id")
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[GrantUserFrameRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.AdminGrant(userID, strings.TrimSpace(req.FrameID)); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"frameId": strings.TrimSpace(req.FrameID)}, nil
+}

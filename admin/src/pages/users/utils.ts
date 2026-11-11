@@ -1,7 +1,19 @@
 import { formatDateTime } from '@/lib/format'
-import type { AdminUserVipIcon, ModerationLockStep, ReportAdminBrief, UserViolation } from '@/types'
+import type {
+  AdminAvatarFramePurchase,
+  AdminAvatarFrameTransfer,
+  AdminUserVipIcon,
+  ModerationLockStep,
+  ReportAdminBrief,
+  UserViolation,
+} from '@/types'
 import { KEN_TX_TYPE, LOCK_REASON_VIOLATIONS, VIP_ICON_SOURCE_LABEL } from './constants'
-import type { UserLockFields, ViolationState } from './types'
+import type {
+  UserFramePurchaseRole,
+  UserFrameTransferDirection,
+  UserLockFields,
+  ViolationState,
+} from './types'
 
 export function kenTypeLabel(type: string): string {
   return KEN_TX_TYPE[type] ?? type
@@ -66,4 +78,13 @@ export function unlockWarning(points: number, lockSteps: readonly ModerationLock
 export function clearViolationsWarning(points: number, locked: boolean): string {
   const base = `Gỡ toàn bộ vi phạm đang tính điểm (${points} điểm), điểm về 0. Lịch sử vẫn giữ, các dòng chuyển sang "Đã gỡ".`
   return locked ? `${base} Tài khoản vẫn bị khoá, bấm Mở khoá tài khoản nếu muốn mở.` : base
+}
+
+export function userFramePurchaseRole(item: AdminAvatarFramePurchase, userId: string): UserFramePurchaseRole {
+  if (item.source !== 'gift' || !item.recipient) return 'self'
+  return item.recipient.id === userId ? 'received' : 'sent'
+}
+
+export function userFrameTransferDirection(item: AdminAvatarFrameTransfer, userId: string): UserFrameTransferDirection {
+  return item.to.id === userId ? 'in' : 'out'
 }

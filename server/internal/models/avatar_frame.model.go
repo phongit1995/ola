@@ -11,6 +11,7 @@ const (
 	AvatarFrameSourceGift     = "gift"
 	AvatarFrameSourceTransfer = "transfer"
 	AvatarFrameSourceGiftCode = "gift_code"
+	AvatarFrameSourceAdmin    = "admin"
 )
 
 type AvatarFrameShopItem struct {

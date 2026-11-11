@@ -26,4 +26,10 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		frames.GET("/purchases/stats", r.controller.PurchaseStats)
 		frames.GET("/transfers", r.controller.ListTransfers)
 	}
+
+	users := admin.Group("/users", r.authMiddleware.RequireAdmin())
+	{
+		users.GET("/:id/avatar-frames", r.controller.ListUserFrames)
+		users.POST("/:id/avatar-frames", r.controller.GrantUserFrame)
+	}
 }

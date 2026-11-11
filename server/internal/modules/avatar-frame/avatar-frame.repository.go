@@ -243,6 +243,19 @@ func GrantFrameTx(tx *gorm.DB, userID uuid.UUID, frameID, source string, now tim
 	return result.RowsAffected > 0, result.Error
 }
 
+func (r *Repository) AdminGrant(userID uuid.UUID, frameID string, now time.Time) (bool, error) {
+	granted := false
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := LockOwnerTx(tx, userID); err != nil {
+			return err
+		}
+		ok, err := GrantFrameTx(tx, userID, frameID, models.AvatarFrameSourceAdmin, now)
+		granted = ok
+		return err
+	})
+	return granted, err
+}
+
 type purchaseParams struct {
 	payerID       uuid.UUID
 	recipientID   uuid.UUID
