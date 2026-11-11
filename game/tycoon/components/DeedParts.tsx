@@ -1,35 +1,19 @@
 import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
-import { FESTIVAL_MULTIPLIER, LEVEL_NAMES, MAX_HOUSES, STATION_RENT } from '../logic/constants';
+import { FESTIVAL_MULTIPLIER, LEVEL_NAMES, STATION_RENT } from '../logic/constants';
 import type { GameState } from '../logic/types';
 import { seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
 import { TileMark, type TileMarkName } from './TileMark';
 import { TILE_ART } from './tileArt';
+import { houseArt } from './art';
 
 const MARK_BY_KIND: Partial<Record<string, TileMarkName>> = { chance: 'chance', chest: 'chest', tax: 'tax', go: 'go' };
 
 export function groupColor(idx: number): string {
   const tile = BOARD[idx];
   return tile.kind === 'street' && tile.group ? `var(--ty-g-${tile.group})` : tile.kind === 'station' ? '#9AA6BC' : 'var(--ty-navy)';
-}
-
-export function HouseIcon() {
-  return (
-    <svg viewBox="0 0 12 12" aria-hidden="true">
-      <path d="M1 6.2 6 1.6l5 4.6H9.8V11H2.2V6.2Z" fill="#2FA86F" stroke="#1F2A44" strokeWidth="1.1" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-export function HotelIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 20 12" aria-hidden="true">
-      <path d="M1 11V3.6L6 1l4 2.2L14 1l5 2.6V11Z" fill="#E4573D" stroke="#1F2A44" strokeWidth="1.1" strokeLinejoin="round" />
-      <path d="M5 6h2M9 6h2M13 6h2" stroke="#FFF3C4" strokeWidth="1.4" />
-    </svg>
-  );
 }
 
 export function TileThumb({ idx, className = '' }: { idx: number; className?: string }) {
@@ -60,18 +44,6 @@ export function SeatTag({ seat }: { seat: number }) {
     <span className="ty-seat-tag" style={{ '--seat': seatColor(seat) } as CSSProperties}>
       <img src={players[seat]?.avatar} alt="" draggable={false} />
       {seat === you ? 'Bạn' : players[seat]?.name ?? '?'}
-    </span>
-  );
-}
-
-export function LevelPips({ houses }: { houses: number }) {
-  return (
-    <span className="ty-pips" role="img" aria-label={LEVEL_NAMES[houses] ?? ''}>
-      {Array.from({ length: MAX_HOUSES }, (_, i) => (
-        <i key={i} className={`${i < houses ? 'ty-pip-on' : ''} ${i === MAX_HOUSES - 1 ? 'ty-pip-hotel' : ''}`}>
-          {i < houses ? i === MAX_HOUSES - 1 ? <HotelIcon /> : <HouseIcon /> : null}
-        </i>
-      ))}
     </span>
   );
 }
@@ -116,5 +88,53 @@ export function landValue(view: GameState, seat: number): { land: number; houses
       return { land: sum.land + (tile.price ?? 0), houses: sum.houses + state.houses * (tile.houseCost ?? 0) };
     },
     { land: 0, houses: 0 },
+  );
+}
+
+const STEP_SHORT = ['Đất', 'Nhà', 'Biệt thự', 'K.sạn'];
+
+export interface LadderPick {
+  target: number;
+  can: (houses: number) => boolean;
+  onPick: (houses: number) => void;
+}
+
+export function RentLadder({ view, idx, pick }: { view: GameState; idx: number; pick?: LadderPick }) {
+  const street = BOARD[idx].kind === 'street';
+  const ladder = rentLadder(view, idx);
+  const maxRent = Math.max(1, ...ladder.map((step) => step.rent));
+  return (
+    <ol className={`ty-ladder ${street ? '' : 'ty-ladder-station'} ${pick ? 'ty-ladder-picking' : ''}`} aria-label="Tiền thuê theo cấp">
+      {ladder.map((step, i) => {
+        const art = street ? houseArt(step.houses) : null;
+        const label = street ? STEP_SHORT[step.houses] : `${i + 1} sân bay`;
+        const can = pick?.can(step.houses) ?? false;
+        const picked = can && pick?.target === step.houses;
+        const body = (
+          <>
+            <span className="ty-ladder-icon">{art ? <img src={art} alt="" draggable={false} /> : street ? <i className="ty-ladder-lot" /> : <b>{i + 1}</b>}</span>
+            <span className="ty-ladder-bar">
+              <strong>{step.rent}</strong>
+            </span>
+            <span className="ty-ladder-label">{label}</span>
+          </>
+        );
+        return (
+          <li
+            key={step.label}
+            className={[step.active ? 'ty-ladder-on' : '', can ? 'ty-ladder-can' : '', picked ? 'ty-ladder-picked' : ''].join(' ')}
+            style={{ '--h': `${Math.round(30 + (step.rent / maxRent) * 70)}%` } as CSSProperties}
+          >
+            {can ? (
+              <button type="button" aria-pressed={picked} aria-label={`Chọn nâng lên ${label}, thuê ${step.rent} tr`} onClick={() => pick?.onPick(step.houses)}>
+                {body}
+              </button>
+            ) : (
+              body
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }

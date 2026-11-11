@@ -6,7 +6,7 @@ import { vipIconUrl } from '@ola/shared/lib/vip';
 import { bridge, type GameReactionType } from '../../src/sdk';
 import { BOARD, cardById, GROUP_LABEL, tilesOfGroup } from '../logic/board';
 import { botMove } from '../logic/bot';
-import { BOARD_SIZE, FESTIVAL_MULTIPLIER, JAIL_TILE, MAX_HOUSES, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, JAIL_TILE, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
 import { applyMove, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
 import { RuleError, type BotLevel, type GameState, type Move, type Step, type TileState } from '../logic/types';
 import { MAX_BOTS, botName, type BotSetupItem } from '../helpers/bot';
@@ -14,10 +14,9 @@ import { formatMoney } from '../helpers/format';
 import { botHistoryEntry, saveBotHistory } from '../helpers/history';
 import { avatarIconUrl } from '../helpers/player';
 import { MOCK_PROFILE, type LobbyProfile } from '../helpers/profile';
-import { levelLabel } from '../helpers/tiles';
 import { playSound, setSoundEnabled } from '../audio';
 import * as fx from '../fx/boardFx';
-import { sleep } from '../fx/runtime';
+import { setTempo, sleep } from '../fx/runtime';
 
 export type BoardMode = 'idle' | 'playing';
 export type Sheet = { kind: 'tile'; idx: number } | { kind: 'assets'; seat: number } | { kind: 'log' } | null;
@@ -104,6 +103,8 @@ export interface NoticeState {
 interface TycoonState {
   profile: LobbyProfile | null;
   soundOn: boolean;
+  speed: 1 | 2;
+  autoEnd: boolean;
   rulesOpen: boolean;
   setupOpen: boolean;
   roomsOpen: boolean;
@@ -145,6 +146,9 @@ interface TycoonState {
   init(): void;
   dispose(): void;
   toggleSound(): void;
+  setSpeed(speed: 1 | 2): void;
+  setAutoEnd(on: boolean): void;
+  skipReplay(): void;
   exitGame(): void;
   setRulesOpen(open: boolean): void;
   setSetupOpen(open: boolean): void;
@@ -155,6 +159,7 @@ interface TycoonState {
   startGame(bots: BotSetupItem[]): void;
 
   sendMove(move: Move): void;
+  sendMoves(moves: Move[]): void;
   openSheet(sheet: Sheet): void;
   closeSheet(): void;
   forfeitMatch(): void;
@@ -170,10 +175,14 @@ interface TycoonState {
 }
 
 const SOUND_KEY = 'ola:tycoon:sound';
+const SPEED_KEY = 'ola:tycoon:speed';
+const AUTO_END_KEY = 'ola:tycoon:auto-end';
+const BOT_TEMPO = 1.8;
+const SKIP_TEMPO = 8;
 const TOAST_MS = 2400;
 const RESULT_REVEAL_MS = 900;
 const SCREEN_IN_MS = 260;
-const BOT_DELAY_MS = { card: 1500, quick: 240, think: 540 };
+const BOT_DELAY_MS = { card: 950, quick: 150, think: 360 };
 const STEP_MS = { land: 300, debt: 320, round: 240 };
 const SILENT_PAY_REASONS = new Set(['buy', 'takeover', 'build', 'sell']);
 
@@ -209,12 +218,24 @@ function readSound(): boolean {
   }
 }
 
-function writeSound(on: boolean): void {
+function readPref(key: string): string | null {
   try {
-    localStorage.setItem(SOUND_KEY, on ? '1' : '0');
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writePref(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
   } catch {
     // WebView chặn storage thì chỉ không nhớ được lựa chọn.
   }
+}
+
+function writeSound(on: boolean): void {
+  writePref(SOUND_KEY, on ? '1' : '0');
 }
 
 function barsFor(state: GameState): boolean {
@@ -249,6 +270,11 @@ function reasonLabel(reason: string | undefined, amount: number, tile?: number):
     default:
       return formatMoney(amount);
   }
+}
+
+interface LevelUp {
+  from: number;
+  to: number;
 }
 
 export const useTycoon = create<TycoonState>((set, get) => {
@@ -386,6 +412,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
   const playTurnBanner = (state: GameState): Promise<void> => {
     const { you, players } = get();
+    if (state.turn !== you) return Promise.resolve();
     return fx.showTurnBanner({ seat: state.turn, mine: state.turn === you, name: seatName(state.turn), avatar: players[state.turn]?.avatar, tip: turnTip(state) });
   };
 
@@ -419,11 +446,11 @@ export const useTycoon = create<TycoonState>((set, get) => {
     const group = BOARD[tile].kind === 'street' ? BOARD[tile].group : undefined;
     const members = group ? tilesOfGroup(group) : [];
     const complete = group ? members.every((idx) => idx === tile || get().tiles[idx]?.owner === by) : false;
-    if (complete && group) get().showToast(`Trọn nhóm ${GROUP_LABEL[group]}, thuê ×2`);
-    return fx.stampDeed(tile, by, BOARD[tile].name, () => commitTiles(withOwner(tile, by)), complete ? members : null);
+    if (complete && group) pushLog(`${seatName(by)} gom trọn nhóm ${GROUP_LABEL[group]}, thuê ×2`, by === get().you ? 'up' : 'neutral');
+    return fx.stampDeed(tile, by, () => commitTiles(withOwner(tile, by)), complete ? members : null);
   };
 
-  const replayStep = async (step: Step, epoch: number): Promise<void> => {
+  const replayStep = async (step: Step, epoch: number, levelUp?: LevelUp): Promise<void> => {
     const alive = () => refs.replayEpoch === epoch;
     const you = get().you;
     switch (step.kind) {
@@ -477,7 +504,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
         } else if (from >= 0 && to >= 0) pushLog(`${seatName(from)} trả ${seatName(to)} ${formatMoney(amount)} ${label}`, from === you ? 'down' : to === you ? 'up' : 'neutral');
         else if (from >= 0) pushLog(`${seatName(from)} trả ${formatMoney(amount)} ${label}`, from === you ? 'down' : 'neutral');
         else if (to >= 0) pushLog(`${seatName(to)} nhận ${formatMoney(amount)} ${label}`, to === you ? 'up' : 'neutral');
-        await fx.payMoney({ from, to, amount, reason: step.reason, debit: () => addCash(from, -amount), credit: () => addCash(to, amount) });
+        await fx.payMoney({ from, to, amount, reason: step.reason, tile: step.tile, debit: () => addCash(from, -amount), credit: () => addCash(to, amount) });
         return;
       }
       case 'buy': {
@@ -522,17 +549,17 @@ export const useTycoon = create<TycoonState>((set, get) => {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
         const houses = step.houses ?? 0;
-        pushLog(`${seatName(step.by)} nâng ${BOARD[tile].name} lên ${levelLabel(houses)}`);
+        if (levelUp) pushLog(`${seatName(step.by)} nâng cấp ${BOARD[tile].name}: Lv${levelUp.from} → Lv${levelUp.to}`);
         commitTiles((tiles) => tiles.map((item, idx) => (idx === tile ? { ...item, houses } : item)));
-        await fx.buildHouse(tile, houses >= MAX_HOUSES);
+        await fx.buildHouse(tile, houses, step.by, levelUp);
         return;
       }
       case 'sell': {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
         const houses = step.houses ?? 0;
-        pushLog(`${seatName(step.by)} hạ ${BOARD[tile].name} còn ${levelLabel(houses)}`);
-        await fx.sellHouse(tile, step.by);
+        pushLog(`${seatName(step.by)} hạ cấp ${BOARD[tile].name}: Lv${houses + 1} → Lv${houses}`);
+        await fx.sellHouse(tile, step.by, houses);
         commitTiles((tiles) => tiles.map((item, idx) => (idx === tile ? { ...item, houses } : item)));
         return;
       }
@@ -589,10 +616,22 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
   const replaySteps = async (steps: Step[], epoch: number): Promise<void> => {
     flushSync(() => set({ replaying: true }));
-    for (const step of steps) {
+    const levelUps = new Map<number, LevelUp>();
+    const firstLevel = new Map<number, number>();
+    const lastBuild = new Map<number, number>();
+    steps.forEach((step, i) => {
+      if (step.kind !== 'build' || step.tile == null) return;
+      const to = step.houses ?? 0;
+      if (!firstLevel.has(step.tile)) firstLevel.set(step.tile, to - 1);
+      const previous = lastBuild.get(step.tile);
+      if (previous != null) levelUps.delete(previous);
+      levelUps.set(i, { from: firstLevel.get(step.tile) ?? to - 1, to });
+      lastBuild.set(step.tile, i);
+    });
+    for (const [i, step] of steps.entries()) {
       if (refs.replayEpoch !== epoch) return;
       refs.feedSeat = step.kind === 'pay' && step.by < 0 ? step.target ?? -1 : step.by ?? -1;
-      await replayStep(step, epoch);
+      await replayStep(step, epoch, levelUps.get(i));
     }
     fx.clearMovingPawns();
   };
@@ -661,15 +700,23 @@ export const useTycoon = create<TycoonState>((set, get) => {
       if (run !== refs.gameRun || refs.state !== state) return;
       const mv = botMove(state, seat) ?? moveOnTimeout(state, seat);
       if (mv) applyLocal(seat, mv);
-    }, state.phase === 'card' ? BOT_DELAY_MS.card : state.phase === 'manage' || state.phase === 'roll' ? BOT_DELAY_MS.quick : BOT_DELAY_MS.think);
+    }, (state.phase === 'card' ? BOT_DELAY_MS.card : state.phase === 'manage' || state.phase === 'roll' ? BOT_DELAY_MS.quick : BOT_DELAY_MS.think) / get().speed);
   };
 
-  function applyLocal(seat: number, mv: Move): void {
+  function applyLocal(seat: number, moves: Move | Move[]): void {
     const current = refs.state;
     if (!current || get().boardMode !== 'playing') return;
-    let next: GameState;
+    const list = Array.isArray(moves) ? moves : [moves];
+    const mv = list[0];
+    if (!mv) return;
+    let next: GameState = current;
     try {
-      next = applyMove(current, seat, mv);
+      const steps: GameState['steps'] = [];
+      for (const move of list) {
+        next = applyMove(next, seat, move);
+        steps.push(...next.steps);
+      }
+      next = { ...next, steps };
     } catch (error) {
       set({ movePending: false });
       if (seat === get().you) get().showToast(error instanceof RuleError ? RULE_TEXT[error.code] ?? 'Thao tác không hợp lệ' : 'Thao tác không hợp lệ');
@@ -684,6 +731,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     queueReplay(async () => {
       const stale = () => refs.replayEpoch !== epoch || run !== refs.gameRun;
       if (stale()) return;
+      setTempo((get().players[seat]?.bot ? BOT_TEMPO : 1) * get().speed);
       const openCard = mv.type === 'CARD_ACK' ? get().cardFx : null;
       if (openCard) {
         flushSync(() => set({ replaying: true }));
@@ -780,6 +828,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
   return {
     profile: MOCK_PROFILE,
     soundOn: readSound(),
+    speed: readPref(SPEED_KEY) === '2' ? 2 : 1,
+    autoEnd: readPref(AUTO_END_KEY) !== '0',
     rulesOpen: false,
     setupOpen: false,
     roomsOpen: false,
@@ -830,6 +880,20 @@ export const useTycoon = create<TycoonState>((set, get) => {
       set({ toast: null, rulesOpen: false, setupOpen: false, roomsOpen: false, leaderboardOpen: false, historyOpen: false, lobbyFocus: null });
     },
 
+    setSpeed(speed: 1 | 2) {
+      writePref(SPEED_KEY, String(speed));
+      set({ speed });
+    },
+
+    setAutoEnd(on: boolean) {
+      writePref(AUTO_END_KEY, on ? '1' : '0');
+      set({ autoEnd: on });
+    },
+
+    skipReplay() {
+      if (get().replaying) setTempo(SKIP_TEMPO);
+    },
+
     toggleSound() {
       const soundOn = !get().soundOn;
       writeSound(soundOn);
@@ -875,13 +939,17 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     sendMove(move: Move) {
+      get().sendMoves([move]);
+    },
+
+    sendMoves(moves: Move[]) {
       const { boardMode, myTurn, movePending, replaying, result } = get();
-      if (boardMode !== 'playing' || !myTurn || movePending || replaying || result) return;
+      if (boardMode !== 'playing' || !myTurn || movePending || replaying || result || moves.length === 0) return;
       const state = refs.state;
       if (!state || state.turn !== get().you) return;
       playSound('click');
       set({ movePending: true });
-      applyLocal(state.turn, move);
+      applyLocal(state.turn, moves);
     },
 
     openSheet(sheet: Sheet) {

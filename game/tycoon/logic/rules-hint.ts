@@ -79,3 +79,26 @@ export function worthOf(view: GameState, seat: number): number {
 export function hasAnyFullGroup(view: GameState, seat: number): boolean {
   return BOARD.some((tile) => tile.kind === 'street' && tile.group && view.tiles[tile.idx].owner === seat && ownsGroup(view, seat, tile.group));
 }
+
+export interface BuildPlan {
+  tiles: number[];
+  cost: number;
+}
+
+export function buildPlan(view: GameState, seat: number, idx: number, target: number): BuildPlan | null {
+  const tile = BOARD[idx];
+  if (tile.kind !== 'street' || !tile.group || view.tiles[idx].owner !== seat) return null;
+  if (!ownsGroup(view, seat, tile.group) || target > MAX_HOUSES || target <= view.tiles[idx].houses) return null;
+  const group = tilesOfGroup(tile.group);
+  const level = new Map(group.map((g) => [g, view.tiles[g].houses]));
+  const tiles: number[] = [];
+  let cost = 0;
+  while ((level.get(idx) ?? 0) < target) {
+    const min = Math.min(...group.map((g) => level.get(g) ?? 0));
+    const pick = level.get(idx) === min ? idx : group.find((g) => level.get(g) === min) ?? idx;
+    tiles.push(pick);
+    cost += BOARD[pick].houseCost ?? 0;
+    level.set(pick, (level.get(pick) ?? 0) + 1);
+  }
+  return { tiles, cost };
+}

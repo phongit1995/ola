@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import { useTycoon, type NoticeState, type NoticeTone } from '../store/useTycoon';
-import { ModalHeading } from './ModalHeading';
-import type { TyIconName } from './TyIcon';
+import { TyIcon, type TyIconName } from './TyIcon';
+import { UiButton } from './Ui';
 import { useDialogFocus } from './useDialogFocus';
 
 const TONE_EYEBROW: Record<NoticeTone, string> = {
@@ -59,38 +59,41 @@ export function NoticeModal({ notice }: { notice: NoticeState }) {
   const modalRef = useDialogFocus<HTMLDivElement>({ onEscape: dismiss });
 
   return (
-    <div className="ty-backdrop" role="presentation" onClick={dismiss}>
+    <div className="ui-modal-layer" role="presentation">
+      <div className="ui-scrim" aria-hidden="true" onClick={dismiss} />
       <div
         ref={modalRef}
-        className={`ty-modal ty-notice-modal ty-notice-${tone}`}
+        className={`ui-panel ui-modal ty-notice ty-notice-${tone}`}
         role={urgent ? 'alertdialog' : 'dialog'}
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={bodyId}
         tabIndex={-1}
-        onClick={(event) => event.stopPropagation()}
       >
-        <ModalHeading eyebrow={TONE_EYEBROW[tone]} title={notice.title} icon={notice.icon ?? TONE_ICON[tone]} titleId={titleId} tone={tone} />
-        <p className="ty-modal-body" id={bodyId}>
+        <div className="ui-modal-head">
+          <span className="ty-notice-icon" aria-hidden="true">
+            <TyIcon name={TONE_ICON[tone]} size={18} />
+          </span>
+          <span>
+            <span className="ui-kicker">{TONE_EYEBROW[tone]}</span>
+            <h2 id={titleId} className="ui-title">
+              {notice.title}
+            </h2>
+          </span>
+        </div>
+        <p className="ui-modal-body" id={bodyId}>
           {notice.body}
         </p>
-        {notice.hint ? <p className="ty-modal-hint">{notice.hint}</p> : null}
-        <div className="ty-modal-actions">
+        {notice.hint ? <p className="ty-notice-hint">{notice.hint}</p> : null}
+        <div className="ui-actions">
           {cancelLabel ? (
-            <button type="button" className="ty-btn ty-btn-paper" onClick={cancel} disabled={pending} data-dialog-initial-focus={tone === 'danger' ? '' : undefined}>
+            <UiButton onClick={cancel} disabled={pending} data-dialog-initial-focus={tone === 'danger' ? '' : undefined}>
               {cancelLabel}
-            </button>
+            </UiButton>
           ) : null}
-          <button
-            type="button"
-            className={`ty-btn ${tone === 'danger' ? 'ty-btn-danger' : 'ty-btn-gold'}`}
-            onClick={confirm}
-            aria-busy={pending || undefined}
-            aria-disabled={pending || undefined}
-            data-dialog-initial-focus={tone === 'danger' && cancelLabel ? undefined : ''}
-          >
+          <UiButton tone={tone === 'danger' || tone === 'error' ? 'red' : 'gold'} onClick={confirm} aria-busy={pending || undefined} aria-disabled={pending || undefined} data-dialog-initial-focus={tone === 'danger' && cancelLabel ? undefined : ''}>
             {notice.okLabel}
-          </button>
+          </UiButton>
         </div>
       </div>
     </div>

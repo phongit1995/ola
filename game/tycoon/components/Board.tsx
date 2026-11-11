@@ -1,13 +1,13 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
-import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GO_SALARY, MAX_HOUSES, TAX_RATE } from '../logic/constants';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GO_SALARY, TAX_RATE } from '../logic/constants';
 import { tileRect, type Side } from '../helpers/boardGeometry';
 import { pawnLayout } from '../helpers/pawnLayout';
 import { seatColor, SEAT_TINTS } from '../helpers/player';
 import { levelLabel, rentLabel, shortName } from '../helpers/tiles';
 import { useTycoon } from '../store/useTycoon';
-import { HotelIcon, HouseIcon } from './DeedParts';
+import { houseArt, PIXEL_ART } from './art';
 import { TileMark, type TileMarkName } from './TileMark';
 import { Token } from './Token';
 import { TILE_ART } from './tileArt';
@@ -19,29 +19,18 @@ function caption(idx: number): string {
   const tile = BOARD[idx];
   switch (tile.kind) {
     case 'go':
-      return `+${GO_SALARY} tr`;
+      return `+${GO_SALARY}`;
     case 'jail':
       return 'Thăm tù';
     case 'festival':
-      return `Thuê x${FESTIVAL_MULTIPLIER}`;
+      return `Thuê ×${FESTIVAL_MULTIPLIER}`;
     case 'travel':
-      return 'Bay lượt sau';
+      return 'Bay';
     case 'tax':
       return `−${TAX_RATE * 100}%`;
     default:
-      return tile.price ? `${tile.price} tr` : '';
+      return tile.price ? String(tile.price) : '';
   }
-}
-
-function Houses({ houses }: { houses: number }) {
-  if (houses >= MAX_HOUSES) return <HotelIcon className="ty-s6-hotel" />;
-  return (
-    <>
-      {Array.from({ length: houses }, (_, i) => (
-        <HouseIcon key={i} />
-      ))}
-    </>
-  );
 }
 
 export function Board({ onTileTap, children }: { onTileTap: (idx: number) => void; children?: ReactNode }) {
@@ -67,53 +56,65 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
   const spots = pawnLayout(positions.map((pos) => ((pos % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE), bankrupt, turn);
 
   return (
-    <div className="ty-s6-board" id="ty-s6-board" role="group" aria-label="Bàn cờ tỷ phú">
+    <div className={`ty-s6-board ${choosingFestival || choosingTravel ? 'ty-s6-board-pick' : ''}`} id="ty-s6-board" role="group" aria-label="Bàn cờ tỷ phú">
       <div className="ty-s6-grid" id="ty-s6-grid">
         {BOARD.map((tile) => {
           const rect = tileRect(tile.idx);
           const state = tiles[tile.idx];
           const owner = state?.owner ?? -1;
           const houses = state?.houses ?? 0;
-          const owned = owner >= 0 && (tile.kind === 'street' || tile.kind === 'station');
+          const property = tile.kind === 'street' || tile.kind === 'station';
+          const owned = owner >= 0 && property;
           const corner = rect.side === 'corner';
           const art = TILE_ART[tile.idx];
           const mark = MARK_BY_KIND[tile.kind];
-          const text = owned ? `${rentLabel(tiles, tile.idx, festival)} tr` : caption(tile.idx);
-          const dim = (choosingFestival && !(tile.kind === 'street' && owner === you)) || (choosingTravel && tile.idx === view?.players[you]?.pos);
-          const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}${festival === tile.idx ? `, đang có Lễ hội, thuê ×${FESTIVAL_MULTIPLIER}` : ''}`;
+          const text = owned ? rentLabel(tiles, tile.idx, festival) : caption(tile.idx);
+          const pickable = (choosingFestival && tile.kind === 'street' && owner === you) || (choosingTravel && tile.idx !== view?.players[you]?.pos);
+          const dim = (choosingFestival || choosingTravel) && !pickable;
+          const house = houseArt(houses);
+          const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}, thuê ${text} tr` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}${festival === tile.idx ? `, đang có Lễ hội, thuê ×${FESTIVAL_MULTIPLIER}` : ''}`;
           const style = {
-            left: `calc(${rect.x}% + var(--u) * .15)`,
-            top: `calc(${rect.y}% + var(--u) * .15)`,
-            width: `calc(${rect.w}% - var(--u) * .3)`,
-            height: `calc(${rect.h}% - var(--u) * .3)`,
+            left: `${rect.x}%`,
+            top: `${rect.y}%`,
+            width: `${rect.w}%`,
+            height: `${rect.h}%`,
             ...(owned ? { '--own': SEAT_TINTS[owner], '--owner': seatColor(owner) } : {}),
           } as CSSProperties;
           return (
             <button
               key={tile.idx}
               type="button"
-              className={['ty-s6-tile', `ty-s6-side-${SIDE_CLASS[rect.side]}`, `ty-s6-kind-${tile.kind}`, owned ? 'ty-s6-owned' : '', dim ? 'ty-s6-dim' : ''].join(' ')}
+              className={[
+                'ty-s6-tile',
+                `ty-s6-side-${SIDE_CLASS[rect.side]}`,
+                `ty-s6-kind-${tile.kind}`,
+                owned ? 'ty-s6-owned' : '',
+                dim ? 'ty-s6-dim' : '',
+                pickable ? 'ty-s6-pick' : '',
+                festival === tile.idx ? 'ty-s6-festive' : '',
+              ].join(' ')}
               style={style}
               data-tile={tile.idx}
               onClick={() => onTileTap(tile.idx)}
               aria-label={label}
             >
-              {tile.kind === 'street' && tile.group ? <i className="ty-s6-band" style={{ background: `var(--ty-g-${tile.group})` }} /> : null}
               <span className="ty-s6-tile-body">
-                <b className="ty-s6-tile-name">{corner ? tile.name.toUpperCase() : shortName(tile.idx)}</b>
+                <b className="ty-s6-tile-name">{corner ? tile.name : shortName(tile.idx)}</b>
                 {art ? <span className={`ty-s6-art ${tile.kind === 'travel' ? 'ty-s6-art-contain' : ''}`} data-fig style={{ backgroundImage: `url(${art})` }} /> : null}
                 {!art && mark ? (
                   <span className="ty-s6-glyph" data-fig>
                     <TileMark name={mark} />
                   </span>
                 ) : null}
-                {text ? <span className="ty-s6-price">{text}</span> : null}
+                {text ? <span className={`ty-s6-price ${owned ? 'ty-s6-rent' : ''}`}>{text}</span> : null}
               </span>
               <span className="ty-s6-houses" data-houses>
-                <Houses houses={houses} />
+                {house ? <img src={house} alt="" draggable={false} /> : null}
               </span>
-              <i className="ty-s6-odot" data-owner-dot style={owned ? { background: seatColor(owner) } : undefined} />
-              {festival === tile.idx ? <span className="ty-s6-fest">★</span> : null}
+              <span className="ty-s6-flag" data-owner-dot>
+                {owned ? <img className="ui-sprite" src={PIXEL_ART.flag} alt="" draggable={false} /> : null}
+              </span>
+              {festival === tile.idx ? <img className="ty-s6-fest ui-sprite" src={PIXEL_ART.lantern} alt="" draggable={false} /> : null}
               <span className="ty-s6-trail" data-trail />
               {tile.kind === 'jail' ? (
                 <span className={`ty-s6-bars ${barsOn ? 'ty-s6-bars-on' : ''}`} id="ty-s6-bars">

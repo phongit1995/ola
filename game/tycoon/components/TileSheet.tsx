@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { BOARD } from '../logic/board';
-import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, MAX_HOUSES, TAKEOVER_MULTIPLIER, TAX_RATE } from '../logic/constants';
+import { BOARD, tilesOfGroup } from '../logic/board';
+import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, LEVEL_NAMES, MAX_HOUSES, TAX_RATE } from '../logic/constants';
 import { takeoverPrice } from '../logic/engine';
-import { canBuild, canSell, currentRent } from '../logic/rules-hint';
+import { buildPlan, canBuild, canSell, currentRent } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { BottomSheet } from './BottomSheet';
-import { groupColor, GroupTag, HotelIcon, HouseIcon, rentLadder, SeatTag, TileThumb } from './DeedParts';
-import { TyIcon } from './TyIcon';
+import { groupColor, GroupTag, RentLadder, SeatTag, TileThumb, type LadderPick } from './DeedParts';
+import { MoneyBadge, UiButton } from './Ui';
 import { useTycoon } from '../store/useTycoon';
+
+const STEP_NAME = ['Đất', 'Nhà', 'Biệt thự', 'K.sạn'];
 
 function specialDescription(idx: number): string {
   switch (BOARD[idx].kind) {
@@ -30,20 +33,9 @@ function specialDescription(idx: number): string {
   }
 }
 
-function StepIcon({ houses }: { houses: number }) {
-  if (houses >= MAX_HOUSES) return <HotelIcon />;
-  if (houses === 0) return <i className="ty-ladder-lot" />;
-  return (
-    <>
-      {Array.from({ length: houses }, (_, i) => (
-        <HouseIcon key={i} />
-      ))}
-    </>
-  );
-}
-
 export function TileSheet({ idx }: { idx: number }) {
-  const { view, you, myTurn, movePending, replaying, cash, sendMove, closeSheet } = useTycoon(
+  const [want, setWant] = useState(0);
+  const { view, you, myTurn, movePending, replaying, cash, sendMove, sendMoves, closeSheet } = useTycoon(
     useShallow((s) => ({
       view: s.view,
       you: s.you,
@@ -52,6 +44,7 @@ export function TileSheet({ idx }: { idx: number }) {
       replaying: s.replaying,
       cash: s.cash,
       sendMove: s.sendMove,
+      sendMoves: s.sendMoves,
       closeSheet: s.closeSheet,
     })),
   );
@@ -73,6 +66,21 @@ export function TileSheet({ idx }: { idx: number }) {
   const canFestivalHere = myTurn && view.phase === 'festival' && owner === you && street;
   const canTravelHere = myTurn && view.phase === 'travel' && me?.pos !== idx;
   const passesGo = canTravelHere && me != null && idx < me.pos;
+  const canUpgrade = buildHint != null && state.houses < MAX_HOUSES && buildPlan(view, you, idx, state.houses + 1) != null;
+  const target = canUpgrade ? Math.min(MAX_HOUSES, Math.max(state.houses + 1, want)) : 0;
+  const plan = canUpgrade ? buildPlan(view, you, idx, target) : null;
+  const short = plan ? Math.max(0, plan.cost - myCash) : 0;
+  const alongside = plan
+    ? tilesOfGroup(tile.group ?? '')
+        .filter((g) => g !== idx && plan.tiles.includes(g))
+        .map((g) => `${BOARD[g].name} lên ${LEVEL_NAMES[view.tiles[g].houses + plan.tiles.filter((t) => t === g).length]}`)
+    : [];
+  const pick: LadderPick | undefined = canUpgrade ? { target, can: (houses) => houses > state.houses, onPick: setWant } : undefined;
+  const upgrade = () => {
+    if (!plan) return;
+    sendMoves(plan.tiles.map((tile) => ({ type: 'BUILD' as const, tile })));
+    closeSheet();
+  };
   const act = (move: Parameters<typeof sendMove>[0]) => {
     sendMove(move);
     closeSheet();
@@ -82,47 +90,38 @@ export function TileSheet({ idx }: { idx: number }) {
     canBuyHere || canFestivalHere || canTravelHere || manageAllowed ? (
       <>
         {canBuyHere ? (
-          <div className="ty-sheet-pair">
-            <button type="button" className="ty-s6-ghost" disabled={busy} onClick={() => act({ type: 'DECLINE' })}>
+          <div className="ui-actions">
+            <UiButton disabled={busy} onClick={() => act({ type: 'DECLINE' })}>
               Bỏ qua
-            </button>
-            <button type="button" className="ty-s6-cta" disabled={busy || myCash < price} onClick={() => act({ type: 'BUY' })}>
-              Mua {formatMoney(price)}
-              <small>{myCash < price ? `cần thêm ${formatMoney(price - myCash)}` : `còn lại ${formatMoney(myCash - price)}`}</small>
-            </button>
+            </UiButton>
+            <UiButton tone="gold" price={price} disabled={busy || myCash < price} onClick={() => act({ type: 'BUY' })}>
+              Mua
+            </UiButton>
           </div>
         ) : null}
         {canFestivalHere ? (
-          <button type="button" className="ty-s6-cta ty-s6-wide" disabled={busy} onClick={() => act({ type: 'FESTIVAL', tile: idx })}>
-            Tổ chức Lễ hội ở đây
-            <small>
-              thuê {formatMoney(currentRent({ ...view, festival: -1 }, idx))} → {formatMoney(currentRent({ ...view, festival: idx }, idx))}
-            </small>
-          </button>
+          <UiButton tone="gold" block disabled={busy} onClick={() => act({ type: 'FESTIVAL', tile: idx })}>
+            Mở Lễ hội · thuê {currentRent({ ...view, festival: idx }, idx)}
+          </UiButton>
         ) : null}
         {canTravelHere ? (
-          <button type="button" className="ty-s6-cta ty-s6-wide" disabled={busy} onClick={() => act({ type: 'TRAVEL', tile: idx })}>
-            Bay tới đây
-            {passesGo ? <small>qua Xuất phát +{GO_SALARY} tr</small> : null}
-          </button>
+          <UiButton tone="gold" block disabled={busy} onClick={() => act({ type: 'TRAVEL', tile: idx })}>
+            Bay tới đây{passesGo ? ` · +${GO_SALARY}` : ''}
+          </UiButton>
         ) : null}
         {manageAllowed ? (
           <>
-            <div className="ty-sheet-pair">
-              <button type="button" className="ty-s6-ghost" disabled={busy || !sellHint?.ok} onClick={() => sendMove({ type: 'SELL_HOUSE', tile: idx })}>
-                Hạ cấp
-                <small>+{formatMoney(houseCost / 2)}</small>
-              </button>
-              <button type="button" className="ty-s6-cta" disabled={busy || !buildHint?.ok} onClick={() => sendMove({ type: 'BUILD', tile: idx })}>
-                Nâng cấp
-                <small>{formatMoney(houseCost)}</small>
-              </button>
+            <div className="ui-actions ty-manage-actions">
+              <UiButton icon="minus" disabled={busy || !sellHint?.ok} onClick={() => sendMove({ type: 'SELL_HOUSE', tile: idx })}>
+                Hạ
+              </UiButton>
+              <UiButton tone="gold" icon="plus" price={plan?.cost ?? houseCost} disabled={busy || !plan || short > 0} onClick={upgrade}>
+                {plan ? `Lên ${STEP_NAME[target]}` : 'Nâng'}
+              </UiButton>
             </div>
-            {buildHint && !buildHint.ok ? (
-              <p className="ty-sheet-reason">
-                <TyIcon name="warning" size={14} /> {buildHint.reason}
-              </p>
-            ) : null}
+            {plan && alongside.length > 0 ? <p className="ty-sheet-reason ty-sheet-reason-info">Nâng đều cả nhóm: {alongside.join(', ')}</p> : null}
+            {plan && short > 0 ? <p className="ty-sheet-reason">Thiếu {formatMoney(short)}</p> : null}
+            {!canUpgrade && buildHint && !buildHint.ok ? <p className="ty-sheet-reason">{buildHint.reason}</p> : null}
           </>
         ) : null}
       </>
@@ -134,59 +133,33 @@ export function TileSheet({ idx }: { idx: number }) {
         <TileThumb idx={idx} className="ty-thumb-lg" />
         <span className="ty-deed-hero-copy">
           <GroupTag idx={idx} />
-          <h2 className="ty-sheet-title">{tile.name}</h2>
-          {property ? owner >= 0 ? <SeatTag seat={owner} /> : <span className="ty-deed-free">Chưa có chủ · giá {formatMoney(price)}</span> : null}
+          <h2 className="ui-title">{tile.name}</h2>
+          {property ? owner >= 0 ? <SeatTag seat={owner} /> : <MoneyBadge amount={price} className="ty-deed-price" /> : null}
         </span>
       </header>
 
-      {view.festival === idx ? (
-        <p className="ty-deed-note ty-deed-note-gold">
-          <b>★ Đang có Lễ hội</b> thuê ×{FESTIVAL_MULTIPLIER}
-        </p>
-      ) : null}
+      {view.festival === idx ? <p className="ty-deed-note ty-deed-note-gold">Đang có Lễ hội · thuê ×{FESTIVAL_MULTIPLIER}</p> : null}
 
       {property && owner >= 0 && owner !== you ? (
         <p className="ty-deed-note ty-deed-note-coral">
-          Đáp vào lúc này phải trả <b>{formatMoney(currentRent(view, idx))}</b>
+          Đáp vào phải trả <b>{formatMoney(currentRent(view, idx))}</b>
         </p>
       ) : null}
 
       {property ? (
         <>
-          <ol className="ty-ladder" aria-label="Tiền thuê theo cấp">
-            {rentLadder(view, idx).map((step) => (
-              <li key={step.label} className={step.active ? 'ty-ladder-on' : undefined}>
-                <span className="ty-ladder-icon">{street ? <StepIcon houses={step.houses} /> : <b>{step.label.split(' ')[0]}</b>}</span>
-                <span className="ty-ladder-label">{street ? step.label : 'sân bay'}</span>
-                <strong>{step.rent} tr</strong>
-                {step.note ? <small>{step.note}</small> : null}
-              </li>
-            ))}
-          </ol>
-          <dl className="ty-deed-facts">
-            <div>
-              <dt>Giá đất</dt>
-              <dd>{formatMoney(price)}</dd>
-            </div>
+          {pick ? <p className="ty-ladder-hint">Chạm cấp muốn nâng</p> : null}
+          <RentLadder view={view} idx={idx} pick={pick} />
+          <p className="ty-deed-facts">
             {street ? (
               <>
-                <div>
-                  <dt>Nâng mỗi cấp</dt>
-                  <dd>{formatMoney(houseCost)}</dd>
-                </div>
-                <div>
-                  <dt>Hạ cấp thu về</dt>
-                  <dd>{formatMoney(houseCost / 2)}</dd>
-                </div>
+                <span>Nâng {houseCost}</span>
+                <span>Hạ +{houseCost / 2}</span>
               </>
             ) : null}
-            {street && owner >= 0 && state.houses < MAX_HOUSES ? (
-              <div>
-                <dt>Mua lại ×{TAKEOVER_MULTIPLIER}</dt>
-                <dd>{formatMoney(takeoverPrice(view, idx))}</dd>
-              </div>
-            ) : null}
-          </dl>
+            {street && owner >= 0 && state.houses < MAX_HOUSES ? <span>Mua lại {takeoverPrice(view, idx)}</span> : null}
+            {street && owner < 0 ? <span>Trọn nhóm thuê ×2</span> : null}
+          </p>
         </>
       ) : (
         <p className="ty-deed-desc">{specialDescription(idx)}</p>
