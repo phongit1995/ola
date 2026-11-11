@@ -205,9 +205,9 @@ export function canTakeoverError(s: GameState, seat: number, idx: number): strin
   return null;
 }
 
-const STREET_GROUPS = [...new Set(BOARD.filter((t) => t.kind === 'street').map((t) => t.group as string))];
+export const STREET_GROUPS = [...new Set(BOARD.filter((t) => t.kind === 'street').map((t) => t.group as string))];
 
-const SIDE_STREETS = [0, 1, 2, 3].map((side) =>
+export const SIDE_STREETS = [0, 1, 2, 3].map((side) =>
   BOARD.filter((t, idx) => t.kind === 'street' && Math.floor(idx / SIDE_TILES) === side).map((t) => t.idx),
 );
 

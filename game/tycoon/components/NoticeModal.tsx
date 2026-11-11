@@ -75,7 +75,7 @@ export function NoticeModal({ notice }: { notice: NoticeState }) {
             <TyIcon name={TONE_ICON[tone]} size={18} />
           </span>
           <span>
-            <span className="ui-kicker">{TONE_EYEBROW[tone]}</span>
+            <span className="ui-kicker">{notice.kicker ?? TONE_EYEBROW[tone]}</span>
             <h2 id={titleId} className="ui-title">
               {notice.title}
             </h2>

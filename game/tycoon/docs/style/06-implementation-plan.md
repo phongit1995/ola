@@ -66,7 +66,9 @@ Chốt 11/11/2026: **cảnh pixel, UI mượt** (giữ nguyên tắc 2 trong `RE
 - [ ] Dẫn mắt theo quân: giữa bàn mờ khi quân đi, bong bóng kết quả cạnh ô vừa đáp.
 - [x] Nhãn nổi trên ô (luôn nằm trong màn, nhãn mới thay nhãn cũ cùng ô): trả thuê (số tiền), bị mua lại ("… mua lại ô của bạn", đỏ), nâng / hạ nhà (của mình và người khác): nhãn nổi trên ô gồm hình nhà + "Nâng cấp Lv x → Lv y" (hạ cấp số màu đỏ); nâng nhiều cấp liền thì gộp một thông báo mỗi ô; bong bóng giữa bàn và diễn biến cùng dạng.
 - [x] Trọn nhóm có băng rôn "TRỌN NHÓM!" + pháo giấy; khách sạn rung + vòng sáng; phá sản giữ hiệu ứng cũ.
-- [ ] Cảnh báo khi một người còn 1 ô là thắng ngay.
+- [x] Cảnh báo khi một người còn 1 ô là thắng ngay (`winThreats`): viền nét đứt nhấp nháy màu người đó trên ô còn thiếu + thông báo "… chỉ còn thiếu X là thắng"; khi thắng ngay, các ô thắng sáng lên + băng rôn "… THẮNG!" 2,4 s rồi mới hiện kết quả.
+- [x] Phá sản: modal "Bạn phá sản" ghi nợ ai, bao nhiêu, tiền mặt + bán nhà được bao nhiêu, rồi mới sang chế độ xem.
+- [x] Dock lượt của mình khi quân đang chạy: avatar + "Bạn đang đi" thay vì "…".
 - [x] Xu bay người trả → người nhận; mua đất thì ô lật + cắm cờ.
 
 ## Giai đoạn 5 — Thao tác

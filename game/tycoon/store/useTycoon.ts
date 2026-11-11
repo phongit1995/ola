@@ -8,6 +8,7 @@ import { BOARD, cardById, GROUP_LABEL, tilesOfGroup } from '../logic/board';
 import { botMove } from '../logic/bot';
 import { BOARD_SIZE, FESTIVAL_MULTIPLIER, JAIL_TILE, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, TURN_SECONDS, WIN_GROUPS } from '../logic/constants';
 import { applyMove, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings, worth } from '../logic/engine';
+import { currentRent, winningTiles } from '../logic/rules-hint';
 import { RuleError, type BotLevel, type GameState, type Move, type Step, type TileState } from '../logic/types';
 import { MAX_BOTS, botName, type BotSetupItem } from '../helpers/bot';
 import { formatMoney } from '../helpers/format';
@@ -90,6 +91,7 @@ export type NoticeTone = 'default' | 'danger' | 'info' | 'success' | 'warning' |
 export interface NoticeState {
   kind: NoticeKind;
   tone?: NoticeTone;
+  kicker?: string;
   title: string;
   body: string;
   hint?: string;
@@ -139,6 +141,7 @@ interface TycoonState {
   sheet: Sheet;
 
   result: MatchResultState | null;
+  winFx: { seat: number; tiles: number[] } | null;
   toast: string | null;
   notice: NoticeState | null;
   noticeId: number;
@@ -170,6 +173,7 @@ interface TycoonState {
   playAgain(): void;
 
   showToast(text: string): void;
+  announce(text: string, tone: LogLine['tone']): void;
   clearToast(): void;
   showNotice(notice: NoticeState): void;
   closeNotice(notice: NoticeState): void;
@@ -182,6 +186,7 @@ const BOT_TEMPO = 1.8;
 const SKIP_TEMPO = 8;
 const TOAST_MS = 2400;
 const RESULT_REVEAL_MS = 900;
+const WIN_REVEAL_MS = 2400;
 const SCREEN_IN_MS = 260;
 const BOT_DELAY_MS = { card: 950, quick: 150, think: 360 };
 const STEP_MS = { land: 300, debt: 320, round: 240 };
@@ -451,6 +456,30 @@ export const useTycoon = create<TycoonState>((set, get) => {
     return fx.stampDeed(tile, by, () => commitTiles(withOwner(tile, by)), complete ? members : null);
   };
 
+  const bankruptReport = (creditor: number): NoticeState => {
+    const { view, tiles, cash, positions, you } = get();
+    const pos = (((positions[you] ?? 0) % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE;
+    const owed =
+      view?.debt?.by === you
+        ? view.debt.amount
+        : creditor >= 0 && view && BOARD[pos].kind === 'street' && tiles[pos]?.owner === creditor
+          ? currentRent({ ...view, tiles }, pos)
+          : null;
+    const money = cash[you] ?? 0;
+    const houses = tiles.reduce((sum, t, idx) => (t.owner === you ? sum + Math.floor((t.houses * (BOARD[idx].houseCost ?? 0)) / 2) : sum), 0);
+    const to = creditor >= 0 ? seatName(creditor) : 'ngân hàng';
+    return {
+      kind: 'notice',
+      tone: 'danger',
+      icon: 'warning',
+      kicker: 'Bạn bị loại',
+      title: 'Bạn phá sản',
+      body: `${owed != null ? `Phải trả ${to} ${formatMoney(owed)}` : `Không đủ trả cho ${to}`}, nhưng tiền mặt ${formatMoney(money)} + bán hết nhà ${formatMoney(houses)} chỉ được ${formatMoney(money + houses)}.`,
+      hint: 'Đất của bạn chuyển cho người nhận nợ. Bạn có thể xem tiếp ván hoặc về sảnh.',
+      okLabel: 'Xem tiếp',
+    };
+  };
+
   const replayStep = async (step: Step, epoch: number, levelChange?: LevelChange): Promise<void> => {
     const alive = () => refs.replayEpoch === epoch;
     const you = get().you;
@@ -590,9 +619,11 @@ export const useTycoon = create<TycoonState>((set, get) => {
       }
       case 'bankrupt': {
         const lost = step.tiles ?? [];
+        const report = step.by === you ? bankruptReport(step.creditor ?? -1) : null;
         pushLog(`${seatName(step.by)} phá sản`, step.by === you ? 'down' : 'neutral');
         await fx.bankruptSeat(step.by, seatName(step.by), lost);
         if (!alive()) return;
+        if (report && !refs.state?.finished) get().showNotice(report);
         flushSync(() =>
           set((state) => {
             const cash = [...state.cash];
@@ -676,8 +707,13 @@ export const useTycoon = create<TycoonState>((set, get) => {
     const matchSeq = get().matchSeq;
     const profile = get().profile;
     if (profile) saveBotHistory(profile.id, botHistoryEntry(state, ranked, you, profile, get().lastBots, Date.now()));
+    const winTiles = state.winner >= 0 ? winningTiles(state, state.winner, state.endReason) : [];
     queueReplay(async () => {
-      await sleep(RESULT_REVEAL_MS);
+      if (winTiles.length > 0) {
+        set({ winFx: { seat: state.winner, tiles: winTiles } });
+        void fx.winBanner(`${winnerName === 'Bạn' ? 'BẠN' : winnerName.toUpperCase()} THẮNG!`);
+        await new Promise((resolve) => setTimeout(resolve, WIN_REVEAL_MS));
+      } else await sleep(RESULT_REVEAL_MS);
       if (get().matchSeq !== matchSeq || get().boardMode !== 'playing') return;
       playSound(myPlace === 1 ? 'win' : 'lose');
       fx.celebrateResult(myPlace === 1, ranked[0]);
@@ -790,6 +826,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       barsOn: false,
       sheet: null,
       result: null,
+      winFx: null,
       notice: null,
       noticeQueue: [],
     });
@@ -816,6 +853,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       matchSeq: get().matchSeq + 1,
       startedAt: Date.now(),
       log: [],
+      winFx: null,
     });
     const run = refs.gameRun;
     snapState(state, true);
@@ -871,6 +909,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     sheet: null,
 
     result: null,
+    winFx: null,
     toast: null,
     notice: null,
     noticeId: 0,
@@ -1012,6 +1051,11 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
     playAgain() {
       beginGame(get().lastBots);
+    },
+
+    announce(text: string, tone: LogLine['tone']) {
+      pushLog(text, tone);
+      get().showToast(text);
     },
 
     showToast(text: string) {

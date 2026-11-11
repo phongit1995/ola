@@ -1,6 +1,7 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
+import { winThreats, type WinThreat } from '../logic/rules-hint';
 import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GO_SALARY, TAX_RATE } from '../logic/constants';
 import { tileRect, type Side } from '../helpers/boardGeometry';
 import { pawnLayout } from '../helpers/pawnLayout';
@@ -34,7 +35,7 @@ function caption(idx: number): string {
 }
 
 export function Board({ onTileTap, children }: { onTileTap: (idx: number) => void; children?: ReactNode }) {
-  const { tiles, positions, players, view, you, myTurn, replaying, movePending, barsOn } = useTycoon(
+  const { tiles, positions, players, view, you, myTurn, replaying, movePending, barsOn, winFx, matchSeq, announce } = useTycoon(
     useShallow((s) => ({
       tiles: s.tiles,
       positions: s.positions,
@@ -45,8 +46,17 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
       replaying: s.replaying,
       movePending: s.movePending,
       barsOn: s.barsOn,
+      winFx: s.winFx,
+      matchSeq: s.matchSeq,
+      announce: s.announce,
     })),
   );
+  const threats = useMemo(() => (view && !view.finished ? winThreats(tiles, view.players) : []), [tiles, view]);
+  useWinWarnings(threats, matchSeq, you, players, announce);
+  const threatBy = new Map<number, number>();
+  threats.forEach((t) => {
+    if (!threatBy.has(t.tile)) threatBy.set(t.tile, t.seat);
+  });
   const turn = view?.turn ?? -1;
   const festival = view?.festival ?? -1;
   const idle = !replaying && !movePending;
@@ -72,13 +82,16 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
           const pickable = (choosingFestival && tile.kind === 'street' && owner === you) || (choosingTravel && tile.idx !== view?.players[you]?.pos);
           const dim = (choosingFestival || choosingTravel) && !pickable;
           const house = houseArt(houses);
-          const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}, thuê ${text} tr` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}${festival === tile.idx ? `, đang có Lễ hội, thuê ×${FESTIVAL_MULTIPLIER}` : ''}`;
+          const winning = winFx?.tiles.includes(tile.idx) ?? false;
+          const threat = threatBy.get(tile.idx);
+          const label = `${tile.name}${owned ? `, của ${owner === you ? 'bạn' : players[owner]?.name ?? ''}, thuê ${text} tr` : tile.price ? `, giá ${tile.price} tr` : ''}${houses > 0 ? `, ${levelLabel(houses)}` : ''}${festival === tile.idx ? `, đang có Lễ hội, thuê ×${FESTIVAL_MULTIPLIER}` : ''}${threat != null ? `, ${threat === you ? 'bạn' : players[threat]?.name ?? ''} lấy ô này là thắng` : ''}`;
           const style = {
             left: `${rect.x}%`,
             top: `${rect.y}%`,
             width: `${rect.w}%`,
             height: `${rect.h}%`,
             ...(owned ? { '--own': SEAT_TINTS[owner], '--owner': seatColor(owner) } : {}),
+            ...(winning ? { '--threat': seatColor(winFx?.seat ?? 0) } : threat != null ? { '--threat': seatColor(threat) } : {}),
           } as CSSProperties;
           return (
             <button
@@ -92,6 +105,7 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
                 dim ? 'ty-s6-dim' : '',
                 pickable ? 'ty-s6-pick' : '',
                 festival === tile.idx ? 'ty-s6-festive' : '',
+                winning ? 'ty-s6-win' : threat != null ? 'ty-s6-threat' : '',
               ].join(' ')}
               style={style}
               data-tile={tile.idx}
@@ -140,4 +154,26 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
       </div>
     </div>
   );
+}
+
+const THREAT_LABEL: Record<WinThreat['kind'], string> = { groups: '3 nhóm màu', line: 'trọn một cạnh bàn', airports: '4 sân bay' };
+
+function threatKey(t: WinThreat): string {
+  return `${t.seat}:${t.kind}:${t.tile}`;
+}
+
+function useWinWarnings(threats: WinThreat[], matchSeq: number, you: number, players: { name: string }[], announce: (text: string, tone: 'up' | 'down' | 'neutral') => void): void {
+  const seen = useRef({ match: -1, keys: new Set<string>() });
+  useEffect(() => {
+    if (seen.current.match !== matchSeq) seen.current = { match: matchSeq, keys: new Set() };
+    const fresh = threats.filter((t) => !seen.current.keys.has(threatKey(t)));
+    seen.current.keys = new Set(threats.map(threatKey));
+    const bySeat = new Map<number, WinThreat[]>();
+    fresh.forEach((t) => bySeat.set(t.seat, [...(bySeat.get(t.seat) ?? []), t]));
+    bySeat.forEach((list, seat) => {
+      const names = [...new Set(list.map((t) => BOARD[t.tile].name))];
+      const who = seat === you ? 'Bạn' : players[seat]?.name ?? '?';
+      announce(`${who} chỉ còn thiếu ${names.join(' hoặc ')} là thắng (${THREAT_LABEL[list[0].kind]})!`, seat === you ? 'up' : 'down');
+    });
+  }, [threats, matchSeq, you, players, announce]);
 }

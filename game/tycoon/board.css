@@ -171,6 +171,38 @@
   background: var(--own);
   box-shadow: inset 0 0 0 2px var(--owner);
 }
+.ty-s6-threat {
+  z-index: 5;
+  animation: ty-threat 0.9s ease-in-out infinite;
+}
+.ty-s6-threat::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 3px dashed var(--threat);
+  border-radius: calc(var(--u) * 1.1);
+  pointer-events: none;
+}
+@keyframes ty-threat {
+  50% {
+    box-shadow:
+      0 0 0 3px var(--threat),
+      0 0 14px 4px var(--threat);
+  }
+}
+.ty-s6-win {
+  z-index: 7;
+  box-shadow:
+    0 0 0 3px var(--threat),
+    0 0 18px 6px var(--threat);
+  animation: ty-win 0.7s var(--ui-spring) infinite alternate;
+}
+@keyframes ty-win {
+  to {
+    transform: scale(1.08);
+    filter: brightness(1.15);
+  }
+}
 .ty-s6-tile-body {
   position: absolute;
   inset: 0;
@@ -2281,6 +2313,8 @@
   .ty-s6-pod-active::before,
   .ty-dock,
   .ty-buy-dot-here,
+  .ty-s6-threat,
+  .ty-s6-win,
   .ty-ladder-bar::before,
   .ty-podium-block {
     animation: none;

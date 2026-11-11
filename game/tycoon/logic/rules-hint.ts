@@ -1,6 +1,7 @@
 import { BOARD, tilesOfGroup } from './board';
-import { FESTIVAL_MULTIPLIER, MAX_HOUSES, STATION_RENT } from './constants';
-import type { GameState } from './types';
+import { FESTIVAL_MULTIPLIER, MAX_HOUSES, STATION_RENT, WIN_GROUPS, type EndReason } from './constants';
+import { SIDE_STREETS, STREET_GROUPS } from './engine';
+import type { GameState, PlayerState, TileState } from './types';
 
 export type RuleHint = { ok: true } | { ok: false; reason: string };
 
@@ -119,4 +120,45 @@ export function sellPlan(view: GameState, seat: number, idx: number, target: num
     level.set(pick, (level.get(pick) ?? 0) - 1);
   }
   return { tiles, cost };
+}
+
+export type WinKind = 'groups' | 'line' | 'airports';
+
+export interface WinThreat {
+  seat: number;
+  kind: WinKind;
+  tile: number;
+}
+
+const STATIONS = tilesOfGroup('station');
+
+function reachable(tiles: TileState[], players: PlayerState[], idx: number): boolean {
+  const t = tiles[idx];
+  if (t.owner < 0 || players[t.owner]?.bankrupt) return true;
+  return BOARD[idx].kind === 'street' && t.houses < MAX_HOUSES;
+}
+
+export function winThreats(tiles: TileState[], players: PlayerState[]): WinThreat[] {
+  const threats: WinThreat[] = [];
+  players.forEach((player, seat) => {
+    if (player.bankrupt) return;
+    const missing = (members: number[]) => members.filter((idx) => tiles[idx]?.owner !== seat);
+    const add = (kind: WinKind, members: number[]) => {
+      const left = missing(members);
+      if (left.length === 1 && reachable(tiles, players, left[0])) threats.push({ seat, kind, tile: left[0] });
+    };
+    const full = STREET_GROUPS.filter((g) => missing(tilesOfGroup(g)).length === 0).length;
+    if (full === WIN_GROUPS - 1) STREET_GROUPS.forEach((g) => add('groups', tilesOfGroup(g)));
+    SIDE_STREETS.forEach((side) => add('line', side));
+    add('airports', STATIONS);
+  });
+  return threats;
+}
+
+export function winningTiles(view: GameState, seat: number, reason: EndReason | null): number[] {
+  const owns = (idx: number) => view.tiles[idx].owner === seat;
+  if (reason === 'groups') return STREET_GROUPS.filter((g) => tilesOfGroup(g).every(owns)).flatMap((g) => tilesOfGroup(g));
+  if (reason === 'line') return SIDE_STREETS.find((side) => side.every(owns)) ?? [];
+  if (reason === 'airports') return STATIONS;
+  return [];
 }

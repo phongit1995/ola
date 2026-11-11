@@ -630,3 +630,9 @@ export function celebrateResult(won: boolean, winnerSeat: number): void {
   playSound('fanfare');
   confettiRain([seatColor(winnerSeat), '#FFD34D', '#FFFFFF', '#E4573D', '#39ABEF'], won ? 110 : 60);
 }
+
+export function winBanner(text: string): Promise<void> {
+  playSound('fanfare');
+  shakeBoard(boardUnit() * 0.5);
+  return sweepBanner(text, 'gold', 1800);
+}

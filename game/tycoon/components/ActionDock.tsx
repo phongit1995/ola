@@ -55,22 +55,21 @@ export function ActionDock() {
   const canAct = myTurn && !busy && !me?.bankrupt && !turnExpired;
   const myCash = cash[you] ?? me?.cash ?? 0;
 
-  if (!myTurn || view.finished || me?.bankrupt) {
-    const seat = view.turn;
-    return (
-      <div className="ty-dock ty-dock-wait" style={{ '--seat': seatColor(seat) } as CSSProperties}>
-        <UiAvatar src={players[seat]?.avatar} size={30} ring={seatColor(seat)} />
-        <span className="ty-dock-wait-text">{me?.bankrupt ? 'Bạn đã phá sản, đang xem tiếp' : `${players[seat]?.name ?? '?'} đang đi`}</span>
-        <span className="ty-s6-thinking" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
-      </div>
-    );
-  }
+  const waiting = (seat: number, text: string) => (
+    <div className="ty-dock ty-dock-wait" style={{ '--seat': seatColor(seat) } as CSSProperties}>
+      <UiAvatar src={players[seat]?.avatar} size={30} ring={seatColor(seat)} />
+      <span className="ty-dock-wait-text">{text}</span>
+      <span className="ty-s6-thinking" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </span>
+    </div>
+  );
+
+  if (!myTurn || view.finished || me?.bankrupt) return waiting(view.turn, me?.bankrupt ? 'Bạn đã phá sản, đang xem tiếp' : `${players[view.turn]?.name ?? '?'} đang đi`);
   if (turnExpired) return <div className="ty-dock ty-dock-wait"><span className="ty-dock-wait-text ty-dock-warn">Hết giờ, máy đi thay bạn…</span></div>;
-  if (!canAct) return <div className="ty-dock ty-dock-wait"><span className="ty-dock-wait-text">…</span></div>;
+  if (!canAct) return waiting(you, 'Bạn đang đi');
 
   switch (view.phase) {
     case 'roll':
