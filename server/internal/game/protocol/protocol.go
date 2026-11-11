@@ -139,8 +139,14 @@ type UserInfoData struct {
 	Exp      int64   `json:"exp"`
 }
 
+const (
+	LeaderboardBoardWins  = "wins"
+	LeaderboardBoardLevel = "level"
+)
+
 type LeaderboardRequestData struct {
 	Period string `json:"period"`
+	Board  string `json:"board,omitempty"`
 }
 
 type LeaderboardEntry struct {
@@ -151,14 +157,18 @@ type LeaderboardEntry struct {
 	Ken      int64   `json:"ken"`
 	Wins     int64   `json:"wins"`
 	Losses   int64   `json:"losses"`
+	Matches  int64   `json:"matches,omitempty"`
 	Level    int     `json:"level,omitempty"`
+	Exp      int64   `json:"exp,omitempty"`
 }
 
 type LeaderboardData struct {
 	Period string             `json:"period"`
+	Board  string             `json:"board"`
 	From   int64              `json:"from"`
 	To     int64              `json:"to"`
 	Items  []LeaderboardEntry `json:"items"`
+	Me     *LeaderboardEntry  `json:"me,omitempty"`
 	Error  string             `json:"error,omitempty"`
 }
 
@@ -175,14 +185,18 @@ type MatchHistoryEntry struct {
 	KenDelta    int                  `json:"kenDelta"`
 	PlayerCount int                  `json:"playerCount,omitempty"`
 	Place       int                  `json:"place,omitempty"`
+	EndReason   string               `json:"endReason,omitempty"`
+	ExitReason  string               `json:"exitReason,omitempty"`
 	Players     []MatchHistoryPlayer `json:"players,omitempty"`
 }
 
 type MatchHistoryPlayer struct {
-	UserID   string  `json:"userId"`
-	Username string  `json:"username"`
-	VipType  *string `json:"vipType,omitempty"`
-	Place    int     `json:"place,omitempty"`
+	UserID     string  `json:"userId"`
+	Username   string  `json:"username"`
+	VipType    *string `json:"vipType,omitempty"`
+	Place      int     `json:"place,omitempty"`
+	KenDelta   int     `json:"kenDelta"`
+	ExitReason string  `json:"exitReason,omitempty"`
 }
 
 type MatchHistoryData struct {

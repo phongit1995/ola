@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { LEADERBOARD_CACHE_MS, leaderboardFromServer, type LeaderboardResult, type LeaderboardStatus, type LeaderboardTab } from '../helpers/leaderboard';
+import { LEADERBOARD_CACHE_MS, leaderboardFromServer, leaderboardMatchesTab, type LeaderboardResult, type LeaderboardStatus, type LeaderboardTab } from '../helpers/leaderboard';
 import { useTycoon } from './useTycoon';
 import { playSound } from '../audio';
 
@@ -44,7 +44,6 @@ export const useLeaderboard = create<LeaderboardState>((set, get) => ({
   },
 
   async load(tab, force = false) {
-    if (tab === 'level') return;
     const board = get().boards[tab];
     if (board.status === 'loading') return;
     if (!force && board.status === 'ready' && Date.now() - board.at < LEADERBOARD_CACHE_MS) return;
@@ -66,7 +65,7 @@ export const useLeaderboard = create<LeaderboardState>((set, get) => ({
         resolve();
       }, REQUEST_TIMEOUT_MS);
       const off = session.onLeaderboard((data) => {
-        if (data.period !== tab) return;
+        if (!leaderboardMatchesTab(tab, data)) return;
         clearTimeout(timer);
         off();
         resolve();
@@ -75,10 +74,11 @@ export const useLeaderboard = create<LeaderboardState>((set, get) => ({
           fail();
           return;
         }
-        const result: LeaderboardResult = leaderboardFromServer(tab, data.items ?? [], useTycoon.getState().profile?.id);
+        const result: LeaderboardResult = leaderboardFromServer(tab, data, useTycoon.getState().profile?.id);
         set((state) => ({ boards: { ...state.boards, [tab]: { status: 'ready', data: result, at: Date.now() } } }));
       });
-      session.getLeaderboard(tab);
+      if (tab === 'level') session.getLeaderboard('week', 'level');
+      else session.getLeaderboard(tab);
     });
   },
 }));

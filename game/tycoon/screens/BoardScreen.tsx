@@ -7,6 +7,7 @@ import { BoardCenter } from '../components/BoardCenter';
 import { BottomSheet } from '../components/BottomSheet';
 import { BuyModal } from '../components/BuyModal';
 import { DebtModal } from '../components/DebtModal';
+import { ChatSheet, ReactionBubbles } from '../components/MatchChat';
 import { TyIcon } from '../components/TyIcon';
 import { UiAvatar, UiIconButton } from '../components/Ui';
 import { PlayerPods } from '../components/PlayerPods';
@@ -22,7 +23,9 @@ const BOARD_MAX = 600;
 const DOCK_RESERVE = 112;
 
 function ConnectionBanner() {
-  const { awaySeats, selfDisconnected, players, you } = useTycoon(useShallow((s) => ({ awaySeats: s.awaySeats, selfDisconnected: s.selfDisconnected, players: s.players, you: s.you })));
+  const { awaySeats, selfDisconnected, players, you, spectating, spectators, result } = useTycoon(
+    useShallow((s) => ({ awaySeats: s.awaySeats, selfDisconnected: s.selfDisconnected, players: s.players, you: s.you, spectating: s.spectating, spectators: s.spectators, result: s.result })),
+  );
   const [now, setNow] = useState(() => Date.now());
   const away = Object.entries(awaySeats).filter(([seat]) => Number(seat) !== you);
   useEffect(() => {
@@ -38,7 +41,15 @@ function ConnectionBanner() {
       </div>
     );
   }
-  if (away.length === 0) return null;
+  if (away.length === 0) {
+    if (!spectating || result) return null;
+    return (
+      <div className="ty-net-banner ty-net-banner-watch" role="status">
+        <TyIcon name="eye" size={16} />
+        Đang xem · {spectators} người xem
+      </div>
+    );
+  }
   const [seat, deadline] = away[0];
   const left = Math.max(0, Math.ceil((deadline - now) / 1000));
   return (
@@ -103,8 +114,8 @@ function useBoardFit(screen: RefObject<HTMLDivElement | null>, chrome: RefObject
 }
 
 function BoardMenu({ onClose }: { onClose: () => void }) {
-  const { speed, autoEnd, setSpeed, setAutoEnd, exitMatch, forfeitMatch } = useTycoon(
-    useShallow((s) => ({ speed: s.speed, autoEnd: s.autoEnd, setSpeed: s.setSpeed, setAutoEnd: s.setAutoEnd, exitMatch: s.exitMatch, forfeitMatch: s.forfeitMatch })),
+  const { speed, autoEnd, spectating, setSpeed, setAutoEnd, exitMatch, forfeitMatch } = useTycoon(
+    useShallow((s) => ({ speed: s.speed, autoEnd: s.autoEnd, spectating: s.spectating, setSpeed: s.setSpeed, setAutoEnd: s.setAutoEnd, exitMatch: s.exitMatch, forfeitMatch: s.forfeitMatch })),
   );
   return (
     <div className="ui-panel ty-popover" role="menu">
@@ -118,12 +129,14 @@ function BoardMenu({ onClose }: { onClose: () => void }) {
           ))}
         </span>
       </div>
-      <button type="button" role="menuitemcheckbox" aria-checked={autoEnd} className="ty-popover-row" onClick={() => setAutoEnd(!autoEnd)}>
-        <span>Tự kết thúc lượt</span>
-        <span className={`ty-switch ${autoEnd ? 'ty-switch-on' : ''}`} aria-hidden="true">
-          <i />
-        </span>
-      </button>
+      {spectating ? null : (
+        <button type="button" role="menuitemcheckbox" aria-checked={autoEnd} className="ty-popover-row" onClick={() => setAutoEnd(!autoEnd)}>
+          <span>Tự kết thúc lượt</span>
+          <span className={`ty-switch ${autoEnd ? 'ty-switch-on' : ''}`} aria-hidden="true">
+            <i />
+          </span>
+        </button>
+      )}
       <button
         type="button"
         role="menuitem"
@@ -132,19 +145,21 @@ function BoardMenu({ onClose }: { onClose: () => void }) {
           exitMatch();
         }}
       >
-        <TyIcon name="exit-door" size={16} /> Về sảnh
+        <TyIcon name="exit-door" size={16} /> {spectating ? 'Thôi xem' : 'Về sảnh'}
       </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="ty-popover-danger"
-        onClick={() => {
-          onClose();
-          forfeitMatch();
-        }}
-      >
-        <TyIcon name="flag" size={16} /> Bỏ cuộc
-      </button>
+      {spectating ? null : (
+        <button
+          type="button"
+          role="menuitem"
+          className="ty-popover-danger"
+          onClick={() => {
+            onClose();
+            forfeitMatch();
+          }}
+        >
+          <TyIcon name="flag" size={16} /> Bỏ cuộc
+        </button>
+      )}
     </div>
   );
 }
@@ -159,6 +174,9 @@ export function BoardScreen() {
       sheet: s.sheet,
       soundOn: s.soundOn,
       replaying: s.replaying,
+      practice: s.practice,
+      spectating: s.spectating,
+      chatUnread: s.chatUnread,
       toggleSound: s.toggleSound,
       openSheet: s.openSheet,
       skipReplay: s.skipReplay,
@@ -223,13 +241,22 @@ export function BoardScreen() {
       </div>
 
       <footer ref={foot} className="ty-s6-foot">
-        <UiIconButton icon="deed" label="Tài sản" size="sm" onClick={() => state.openSheet({ kind: 'assets', seat: state.you })} />
+        <UiIconButton icon="deed" label="Tài sản" size="sm" onClick={() => state.openSheet({ kind: 'assets', seat: state.you >= 0 ? state.you : (state.view?.turn ?? 0) })} />
         <button type="button" className="ty-s6-ticker" aria-label="Xem toàn bộ diễn biến" onClick={() => state.openSheet({ kind: 'log' })}>
           <span key={latest?.seq} className={`ty-log-${latest?.tone ?? 'neutral'}`}>
             {latest?.text ?? 'Ván mới bắt đầu'}
           </span>
         </button>
         <UiIconButton icon="history" label="Diễn biến" size="sm" onClick={() => state.openSheet({ kind: 'log' })} />
+        {state.practice || state.spectating ? null : (
+          <UiIconButton
+            icon="chat"
+            label={state.chatUnread ? 'Trò chuyện, có tin mới' : 'Trò chuyện'}
+            size="sm"
+            className={state.chatUnread ? 'ty-chat-unread' : undefined}
+            onClick={() => state.openSheet({ kind: 'chat' })}
+          />
+        )}
       </footer>
 
       <ConnectionBanner />
@@ -241,6 +268,8 @@ export function BoardScreen() {
       {!state.result && state.sheet?.kind === 'tile' ? <TileSheet key={state.sheet.idx} idx={state.sheet.idx} /> : null}
       {!state.result && state.sheet?.kind === 'assets' ? <AssetsSheet seat={state.sheet.seat} /> : null}
       {!state.result && state.sheet?.kind === 'log' ? <LogSheet /> : null}
+      {!state.result && state.sheet?.kind === 'chat' ? <ChatSheet /> : null}
+      <ReactionBubbles />
       {!state.result ? <BuyModal /> : null}
       {!state.result ? <DebtModal /> : null}
     </div>

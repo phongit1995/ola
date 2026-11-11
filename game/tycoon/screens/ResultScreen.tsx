@@ -32,7 +32,8 @@ export function ResultScreen() {
   }, [result?.matchId]);
 
   if (!result) return null;
-  const title = placeLabel(result.myPlace, result.rows.length);
+  const winner = result.rows[0];
+  const title = result.spectator ? `@${winner?.name ?? '?'} thắng` : placeLabel(result.myPlace, result.rows.length);
   const nameOf = (row: RankRow) => (row.seat === you ? 'Bạn' : row.name);
   const podium = PODIUM_ORDER.map((i) => result.rows[i]).filter(Boolean);
   const rest = result.rows.slice(3);
@@ -87,12 +88,14 @@ export function ResultScreen() {
           </ol>
         ) : null}
         <div className="ui-actions">
-          <UiButton disabled={pending} onClick={closeResult}>
-            Về sảnh
+          <UiButton tone={result.spectator ? 'gold' : undefined} disabled={pending} onClick={closeResult}>
+            {result.spectator ? 'Về danh sách bàn' : 'Về sảnh'}
           </UiButton>
-          <UiButton tone="gold" disabled={pending} aria-busy={pending} onClick={playAgain} data-dialog-initial-focus>
-            Chơi lại
-          </UiButton>
+          {result.spectator ? null : (
+            <UiButton tone="gold" disabled={pending} aria-busy={pending} onClick={playAgain} data-dialog-initial-focus>
+              Chơi lại
+            </UiButton>
+          )}
         </div>
       </div>
     </div>

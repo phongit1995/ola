@@ -283,7 +283,7 @@ func (s *SettlementRepository) escrowStart(
 					Seat:        seat,
 				})
 			}
-			if err := tx.Create(&seats).Error; err != nil {
+			if err := tx.Omit("ExitReason").Create(&seats).Error; err != nil {
 				return err
 			}
 		}
@@ -448,34 +448,28 @@ func (s *SettlementRepository) settleFinish(
 			}
 			result.userIDs = allPlayers
 		}
-		if rowPlayerCount(row) > 2 && len(out.Rankings) > 0 {
-			for place, playerID := range out.Rankings {
-				rankedID, parseErr := uuid.Parse(playerID)
-				if parseErr != nil {
-					continue
-				}
-				if err := tx.Model(&models.GameMatchPlayer{}).
-					Where("game_match_id = ? AND user_id = ?", row.ID, rankedID).
-					Update("place", place+1).Error; err != nil {
-					return err
-				}
-			}
+		if err := writeSeatResults(tx, row, out, allPlayers); err != nil {
+			return err
 		}
 
 		finishedAt := out.FinishedAt
 		if finishedAt.Before(row.EscrowedAt) {
 			finishedAt = row.EscrowedAt
 		}
+		finished := map[string]any{
+			"status":      matchStatusFinished,
+			"reason":      out.Reason,
+			"winner_id":   winner,
+			"loser_id":    loser,
+			"ken_delta":   kenDelta,
+			"move_count":  out.MoveCount,
+			"finished_at": &finishedAt,
+		}
+		if out.EndReason != "" {
+			finished["end_reason"] = out.EndReason
+		}
 		res := tx.Unscoped().Model(&models.GameMatch{}).Where("id = ? AND status = ?", row.ID, matchStatusPlaying).
-			Updates(map[string]any{
-				"status":      matchStatusFinished,
-				"reason":      out.Reason,
-				"winner_id":   winner,
-				"loser_id":    loser,
-				"ken_delta":   kenDelta,
-				"move_count":  out.MoveCount,
-				"finished_at": &finishedAt,
-			})
+			Updates(finished)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -690,6 +684,63 @@ func (s *SettlementRepository) registeredPlayers(ctx context.Context, ids []uuid
 		Where("id IN ?", ids).
 		Count(&count).Error
 	return count == int64(len(ids)), err
+}
+
+func optionalString(value string) *string {
+	if value == "" {
+		return nil
+	}
+	return &value
+}
+
+func writeSeatResults(tx *gorm.DB, row models.GameMatch, out engine.MatchOutcome, allPlayers []uuid.UUID) error {
+	places := make(map[uuid.UUID]int, len(out.Rankings))
+	for place, playerID := range out.Rankings {
+		if rankedID, err := uuid.Parse(playerID); err == nil {
+			places[rankedID] = place + 1
+		}
+	}
+	exitFor := func(seat int) *string {
+		if seat < len(out.ExitReasons) {
+			return optionalString(out.ExitReasons[seat])
+		}
+		return nil
+	}
+	if rowPlayerCount(row) <= 2 {
+		if len(out.ExitReasons) == 0 {
+			return nil
+		}
+		seats := make([]models.GameMatchPlayer, 0, len(allPlayers))
+		for seat, id := range allPlayers {
+			entry := models.GameMatchPlayer{GameMatchID: row.ID, UserID: id, Seat: seat, ExitReason: exitFor(seat)}
+			if place, ok := places[id]; ok {
+				entry.Place = &place
+			}
+			seats = append(seats, entry)
+		}
+		return tx.Create(&seats).Error
+	}
+	if len(places) == 0 && len(out.ExitReasons) == 0 {
+		return nil
+	}
+	for seat, id := range allPlayers {
+		updates := map[string]any{}
+		if place, ok := places[id]; ok {
+			updates["place"] = place
+		}
+		if exit := exitFor(seat); exit != nil {
+			updates["exit_reason"] = exit
+		}
+		if len(updates) == 0 {
+			continue
+		}
+		if err := tx.Model(&models.GameMatchPlayer{}).
+			Where("game_match_id = ? AND user_id = ?", row.ID, id).
+			Updates(updates).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func rowPlayerCount(row models.GameMatch) int {

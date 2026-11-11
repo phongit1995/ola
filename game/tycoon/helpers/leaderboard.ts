@@ -1,4 +1,4 @@
-import type { LeaderboardEntry } from '../../src/sdk';
+import type { LeaderboardData, LeaderboardEntry } from '../../src/sdk';
 
 export type LeaderboardTab = 'day' | 'week' | 'level';
 export type LeaderboardStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -51,17 +51,21 @@ export function pinnedMe(result: LeaderboardResult, userId: string | undefined):
   return result.me;
 }
 
-export function leaderboardFromServer(tab: LeaderboardTab, items: readonly LeaderboardEntry[], meId: string | undefined): LeaderboardResult {
-  const rows = items.slice(0, LEADERBOARD_LIMIT).map(
-    (item): LeaderboardRow => ({
-      rank: item.rank,
-      userId: item.userId,
-      username: item.username,
-      vipType: item.vipType ?? null,
-      level: item.level ?? 1,
-      wins: item.wins ?? 0,
-      matches: (item.wins ?? 0) + (item.losses ?? 0),
-    }),
-  );
-  return { tab, items: rows, me: rows.find((row) => row.userId === meId) ?? null };
+export function leaderboardFromServer(tab: LeaderboardTab, data: LeaderboardData, meId: string | undefined): LeaderboardResult {
+  const toRow = (item: LeaderboardEntry): LeaderboardRow => ({
+    rank: item.rank,
+    userId: item.userId,
+    username: item.username,
+    vipType: item.vipType ?? null,
+    level: item.level ?? 1,
+    ...(tab === 'level' ? { exp: item.exp ?? 0 } : { wins: item.wins ?? 0, matches: item.matches ?? (item.wins ?? 0) + (item.losses ?? 0) }),
+  });
+  const rows = (data.items ?? []).slice(0, LEADERBOARD_LIMIT).map(toRow);
+  const me = data.me ? toRow(data.me) : (rows.find((row) => row.userId === meId) ?? null);
+  return { tab, items: rows, me };
+}
+
+export function leaderboardMatchesTab(tab: LeaderboardTab, data: LeaderboardData): boolean {
+  if (tab === 'level') return data.board === 'level';
+  return data.period === tab && (data.board ?? 'wins') === 'wins';
 }

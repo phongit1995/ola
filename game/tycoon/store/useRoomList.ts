@@ -181,14 +181,15 @@ export const useRoomList = create<RoomListState>((set, get) => {
       handleFailure(NETWORK_ERROR, request);
       return;
     }
-    if (request.kind === 'spectate') {
-      tycoon().showToast(roomToastText(GAME_ERROR_CODE.SpectateNotSupported));
+    if (request.kind === 'spectate' && !request.room.matchId) {
+      handleFailure(GAME_ERROR_CODE.MatchNotFound, request);
       return;
     }
     pending = request;
     set({ pendingId: request.kind === 'create' ? 'create' : request.room.id });
     pendingTimer = setTimeout(() => fail(NETWORK_ERROR), REQUEST_TIMEOUT_MS);
     if (request.kind === 'create') session.createRoom(request.input.bet, request.input.password || undefined, request.input.maxPlayers);
+    else if (request.kind === 'spectate') tycoon().watchMatch(request.room.matchId ?? '');
     else session.joinRoom(request.room.id, request.password);
   }
 
@@ -224,7 +225,10 @@ export const useRoomList = create<RoomListState>((set, get) => {
         });
       }),
       session.onRoomState((data) => {
-        if (!data.watcher && pending) succeed();
+        if (!data.watcher && pending && pending.kind !== 'spectate') succeed();
+      }),
+      session.onSpectateJoined(() => {
+        if (pending?.kind === 'spectate') succeed();
       }),
       session.onError((data: ErrorData) => {
         if (pending) fail(data.code);

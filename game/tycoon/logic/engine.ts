@@ -268,7 +268,7 @@ function pay(s: GameState, from: number, to: number, amount: number, reason: Pay
     return true;
   }
   if (p.cash + liquidationValue(s, from) < amount) {
-    bankrupt(s, from, to);
+    bankrupt(s, from, to, amount);
     return false;
   }
   enterDebt(s, { creditor: to, amount, by: from, returnTo: s.turn, after, reason });
@@ -528,7 +528,7 @@ function jailRoll(s: GameState, seat: number): void {
   }
 }
 
-export function bankrupt(s: GameState, seat: number, creditor: number): void {
+export function bankrupt(s: GameState, seat: number, creditor: number, amount = 0): void {
   const p = s.players[seat];
   const tiles: number[] = [];
   s.tiles.forEach((t, idx) => {
@@ -550,7 +550,7 @@ export function bankrupt(s: GameState, seat: number, creditor: number): void {
   p.inJail = false;
   p.doubles = 0;
   s.bankruptOrder.push(seat);
-  push(s, { kind: 'bankrupt', by: seat, creditor: toCreditor ? creditor : -1, tiles });
+  push(s, { kind: 'bankrupt', by: seat, creditor: toCreditor ? creditor : -1, tiles, ...(amount > 0 ? { amount } : {}) });
   s.pendingDebts = s.pendingDebts.filter((d) => d.by !== seat);
   if (s.turn === seat) s.card = null;
   if (activeSeats(s).length <= 1) {
@@ -736,13 +736,13 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
       if (!s.debt) throw new RuleError('wrong_phase');
       autoSellForDebt(s, seat);
       if (p.cash >= s.debt.amount) settleDebt(s, seat);
-      else bankrupt(s, seat, s.debt.creditor);
+      else bankrupt(s, seat, s.debt.creditor, s.debt.amount);
       break;
     }
     case 'DECLARE_BANKRUPT':
       needPhase('debt');
       if (!s.debt) throw new RuleError('wrong_phase');
-      bankrupt(s, seat, s.debt.creditor);
+      bankrupt(s, seat, s.debt.creditor, s.debt.amount);
       break;
     case 'END_TURN':
       needPhase('manage');

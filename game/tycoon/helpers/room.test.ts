@@ -22,7 +22,7 @@ describe('roomAction', () => {
     expect(roomAction(room({ players: 2 }))).toBe('join');
     expect(roomAction(room({ players: 4 }))).toBe('full');
     expect(roomAction(room({ players: 1, full: true }))).toBe('full');
-    expect(roomAction(room({ status: 'playing', allowSpectators: true }))).toBe('watch');
+    expect(roomAction(room({ status: 'playing', matchId: 'm1' }))).toBe('watch');
     expect(roomAction(room({ status: 'playing' }))).toBe('playing');
   });
 });

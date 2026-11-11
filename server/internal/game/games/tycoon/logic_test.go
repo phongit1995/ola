@@ -702,3 +702,36 @@ func TestTurnStartDelayCoversAnimations(t *testing.T) {
 		t.Fatalf("delay not capped: %v", got)
 	}
 }
+
+func TestResultDescriberReportsEndAndExitReasons(t *testing.T) {
+	s := newState(7, 3)
+	quitPlayer(s, 1)
+	s.Players[2].Bankrupt = true
+	reason := EndRounds
+	s.EndReason = &reason
+	if got := (Logic{}).EndReason(s); got != EndRounds {
+		t.Fatalf("end reason=%q", got)
+	}
+	got := (Logic{}).ExitReasons(s)
+	if len(got) != 3 || got[0] != "" || got[1] != ExitForfeit || got[2] != ExitBankrupt {
+		t.Fatalf("exit reasons=%v", got)
+	}
+}
+
+func TestSpectatorViewHidesDecksAndSeat(t *testing.T) {
+	s := newState(9, 3)
+	view, ok := (Logic{}).SpectatorView(s).(PlayerView)
+	if !ok {
+		t.Fatal("spectator view has the wrong type")
+	}
+	if view.You != -1 || view.ChanceLeft != len(s.ChanceDeck) || len(view.Players) != 3 {
+		t.Fatalf("unexpected spectator view: you=%d chance=%d players=%d", view.You, view.ChanceLeft, len(view.Players))
+	}
+	data, err := json.Marshal(view)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(data), "chanceDeck") || strings.Contains(string(data), "rng") {
+		t.Fatalf("spectator view leaks hidden state: %s", data)
+	}
+}

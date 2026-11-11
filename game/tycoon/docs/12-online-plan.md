@@ -41,7 +41,7 @@ Protocol đầy đủ ở [05 §5–§9](./05-gameplay-rules-and-protocol.md#5-s
 - [x] `sendMoves` online gửi lần lượt theo §1.4; chơi với máy giữ ghép một lần.
 - [x] Kết quả lấy từ `MATCH_OVER.rankings` (+ `kenDelta`, `expGains` khi online); lý do kết thúc từ `view.endReason`.
 - [x] Giữ nguyên các hiệu ứng chỉ đọc view: cảnh báo sắp thắng (`winThreats`), ô thắng, nhãn nổi, modal phá sản.
-- [ ] Test store với SDK giả (mẫu `thirteen/store/useThirteen.test.ts`): ván máy chạy hết, nước sai pha, nước nhiều bước dừng khi lỗi. *Mới có `practice.test.ts` (session giả: không lộ rng/bộ thẻ, mã lỗi `tycoon:*`, chạy hết ván qua `idle()`, bỏ cuộc); chưa có test store.*
+- [x] Test store với SDK giả: `store/useTycoon.test.ts` (vào ván + deadline server, bàn chỉ đổi theo `STATE`, nước nhiều bước gửi tuần tự và dừng khi lỗi, chat/cảm xúc, kết quả theo `rankings`, người xem) + `practice.test.ts` (session giả).
 - [x] Kiểm tay: ván với máy trước/sau tách giống hệt (thời gian, hiệu ứng, kết quả).
 
 ### Giai đoạn 3 — Kết nối, danh sách bàn, phòng chờ
@@ -49,7 +49,7 @@ Protocol đầy đủ ở [05 §5–§9](./05-gameplay-rules-and-protocol.md#5-s
 - [x] Kết nối `joinGame('tycoon')` khi vào sảnh (S1 loading → connecting → ready / error), giữ một session cho cả phiên; `USER_INFO` cập nhật KEN, `maxBet`.
 - [x] S3 Danh sách bàn: thay `roomMock` bằng `listRooms` + `ROOM_UPSERT` / `ROOM_REMOVED`; S4 tạo bàn gửi `createRoom(bet, password, maxPlayers)`; vào bàn khoá gửi mật khẩu; lỗi `INSUFFICIENT_KEN`, sai mật khẩu, bàn đầy.
 - [x] **S5 Phòng chờ (màn mới):** 2–4 ghế, Sẵn sàng / Huỷ, Bắt đầu (chủ bàn, đủ người sẵn sàng), Mời ra, Thoát bàn, chat phòng; dựa logic `thirteen/screens/room/RoomScreen.tsx`, giao diện theo kiểu UI mượt của tycoon (`ui.css`).
-- [ ] Sau ván: `ROOM_WAITING` / `ROOM_STATE` (`afterMatchId`) → "Chơi lại" về S5, "Đóng" về S3.
+- [x] Sau ván: `ROOM_WAITING` / `ROOM_STATE` (`afterMatchId`) → "Chơi lại" về S5, "Đóng" về S3.
 
 ### Giai đoạn 4 — Trong ván online
 
@@ -63,12 +63,12 @@ Protocol đầy đủ ở [05 §5–§9](./05-gameplay-rules-and-protocol.md#5-s
 ### Giai đoạn 5 — Lịch sử, bảng xếp hạng
 
 - [x] Client: `getHistory` / `getLeaderboard(period)` thay dữ liệu giả; lịch sử gộp với ván máy (§1.6). Tab BXH cấp độ báo lỗi cho tới khi server có bảng cấp độ.
-- [ ] Server (05 §9.1–§9.2): migration `end_reason` / `exit_reason`, nhánh lịch sử tycoon, bảng cấp độ + `me`, sửa `protocol.go` và `protocol.ts` cùng lúc.
+- [x] Server (05 §9.1–§9.2): migration `20261113000001_game_match_end_reason` (`end_reason`, `exit_reason`, index `user_game_levels(game_id, exp DESC)`), interface `logic.ResultDescriber` (tycoon trả `endReason` + `forfeit`/`bankrupt` từng ghế), ván tycoon 2 người cũng ghi `game_match_players`; `LEADERBOARD {board: 'level'}` + `me` có hạng thật (ROW_NUMBER, chỉ chạy khi mình ngoài top 100); lịch sử trả `endReason`, `exitReason`, `kenDelta` từng người. `protocol.go` và `protocol.ts` sửa cùng lúc, field mới đều optional.
 
 ### Giai đoạn 6 — Người xem (sau, tuỳ chọn)
 
-- [ ] Server: cờ `allowSpectators` (lưu trong room + snapshot), lọc `SPECTATE_LIST`, lỗi `SPECTATE_NOT_ALLOWED`, bỏ chặn `StateViewer` trong `spectatable()` (11 §4).
-- [ ] Client: công tắc ở S4, nút Xem ở S3, chế độ chỉ xem ở S6 (`you = -1`: ẩn dock, sheet chỉ đọc).
+- [x] Server: tycoon cài `SpectatorView` (view `you = -1`, không lộ bộ thẻ) và vào `playingRoomGames` nên `ROOM_LIST` có bàn đang chơi kèm `matchId`. **Chưa làm cờ `allowSpectators` theo bàn** — giống Tiến Lên, mọi bàn đang chơi đều xem được.
+- [x] Client: nút Xem ở S3, chế độ chỉ xem ở S6 (`you = -1`, pill "Đang xem · N người xem", menu chỉ còn "Thôi xem", không có Bỏ cuộc/chat), kết quả "@x thắng" + "Về danh sách bàn". Công tắc ở S4 vẫn ẩn tới khi có cờ theo bàn.
 
 ## 3. Kiểm thử
 
@@ -76,13 +76,13 @@ Protocol đầy đủ ở [05 §5–§9](./05-gameplay-rules-and-protocol.md#5-s
 |---|---|
 | Luật | `go test ./internal/game/games/tycoon/...` + vitest `logic/*` + `parity.test.ts` |
 | Store | vitest với SDK giả, cả session máy lẫn online |
-| E2E qua socket | `game/scripts/tycoon-e2e-bots.mjs`: 2–4 bot thật qua socket chạy tới hết ván, kiểm `MATCH_OVER` đủ `rankings`, tổng tiền hợp lý (cần `JWT_SECRET` + tài khoản test như thirteen) |
-| Giao diện | Chạy local cổng 5174, nhiều tab guest token (`?token=guest:a`, `guest:b`…), chụp CDP các màn S3/S5/S6/S9 ở 360 và 390 |
+| E2E qua socket | `game/scripts/tycoon-e2e-bots.mjs` — env: `JWT_SECRET`, `TY_USERS` (JSON `[{id,name}]`), `TY_PLAYERS`, `GAME_SERVER`, `TY_JOIN_OWNER=<username>` (bot vào bàn của người đang thử trên trình duyệt), `TY_MOVE_DELAY_MS` (mặc định 80, tăng lên để kịp vào xem), `TY_FORFEIT_AFTER=<số STATE>` (bot cuối bỏ cuộc giữa ván), `TY_CHAT=1` (bot đầu gửi một tin chat + một cảm xúc). Kiểm `MATCH_OVER` đủ `rankings`, không lộ `rng`/bộ thẻ |
+| Giao diện | Chạy local cổng 5174 (`GAME_SERVER=http://localhost:8083 vite …` để proxy sang server game khác; chạy server thứ hai thì phải tách Redis: `GAME_PORT=8083 REDIS_DB=7 WEBSOCKET_REDIS_DB=8 GAME_WEBSOCKET_REDIS_PREFIX=ola-game-test`, dùng chung Redis với :8082 thì kết nối socket bị treo), nhiều tab guest token (`?token=guest:a`, `guest:b`…), chụp CDP các màn S3/S5/S6/S9 ở 360 và 390 |
 | Thời gian ván | Script tự chơi (như lần đo 11/11: 4 ván máy hết sau 2–6 phút, vòng 8–21) chạy lại cho bàn online 2 và 4 người |
 
 ## 4. Phát hành
 
-1. Chạy migration `20261101000002` (và migration lịch sử ở giai đoạn 5 nếu có) trên dev rồi prod **trước** khi deploy server.
+1. Chạy migration `20261101000002` và `20261113000001` trên dev rồi prod **trước** khi deploy server. Các game khác không đụng cột mới (INSERT bỏ `end_reason`/`exit_reason`, chỉ ghi `end_reason` khi có), nhưng ván tycoon kết thúc sẽ lỗi settle nếu thiếu cột.
 2. Deploy server, kiểm `tycoon` có trong engine.
 3. Bật game trong admin (`mini_games`), build lại game web.
 4. Thử trên dev với 2–4 tài khoản thật: bàn 0 KEN và bàn có cược, bỏ cuộc, rớt mạng, vào lại giữa ván.
@@ -90,7 +90,7 @@ Protocol đầy đủ ở [05 §5–§9](./05-gameplay-rules-and-protocol.md#5-s
 ## 5. Đã chốt khi làm (11/11, mặc định — đổi được)
 
 - Kết nối socket ngay khi mở sảnh, không chặn: lỗi mạng thì sảnh vẫn mở, "Chơi với máy" vẫn chạy, "Vào bàn" thử nối lại.
-- Bản online đầu chưa có chat / thả cảm xúc trong ván; chỉ có chat phòng ở S5.
-- Không thêm `amount` vào step `bankrupt`; modal phá sản giữ cách hiện tại.
-- Người xem để sau: ẩn công tắc "Cho người khác xem" ở S4, cột S3 chỉ còn "Tham gia".
+- Chat + thả cảm xúc trong ván: nút chat ở footer (chấm đỏ khi có tin mới) mở sheet Trò chuyện; cảm xúc bay lên từ pod người gửi; ảnh cảm xúc dùng chung `caro/assets/reactions`. Chơi với máy và người xem không có.
+- Step `bankrupt` có thêm `amount` (số nợ, bỏ khi bỏ cuộc) ở cả Go và `engine.ts`, fixture parity sinh lại; modal phá sản dùng số này.
+- Người xem: mọi bàn đang chơi xem được (như Tiến Lên), ẩn công tắc "Cho người khác xem" ở S4.
 - Trường `owner` trong `ROOM_LIST` là username, script E2E dùng `TY_JOIN_OWNER=<username>` để bot vào bàn của người đang thử trên trình duyệt.

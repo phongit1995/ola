@@ -53,6 +53,7 @@ const ERROR_TEXT: Record<string, string> = {
   NOT_YOUR_TURN: 'Chưa đến lượt bạn',
   STATE_SAVE_FAILED: 'Không lưu được nước đi, hãy thử lại',
   CHAT_RATE_LIMITED: 'Bạn gửi tin nhắn quá nhanh',
+  REACTION_RATE_LIMITED: 'Bạn thả cảm xúc quá nhanh',
   CHAT_TOO_LONG: 'Tin nhắn tối đa 120 ký tự',
   INVALID_CHAT: 'Tin nhắn không hợp lệ',
   USER_INFO_FAILED: 'Không tải được thông tin người chơi',

@@ -21,6 +21,7 @@ type GameMatch struct {
 	KenDelta    int        `gorm:"not null;default:0" json:"kenDelta"`
 	MoveCount   int        `gorm:"not null;default:0" json:"moveCount"`
 	PlayerCount int        `gorm:"not null;default:2" json:"playerCount"`
+	EndReason   *string    `gorm:"type:varchar(16);<-:update" json:"endReason,omitempty"`
 	StartedAt   time.Time  `gorm:"not null" json:"startedAt"`
 	EscrowedAt  time.Time  `gorm:"not null" json:"escrowedAt"`
 	FinishedAt  *time.Time `json:"finishedAt,omitempty"`
@@ -37,6 +38,7 @@ type GameMatchPlayer struct {
 	Seat        int       `gorm:"not null" json:"seat"`
 	Place       *int      `json:"place,omitempty"`
 	KenDelta    int       `gorm:"not null;default:0" json:"kenDelta"`
+	ExitReason  *string   `gorm:"type:varchar(16)" json:"exitReason,omitempty"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }

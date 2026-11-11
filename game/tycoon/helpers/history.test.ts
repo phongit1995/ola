@@ -4,6 +4,7 @@ import {
   botHistoryEntry,
   entryKen,
   formatKenDelta,
+  historyFromServer,
   historyReason,
   historyTitle,
   mergeHistory,
@@ -114,5 +115,44 @@ describe('history helpers', () => {
     expect(readBotHistory(me.id)).toEqual([]);
     localStorage.setItem('ola:tycoon:bot-history:v1:u-me', '{broken');
     expect(readBotHistory(me.id)).toEqual([]);
+  });
+});
+
+describe('historyFromServer', () => {
+  it('keeps the server end reason, exit reasons and per-seat KEN', () => {
+    const entry = historyFromServer(
+      {
+        id: 'm1',
+        playedAt: 1,
+        opponentId: 'w',
+        opponentName: 'chu_dat',
+        bet: 5000,
+        outcome: 'lose',
+        kenDelta: -5000,
+        playerCount: 3,
+        place: 3,
+        endReason: 'groups',
+        exitReason: 'forfeit',
+        players: [
+          { userId: 'w', username: 'chu_dat', place: 1, kenDelta: 9500 },
+          { userId: 'b', username: 'b', place: 2, kenDelta: -5000, exitReason: 'bankrupt' },
+          { userId: 'me', username: 'me', place: 3, kenDelta: -5000, exitReason: 'forfeit' },
+        ],
+      },
+      'me',
+    );
+    expect(entry.endReason).toBe('groups');
+    expect(entry.exitReason).toBe('forfeit');
+    expect(entry.players.map((p) => [p.kenDelta, p.exitReason])).toEqual([
+      [9500, null],
+      [-5000, 'bankrupt'],
+      [-5000, 'forfeit'],
+    ]);
+  });
+
+  it('ignores unknown reasons from other games', () => {
+    const entry = historyFromServer({ id: 'm2', playedAt: 1, opponentId: 'x', opponentName: 'x', bet: 0, outcome: 'win', kenDelta: 0, endReason: 'checkmate', exitReason: 'resign' }, 'me');
+    expect(entry.endReason).toBeNull();
+    expect(entry.exitReason).toBeNull();
   });
 });

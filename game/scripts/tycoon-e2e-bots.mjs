@@ -7,6 +7,8 @@ const SERVER = process.env.GAME_SERVER ?? 'http://localhost:8082';
 const PLAYERS = Number(process.env.TY_PLAYERS ?? USERS.length);
 const JOIN_OWNER = process.env.TY_JOIN_OWNER ?? '';
 const TIMEOUT_MS = Number(process.env.TY_TIMEOUT_MS ?? 30 * 60 * 1000);
+const FORFEIT_AFTER = Number(process.env.TY_FORFEIT_AFTER ?? 0);
+const MOVE_DELAY_MS = Number(process.env.TY_MOVE_DELAY_MS ?? 80);
 
 if (!SECRET || USERS.length < 2) {
   console.error('Cần JWT_SECRET và TY_USERS (JSON [{id,name}], tối thiểu 2 người)');
@@ -52,7 +54,7 @@ let roomId = null;
 
 function makeClient(user, idx) {
   const socket = io(SERVER, { auth: { token: mintJwt(user.id), gameId: 'tycoon', name: user.name }, transports: ['websocket'] });
-  const ctx = { socket, user, idx, matchId: null, you: -1, ready: false, joining: false, last: null };
+  const ctx = { socket, user, idx, matchId: null, you: -1, ready: false, joining: false, forfeited: false, last: null };
   const send = (type, data) => socket.emit('message', { type, data });
   const owner = !JOIN_OWNER && idx === 0;
   const joinOwnerRoom = (id) => {
@@ -65,7 +67,7 @@ function makeClient(user, idx) {
     if (turn !== ctx.you || state.finished) return;
     const move = pickMove(state, ctx.you);
     ctx.last = move.type;
-    setTimeout(() => send('MOVE', { matchId: ctx.matchId, move }), 80);
+    setTimeout(() => send('MOVE', { matchId: ctx.matchId, move }), MOVE_DELAY_MS);
   };
 
   socket.on('message', ({ type, data }) => {
@@ -75,6 +77,7 @@ function makeClient(user, idx) {
         return;
       }
       const fallback = FALLBACK[ctx.last];
+      if ((data.code === 'INVALID_MOVE' && data.message === 'tycoon:wrong_phase') || data.code === 'NOT_YOUR_TURN') return;
       if (data.code === 'INVALID_MOVE' && fallback && ctx.matchId) {
         ctx.last = fallback;
         send('MOVE', { matchId: ctx.matchId, move: { type: fallback } });
@@ -116,12 +119,22 @@ function makeClient(user, idx) {
       if (!results.startedAt) results.startedAt = Date.now();
       if ('rng' in data.state || 'chanceDeck' in data.state) results.leaks.push(`${user.name}: MATCH_FOUND lộ rng/bộ thẻ`);
       setTimeout(() => play(data.state, data.turn), 1600);
+      if (process.env.TY_CHAT && idx === 0) {
+        setTimeout(() => send('CHAT_SEND', { matchId: data.matchId, text: `Chào cả bàn, mình là ${user.name}!` }), 2500);
+        setTimeout(() => send('REACTION_SEND', { matchId: data.matchId, type: 'HAHA' }), 4000);
+      }
       return;
     }
     if (type === 'STATE') {
       results.states += 1;
       if ('rng' in data.state || 'chanceDeck' in data.state) results.leaks.push(`${user.name}: STATE lộ rng/bộ thẻ`);
-      if (data.matchId === ctx.matchId) play(data.state, data.turn);
+      if (data.matchId !== ctx.matchId) return;
+      if (FORFEIT_AFTER > 0 && idx === bots.length - 1 && results.states >= FORFEIT_AFTER && !ctx.forfeited) {
+        ctx.forfeited = true;
+        send('FORFEIT', { matchId: ctx.matchId, leaveAfter: false });
+        return;
+      }
+      play(data.state, data.turn);
       return;
     }
     if (type === 'MATCH_OVER' && data.matchId === ctx.matchId && !results.matchOver) {

@@ -389,7 +389,7 @@ func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any)
 				return
 			}
 		}
-		s.sendLeaderboard(data.GameID, data.UserID, d.Period)
+		s.sendLeaderboard(data.GameID, data.UserID, d.Period, d.Board)
 	case protocol.C2SHistory:
 		s.sendMatchHistory(data.GameID, data.UserID)
 	case protocol.C2SSpectateList:
@@ -430,11 +430,13 @@ func (s *Server) sendMatchHistory(gameID, userID string) {
 	s.ToUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CHistory, Data: data})
 }
 
-func (s *Server) sendLeaderboard(gameID, userID, period string) {
-	data, err := s.repo.Leaderboard(gameID, period)
+func (s *Server) sendLeaderboard(gameID, userID, period, board string) {
+	data, err := s.repo.Leaderboard(gameID, period, board, userID)
 	if err != nil {
-		s.logger.Errorw("Failed to load game leaderboard", "game_id", gameID, "period", period, "error", err)
-		data.Error = "Không thể tải bảng xếp hạng"
+		s.logger.Errorw("Failed to load game leaderboard", "game_id", gameID, "period", period, "board", board, "error", err)
+		if len(data.Items) == 0 {
+			data.Error = "Không thể tải bảng xếp hạng"
+		}
 	}
 	s.ToUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CLeaderboard, Data: data})
 }

@@ -56,17 +56,19 @@ func (r MatchRecord) AllPlayerIDs() []string {
 }
 
 type MatchOutcome struct {
-	GameID     string
-	MatchID    string
-	Player0ID  string
-	Player1ID  string
-	PlayerIDs  []string
-	Rankings   []string
-	WinnerID   string
-	Reason     string
-	Bet        int
-	MoveCount  int
-	FinishedAt time.Time
+	GameID      string
+	MatchID     string
+	Player0ID   string
+	Player1ID   string
+	PlayerIDs   []string
+	Rankings    []string
+	WinnerID    string
+	Reason      string
+	EndReason   string
+	ExitReasons []string
+	Bet         int
+	MoveCount   int
+	FinishedAt  time.Time
 }
 
 func (o MatchOutcome) AllPlayerIDs() []string {
@@ -562,10 +564,12 @@ func outcomeFromSnapshot(snapshot ActiveMatchSnapshot) (MatchOutcome, bool) {
 	}
 	moveCount := 0
 	var rankings []string
+	endReason, exitReasons := "", []string(nil)
 	if gameLogic, err := logic.Get(snapshot.GameID); err == nil &&
 		snapshot.StateVersion == gameLogic.StateVersion() {
 		if state, decodeErr := gameLogic.DecodeState(snapshot.State); decodeErr == nil {
 			moveCount = stateMoveCount(gameLogic, state)
+			endReason, exitReasons = describeResult(gameLogic, state, len(snapshot.Players))
 			if ranker, ok := gameLogic.(logic.Ranker); ok {
 				for _, idx := range ranker.Rankings(state) {
 					if idx >= 0 && idx < len(snapshot.Players) {
@@ -576,18 +580,32 @@ func outcomeFromSnapshot(snapshot ActiveMatchSnapshot) (MatchOutcome, bool) {
 		}
 	}
 	return MatchOutcome{
-		GameID:     snapshot.GameID,
-		MatchID:    snapshot.ID,
-		Player0ID:  snapshot.Players[0].ID,
-		Player1ID:  snapshot.Players[1].ID,
-		PlayerIDs:  snapshotPlayerIDs(snapshot),
-		Rankings:   rankings,
-		WinnerID:   snapshot.WinnerID,
-		Reason:     snapshot.ResultReason,
-		Bet:        snapshot.Bet,
-		MoveCount:  moveCount,
-		FinishedAt: finishedAt,
+		GameID:      snapshot.GameID,
+		MatchID:     snapshot.ID,
+		Player0ID:   snapshot.Players[0].ID,
+		Player1ID:   snapshot.Players[1].ID,
+		PlayerIDs:   snapshotPlayerIDs(snapshot),
+		Rankings:    rankings,
+		WinnerID:    snapshot.WinnerID,
+		Reason:      snapshot.ResultReason,
+		EndReason:   endReason,
+		ExitReasons: exitReasons,
+		Bet:         snapshot.Bet,
+		MoveCount:   moveCount,
+		FinishedAt:  finishedAt,
 	}, true
+}
+
+func describeResult(gameLogic logic.GameLogic, state any, players int) (string, []string) {
+	describer, ok := gameLogic.(logic.ResultDescriber)
+	if !ok {
+		return "", nil
+	}
+	exits := describer.ExitReasons(state)
+	if len(exits) != players {
+		exits = nil
+	}
+	return describer.EndReason(state), exits
 }
 
 func recordFromSnapshot(snapshot ActiveMatchSnapshot) (MatchRecord, bool) {

@@ -59,3 +59,11 @@ func viewFor(s *State, playerIdx int) PlayerView {
 		Steps:         append([]Step{}, s.Steps...),
 	}
 }
+
+func (Logic) SpectatorView(state any) any {
+	s, ok := state.(*State)
+	if !ok {
+		return nil
+	}
+	return viewFor(s, -1)
+}

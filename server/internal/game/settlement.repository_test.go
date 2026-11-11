@@ -457,3 +457,50 @@ func expectExpGrant(mock sqlmock.Sqlmock, userID uuid.UUID, gameID string, gain 
 		WithArgs(progression.LevelFromExp(total), sqlmock.AnyArg(), userID, gameID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 }
+
+func TestSettleFinishStoresTycoonEndAndExitReasonsForTwoSeats(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
+	p0 := uuid.MustParse("11111111-1111-4111-8111-111111111111")
+	p1 := uuid.MustParse("22222222-2222-4222-8222-222222222222")
+	matchID := uuid.MustParse("33333333-3333-4333-8333-333333333333")
+	rowID := uuid.MustParse("44444444-4444-4444-8444-444444444444")
+	now := time.Now().UTC()
+	out := engine.MatchOutcome{
+		GameID:      "tycoon",
+		MatchID:     matchID.String(),
+		Player0ID:   p0.String(),
+		Player1ID:   p1.String(),
+		Rankings:    []string{p1.String(), p0.String()},
+		WinnerID:    p1.String(),
+		Reason:      "win",
+		EndReason:   "last",
+		ExitReasons: []string{"bankrupt", ""},
+		MoveCount:   12,
+		FinishedAt:  now.Add(time.Minute),
+	}
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT \* FROM "game_matches".*match_id = \$1.*FOR UPDATE`).
+		WithArgs(matchID.String(), 1).
+		WillReturnRows(sqlmock.NewRows([]string{
+			"id", "game_id", "match_id", "player0_id", "player1_id", "status",
+			"mode", "bet", "started_at", "escrowed_at", "deleted_at",
+		}).AddRow(rowID, out.GameID, out.MatchID, p0, p1, matchStatusPlaying, "room", 0, now.Add(-time.Minute), now, nil))
+	mock.ExpectQuery(`INSERT INTO "game_match_players" .*exit_reason.*VALUES \(\$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8\),\(\$9,\$10,\$11,\$12,\$13,\$14,\$15,\$16\)`).
+		WithArgs(rowID, p0, 0, 2, 0, "bankrupt", sqlmock.AnyArg(), sqlmock.AnyArg(),
+			rowID, p1, 1, 1, 0, nil, sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New()).AddRow(uuid.New()))
+	mock.ExpectExec(`UPDATE "game_matches" SET .*"end_reason"=\$.*WHERE id = .*status = `).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	expectExpGrant(mock, p0, out.GameID, 21, 21)
+	expectExpGrant(mock, p1, out.GameID, 56, 56)
+	mock.ExpectCommit()
+
+	if _, err := repo.settleFinish(context.Background(), out, p0, p1, []uuid.UUID{p0, p1}); err != nil {
+		t.Fatalf("settle tycoon: %v", err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}

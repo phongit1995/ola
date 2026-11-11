@@ -143,6 +143,11 @@ const (
 var EndReasons = []string{EndLast, EndRounds, EndTime, EndGroups, EndLine, EndAirports}
 
 const (
+	ExitBankrupt = "bankrupt"
+	ExitForfeit  = "forfeit"
+)
+
+const (
 	DeckChance = "chance"
 	DeckChest  = "chest"
 )

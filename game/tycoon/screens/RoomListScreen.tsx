@@ -140,7 +140,10 @@ export function RoomListScreen() {
           <span>Chủ bàn</span>
           <span>KEN</span>
           <span>Chỗ</span>
-          <span>Tham gia</span>
+          <span>
+            Tham gia
+            <br />/ Xem
+          </span>
         </div>
         <RoomListBody />
       </section>

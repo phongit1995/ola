@@ -111,6 +111,11 @@ type Ranker interface {
 	Rankings(state any) []int
 }
 
+type ResultDescriber interface {
+	EndReason(state any) string
+	ExitReasons(state any) []string
+}
+
 func MinPlayers(l GameLogic) int {
 	if pc, ok := l.(PlayerCounter); ok {
 		if n := pc.MinPlayers(); n >= 2 {
