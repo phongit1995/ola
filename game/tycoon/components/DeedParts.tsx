@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
 import { FESTIVAL_MULTIPLIER, LEVEL_NAMES, STATION_RENT } from '../logic/constants';
-import type { GameState } from '../logic/types';
+import type { ViewState } from '../logic/types';
 import { seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
 import { TileMark, type TileMarkName } from './TileMark';
@@ -48,7 +48,7 @@ export function SeatTag({ seat }: { seat: number }) {
   );
 }
 
-export function ownsWholeGroup(view: GameState, seat: number, group: string | undefined): boolean {
+export function ownsWholeGroup(view: ViewState, seat: number, group: string | undefined): boolean {
   if (!group || seat < 0) return false;
   return tilesOfGroup(group).every((idx) => view.tiles[idx].owner === seat);
 }
@@ -61,7 +61,7 @@ export interface RentStep {
   note?: string;
 }
 
-export function rentLadder(view: GameState, idx: number): RentStep[] {
+export function rentLadder(view: ViewState, idx: number): RentStep[] {
   const tile = BOARD[idx];
   const state = view.tiles[idx];
   const owner = state.owner;
@@ -80,7 +80,7 @@ export function rentLadder(view: GameState, idx: number): RentStep[] {
   }));
 }
 
-export function landValue(view: GameState, seat: number): { land: number; houses: number } {
+export function landValue(view: ViewState, seat: number): { land: number; houses: number } {
   return BOARD.reduce(
     (sum, tile) => {
       const state = view.tiles[tile.idx];
@@ -100,7 +100,7 @@ export interface LadderPick {
   selling?: boolean;
 }
 
-export function RentLadder({ view, idx, pick }: { view: GameState; idx: number; pick?: LadderPick }) {
+export function RentLadder({ view, idx, pick }: { view: ViewState; idx: number; pick?: LadderPick }) {
   const street = BOARD[idx].kind === 'street';
   const ladder = rentLadder(view, idx);
   const maxRent = Math.max(1, ...ladder.map((step) => step.rent));

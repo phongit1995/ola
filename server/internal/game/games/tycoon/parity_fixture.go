@@ -1,4 +1,4 @@
-//go:generate go run ../../../../cmd/tycoongen -parity testdata/parity.json
+//go:generate go run ../../../../cmd/tycoongen -constants ../../../../../game/tycoon/logic/constants.gen.ts -parity testdata/parity.json
 package tycoon
 
 import (

@@ -1,3 +1,5 @@
+import type { LeaderboardEntry } from '../../src/sdk';
+
 export type LeaderboardTab = 'day' | 'week' | 'level';
 export type LeaderboardStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -47,4 +49,19 @@ export function lvLabel(level: number): string {
 export function pinnedMe(result: LeaderboardResult, userId: string | undefined): LeaderboardRow | null | undefined {
   if (!userId || result.items.some((row) => row.userId === userId)) return undefined;
   return result.me;
+}
+
+export function leaderboardFromServer(tab: LeaderboardTab, items: readonly LeaderboardEntry[], meId: string | undefined): LeaderboardResult {
+  const rows = items.slice(0, LEADERBOARD_LIMIT).map(
+    (item): LeaderboardRow => ({
+      rank: item.rank,
+      userId: item.userId,
+      username: item.username,
+      vipType: item.vipType ?? null,
+      level: item.level ?? 1,
+      wins: item.wins ?? 0,
+      matches: (item.wins ?? 0) + (item.losses ?? 0),
+    }),
+  );
+  return { tab, items: rows, me: rows.find((row) => row.userId === meId) ?? null };
 }

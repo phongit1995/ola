@@ -2,7 +2,7 @@ import { BOARD } from '../logic/board';
 
 const ART_FILES = import.meta.glob('../assets/tiles/art/*.webp', { eager: true, import: 'default', query: '?url' }) as Record<string, string>;
 
-// Tra ảnh theo tên ô (không theo số ô) để đổi thứ tự board.json không làm lệch ảnh.
+// Tra ảnh theo tên ô (không theo số ô) để đổi thứ tự bàn (constants.gen.ts) không làm lệch ảnh.
 const ART_BY_NAME: Record<string, string> = {
   'Thanh Hóa': 'thanh-hoa',
   Vinh: 'vinh',

@@ -8,7 +8,7 @@ Tài liệu thiết kế cho mini-game **Cờ Tỷ Phú** (gameId `tycoon`).
 
 **Server Go (01/11/2026):** `server/internal/game/games/tycoon/` đã port 1:1 từ `logic/engine.ts`, đăng ký với engine game, có test luật + test tích hợp engine 4 người. Parity với `engine.ts`: fixture commit 8 ván / 471 nước, kiểm bằng `node game/scripts/tycoon-parity.mjs`; bản lớn 305 ván / 75.099 nước tái lập bằng lệnh ở [05](./05-gameplay-rules-and-protocol.md) đầu file — cả hai 0 lệch. Bàn có cược 3–4 người cần migration `20261101000002` ([11 §4](./11-room-settings.md#4-việc-phía-server)).
 
-**Chưa làm:** nối client online (danh sách bàn/phòng chờ/chat/lịch sử/BXH đang dùng dữ liệu giả, chưa gửi `joinGame('tycoon')`), codegen dữ liệu tĩnh Go → TS, `parity.test.ts` phía client, E2E bot qua socket, bảng cấp độ + `endReason` lịch sử (05 §9), cho người xem (11 §4). Khi nối client, server là nguồn chân lý và client chỉ render view + gửi lệnh như docs mô tả. Bảng dữ liệu tĩnh client hiện vẫn ở `logic/board.json`, `logic/cards.json`, `logic/constants.ts` — sửa luật/giá phải sửa cả `server/internal/game/games/tycoon/board.go` + `constants.go` rồi `go generate`.
+**Online (11/11/2026):** client đã nối server theo [12-online-plan.md](./12-online-plan.md) — store chỉ nói chuyện với `GameSession`: "Vào bàn" qua `joinGame('tycoon')`, "Chơi với máy" qua session giả `practice.ts` chạy engine + bot ngay trên máy (không cần mạng). Danh sách bàn, phòng chờ S5 (`screens/RoomScreen.tsx`), chat phòng, lịch sử, BXH gọi server thật. Dữ liệu tĩnh sinh từ Go: `logic/constants.gen.ts` (hằng số + bàn + thẻ) bằng `go generate` ở `server/internal/game/games/tycoon` — sửa luật/giá chỉ sửa Go rồi sinh lại; `logic/parity.test.ts` chạy fixture Go trong vitest. E2E qua socket: `game/scripts/tycoon-e2e-bots.mjs`. **Chưa làm:** bảng cấp độ + `endReason` lịch sử (05 §9), người xem (11 §4), chat/cảm xúc trong ván, test store với SDK giả.
 
 Tên game, tên ô, hình quân và thẻ bài đều là sáng tác riêng. Không dùng tên "Monopoly", tên phố/nhân vật/hình ảnh của Hasbro — cơ chế chơi không được bảo hộ, nhưng tên và mỹ thuật thì có.
 
@@ -52,9 +52,9 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 |---|---|---|
 | S1 | Loading / Connecting | đã có [UI chờ hồ sơ + xúc xắc 3D](./screens/s1-loading/README.md), Cung men nổi quay rồi xúc xắc lật một mặt; preload/API/lỗi + thử lại còn trong kế hoạch |
 | S2 | Lobby | logo, KEN + avatar VIP + `@username`, CTA Vào bàn, Chơi với máy, Lịch sử, Bảng xếp hạng, Luật chơi, bật/tắt âm, thoát game |
-| S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, KEN, Tham gia/Xem, Tạo bàn, reload chỉ icon tách khỏi tiêu đề, phân trang 9 hàng |
-| S4 | Modal Tạo bàn / Vào bàn khóa | số người 2/3/4, cược KEN, mật khẩu, cho xem; [6 ảnh S4/O5 đã chốt UI](./screens/s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5), chưa dựng online |
-| S5 | Phòng chờ | 4 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng |
+| S3 | Danh sách bàn | list bàn 2–4 chỗ, khóa, KEN, Tham gia (Xem để sau), Tạo bàn, reload chỉ icon tách khỏi tiêu đề, phân trang 9 hàng |
+| S4 | Modal Tạo bàn / Vào bàn khóa | số người 2/3/4, cược KEN, mật khẩu (công tắc cho xem ẩn tới khi có người xem); [6 ảnh S4/O5 đã chốt UI](./screens/s3-room-list/README.md#8-modal-trên-danh-sách-bàn-s4-o5), đã nối online |
+| S5 | Phòng chờ | 2–4 ghế, Sẵn sàng/Hủy, Bắt đầu (chủ bàn), Mời ra, Thoát bàn, chat phòng — `screens/RoomScreen.tsx` |
 | S6 | Bàn chơi | header (logo, vòng, âm thanh, menu); bàn 9×9 (32 ô) có tên + giá trên ô; cụm lượt **giữa bàn** (chip lượt, đồng hồ 30 s, xúc xắc, nút theo pha); hàng pod 2–4 người **dưới bàn**; footer Tài sản / Diễn biến / sự kiện mới nhất |
 | S7 | Sheet chi tiết ô | giá, bảng tiền thuê, chủ sở hữu, nhà đang có; từ đây Mua / Xây / Bán |
 | S8 | Sheet quản lý tài sản | danh sách đất của mình theo nhóm, nút xây/bán từng ô, tổng tài sản |
@@ -84,6 +84,7 @@ Server: Go, `server/internal/game/games/tycoon/` cắm vào engine hiện có (0
 9. [09-economy.md](./09-economy.md) — kinh tế bàn 32 ô: bảng giá 16 thành phố, 3 cấp nhà, công thức, dòng tiền, thời gian một ván, thời gian chờ khi chơi với người thật, kết quả mô phỏng và dải kiểm tra tự động.
 10. [10-board-tiles.md](./10-board-tiles.md) — ghi chú nhanh 32 ô: loại ô, vị trí, giá, tiền thuê, ô nào mua / mua lại được, điều kiện thắng ngay theo ô.
 11. [11-room-settings.md](./11-room-settings.md) — thiết lập bàn: cược KEN (mặc định 0) và cho người khác xem (mặc định tắt); hiển thị ở từng màn, thanh toán, protocol, việc server.
+12. [12-online-plan.md](./12-online-plan.md) — kế hoạch nối online: chơi với máy là session giả chạy ở client, các giai đoạn, kiểm thử, phát hành.
 12. [style/](./style/README.md) — design system chi tiết: token CSS đầy đủ, bảng màu 32 ô, dàn 6 nhân vật, ma trận màu icon, button/control, kế hoạch triển khai UI theo giai đoạn. Khi khác tổng quan về UI thuần, `style/` được ưu tiên.
 13. [screens/](./screens/README.md) — mỗi màn một folder gồm ảnh mẫu và style riêng: [S1 loading](./screens/s1-loading/README.md), [S2 lobby](./screens/s2-lobby/README.md), [S3 danh sách bàn](./screens/s3-room-list/README.md), [S6 bàn chơi](./screens/s6-board/README.md), [O5 modal](./screens/o5-modal/README.md).
 14. [asset-generation-log.template.md](./asset-generation-log.template.md) — log cho mỗi asset raster sinh ra.

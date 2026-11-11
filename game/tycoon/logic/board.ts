@@ -1,6 +1,4 @@
-import boardJson from './board.json';
-import cardsJson from './cards.json';
-import type { Group, TileKind } from './constants';
+import { BOARD_DATA, CARD_DATA, type Group, type TileKind } from './constants';
 
 export interface TileData {
   idx: number;
@@ -22,8 +20,8 @@ export interface CardData {
   amount?: number;
 }
 
-export const BOARD: TileData[] = boardJson as TileData[];
-export const CARDS: CardData[] = cardsJson as CardData[];
+export const BOARD: TileData[] = BOARD_DATA as TileData[];
+export const CARDS: CardData[] = CARD_DATA as CardData[];
 
 export const GROUP_LABEL: Record<Group, string> = {
   brown: 'Bắc Trung Bộ',

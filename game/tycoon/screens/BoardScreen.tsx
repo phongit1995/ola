@@ -8,7 +8,7 @@ import { BottomSheet } from '../components/BottomSheet';
 import { BuyModal } from '../components/BuyModal';
 import { DebtModal } from '../components/DebtModal';
 import { TyIcon } from '../components/TyIcon';
-import { UiIconButton } from '../components/Ui';
+import { UiAvatar, UiIconButton } from '../components/Ui';
 import { PlayerPods } from '../components/PlayerPods';
 import { TileSheet } from '../components/TileSheet';
 import { attachParticles } from '../fx/particles';
@@ -20,6 +20,34 @@ import logoUrl from '../assets/lobby/logo.webp';
 const BOARD_MIN = 260;
 const BOARD_MAX = 600;
 const DOCK_RESERVE = 112;
+
+function ConnectionBanner() {
+  const { awaySeats, selfDisconnected, players, you } = useTycoon(useShallow((s) => ({ awaySeats: s.awaySeats, selfDisconnected: s.selfDisconnected, players: s.players, you: s.you })));
+  const [now, setNow] = useState(() => Date.now());
+  const away = Object.entries(awaySeats).filter(([seat]) => Number(seat) !== you);
+  useEffect(() => {
+    if (away.length === 0) return;
+    const timer = setInterval(() => setNow(Date.now()), 500);
+    return () => clearInterval(timer);
+  }, [away.length]);
+  if (selfDisconnected) {
+    return (
+      <div className="ty-net-banner ty-net-banner-self" role="status">
+        <TyIcon name="wifi-off" size={16} />
+        Mất kết nối, đang nối lại…
+      </div>
+    );
+  }
+  if (away.length === 0) return null;
+  const [seat, deadline] = away[0];
+  const left = Math.max(0, Math.ceil((deadline - now) / 1000));
+  return (
+    <div className="ty-net-banner" role="status">
+      <UiAvatar src={players[Number(seat)]?.avatar} size={20} />
+      @{players[Number(seat)]?.name ?? '?'} mất kết nối · còn {left}s
+    </div>
+  );
+}
 
 function LogSheet() {
   const { log, closeSheet } = useTycoon(useShallow((s) => ({ log: s.log, closeSheet: s.closeSheet })));
@@ -204,6 +232,7 @@ export function BoardScreen() {
         <UiIconButton icon="history" label="Diễn biến" size="sm" onClick={() => state.openSheet({ kind: 'log' })} />
       </footer>
 
+      <ConnectionBanner />
       <canvas ref={canvas} className="ty-s6-fx" aria-hidden="true" />
       <div className="ty-s6-vignette" id="ty-s6-vignette" />
       <div className="ty-s6-banner" id="ty-s6-banner" hidden />

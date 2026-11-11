@@ -47,6 +47,7 @@ const ROOM_TOAST_TEXT = new Map<string, string>([
   [GAME_ERROR_CODE.SpectateOwnMatch, 'Bạn đang trong một ván khác'],
   [GAME_ERROR_CODE.MatchNotFound, 'Ván đã kết thúc'],
   ['SPECTATE_NOT_ALLOWED', 'Bàn này không cho người ngoài xem'],
+  [GAME_ERROR_CODE.SpectateNotSupported, 'Chưa xem được bàn đang chơi, tính năng đang được làm'],
 ]);
 
 export function roomToastText(code: string): string {

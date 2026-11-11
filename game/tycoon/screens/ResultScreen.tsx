@@ -1,7 +1,7 @@
 import { useEffect, useId, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { pawnArt } from '../components/art';
-import { UiAvatar, UiButton } from '../components/Ui';
+import { MoneyBadge, UiAvatar, UiButton } from '../components/Ui';
 import { useDialogFocus } from '../components/useDialogFocus';
 import { formatMoney } from '../helpers/format';
 import { placeLabel, SEAT_SOFT_COLORS, seatColor } from '../helpers/player';
@@ -48,6 +48,12 @@ export function ResultScreen() {
           <p className="ty-result-reason" id={reasonId}>
             {result.reasonText}
           </p>
+          {result.kenDelta != null || result.exp != null ? (
+            <p className="ty-result-gain">
+              {result.kenDelta != null ? <MoneyBadge amount={result.kenDelta} signed className={result.kenDelta >= 0 ? 'ty-result-ken-up' : 'ty-result-ken-down'} /> : null}
+              {result.exp != null ? <span className="ui-chip">+{result.exp} EXP</span> : null}
+            </p>
+          ) : null}
         </div>
         <ol className="ty-podium" aria-label="Bảng xếp hạng">
           {podium.map((row) => (

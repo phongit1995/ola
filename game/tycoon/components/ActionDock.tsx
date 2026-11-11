@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
 import { JAIL_FINE, JAIL_MAX_TURNS } from '../logic/constants';
 import { canBuild, hasAnyFullGroup } from '../logic/rules-hint';
-import type { GameState } from '../logic/types';
+import type { ViewState } from '../logic/types';
 import { formatMoney } from '../helpers/format';
 import { seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
@@ -11,7 +11,7 @@ import { UiAvatar, UiButton } from './Ui';
 
 const AUTO_END_MS = 2000;
 
-function canBuildAny(view: GameState, seat: number): boolean {
+function canBuildAny(view: ViewState, seat: number): boolean {
   return BOARD.some((tile) => view.tiles[tile.idx].owner === seat && tile.kind === 'street' && canBuild(view, seat, tile.idx).ok);
 }
 

@@ -69,6 +69,17 @@ function Body({ config }: { config: LeaderboardTabConfig }) {
   const myId = useTycoon((s) => s.profile?.id);
   const data = board.data;
 
+  if (config.id === 'level') {
+    return (
+      <Sheet config={config}>
+        <div className="ty-lboard-state" role="status">
+          <TyIcon name="leaderboard" size={32} />
+          <p className="ty-lboard-state-title">Bảng cấp độ sắp có</p>
+        </div>
+      </Sheet>
+    );
+  }
+
   if (!data && board.status === 'error') {
     return (
       <Sheet config={config}>

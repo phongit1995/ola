@@ -2196,6 +2196,46 @@
   line-height: 1.35;
   color: var(--ui-mute);
 }
+.ty-result-gain {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 6px 0 0;
+}
+.ty-result-gain .ui-money {
+  font-size: 16px;
+}
+.ty-result-ken-up {
+  color: #1f7a4d;
+}
+.ty-result-ken-down {
+  color: var(--ty-coral);
+}
+.ty-net-banner {
+  position: absolute;
+  top: calc(56px + var(--ty-safe-top));
+  left: 50%;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+  padding: 8px 14px;
+  border: var(--ui-line);
+  border-radius: 999px;
+  background: var(--ty-paper-light);
+  color: var(--ty-navy);
+  font-family: var(--ty-font);
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: var(--ui-drop);
+  transform: translateX(-50%);
+  animation: ui-pop 260ms var(--ui-spring) both;
+}
+.ty-net-banner-self {
+  background: var(--ty-coral);
+  color: var(--ui-white);
+}
 .ty-podium {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
