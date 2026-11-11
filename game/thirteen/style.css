@@ -2952,7 +2952,7 @@ button {
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-dasharray: 62.832px;
-  stroke-dashoffset: calc(62.832px * (1 - var(--timer-from, 1)));
+  stroke-dashoffset: calc(-62.832px * (1 - var(--timer-from, 1)));
   transition: stroke 200ms ease;
   animation: tl-timer-drain var(--timer-ms, 0ms) linear forwards;
 }
@@ -3008,7 +3008,7 @@ button {
 
 @keyframes tl-timer-drain {
   to {
-    stroke-dashoffset: 62.832px;
+    stroke-dashoffset: -62.832px;
   }
 }
 

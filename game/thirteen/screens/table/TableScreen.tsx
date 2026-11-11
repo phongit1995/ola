@@ -55,8 +55,11 @@ function TurnRing({ seat, children }: { seat: number; children: React.ReactNode 
   const left = useCountdown(deadlineAt, active);
   const fraction = Math.max(0, Math.min(1, left / TURN_SECONDS));
   const progressColor = left <= URGENT_SECONDS ? '#e9574d' : '#ffc83d';
+  const elapsedDeg = (1 - fraction) * 360;
   const style = active
-    ? { background: `conic-gradient(${progressColor} ${fraction * 360}deg, rgba(255, 253, 245, 0.64) 0deg)` }
+    ? {
+        background: `conic-gradient(rgba(255, 253, 245, 0.64) ${elapsedDeg}deg, ${progressColor} ${elapsedDeg}deg)`,
+      }
     : undefined;
   return (
     <span className={'tl-turn-ring' + (active ? ' active' : '') + (active && left <= URGENT_SECONDS ? ' urgent' : '')} style={style}>
