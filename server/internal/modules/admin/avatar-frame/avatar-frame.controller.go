@@ -300,3 +300,26 @@ func (ctrl *Controller) GrantUserFrame(c *gin.Context) (interface{}, error) {
 	}
 	return map[string]string{"frameId": strings.TrimSpace(req.FrameID)}, nil
 }
+
+// RevokeUserFrame godoc
+// @Summary      Thu hồi một khung avatar khỏi kho của user, tự gỡ nếu đang đeo (admin)
+// @Tags         admin-avatar-frame
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path string true "User ID"
+// @Param        frameId path string true "Mã khung"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/avatar-frames/{frameId} [delete]
+func (ctrl *Controller) RevokeUserFrame(c *gin.Context) (interface{}, error) {
+	userID, err := utils.ParseUUIDParam(c, "id", "user id")
+	if err != nil {
+		return nil, err
+	}
+	frameID := strings.TrimSpace(c.Param("frameId"))
+	if err := ctrl.service.AdminRevoke(userID, frameID); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"frameId": frameID}, nil
+}

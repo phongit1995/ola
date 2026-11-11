@@ -31,5 +31,6 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	{
 		users.GET("/:id/avatar-frames", r.controller.ListUserFrames)
 		users.POST("/:id/avatar-frames", r.controller.GrantUserFrame)
+		users.DELETE("/:id/avatar-frames/:frameId", r.controller.RevokeUserFrame)
 	}
 }

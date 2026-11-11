@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Empty, Modal, Segmented, Skeleton, Tag, Tooltip } from 'antd'
-import { CrownFilled, GiftOutlined } from '@ant-design/icons'
+import { Alert, App, Button, Empty, Modal, Segmented, Skeleton, Tag, Tooltip } from 'antd'
+import { CrownFilled, DeleteOutlined, GiftOutlined } from '@ant-design/icons'
 import { avatarFrameById, avatarFrameLabel } from '@ola/shared/lib/avatarFrame'
-import { useUserAvatarFrames } from '@/hooks/useUserQueries'
+import { useRevokeUserAvatarFrame, useUserAvatarFrames } from '@/hooks/useUserQueries'
+import { errorMessage } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import type { AdminUserAvatarFrame } from '@/types'
 import { GrantAvatarFrameModal } from './GrantAvatarFrameModal'
 import { UserFramePurchaseHistory, UserFrameTransferHistory } from './UserAvatarFrameHistory'
 import { USER_AVATAR_FRAME_SOURCE_LABEL, USER_FRAMES_TAB_OPTIONS } from './constants'
 import type { UserFramesTab } from './types'
+import { revokeAvatarFrameNotes } from './utils'
 
 interface UserAvatarFramesModalProps {
   open: boolean
@@ -17,7 +19,7 @@ interface UserAvatarFramesModalProps {
   onClose: () => void
 }
 
-function FrameCard({ item }: { item: AdminUserAvatarFrame }) {
+function FrameCard({ item, onRevoke }: { item: AdminUserAvatarFrame; onRevoke: (item: AdminUserAvatarFrame) => void }) {
   const frame = avatarFrameById(item.frameId)
   return (
     <div
@@ -35,6 +37,17 @@ function FrameCard({ item }: { item: AdminUserAvatarFrame }) {
           <CrownFilled style={{ position: 'absolute', top: 8, left: 8, color: '#faad14', fontSize: 16 }} />
         </Tooltip>
       )}
+      <Tooltip title="Thu hồi khung">
+        <Button
+          type="text"
+          size="small"
+          danger
+          icon={<DeleteOutlined />}
+          aria-label="Thu hồi khung"
+          onClick={() => onRevoke(item)}
+          style={{ position: 'absolute', top: 4, right: 4 }}
+        />
+      </Tooltip>
       {frame ? (
         <img src={frame.url} alt={avatarFrameLabel(item.frameId)} width={64} height={64} style={{ objectFit: 'contain' }} />
       ) : (
@@ -57,6 +70,40 @@ export function UserAvatarFramesModal({ open, userId, username, onClose }: UserA
   const [grantOpen, setGrantOpen] = useState(false)
   const [tab, setTab] = useState<UserFramesTab>('owned')
   const hiddenCount = data ? data.total - items.length : 0
+
+  const { message, modal } = App.useApp()
+  const revoke = useRevokeUserAvatarFrame()
+
+  const confirmRevoke = (item: AdminUserAvatarFrame) => {
+    if (!userId) return
+    const label = `"${avatarFrameLabel(item.frameId)}" (#${item.frameId})`
+    const notes = revokeAvatarFrameNotes(item)
+    modal.confirm({
+      title: 'Thu hồi khung?',
+      content: (
+        <>
+          <div>{`Gỡ khung ${label} khỏi kho${username ? ` của @${username}` : ''}.`}</div>
+          {notes.map((note) => (
+            <div key={note} style={{ marginTop: 6, color: '#d46b08' }}>
+              {note}
+            </div>
+          ))}
+        </>
+      ),
+      okText: 'Thu hồi',
+      okButtonProps: { danger: true },
+      cancelText: 'Huỷ',
+      onOk: async () => {
+        try {
+          await revoke.mutateAsync({ id: userId, frameId: item.frameId })
+          message.success(`Đã thu hồi khung ${label}`)
+        } catch (err) {
+          message.error(errorMessage(err, 'Thu hồi khung thất bại'))
+          throw err
+        }
+      },
+    })
+  }
 
   const handleClose = () => {
     setTab('owned')
@@ -100,7 +147,7 @@ export function UserAvatarFramesModal({ open, userId, username, onClose }: UserA
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
               {items.map((item) => (
-                <FrameCard key={item.frameId} item={item} />
+                <FrameCard key={item.frameId} item={item} onRevoke={confirmRevoke} />
               ))}
             </div>
           )}

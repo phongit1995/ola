@@ -249,6 +249,22 @@ func (s *Service) AdminGrant(userID uuid.UUID, frameID string) error {
 	return nil
 }
 
+func (s *Service) AdminRevoke(userID uuid.UUID, frameID string) error {
+	if !IsValidFrameID(frameID) {
+		return ErrInvalidFrameID
+	}
+	row, unequipped, err := s.repo.AdminRevoke(userID, frameID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return apperr.ErrUserNotFound
+		}
+		return err
+	}
+	s.invalidate(userID)
+	s.logger.Infow("Admin revoked avatar frame", "user_id", userID, "frame_id", frameID, "source", row.Source, "unequipped", unequipped)
+	return nil
+}
+
 func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*StoreResponse, error) {
 	target, err := s.repo.GetUser(targetID)
 	if err != nil {

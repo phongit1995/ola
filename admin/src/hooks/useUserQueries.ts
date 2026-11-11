@@ -135,6 +135,17 @@ export function useGrantUserAvatarFrame() {
   })
 }
 
+export function useRevokeUserAvatarFrame() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, frameId }: { id: string; frameId: string }) =>
+      AdminUserService.revokeAvatarFrame(id, frameId),
+    onSuccess: (_, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY, 'avatar-frames', id] })
+    },
+  })
+}
+
 export function useGrantVip() {
   const queryClient = useQueryClient()
   return useMutation({

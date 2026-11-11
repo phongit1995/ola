@@ -2,6 +2,7 @@ import { formatDateTime } from '@/lib/format'
 import type {
   AdminAvatarFramePurchase,
   AdminAvatarFrameTransfer,
+  AdminUserAvatarFrame,
   AdminUserVipIcon,
   ModerationLockStep,
   ReportAdminBrief,
@@ -87,4 +88,11 @@ export function userFramePurchaseRole(item: AdminAvatarFramePurchase, userId: st
 
 export function userFrameTransferDirection(item: AdminAvatarFrameTransfer, userId: string): UserFrameTransferDirection {
   return item.to.id === userId ? 'in' : 'out'
+}
+
+export function revokeAvatarFrameNotes(item: AdminUserAvatarFrame): string[] {
+  const notes: string[] = []
+  if (item.isEquipped) notes.push('User đang đeo khung này, khung sẽ bị gỡ khỏi avatar.')
+  if (item.source === 'purchase' || item.source === 'gift') notes.push('Khung được mua bằng KEN, thu hồi không hoàn KEN.')
+  return notes
 }

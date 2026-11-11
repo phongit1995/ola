@@ -90,6 +90,10 @@ export const AdminUserService = {
     await http.post(`/admin/users/${id}/avatar-frames`, payload)
   },
 
+  async revokeAvatarFrame(id: string, frameId: string): Promise<void> {
+    await http.delete(`/admin/users/${id}/avatar-frames/${encodeURIComponent(frameId)}`)
+  },
+
   async grantVip(id: string, payload: GrantVipRequest): Promise<AdminUserVipIcon> {
     const { data } = await http.post<ApiResponse<AdminUserVipIcon>>(
       `/admin/users/${id}/vips`,

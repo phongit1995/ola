@@ -256,6 +256,33 @@ func (r *Repository) AdminGrant(userID uuid.UUID, frameID string, now time.Time)
 	return granted, err
 }
 
+func (r *Repository) AdminRevoke(userID uuid.UUID, frameID string) (*models.UserAvatarFrame, bool, error) {
+	var row models.UserAvatarFrame
+	unequipped := false
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		locked, err := lockUsersInOrder(tx, userID)
+		if err != nil {
+			return err
+		}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("user_id = ? AND frame_id = ?", userID, frameID).
+			First(&row).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrNotOwned
+			}
+			return err
+		}
+		if equipped := locked[userID].AvatarFrameID; equipped != nil && *equipped == frameID {
+			if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("avatar_frame_id", nil).Error; err != nil {
+				return err
+			}
+			unequipped = true
+		}
+		return tx.Delete(&row).Error
+	})
+	return &row, unequipped, err
+}
+
 type purchaseParams struct {
 	payerID       uuid.UUID
 	recipientID   uuid.UUID
