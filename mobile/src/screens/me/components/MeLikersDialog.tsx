@@ -137,7 +137,6 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
                         name={item.username}
                         uri={item.avatar ?? undefined}
                         size={44}
-                        rounded={false}
                         frameId={item.avatarFrameId}
                       />
                       <View className="min-w-0 flex-1">

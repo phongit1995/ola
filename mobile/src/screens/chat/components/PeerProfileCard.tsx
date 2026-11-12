@@ -61,7 +61,6 @@ export function PeerProfileCard({
       name={name}
       uri={avatarUrl !== '' ? avatarUrl : undefined}
       size={56}
-      rounded={false}
       frameId={profile.avatarFrameId}
     />
   );

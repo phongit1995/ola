@@ -106,7 +106,6 @@ export function FollowingListOverlay({
                 frameId={friend.avatarFrameId}
                 color={friend.color}
                 layout="inline"
-                rounded={false}
                 onClick={() => onSelect(friend)}
               />
             </div>

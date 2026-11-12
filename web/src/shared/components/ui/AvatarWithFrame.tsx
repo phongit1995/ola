@@ -9,7 +9,6 @@ interface AvatarWithFrameProps {
   color: string;
   size?: number;
   src?: string;
-  rounded?: boolean;
   frameId?: string | null;
 }
 
@@ -18,7 +17,6 @@ export function AvatarWithFrame({
   color,
   size = DEFAULT_AVATAR_SIZE,
   src,
-  rounded = true,
   frameId,
 }: AvatarWithFrameProps) {
   const frame = visibleAvatarFrame(size, frameId);
@@ -29,7 +27,7 @@ export function AvatarWithFrame({
         color={color}
         size={size}
         src={src}
-        rounded={rounded}
+        rounded
       />
     );
   }

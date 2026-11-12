@@ -163,7 +163,6 @@ export function MeLikersDialog({
                     color={colorForName(user.username)}
                     size={44}
                     src={user.avatar}
-                    rounded={false}
                     frameId={user.avatarFrameId}
                   />
                   <span className="flex min-w-0 flex-1 flex-col">

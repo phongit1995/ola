@@ -125,7 +125,6 @@ function FollowingListBody({
                 name={item.username}
                 uri={item.avatar ?? undefined}
                 size={40}
-                rounded={false}
                 frameId={item.avatarFrameId}
               />
               <UserName

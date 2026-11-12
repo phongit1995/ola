@@ -10,7 +10,6 @@ interface AvatarWithFrameProps {
   name: string;
   uri?: string;
   size?: number;
-  rounded?: boolean;
   color?: string;
   showLoader?: boolean;
   frameId?: string | null;
@@ -20,7 +19,6 @@ export function AvatarWithFrame({
   name,
   uri,
   size = DEFAULT_AVATAR_SIZE,
-  rounded = true,
   color,
   showLoader,
   frameId,
@@ -32,7 +30,7 @@ export function AvatarWithFrame({
         name={name}
         uri={uri}
         size={size}
-        rounded={rounded}
+        rounded
         color={color}
         showLoader={showLoader}
       />
