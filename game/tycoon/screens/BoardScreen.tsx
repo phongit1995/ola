@@ -9,7 +9,7 @@ import { BuyModal } from '../components/BuyModal';
 import { DebtModal } from '../components/DebtModal';
 import { ChatSheet, ReactionBubbles } from '../components/MatchChat';
 import { TyIcon } from '../components/TyIcon';
-import { UiAvatar, UiIconButton } from '../components/Ui';
+import { KenBadge, UiAvatar, UiIconButton } from '../components/Ui';
 import { PlayerPods } from '../components/PlayerPods';
 import { TileSheet } from '../components/TileSheet';
 import { attachParticles } from '../fx/particles';
@@ -114,11 +114,42 @@ function useBoardFit(screen: RefObject<HTMLDivElement | null>, chrome: RefObject
 }
 
 function BoardMenu({ onClose }: { onClose: () => void }) {
-  const { speed, autoEnd, spectating, setSpeed, setAutoEnd, exitMatch, forfeitMatch } = useTycoon(
-    useShallow((s) => ({ speed: s.speed, autoEnd: s.autoEnd, spectating: s.spectating, setSpeed: s.setSpeed, setAutoEnd: s.setAutoEnd, exitMatch: s.exitMatch, forfeitMatch: s.forfeitMatch })),
+  const { speed, autoEnd, spectating, practice, matchBet, spectators, setSpeed, setAutoEnd, setRulesOpen, exitMatch, forfeitMatch } = useTycoon(
+    useShallow((s) => ({
+      speed: s.speed,
+      autoEnd: s.autoEnd,
+      spectating: s.spectating,
+      practice: s.practice,
+      matchBet: s.matchBet,
+      spectators: s.spectators,
+      setSpeed: s.setSpeed,
+      setAutoEnd: s.setAutoEnd,
+      setRulesOpen: s.setRulesOpen,
+      exitMatch: s.exitMatch,
+      forfeitMatch: s.forfeitMatch,
+    })),
   );
   return (
     <div className="ui-panel ty-popover" role="menu">
+      {practice ? null : (
+        <p className="ty-popover-info">
+          <span className="ty-popover-info-item">
+            {matchBet > 0 ? (
+              <>
+                Cược <KenBadge amount={matchBet} />
+              </>
+            ) : (
+              'Giao lưu'
+            )}
+          </span>
+          {spectators > 0 ? (
+            <span className="ty-popover-info-item">
+              <TyIcon name="eye" size={14} />
+              {spectators} người đang xem
+            </span>
+          ) : null}
+        </p>
+      )}
       <div className="ty-popover-row">
         <span>Tốc độ</span>
         <span className="ui-segmented" role="radiogroup" aria-label="Tốc độ hiệu ứng">
@@ -146,6 +177,16 @@ function BoardMenu({ onClose }: { onClose: () => void }) {
         }}
       >
         <TyIcon name="exit-door" size={16} /> {spectating ? 'Thôi xem' : 'Về sảnh'}
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        onClick={() => {
+          onClose();
+          setRulesOpen(true);
+        }}
+      >
+        <TyIcon name="info" size={16} /> Luật chơi
       </button>
       {spectating ? null : (
         <button

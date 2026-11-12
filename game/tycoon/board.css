@@ -66,6 +66,28 @@
   transform-origin: top right;
   animation: ui-pop 260ms var(--ui-spring) both;
 }
+.ty-popover-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 0 0 4px;
+  padding: 6px 10px 10px;
+  border-bottom: 1px dashed var(--ty-line, rgba(31, 42, 68, 0.18));
+  color: var(--ui-ink-2);
+  font-family: var(--ty-font);
+  font-size: 13px;
+  font-weight: 700;
+}
+.ty-popover-info-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ty-popover-info .ui-money {
+  color: var(--ty-navy);
+  font-weight: 800;
+}
 .ty-popover > button,
 .ty-popover-row {
   display: flex;
@@ -1095,6 +1117,18 @@
 }
 .ty-s6-float-big {
   font-size: 13px;
+}
+.ty-s6-float-ken {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  animation-duration: 1.4s;
+}
+.ty-s6-float-ken img {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
 }
 @keyframes ty-float {
   0% {
@@ -2379,6 +2413,23 @@
 }
 .ty-result-row-mine {
   background: var(--ty-gold-soft);
+}
+.ty-row-ken {
+  gap: 2px;
+  font-family: var(--ty-font);
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.ty-row-ken img {
+  width: 12px;
+  height: 12px;
+}
+.ty-row-ken-up {
+  color: var(--ty-jade);
+}
+.ty-row-ken-down {
+  color: var(--ty-coral);
 }
 
 @media (max-height: 720px) {

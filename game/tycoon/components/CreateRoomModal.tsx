@@ -27,6 +27,7 @@ export function CreateRoomModal() {
   const [betText, setBetText] = useState('0');
   const [locked, setLocked] = useState(false);
   const [password, setPassword] = useState('');
+  const [allowSpectators, setAllowSpectators] = useState(false);
   const betRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const titleId = useId();
@@ -70,7 +71,7 @@ export function CreateRoomModal() {
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (pending) return;
-    const input = { maxPlayers: players, bet, password: locked ? password : '', allowSpectators: false };
+    const input = { maxPlayers: players, bet, password: locked ? password : '', allowSpectators };
     const invalid = createRoomError(input, locked, ken, maxBet);
     if (invalid) {
       setError(invalid);
@@ -167,6 +168,13 @@ export function CreateRoomModal() {
               {passwordError ? <RoomFieldError id={passwordErrorId} text={passwordError} /> : null}
             </div>
           ) : null}
+
+          <SwitchRow
+            label="Cho người khác xem"
+            hint="Người ngoài bàn xem được ván, không thao tác được"
+            checked={allowSpectators}
+            onChange={setAllowSpectators}
+          />
         </fieldset>
 
         <div className="ty-modal-actions ty-room-actions">

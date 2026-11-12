@@ -69,6 +69,7 @@ export function ResultScreen() {
                 {nameOf(row)}
               </span>
               <span className="ty-podium-worth">{row.bankrupt ? 'Phá sản' : formatMoney(row.worth)}</span>
+              {row.kenDelta != null ? <KenBadge amount={row.kenDelta} signed className={`ty-row-ken ${row.kenDelta >= 0 ? 'ty-row-ken-up' : 'ty-row-ken-down'}`} /> : null}
               <span className="ty-podium-block">
                 <b>{row.place}</b>
               </span>
@@ -83,6 +84,7 @@ export function ResultScreen() {
                 <UiAvatar src={players[row.seat]?.avatar} size={22} ring={seatColor(row.seat)} />
                 <span className="ty-result-name">{nameOf(row)}</span>
                 <span className="ty-result-worth">{row.bankrupt ? 'Phá sản' : formatMoney(row.worth)}</span>
+                {row.kenDelta != null ? <KenBadge amount={row.kenDelta} signed className={`ty-row-ken ${row.kenDelta >= 0 ? 'ty-row-ken-up' : 'ty-row-ken-down'}`} /> : null}
               </li>
             ))}
           </ol>

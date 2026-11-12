@@ -23,7 +23,7 @@ func (e *Engine) SpectateList(gameID, userID string) {
 	}
 	entries := make([]protocol.SpectateListEntry, 0, len(snapshots))
 	for _, snapshot := range snapshots {
-		if snapshot.Status != matchStatusPlaying || snapshot.GameID != gameID || privateRoom(snapshot.Room) {
+		if snapshot.Status != matchStatusPlaying || snapshot.GameID != gameID || !spectatorsAllowed(snapshot.Room) {
 			continue
 		}
 		count, countErr := e.activeStore.SpectatorCount(gameID, snapshot.ID)
@@ -160,8 +160,22 @@ func (e *Engine) broadcastSpectators(gameID, matchID string) {
 	e.toMatch(gameID, matchID, envelope)
 }
 
-func privateRoom(room *Room) bool {
-	return room != nil && room.Password != ""
+func spectatorsAllowed(room *Room) bool {
+	if room == nil {
+		return true
+	}
+	if room.AllowSpectators != nil {
+		return *room.AllowSpectators
+	}
+	return room.Password == ""
+}
+
+func cloneBool(value *bool) *bool {
+	if value == nil {
+		return nil
+	}
+	copied := *value
+	return &copied
 }
 
 func isPlayer(players []protocol.PlayerInfo, userID string) bool {
@@ -185,8 +199,8 @@ func (e *Engine) deliverSpectateSnapshot(gameLogic logic.GameLogic, gameID, user
 		if isPlayer(m.players, userID) {
 			return false, true
 		}
-		if privateRoom(m.room) {
-			spectateError(deliver, protocol.ErrorCodeSpectateNotAllowed, "private rooms cannot be spectated")
+		if !spectatorsAllowed(m.room) {
+			spectateError(deliver, protocol.ErrorCodeSpectateNotAllowed, "this room does not allow spectators")
 			return false, false
 		}
 		roomOwnerID := ""
@@ -220,8 +234,8 @@ func (e *Engine) deliverSpectateSnapshot(gameLogic logic.GameLogic, gameID, user
 	if isPlayer(snapshot.Players, userID) {
 		return false, true
 	}
-	if privateRoom(snapshot.Room) {
-		spectateError(deliver, protocol.ErrorCodeSpectateNotAllowed, "private rooms cannot be spectated")
+	if !spectatorsAllowed(snapshot.Room) {
+		spectateError(deliver, protocol.ErrorCodeSpectateNotAllowed, "this room does not allow spectators")
 		return false, false
 	}
 	state, err := gameLogic.DecodeState(snapshot.State)
@@ -277,7 +291,7 @@ func (e *Engine) WatchRoom(gameID, userID, roomID string, deliver Deliver) bool 
 		return unavailable()
 	}
 	if room, exists := e.store.Get(gameID, roomID); exists {
-		if privateRoom(&room) || room.hasMember(userID) {
+		if !spectatorsAllowed(&room) || room.hasMember(userID) {
 			return unavailable()
 		}
 		state := roomStateData(room, "", "")
@@ -290,7 +304,7 @@ func (e *Engine) WatchRoom(gameID, userID, roomID string, deliver Deliver) bool 
 		return unavailable()
 	}
 	m.mu.Lock()
-	watchable := !m.over && m.room != nil && !privateRoom(m.room) && !isPlayer(m.players, userID)
+	watchable := !m.over && m.room != nil && spectatorsAllowed(m.room) && !isPlayer(m.players, userID)
 	m.mu.Unlock()
 	if !watchable {
 		return unavailable()

@@ -773,6 +773,10 @@ func (e *Engine) leaveQueueLocked(gameID string, userID string) {
 }
 
 func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, password string, maxPlayers int) {
+	e.CreateRoomWithSpectators(gameID, owner, bet, password, maxPlayers, nil)
+}
+
+func (e *Engine) CreateRoomWithSpectators(gameID string, owner protocol.PlayerInfo, bet int, password string, maxPlayers int, allowSpectators *bool) {
 	if e.sendActiveMatch(gameID, owner.ID) {
 		return
 	}
@@ -825,16 +829,17 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 	e.leaveQueue(gameID, owner.ID)
 
 	room := Room{
-		ID:           uuid.NewString(),
-		GameID:       gameID,
-		OwnerID:      owner.ID,
-		OwnerName:    owner.Name,
-		OwnerVipType: owner.VipType,
-		OwnerLevel:   owner.Level,
-		MaxPlayers:   maxPlayers,
-		Bet:          bet,
-		Password:     password,
-		CreatedAt:    time.Now().UnixMilli(),
+		ID:              uuid.NewString(),
+		GameID:          gameID,
+		OwnerID:         owner.ID,
+		OwnerName:       owner.Name,
+		OwnerVipType:    owner.VipType,
+		OwnerLevel:      owner.Level,
+		MaxPlayers:      maxPlayers,
+		Bet:             bet,
+		Password:        password,
+		AllowSpectators: cloneBool(allowSpectators),
+		CreatedAt:       time.Now().UnixMilli(),
 	}
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, owner.ID, protocol.ErrorCodeRoomCreateFailed, err.Error())
@@ -1243,14 +1248,15 @@ func listsPlayingRooms(gameID string) bool {
 func roomInfo(room Room) protocol.RoomInfo {
 	players := room.playerCount()
 	return protocol.RoomInfo{
-		ID:           room.ID,
-		Owner:        room.OwnerName,
-		OwnerVipType: room.OwnerVipType,
-		Bet:          room.Bet,
-		Locked:       room.Password != "",
-		Players:      players,
-		MaxPlayers:   room.capacity(),
-		Full:         players >= room.capacity(),
+		ID:              room.ID,
+		Owner:           room.OwnerName,
+		OwnerVipType:    room.OwnerVipType,
+		Bet:             room.Bet,
+		Locked:          room.Password != "",
+		Players:         players,
+		MaxPlayers:      room.capacity(),
+		Full:            players >= room.capacity(),
+		AllowSpectators: cloneBool(room.AllowSpectators),
 	}
 }
 
@@ -1296,7 +1302,7 @@ func (e *Engine) emitRoomRemoved(gameID, roomID string) {
 func (e *Engine) emitRoomWaiting(gameID, userID string, room Room) {
 	e.toUser(gameID, userID, protocol.OutEnvelope{
 		Type: protocol.S2CRoomWaiting,
-		Data: protocol.RoomWaitingData{RoomID: room.ID, Bet: room.Bet, Locked: room.Password != "", MaxPlayers: room.capacity()},
+		Data: protocol.RoomWaitingData{RoomID: room.ID, Bet: room.Bet, Locked: room.Password != "", MaxPlayers: room.capacity(), AllowSpectators: cloneBool(room.AllowSpectators)},
 	})
 }
 
@@ -1308,7 +1314,7 @@ func (e *Engine) emitRoomStateAfterMatch(room Room, matchID string) {
 	for _, memberID := range room.memberIDs() {
 		e.emitRoomStateToAfterMatch(room, memberID, matchID)
 	}
-	if !privateRoom(&room) {
+	if spectatorsAllowed(&room) {
 		state := roomStateData(room, "", matchID)
 		state.Watcher = true
 		e.toRoomWatchers(room.GameID, room.ID, protocol.OutEnvelope{Type: protocol.S2CRoomState, Data: state})
@@ -1336,6 +1342,7 @@ func roomStateData(room Room, youID, matchID string) protocol.RoomStateData {
 	return protocol.RoomStateData{
 		RoomID: room.ID, OwnerID: room.OwnerID, YouID: youID, Bet: room.Bet,
 		Locked: room.Password != "", MaxPlayers: room.capacity(), Members: members, AfterMatchID: matchID,
+		AllowSpectators: cloneBool(room.AllowSpectators),
 	}
 }
 
@@ -1888,7 +1895,7 @@ func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
 			Data: data,
 		})
 	}
-	if !privateRoom(&room) {
+	if spectatorsAllowed(&room) {
 		e.toRoomWatchers(room.GameID, room.ID, protocol.OutEnvelope{Type: protocol.S2CChatMessage, Data: data})
 	}
 }

@@ -1,6 +1,6 @@
 import type { ErrorData, GameSession, MatchFoundData, MatchOverData, PlayerInfo, StateData } from '../src/sdk';
 import { GAME_ERROR_CODE, S2C } from '../src/sdk/protocol';
-import { botMove } from './logic/bot';
+import { botMove, botRng } from './logic/bot';
 import { ERROR_PREFIX, GAME_ID, TIME_LIMIT_MS, TURN_SECONDS } from './logic/constants';
 import { applyMove, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings } from './logic/engine';
 import { RuleError, type GameState, type Move, type TycoonView } from './logic/types';
@@ -42,6 +42,8 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
   ];
   const timers = new Set<ReturnType<typeof setTimeout>>();
   let state: GameState | null = null;
+  let seed = 0;
+  let botMoves: number[] = [];
   let matchId = '';
   let matchCount = 0;
   let startedAt = 0;
@@ -131,7 +133,9 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
       matchId = `practice-${matchCount}`;
       startedAt = Date.now();
       newTurnPending = false;
-      state = newGame(Math.floor(random() * 2 ** 31) + 1, players.length);
+      seed = Math.floor(random() * 2 ** 31) + 1;
+      botMoves = players.map(() => 0);
+      state = newGame(seed, players.length);
       emit(S2C.MatchFound, {
         matchId,
         gameId: GAME_ID,
@@ -158,7 +162,8 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
       if (seat !== YOU) {
         later(botDelay(current) / speed(), () => {
           if (state !== current) return;
-          const move = botMove(current, seat) ?? moveOnTimeout(current, seat);
+          const rng = botRng(seed, seat, botMoves[seat]++);
+          const move = botMove(current, seat, bots[seat - 1]?.level ?? 'normal', rng) ?? moveOnTimeout(current, seat);
           if (move) act(seat, move);
         });
         return 0;

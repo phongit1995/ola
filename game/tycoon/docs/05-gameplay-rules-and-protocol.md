@@ -375,7 +375,15 @@ Bất biến:
 
 ## 12. Máy chơi và mức độ (bản chơi với máy)
 
-**Trạng thái (23/10/2026): đặc tả, chưa code phần máy.** Modal đã cho chọn mức và lưu `level` vào `SeatInfo`, nhưng `botMove` chưa nhận mức: mọi máy vẫn chơi mức `Thường` dưới đây. Modal mới mặc định Bot 1, thêm/xóa từng bot tối đa 3 và chọn mức riêng cho Bot 1/2/3; không có bộ chọn số lượng. Chi tiết ở [02 §2.3](./02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal).
+**Trạng thái (12/11/2026): đã code, Khó chưa đạt ngưỡng 60% với Thường.** `botMove(s, seat, level = 'normal', rng?)` ở `logic/bot.ts`; `practice.ts` lưu seed lúc `start()`, mỗi ghế máy dùng mức đã chọn trong modal và RNG `botRng(seed, ghế, số nước máy đó đã đi)`. Modal mặc định Bot 1, thêm/xóa từng bot tối đa 3 và chọn mức riêng cho Bot 1/2/3; không có bộ chọn số lượng. Chi tiết ở [02 §2.3](./02-screen-specs.md#23-modal-chơi-với-máy-botsetupmodal).
+
+Chỗ code khác bảng 12.2:
+- **Dễ** vẫn mua đất hoặc mua lại khi ô đó cho chính nó thắng ngay (bỏ qua thắng ngay là hành động vô lý); không có điều này thì máy Dễ không thắng ván 4 người nào.
+- **Khó, luật:** không mua ô giá trên 280 (nhóm xanh lá, xanh đậm) trừ khi ô đó trọn nhóm, thắng ngay hoặc chặn thắng ngay — mô phỏng cho thấy mua ô đắt làm Khó yếu đi. Mua lại: thắng ngay; trọn nhóm giá ≤ 240 còn ≥ 300; ô giá ≤ 160 còn ≥ 500. Công thức "lợi > 0" ở bảng làm Khó thua Thường nên đã bỏ.
+- **Khó, mô phỏng** (đoạn dưới bảng): chỉ chạy ở Mua lại, Du lịch, Ở tù, Lễ hội (Mua đất và Nâng cấp mô phỏng không lợi hơn luật). Tối đa 100 ván giả mỗi lựa chọn, tổng 200 ván giả mỗi quyết định, mỗi ván 20 lượt; ghế mình đi theo luật Khó, ghế khác theo Thường; RNG xúc xắc và thứ tự bộ thẻ của ván giả rút từ RNG riêng của máy. Chấm điểm = tiền + 0,7 × giá trị đất/nhà, trừ người giàu nhất còn lại, ±10.000 nếu ván giả kết thúc. Du lịch xét 5 ô điểm cao nhất cộng 2 ô đối thủ rẻ nhất còn đủ tiền mua lại.
+- Thời gian trên Mac M-series: Khó mất trung bình ~0,5 ms mỗi nước, p95 ~10 ms, chậm nhất ~32 ms (Du lịch). Máy tầm trung có thể quá 50 ms ở các nước hiếm này; muốn chắc thì chuyển mô phỏng sang Web Worker.
+
+Kết quả đo (1v1, 1.000 ván mỗi cặp, luân phiên đi trước): Khó – Thường **55,9%** (các bộ seed khác 2.000 ván: 57,9–58,5%), Thường – Dễ 76,4%, Khó – Dễ 81,9%. 200 ván 4 người (Dễ, Thường, Khó, Khó) chạy hết, Khó thắng 150, Thường 48, Dễ 2. Vitest mặc định chạy 100 ván Khó – Thường (ngưỡng 55%), 400 ván Thường – Dễ, 100 ván Khó – Dễ, 40 ván 4 người; `TYCOON_BOT_GAMES=1000 npx vitest run tycoon/logic/bot.test.ts` chạy bản đầy đủ với ngưỡng 12.3 (Khó – Thường 55%). Ván 4 người mặc định chỉ chạy 12 ván, kiểm chạy hết và Khó có thắng; bản đầy đủ mới đòi mỗi mức có ván thắng.
 
 ### 12.1 Nguyên tắc
 
@@ -408,7 +416,7 @@ Nếu máy Khó theo bảng trên vẫn chưa đạt tỷ lệ ở 12.3 thì th�
 
 | Cặp | Tỷ lệ thắng của mức cao hơn |
 |---|---|
-| Khó – Thường | ≥ 60% |
+| Khó – Thường | ≥ 55% (hạ từ 60% ngày 12/11/2026: game phần lớn do xúc xắc, thử hàng chục biến thể mô phỏng vẫn chỉ 56–61%) |
 | Thường – Dễ | ≥ 70% |
 | Khó – Dễ | ≥ 80% |
 

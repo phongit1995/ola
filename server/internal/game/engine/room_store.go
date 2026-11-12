@@ -28,24 +28,25 @@ type RoomGuest struct {
 }
 
 type Room struct {
-	ID           string      `json:"id"`
-	GameID       string      `json:"gameId"`
-	OwnerID      string      `json:"ownerId"`
-	OwnerName    string      `json:"ownerName"`
-	OwnerVipType *string     `json:"ownerVipType,omitempty"`
-	OwnerLevel   int         `json:"ownerLevel,omitempty"`
-	GuestID      string      `json:"guestId,omitempty"`
-	GuestName    string      `json:"guestName,omitempty"`
-	GuestVipType *string     `json:"guestVipType,omitempty"`
-	GuestReady   bool        `json:"guestReady"`
-	MaxPlayers   int         `json:"maxPlayers,omitempty"`
-	Guests       []RoomGuest `json:"guests,omitempty"`
-	Bet          int         `json:"bet"`
-	Password     string      `json:"password"`
-	LastWinnerID string      `json:"lastWinnerId,omitempty"`
-	SeatOrder    []string    `json:"seatOrder,omitempty"`
-	CreatedAt    int64       `json:"createdAt"`
-	UpdatedAt    int64       `json:"updatedAt"`
+	ID              string      `json:"id"`
+	GameID          string      `json:"gameId"`
+	OwnerID         string      `json:"ownerId"`
+	OwnerName       string      `json:"ownerName"`
+	OwnerVipType    *string     `json:"ownerVipType,omitempty"`
+	OwnerLevel      int         `json:"ownerLevel,omitempty"`
+	GuestID         string      `json:"guestId,omitempty"`
+	GuestName       string      `json:"guestName,omitempty"`
+	GuestVipType    *string     `json:"guestVipType,omitempty"`
+	GuestReady      bool        `json:"guestReady"`
+	MaxPlayers      int         `json:"maxPlayers,omitempty"`
+	Guests          []RoomGuest `json:"guests,omitempty"`
+	Bet             int         `json:"bet"`
+	Password        string      `json:"password"`
+	AllowSpectators *bool       `json:"allowSpectators,omitempty"`
+	LastWinnerID    string      `json:"lastWinnerId,omitempty"`
+	SeatOrder       []string    `json:"seatOrder,omitempty"`
+	CreatedAt       int64       `json:"createdAt"`
+	UpdatedAt       int64       `json:"updatedAt"`
 }
 
 // normalize migrates legacy single-guest rooms into the Guests slice and keeps

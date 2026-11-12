@@ -188,7 +188,8 @@ export const useRoomList = create<RoomListState>((set, get) => {
     pending = request;
     set({ pendingId: request.kind === 'create' ? 'create' : request.room.id });
     pendingTimer = setTimeout(() => fail(NETWORK_ERROR), REQUEST_TIMEOUT_MS);
-    if (request.kind === 'create') session.createRoom(request.input.bet, request.input.password || undefined, request.input.maxPlayers);
+    if (request.kind === 'create')
+      session.createRoom(request.input.bet, request.input.password || undefined, request.input.maxPlayers, request.input.allowSpectators);
     else if (request.kind === 'spectate') tycoon().watchMatch(request.room.matchId ?? '');
     else session.joinRoom(request.room.id, request.password);
   }

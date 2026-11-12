@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { reducedMotion } from '../fx/runtime';
 import { worthOf } from '../logic/rules-hint';
-import { formatDelta, formatMoney } from '../helpers/format';
+import kenUrl from '../assets/lobby/ken.png';
+import { formatDelta, formatKen, formatMoney } from '../helpers/format';
 import { seatColor, SEAT_TINTS } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
 import { TyIcon } from './TyIcon';
@@ -42,8 +43,18 @@ function PodCash({ value }: { value: number }) {
 }
 
 export function PlayerPods() {
-  const { players, view, cash, you, moneyFloats, result, openSheet } = useTycoon(
-    useShallow((s) => ({ players: s.players, view: s.view, cash: s.cash, you: s.you, moneyFloats: s.moneyFloats, result: s.result, openSheet: s.openSheet })),
+  const { players, view, cash, you, moneyFloats, matchBet, betFloat, result, openSheet } = useTycoon(
+    useShallow((s) => ({
+      players: s.players,
+      view: s.view,
+      cash: s.cash,
+      you: s.you,
+      moneyFloats: s.moneyFloats,
+      matchBet: s.matchBet,
+      betFloat: s.betFloat,
+      result: s.result,
+      openSheet: s.openSheet,
+    })),
   );
   if (!view) return null;
   return (
@@ -93,6 +104,12 @@ export function PlayerPods() {
             <svg className="ty-s6-crack" data-crack viewBox="0 0 100 60" aria-hidden="true">
               <path d="M58 0 46 18l12 8-14 14 8 20M46 18 26 22M44 40 20 50" />
             </svg>
+            {betFloat > 0 && matchBet > 0 ? (
+              <span key={betFloat} className="ty-s6-float ty-s6-float-neg ty-s6-float-ken" aria-hidden="true">
+                −{formatKen(matchBet)}
+                <img src={kenUrl} alt="" draggable={false} />
+              </span>
+            ) : null}
             {moneyFloats
               .filter((float) => float.seat === seat)
               .map((float) => (

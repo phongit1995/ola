@@ -47,7 +47,7 @@ CTA online disabled khi `lobbyPhase !== 'ready'`. Chơi với máy, Luật chơi
 
 ### 2.3 Modal Chơi với máy (`BotSetupModal`)
 
-**Trạng thái: đã dựng UI ngày 23/10/2026 (`components/BotSetupModal.tsx`).** Ảnh [mở mới 1 bot](./screens/s2-lobby/modal-bot-01-one-bot.webp) và [đủ 3 bot](./screens/s2-lobby/modal-bot-02-three-bots.webp); chỗ docs khác ảnh ở [S2 §11](./screens/s2-lobby/README.md#11-modal-chơi-với-máy). Mức độ được lưu vào `SeatInfo.level` nhưng `botMove` chưa dùng: mọi máy vẫn chơi mức Thường cho tới khi làm [05 §12](./05-gameplay-rules-and-protocol.md#12-máy-chơi-và-mức-độ-bản-chơi-với-máy); nhãn mức ở pod S6/S9 cũng chưa làm. Thiết kế mới dưới đây thay hoàn toàn bộ chọn số máy `1 · 2 · 3` và danh sách Bác Tỷ/Cô Ngân/Anh Tèo của đặc tả trước.
+**Trạng thái: đã dựng UI ngày 23/10/2026 (`components/BotSetupModal.tsx`).** Ảnh [mở mới 1 bot](./screens/s2-lobby/modal-bot-01-one-bot.webp) và [đủ 3 bot](./screens/s2-lobby/modal-bot-02-three-bots.webp); chỗ docs khác ảnh ở [S2 §11](./screens/s2-lobby/README.md#11-modal-chơi-với-máy). Mức độ lưu vào `SeatInfo.level` và `botMove` chơi theo mức đó từ 12/11/2026 ([05 §12](./05-gameplay-rules-and-protocol.md#12-máy-chơi-và-mức-độ-bản-chơi-với-máy)); nhãn mức ở pod S6/S9 chưa làm. Thiết kế mới dưới đây thay hoàn toàn bộ chọn số máy `1 · 2 · 3` và danh sách Bác Tỷ/Cô Ngân/Anh Tèo của đặc tả trước.
 
 Mở từ nút `Chơi với máy` ở S2. Mỗi lần mở từ sảnh luôn tạo danh sách mới gồm **1 bot, tên `Bot 1`, mức `Thường`**. Thêm từng bot bằng nút bên dưới, tối đa **3 bot** (ván 2–4 người kể cả bạn). Số lượng chỉ là thông tin đọc, **không có chip, dropdown hay ô nhập chọn số lượng**. Chơi offline, không cược, không người xem ([11](./11-room-settings.md)).
 

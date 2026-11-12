@@ -347,7 +347,7 @@ func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any)
 		if err := json.Unmarshal(env.Data, &d); err != nil {
 			return
 		}
-		s.engine.CreateRoom(data.GameID, s.socketPlayer(data), d.Bet, d.Password, d.MaxPlayers)
+		s.engine.CreateRoomWithSpectators(data.GameID, s.socketPlayer(data), d.Bet, d.Password, d.MaxPlayers, d.AllowSpectators)
 	case protocol.C2SRoomJoin:
 		var d protocol.RoomJoinData
 		if err := json.Unmarshal(env.Data, &d); err != nil {

@@ -79,9 +79,10 @@ export interface RankRow {
   name: string;
   worth: number;
   bankrupt: boolean;
+  kenDelta?: number;
 }
 
-type MatchEntry = Pick<MatchFoundData<TycoonView>, 'matchId' | 'state' | 'deadline' | 'you' | 'resumed'>;
+type MatchEntry = Pick<MatchFoundData<TycoonView>, 'matchId' | 'state' | 'deadline' | 'you' | 'resumed' | 'bet'>;
 
 export interface MatchResultState {
   matchId: string;
@@ -159,6 +160,8 @@ interface TycoonState {
   diceFx: DiceFx;
   cardFx: CardFx | null;
   moneyFloats: MoneyFloat[];
+  matchBet: number;
+  betFloat: number;
   barsOn: boolean;
   sheet: Sheet;
 
@@ -218,6 +221,7 @@ const BOT_TEMPO = 1.8;
 const SKIP_TEMPO = 8;
 const CATCHUP_TEMPO = 4;
 const TOAST_MS = 2400;
+const BET_FLOAT_MS = 1400;
 const RESULT_REVEAL_MS = 900;
 const WIN_REVEAL_MS = 2400;
 const SPECTATE_ENDED_TEXT = 'Đã thôi xem ván';
@@ -746,9 +750,11 @@ export const useTycoon = create<TycoonState>((set, get) => {
       const meId = players[you]?.id;
       const exp = data.expGains?.find((entry) => entry.userId === meId)?.exp;
       const kenDelta = practice || !data.bet ? undefined : myPlace === 1 ? (data.kenDelta ?? data.payout ?? 0) : -data.bet;
+      const bet = data.bet ?? 0;
+      const rowsWithKen = practice || spectator || bet <= 0 || !data.winnerId ? rows : rows.map((row) => ({ ...row, kenDelta: row.place === 1 ? (data.kenDelta ?? 0) : -bet }));
       if (!practice && !spectator) bridge.refreshUser();
       set({
-        result: { matchId: data.matchId, rows, myPlace, reasonText: reasonFor(state, winnerName), ...(spectator ? { spectator } : { kenDelta, exp }) },
+        result: { matchId: data.matchId, rows: rowsWithKen, myPlace, reasonText: reasonFor(state, winnerName), ...(spectator ? { spectator } : { kenDelta, exp }) },
         myTurn: false,
         replaying: false,
         sheet: null,
@@ -833,11 +839,20 @@ export const useTycoon = create<TycoonState>((set, get) => {
       sheet: null,
       spectating,
       spectators: spectating ? get().spectators : 0,
+      matchBet: data.bet ?? 0,
+      betFloat: 0,
       ...(data.matchId === get().matchId ? {} : { matchChat: [], chatUnread: false, reactionFx: null }),
     });
     snapState(data.state);
     startTimer();
     playSound('click');
+    if (!spectating && !data.resumed && (data.bet ?? 0) > 0) {
+      const seq = nextSeq();
+      set({ betFloat: seq });
+      scheduleTransient(() => {
+        if (get().betFloat === seq) set({ betFloat: 0 });
+      }, BET_FLOAT_MS);
+    }
     bridge.attention({ reason: ARCADE_ATTENTION_REASON.MatchStarted, matchId: data.matchId });
     queueReplay(async () => {
       await sleep(SCREEN_IN_MS);
@@ -914,6 +929,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
       diceFx: emptyDice(),
       cardFx: null,
       moneyFloats: [],
+      matchBet: 0,
+      betFloat: 0,
       barsOn: false,
       sheet: null,
       result: null,
@@ -980,6 +997,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
         if (data.roomId && data.roomId === get().room?.roomId) set((s) => ({ roomChat: [...s.roomChat.slice(-49), data] }));
         if (data.matchId && data.matchId === get().matchId && !get().practice) {
           set((s) => ({ matchChat: [...s.matchChat.slice(-49), data], chatUnread: s.chatUnread || (s.sheet?.kind !== 'chat' && data.userId !== s.players[s.you]?.id) }));
+          if (!get().spectating && data.userId !== get().players[get().you]?.id) bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat });
         }
       }),
       session.onReaction((data) => {
@@ -1021,10 +1039,10 @@ export const useTycoon = create<TycoonState>((set, get) => {
           return;
         }
         set({ spectators: data.spectators, room: null, roomChat: [] });
-        handleMatchFound({ matchId: data.matchId, state: data.state, deadline: data.deadline, you: -1, resumed: true }, onlineSeats(data.players), true);
+        handleMatchFound({ matchId: data.matchId, state: data.state, deadline: data.deadline, you: -1, resumed: true, bet: data.bet }, onlineSeats(data.players), true);
       }),
       session.onSpectators((data) => {
-        if (get().spectating && data.matchId === get().matchId) set({ spectators: data.spectators.length });
+        if (data.matchId === get().matchId) set({ spectators: data.spectators.length });
       }),
       session.onSpectateLeft((data) => {
         const s = get();
@@ -1101,6 +1119,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
     diceFx: emptyDice(),
     cardFx: null,
     moneyFloats: [],
+    matchBet: 0,
+    betFloat: 0,
     barsOn: false,
     sheet: null,
 

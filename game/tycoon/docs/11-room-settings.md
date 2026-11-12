@@ -86,10 +86,10 @@ Vào xem từ chính hàng bàn trong danh sách, không có màn danh sách xem
 
 | Message | Thay đổi |
 |---|---|
-| `ROOM_CREATE` | `{bet, password, maxPlayers, allowSpectators}`; thiếu `allowSpectators` = `false` |
-| `ROOM_LIST`, `ROOM_UPSERT`, `ROOM_WAITING`, `ROOM_STATE` | thêm `allowSpectators` (đã có `bet`, `status`, `matchId`); S3 dùng để hiện nút `Xem` (§2.4) |
-| `SPECTATE_LIST` | chỉ trả ván có `allowSpectators = true` |
-| `SPECTATE_JOIN` | lỗi mới `SPECTATE_NOT_ALLOWED` khi bàn tắt cho xem |
+| `ROOM_CREATE` | `{bet, password, maxPlayers, allowSpectators}`; `allowSpectators` không bắt buộc. Client tycoon luôn gửi (mặc định `false`). Thiếu trường (game khác, client cũ) thì giữ luật cũ: bàn không khóa xem được, bàn khóa không xem được |
+| `ROOM_LIST`, `ROOM_UPSERT`, `ROOM_WAITING`, `ROOM_STATE` | thêm `allowSpectators` (đã có `bet`, `status`, `matchId`), chỉ có khi chủ bàn đã chọn; S3 dùng để hiện nút `Xem` (§2.4), client tycoon coi thiếu là tắt |
+| `SPECTATE_LIST` | chỉ trả ván có `allowSpectators = true` (hoặc thiếu cờ và bàn không khóa) |
+| `SPECTATE_JOIN` | `SPECTATE_NOT_ALLOWED` khi bàn tắt cho xem (hoặc thiếu cờ và bàn khóa); `ROOM_WATCH` theo cùng luật |
 
 ## 4. Việc phía server
 
@@ -100,17 +100,21 @@ Hạ tầng hiện có đã kiểm `bet` (`INVALID_BET`, `INSUFFICIENT_KEN`, `BE
    - `Settlement.WinnerAmounts(gameID, bet, playerCount)`: payout = `bet × số người − phí`, phí = `bet × %` (một phần cược, giữ như Tiến Lên). Engine dùng cùng hàm này cho `MATCH_OVER.payout/kenDelta` (trước đó engine báo theo pot 2 người).
    - Migration `20261101000002_game_ken_delta_per_seat`: ràng buộc `game_matches_ken_delta_check` thành `ken_delta <= bet × max(player_count − 1, 1)` (tính bằng `bigint`). Trước đó `ken_delta <= bet` làm settle bàn 3–4 người có cược lỗi và job thử lại mãi. **Phải chạy migration trước khi deploy server.**
    - `MaxBetFor(số người) = MaxInt32 / số người` để pot không tràn integer: kiểm ở `ROOM_CREATE` (theo `maxPlayers` của bàn), lúc bắt đầu ván và lúc settle; `USER_INFO.maxBet` trả theo số người tối đa của game (Tycoon, Tiến Lên: 536.870.911; game 2 người giữ 1.073.741.823).
-2. **Cờ phòng `allowSpectators`:** chưa có ở server (không game nào có); lưu trong room và match snapshot; lọc `SPECTATE_LIST`; chặn `SPECTATE_JOIN` bằng `SPECTATE_NOT_ALLOWED`. *11/11/2026: tycoon đã xem được (SpectatorView + bàn đang chơi trong `ROOM_LIST`) nhưng chưa có cờ này — mọi bàn đang chơi đều có nút Xem, công tắc S4 đang ẩn.*
-3. **Xem trận cho game có `StateViewer`:** hiện `spectatable()` chặn mọi game có `StateViewer`, nên Tycoon đang trả `SPECTATE_NOT_SUPPORTED`. `ViewFor` của Tycoon đã nhận seat ngoài khoảng là người xem (`you = -1`); còn phải bỏ guard trong engine sau khi có mục 2.
+2. ~~**Cờ phòng `allowSpectators`.**~~ Đã làm 12/11/2026:
+   - `ROOM_CREATE.allowSpectators` là con trỏ `*bool` lưu trong `Room` (Redis, JSON `allowSpectators`, bỏ khi thiếu), nên đi theo `match snapshot.room` và còn sau khi server khởi động lại. Không cần migration SQL.
+   - Một hàm `spectatorsAllowed(room)` dùng cho `SPECTATE_LIST`, `SPECTATE_JOIN` (cả ván trong bộ nhớ lẫn snapshot), `ROOM_WATCH` và tin gửi người xem phòng chờ: có cờ thì theo cờ (bật thì bàn khóa vẫn xem được, mật khẩu chỉ để vào chơi); thiếu cờ thì giữ luật cũ — bàn không khóa xem được, bàn khóa trả `SPECTATE_NOT_ALLOWED`. Caro, Tiến Lên, cờ tướng… và client cũ không gửi cờ nên không đổi hành vi.
+   - `ROOM_LIST`, `ROOM_UPSERT`, `ROOM_WAITING`, `ROOM_STATE` trả `allowSpectators` khi bàn có cờ. Test: `TestSpectateHonoursRoomSpectatorFlag`, `TestCreateRoomCarriesSpectatorFlag`, `TestRoomWatchRefusesPrivateAndMissingRooms` trong `spectate_test.go`.
+3. ~~**Xem trận cho game có `StateViewer`.**~~ Đã làm 11/11/2026: tycoon cài `SpectatorView` (`you = -1`, không lộ bộ thẻ) và nằm trong `playingRoomGames`, nên `ROOM_LIST` có bàn đang chơi kèm `matchId`. 12/11/2026 thêm cờ ở mục 2, chỉ bàn bật cho xem mới hiện nút `Xem`.
 4. ~~Config `TYCOON_COMMISSION_PERCENT` (mặc định 5) cạnh các game khác.~~ Đã thêm 01/11/2026.
 
 ## 5. Checklist
 
 - [x] S4: ô cược mặc định 0 + kiểm tra; công tắc cho xem mặc định tắt (UI trên dữ liệu giả, [S3 §10](./screens/s3-room-list/README.md#10-bản-dựng-dữ-liệu-giả)).
-- [ ] S3, S5, S6, S9, S10 hiển thị cược theo §1.3.
+- [x] S3, S5, S6, S9, S10 hiển thị cược theo §1.3 (12/11/2026): S6 menu ☰ có dòng `Cược {bet} KEN` / `Giao lưu` + `{n} người đang xem` và mục `Luật chơi`; pod hiện `−{bet} KEN` lúc vào ván; S9 mỗi hàng `±KEN` (hạng 1 = `kenDelta` của `MATCH_OVER`, còn lại `−bet`).
 - [x] O5 `Chưa đủ KEN` khi vào bàn thiếu tiền (kiểm phía client trên dữ liệu giả).
 - [x] Server: settlement 2–4 người, payout `MATCH_OVER` theo số ghế, ràng buộc `ken_delta` + `MaxBet` theo số ghế (migration chưa chạy trên dev/prod), config phí `TYCOON_COMMISSION_PERCENT`.
-- [ ] Server: `allowSpectators`, xem trận cho `StateViewer`.
-- [x] Nút `Xem` ở hàng bàn S3 theo §2.4 (UI trên dữ liệu giả).
-- [ ] Chế độ chỉ xem ở S6 theo §2.3.
-- [ ] Test: bàn 0 không trừ KEN; bàn có cược 2/3/4 người, hạng 1 nhận đúng pot trừ phí; bỏ cuộc vẫn mất cược; bàn tắt xem không vào được.
+- [x] Server: `allowSpectators` (thiếu cờ giữ luật cũ cho game khác), xem trận cho `StateViewer`.
+- [x] Nút `Xem` ở hàng bàn S3 theo §2.4: chỉ hiện khi bàn đang chơi có `matchId` và `allowSpectators = true`, còn lại chip `Đang chơi`.
+- [x] S4: công tắc `Cho người khác xem` hiện lại (mặc định tắt), `createRoom` gửi `allowSpectators`.
+- [x] Chế độ chỉ xem ở S6 theo §2.3 (11/11/2026, xem [12 Giai đoạn 6](./12-online-plan.md)).
+- [x] Test: bàn 0 không trừ KEN; bàn có cược 2/3/4 người, hạng 1 nhận đúng pot trừ phí; bỏ cuộc vẫn mất cược; bàn tắt xem không vào được (`engine/tycoon_settlement_test.go`, `settlement.tycoon_test.go`, `engine/spectate_test.go`).

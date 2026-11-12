@@ -29,15 +29,11 @@ export function RoomRow({ room, pendingId, onJoin, onWatch }: RoomRowProps) {
           </>
         ) : null}
       </span>
-      {room.bet > 0 ? (
-        <span className="ty-room-bet">
-          <b>{formatKen(room.bet)}</b>
-          <span className="ty-visually-hidden"> KEN</span>
-          <img src={kenUrl} alt="" draggable={false} />
-        </span>
-      ) : (
-        <span className="ty-room-bet ty-room-bet-free">Giao lưu</span>
-      )}
+      <span className="ty-room-bet">
+        <b>{formatKen(room.bet)}</b>
+        <span className="ty-visually-hidden"> KEN</span>
+        <img src={kenUrl} alt="" draggable={false} />
+      </span>
       <span className={action === 'join' ? 'ty-room-seats' : 'ty-room-seats ty-room-seats-off'}>
         {roomSeatsLabel(room)}
         <span className="ty-visually-hidden"> chỗ</span>
