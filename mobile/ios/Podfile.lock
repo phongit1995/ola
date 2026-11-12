@@ -1619,6 +1619,30 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-app-core (2.4.71):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - SSZipArchive (~> 2.4.3)
+    - Yoga
   - react-native-blob-util (0.24.9):
     - hermes-engine
     - RCTRequired
@@ -1922,30 +1946,6 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - Yoga
-  - react-native-ota-hot-update (2.4.4):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-bridging
-    - React-Core
-    - React-Core-prebuilt
-    - React-cxxstableapi
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - SSZipArchive (~> 2.4.3)
     - Yoga
   - react-native-safe-area-context (5.8.0):
     - hermes-engine
@@ -3223,6 +3223,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - React-mutationobservernativemodule (from `../../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
+  - react-native-app-core (from `../../node_modules/react-native-app-core`)
   - react-native-blob-util (from `../../node_modules/react-native-blob-util`)
   - "react-native-blur (from `../../node_modules/@react-native-community/blur`)"
   - "react-native-cameraroll (from `../../node_modules/@react-native-camera-roll/camera-roll`)"
@@ -3236,7 +3237,6 @@ DEPENDENCIES:
   - react-native-in-app-review (from `../../node_modules/react-native-in-app-review`)
   - react-native-keyboard-controller (from `../../node_modules/react-native-keyboard-controller`)
   - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
-  - react-native-ota-hot-update (from `../../node_modules/react-native-ota-hot-update`)
   - react-native-safe-area-context (from `../../node_modules/react-native-safe-area-context`)
   - react-native-video (from `../../node_modules/react-native-video`)
   - react-native-webview (from `../../node_modules/react-native-webview`)
@@ -3440,6 +3440,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   React-mutationobservernativemodule:
     :path: "../../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver"
+  react-native-app-core:
+    :path: "../../node_modules/react-native-app-core"
   react-native-blob-util:
     :path: "../../node_modules/react-native-blob-util"
   react-native-blur:
@@ -3466,8 +3468,6 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-keyboard-controller"
   react-native-netinfo:
     :path: "../../node_modules/@react-native-community/netinfo"
-  react-native-ota-hot-update:
-    :path: "../../node_modules/react-native-ota-hot-update"
   react-native-safe-area-context:
     :path: "../../node_modules/react-native-safe-area-context"
   react-native-video:
@@ -3665,6 +3665,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 8a30d6d1aa30274771dc5d22f6778fa7689d98b8
   React-microtasksnativemodule: c5df4b7fe2553c25d419b99c586179ab77594b5b
   React-mutationobservernativemodule: b85faf3c54644c0ef2c758cd8c4e6ce16fb1f8ae
+  react-native-app-core: 6bbb17409b24f5ecbabe1a534282370154f2e4c0
   react-native-blob-util: c5656e5e5c3d0897ae0b4b6100f2e9d16294b665
   react-native-blur: de08479333dca9ba7793f700280d62526cf8d7ab
   react-native-cameraroll: 12de98186ed2270d873e6a6b3f870a6ddcf898e7
@@ -3678,7 +3679,6 @@ SPEC CHECKSUMS:
   react-native-in-app-review: 1516ba69d60d58053b7eb3aaaf8d2a5a74af8b57
   react-native-keyboard-controller: 8da3439009d9bea47a38462af94227c2c228708e
   react-native-netinfo: 41575e101c171319fbcf82dfa5fa5df852d6b40d
-  react-native-ota-hot-update: b5a5b5389023819d85f82585f5866efabc66fb98
   react-native-safe-area-context: 8add39cfc311da864a192f0eaaeb996c6a767de2
   react-native-video: 9afdb6c8434e7befea683253bab69e5151d66967
   react-native-webview: 0350e63d9eff606d9923619409987b6cd1ac58f5

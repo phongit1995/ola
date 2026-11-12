@@ -1,61 +1,43 @@
 import { Platform } from 'react-native';
-import hotUpdate from 'react-native-ota-hot-update';
+import hotUpdate from 'react-native-app-core';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import DeviceInfo from 'react-native-device-info';
 
-const OTA_REPO = 'ducphanvanntq/ola';
-const LATEST_RELEASE_URL = `https://api.github.com/repos/${OTA_REPO}/releases/latest`;
+const OTA_REPO = 'ducphanvanntq/ola-release';
+// Link tải asset đi qua CDN của GitHub, không dính giới hạn 60 request/giờ/IP của API.
+const MANIFEST_URL = `https://github.com/${OTA_REPO}/releases/latest/download/manifest.json`;
 
-interface ReleaseBody {
-  app_version: string;
+interface OtaEntry {
+  version: number;
+  android?: string;
+  ios?: string;
+}
+
+// Manifest gộp dồn: mỗi app_version (versionName / MARKETING_VERSION) giữ bundle mới nhất của nó.
+interface OtaManifest {
   bundle_id?: string;
-  notes?: string;
-}
-
-interface ReleaseAsset {
-  name: string;
-  browser_download_url: string;
-}
-
-interface GithubRelease {
-  tag_name?: string;
-  body?: string;
-  assets?: ReleaseAsset[];
+  versions?: Record<string, OtaEntry>;
 }
 
 export async function checkForOtaUpdate(): Promise<void> {
   try {
-    const response = await fetch(LATEST_RELEASE_URL, {
-      headers: { Accept: 'application/vnd.github.v3+json' },
-    });
+    const response = await fetch(MANIFEST_URL, { headers: { 'Cache-Control': 'no-cache' } });
     if (!response.ok) return;
 
-    const release = (await response.json()) as GithubRelease;
+    const manifest = (await response.json()) as OtaManifest;
+    if (manifest.bundle_id != null && manifest.bundle_id !== DeviceInfo.getBundleId()) return;
 
-    let meta: ReleaseBody;
-    try {
-      meta = JSON.parse(release.body ?? '') as ReleaseBody;
-    } catch {
-      return;
-    }
-
-    if (meta.app_version !== DeviceInfo.getVersion()) return;
-    if (meta.bundle_id != null && meta.bundle_id !== DeviceInfo.getBundleId()) return;
-
-    const remoteVersion = parseInt((release.tag_name ?? '').replace(/^v/, ''), 10);
-    if (Number.isNaN(remoteVersion)) return;
+    const entry = manifest.versions?.[DeviceInfo.getVersion()];
+    const url = Platform.OS === 'ios' ? entry?.ios : entry?.android;
+    if (!entry || !url || !Number.isInteger(entry.version)) return;
 
     const currentVersion = Number(await hotUpdate.getCurrentVersion()) || 0;
-    if (remoteVersion <= currentVersion) return;
+    if (entry.version <= currentVersion) return;
 
-    const assetName = Platform.OS === 'ios' ? 'ios-bundle.zip' : 'android-bundle.zip';
-    const asset = release.assets?.find((item) => item.name === assetName);
-    if (!asset) return;
-
-    hotUpdate.downloadBundleUri(ReactNativeBlobUtil, asset.browser_download_url, remoteVersion, {
-      updateSuccess: () => hotUpdate.resetApp(),
+    // Không khởi động lại giữa chừng: bundle mới được nạp ở lần mở app sau.
+    hotUpdate.downloadBundleUri(ReactNativeBlobUtil, url, entry.version, {
+      restartAfterInstall: false,
       updateFail: () => undefined,
-      restartAfterInstall: true,
     });
   } catch {
     return;
