@@ -492,18 +492,12 @@ export function RoomMessagesTab({
         anchor={actionTarget?.anchor ?? null}
         preview={
           actionTarget != null ? (
-            <View
-              style={{
-                alignSelf: actionTarget.isOwn ? 'flex-end' : 'flex-start',
-              }}
-            >
-              <RoomBubbleBody
-                message={actionTarget.grouped}
-                isOwn={actionTarget.isOwn}
-                position={actionTarget.grouped.position}
-                onMention={() => undefined}
-              />
-            </View>
+            <RoomBubbleBody
+              message={actionTarget.grouped}
+              isOwn={actionTarget.isOwn}
+              position={actionTarget.grouped.position}
+              onMention={() => undefined}
+            />
           ) : null
         }
         actions={actionTarget != null ? sheetActions(actionTarget.message) : []}
