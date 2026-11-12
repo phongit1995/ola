@@ -81,6 +81,14 @@ interface RoomMessagesTabProps {
   onSwipeRight?: () => void;
 }
 
+const LOAD_OLDER_VIEWPORTS = 1.5;
+const LOAD_OLDER_MIN_DISTANCE = 600;
+
+function feedItemKey(item: RoomFeedItem): string {
+  if (item.kind !== 'group') return item.key;
+  return item.messages[item.messages.length - 1]?.key ?? item.key;
+}
+
 export function RoomMessagesTab({
   currentUserId,
   language,
@@ -161,8 +169,9 @@ export function RoomMessagesTab({
       buildRoomFeed(
         filterVisibleRoomMessages(messages, blockedUserIds),
         currentUserId,
+        { omitLeadingDate: hasMore },
       ),
-    [messages, currentUserId, blockedUserIds],
+    [messages, currentUserId, blockedUserIds, hasMore],
   );
   const messageById = useMemo(
     () => new Map(messages.map(item => [item.id, item])),
@@ -335,9 +344,14 @@ export function RoomMessagesTab({
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     onScroll(event);
+    const { contentOffset, layoutMeasurement } = event.nativeEvent;
+    const prefetchDistance = Math.max(
+      LOAD_OLDER_MIN_DISTANCE,
+      layoutMeasurement.height * LOAD_OLDER_VIEWPORTS,
+    );
     if (
       isUserInteracting() &&
-      event.nativeEvent.contentOffset.y < 80 &&
+      contentOffset.y < prefetchDistance &&
       hasMore &&
       !loadingMore
     ) {
@@ -415,7 +429,7 @@ export function RoomMessagesTab({
               ref={listRef}
               data={feed}
               extraData={foregroundEpoch}
-              keyExtractor={item => item.key}
+              keyExtractor={feedItemKey}
               getItemType={item => item.kind}
               drawDistance={1500}
               maintainVisibleContentPosition={{
@@ -430,18 +444,21 @@ export function RoomMessagesTab({
               contentContainerClassName="p-3"
               onContentSizeChange={onContentSizeChange}
               onLayout={onListLayout}
-              ListHeaderComponent={
-                loadingMore ? (
-                  <Text
-                    className="py-1 text-center text-xs"
-                    style={{ color: 'rgba(0,0,0,0.4)' }}
-                  >
-                    {t('common.loading')}
-                  </Text>
-                ) : null
-              }
               renderItem={renderItem}
             />
+          )}
+          {loadingMore && (
+            <View
+              pointerEvents="none"
+              className="absolute left-0 right-0 top-2 items-center"
+            >
+              <Text
+                className="rounded-full px-3 py-0.5 text-xs text-white"
+                style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+              >
+                {t('common.loading')}
+              </Text>
+            </View>
           )}
         </View>
       </View>
