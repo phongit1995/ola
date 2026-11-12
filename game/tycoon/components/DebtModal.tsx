@@ -6,6 +6,7 @@ import { canSell } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { SeatTag, TileThumb } from './DeedParts';
 import { houseArt } from './art';
+import { TurnRing, URGENT_SECONDS } from './TurnRing';
 import { MoneyBadge, UiButton } from './Ui';
 import { useDialogFocus } from './useDialogFocus';
 import { useTycoon, type NoticeState } from '../store/useTycoon';
@@ -71,8 +72,9 @@ export function DebtModal() {
             <span className="ui-kicker">Thiếu tiền · trả</span>
             <SeatTag seat={debt.creditor} />
           </span>
-          <span className={`ty-debt-clock ${seconds <= 10 ? 'ty-debt-clock-late' : ''}`} role="timer" aria-label={`Còn ${seconds} giây`}>
-            {seconds}
+          <span className={`ty-debt-clock ${seconds <= URGENT_SECONDS ? 'ty-debt-clock-late' : ''}`} role="timer" aria-label={`Còn ${seconds} giây`}>
+            <TurnRing leftMs={timerLeftMs} />
+            <b>{seconds}</b>
           </span>
         </header>
         <h2 id={titleId} className="ty-debt-amount">

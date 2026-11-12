@@ -2,8 +2,9 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { RoomStateData } from '../../src/sdk';
 import bgUrl from '../assets/lobby/bg-board-pixel.webp';
+import { RoomIcon } from '../components/RoomIcon';
 import { TyIcon } from '../components/TyIcon';
-import { MoneyBadge, UiAvatar, UiButton, UiIconButton } from '../components/Ui';
+import { KenBadge, UiAvatar, UiButton, UiIconButton } from '../components/Ui';
 import { MIN_PLAYERS } from '../logic/constants';
 import { avatarIconUrl, seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
@@ -29,7 +30,7 @@ function RoomSeats({ room, selfId, onKick }: { room: RoomStateData; selfId: stri
         return (
           <li key={member.id} className={`ty-wait-seat ${member.ready || member.owner ? 'ty-wait-seat-on' : ''}`} style={{ '--seat': seatColor(seat) } as CSSProperties}>
             {onKick && !member.owner ? <UiIconButton icon="user-minus" size="sm" label={`Mời @${member.name} ra khỏi bàn`} className="ty-wait-kick" onClick={() => onKick(member.id)} /> : null}
-            <UiAvatar src={avatarIconUrl(member.vipType)} size={52} ring={seatColor(seat)} />
+            <UiAvatar src={avatarIconUrl(member.vipType)} size={60} ring={seatColor(seat)} />
             <b className="ty-wait-name">
               @{member.name}
               {self ? <small> (bạn)</small> : null}
@@ -68,8 +69,12 @@ function RoomChat({ room, selfId }: { room: RoomStateData; selfId: string }) {
 
   return (
     <section className="ui-panel ty-wait-chat" aria-label="Trò chuyện trong bàn">
+      <h2 className="ty-wait-chat-head">
+        <TyIcon name="chat" size={16} />
+        Trò chuyện
+      </h2>
       <div ref={logRef} className="ty-wait-log" aria-live="polite">
-        {roomChat.length === 0 ? <p className="ty-wait-hint">Trò chuyện với người trong bàn…</p> : null}
+        {roomChat.length === 0 ? <p className="ty-wait-hint">Chưa có tin nhắn. Chào mọi người trong bàn nhé!</p> : null}
         {roomChat.map((msg) => (
           <p key={`${msg.userId}-${msg.sentAt}`} className="ty-wait-line">
             <b className={msg.userId === room.ownerId ? 'ty-wait-owner' : undefined}>{msg.userId === selfId ? 'Bạn' : `@${msg.name}`}:</b> {msg.text}
@@ -110,14 +115,20 @@ export function RoomScreen() {
   return (
     <div className="ty-wait" style={{ '--ty-lb-bg': `url(${bgUrl})` } as CSSProperties}>
       <header className="ty-wait-top">
-        <UiIconButton icon="arrow-left" size="sm" label="Rời bàn" onClick={leaveRoom} />
+        <button type="button" className="ty-rooms-round" aria-label="Rời bàn" onClick={leaveRoom}>
+          <RoomIcon name="chevron-left" />
+        </button>
         <span className="ty-wait-title">
           <b>Bàn của @{owner?.name ?? '?'}</b>
           <span className="ty-wait-meta">
             <span className="ui-chip">
               {room.members.length}/{maxPlayers} người
             </span>
-            {room.bet > 0 ? <MoneyBadge amount={room.bet} className="ui-chip" /> : <span className="ui-chip">Giao lưu</span>}
+            {room.bet > 0 ? (
+              <KenBadge amount={room.bet} className="ui-chip" />
+            ) : (
+              <span className="ui-chip">Giao lưu</span>
+            )}
             {room.locked ? (
               <span className="ui-chip" aria-label="Bàn có mật khẩu">
                 <TyIcon name="lock" size={14} />

@@ -38,7 +38,7 @@ export function App() {
   }, [dispose, init]);
 
   return (
-    <div className={roomsOpen && boardMode !== 'playing' ? 'ty-app ty-app-rooms' : 'ty-app'}>
+    <div className={boardMode === 'playing' ? 'ty-app ty-app-board' : roomsOpen ? 'ty-app ty-app-rooms' : 'ty-app'}>
       {boardMode === 'playing' ? <BoardScreen key={matchSeq} /> : inRoom ? <RoomScreen /> : roomsOpen ? <RoomListScreen /> : leaderboardOpen ? <LeaderboardScreen /> : historyOpen ? <HistoryScreen /> : <LobbyScreen />}
       {setupOpen ? <BotSetupModal /> : null}
       {rulesOpen ? <RulesModal /> : null}

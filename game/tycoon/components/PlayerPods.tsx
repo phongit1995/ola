@@ -47,7 +47,7 @@ export function PlayerPods() {
   );
   if (!view) return null;
   return (
-    <div className="ty-s6-pods" style={{ gridTemplateColumns: `repeat(${players.length}, minmax(0, 1fr))` }}>
+    <div className="ty-s6-pods" data-count={players.length} style={{ '--pods': players.length } as CSSProperties}>
       {players.map((info, seat) => {
         const player = view.players[seat];
         if (!player) return null;

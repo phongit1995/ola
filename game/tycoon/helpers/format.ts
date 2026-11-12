@@ -3,7 +3,7 @@ export function formatKen(value: number): string {
 }
 
 export function formatMoney(value: number): string {
-  return `${Math.abs(value).toLocaleString('vi-VN')} tr`;
+  return `${Math.abs(value).toLocaleString('vi-VN')}\u00a0tr`;
 }
 
 export function formatDelta(value: number): string {

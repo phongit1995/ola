@@ -219,7 +219,7 @@
   overflow: hidden;
   max-width: 100%;
   flex: none;
-  font-size: calc(var(--u) * 2.05);
+  font-size: calc(var(--u) * 2.25);
   font-weight: 800;
   line-height: 1.16;
   padding-bottom: calc(var(--u) * 0.15);
@@ -348,23 +348,17 @@
   -webkit-mask: url('./assets/pixel/fx-flag.webp') center / 100% 100% no-repeat;
   mask: url('./assets/pixel/fx-flag.webp') center / 100% 100% no-repeat;
 }
-.ty-s6-side-b .ty-s6-flag,
-.ty-s6-side-l .ty-s6-flag {
+.ty-s6-flag {
   left: 1px;
   bottom: 1px;
-}
-.ty-s6-side-t .ty-s6-flag,
-.ty-s6-side-r .ty-s6-flag {
-  right: 1px;
-  top: 1px;
 }
 
 .ty-s6-fest {
   position: absolute;
   z-index: 5;
-  top: calc(var(--u) * -1.6);
-  right: calc(var(--u) * -0.6);
-  height: calc(var(--u) * 6);
+  bottom: calc(var(--u) * 0.2);
+  right: calc(var(--u) * -0.4);
+  height: calc(var(--u) * 5);
   width: auto;
   transform-origin: 50% 0;
   animation: ty-lantern 1.6s ease-in-out infinite;
@@ -569,17 +563,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   max-width: 100%;
-  min-height: 32px;
+  min-height: 36px;
 }
 .ty-s6-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
-  height: 30px;
-  padding: 0 12px 0 4px;
+  height: 32px;
+  padding: 0 12px 0 3px;
   border: var(--ui-line);
   border-radius: 999px;
   background: var(--ty-paper-light);
@@ -589,13 +582,78 @@
   white-space: nowrap;
   box-shadow: 0 2px 0 var(--seat);
 }
-.ty-s6-chip > span:not(.ui-avatar):not(.ty-s6-thinking) {
+.ty-s6-chip-name {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .ty-s6-chip-me {
+  height: 36px;
+  padding-right: 4px;
+  font-size: 15px;
   background: linear-gradient(180deg, var(--ty-gold-light), var(--ty-gold));
-  box-shadow: 0 2px 0 var(--ty-navy);
+  box-shadow: 0 3px 0 var(--ty-navy);
+}
+.ty-s6-chip-me:not(.ty-s6-chip-timed) {
+  padding-right: 14px;
+}
+.ty-s6-chip-av {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+.ty-s6-chip-timed .ty-s6-chip-av {
+  width: 30px;
+  height: 30px;
+}
+.ty-s6-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: scaleX(-1) rotate(-90deg);
+}
+.ty-s6-ring circle {
+  fill: none;
+  stroke-width: 4;
+}
+.ty-s6-ring-track {
+  stroke: rgba(255, 250, 240, 0.85);
+}
+.ty-s6-ring-left {
+  stroke: var(--ty-jade);
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 250ms linear,
+    stroke 300ms;
+}
+.ty-s6-chip-urgent .ty-s6-ring-left {
+  stroke: var(--ty-coral);
+}
+.ty-s6-chip-sec {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ty-navy);
+  color: var(--ui-white);
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.ty-s6-chip-urgent .ty-s6-chip-sec {
+  background: var(--ty-coral);
+  animation: ty-sec-pulse 1s ease-in-out infinite;
+}
+@keyframes ty-sec-pulse {
+  50% {
+    transform: scale(1.12);
+  }
 }
 .ty-s6-thinking {
   display: inline-flex;
@@ -625,40 +683,6 @@
     transform: translateY(-3px);
     opacity: 1;
   }
-}
-
-.ty-s6-timer {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-family: var(--ty-font);
-  font-size: 13px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-.ty-s6-timer-bar {
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  border-radius: 999px;
-  background: var(--ty-navy);
-}
-.ty-s6-timer-bar i {
-  width: 4px;
-  height: 10px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.18);
-  transition: background 200ms;
-}
-.ty-s6-timer-bar .ty-s6-timer-on {
-  background: var(--ty-gold-light);
-}
-.ty-s6-timer-urgent .ty-s6-timer-on {
-  background: var(--ty-coral-light);
-}
-.ty-s6-timer-urgent {
-  color: var(--ty-coral);
-  animation: ui-blink 0.8s ease-in-out infinite;
 }
 
 .ty-s6-dice {
@@ -751,6 +775,7 @@
 .ty-s6-say {
   margin: 0;
   max-width: 92%;
+  text-wrap: balance;
   font-family: var(--ty-font);
   font-size: 14px;
   font-weight: 700;
@@ -876,6 +901,7 @@
 }
 .ty-s6-cfront p {
   flex: 1;
+  text-wrap: balance;
   display: grid;
   place-items: center;
   margin: 0;
@@ -905,6 +931,7 @@
 
 .ty-s6-pods {
   display: grid;
+  grid-template-columns: repeat(var(--pods, 4), minmax(0, 1fr));
   gap: 6px;
   padding-top: 2px;
 }
@@ -912,14 +939,14 @@
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas: 'av name' 'cash cash';
+  grid-template-areas: 'name name' 'av cash';
   align-items: center;
-  column-gap: 6px;
-  row-gap: 3px;
+  column-gap: 4px;
+  row-gap: 4px;
   min-width: 0;
   min-height: 52px;
   margin: 0;
-  padding: 6px 7px 6px;
+  padding: 6px 6px;
   border: var(--ui-line);
   border-radius: 12px;
   background: var(--soft);
@@ -961,11 +988,11 @@
 .ty-s6-av {
   grid-area: av;
   position: relative;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
 }
 .ty-s6-av > img:first-child {
-  display: block;
+  display: none;
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -974,11 +1001,9 @@
   box-shadow: 0 0 0 2px var(--seat);
 }
 .ty-s6-av-pawn {
-  position: absolute;
-  left: -8px;
-  top: -8px;
-  width: 16px;
-  height: 16px;
+  display: block;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
   filter: drop-shadow(0 0 1px var(--ui-white)) drop-shadow(0 0 1px var(--ui-white));
 }
@@ -1000,7 +1025,7 @@
   overflow: hidden;
   padding-left: 1px;
   font-family: var(--ty-font);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
   line-height: 1;
   white-space: nowrap;
@@ -1614,13 +1639,8 @@
   font-weight: 800;
   font-size: 13px;
 }
-.ty-ladder-lot {
-  display: block;
-  width: 22px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--ty-jade-light);
-  box-shadow: 0 0 0 1.5px var(--ty-navy);
+.ty-ladder-icon .ty-ladder-flag {
+  height: 22px;
 }
 .ty-ladder-bar {
   position: relative;
@@ -1968,22 +1988,39 @@
   gap: 5px;
 }
 .ty-debt-clock {
+  position: relative;
+  flex: none;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border: var(--ui-line);
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: var(--ty-paper-light);
   font-family: var(--ty-font);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
+.ty-debt-clock b {
+  position: relative;
+  display: block;
+}
+.ty-debt-clock .ty-s6-ring-track {
+  stroke: rgba(31, 42, 68, 0.12);
+}
 .ty-debt-clock-late {
-  background: var(--ty-coral);
-  color: var(--ui-white);
-  animation: ui-blink 0.8s ease-in-out infinite;
+  color: var(--ty-coral);
+}
+.ty-debt-clock-late .ty-s6-ring-left {
+  stroke: var(--ty-coral);
+}
+.ty-debt-clock-late b {
+  animation: ty-sec-pulse 1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ty-debt-clock-late b {
+    animation: none;
+  }
 }
 .ty-debt-amount {
   margin: 8px 0 10px;
@@ -2219,11 +2256,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  width: max-content;
   max-width: calc(100% - 24px);
   padding: 8px 14px;
   border: var(--ui-line);
   border-radius: 999px;
   background: var(--ty-paper-light);
+  white-space: nowrap;
   color: var(--ty-navy);
   font-family: var(--ty-font);
   font-size: 13px;
@@ -2348,7 +2387,47 @@
   }
 }
 
+@media (max-aspect-ratio: 1/2) {
+  .ty-s6-pods[data-count='3'],
+  .ty-s6-pods[data-count='4'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 14px;
+    padding-top: 8px;
+  }
+  .ty-s6-pods[data-count] .ty-s6-pod {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'av name' 'av cash';
+    column-gap: 9px;
+    row-gap: 2px;
+    min-height: 54px;
+    padding: 7px 10px;
+  }
+  .ty-s6-pods[data-count] .ty-s6-av {
+    width: 34px;
+    height: 34px;
+  }
+  .ty-s6-pods[data-count] .ty-s6-av > img:first-child {
+    display: block;
+  }
+  .ty-s6-pods[data-count] .ty-s6-av-pawn {
+    position: absolute;
+    left: -9px;
+    top: -9px;
+    width: 20px;
+    height: 20px;
+  }
+  .ty-s6-pods[data-count] .ty-s6-pod-name {
+    font-size: 14px;
+  }
+  .ty-s6-pods[data-count] .ty-s6-cash {
+    font-size: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .ty-s6-chip-urgent .ty-s6-chip-sec {
+    animation: none;
+  }
   .ty-s6-fest,
   .ty-s6-festive,
   .ty-s6-pick,
