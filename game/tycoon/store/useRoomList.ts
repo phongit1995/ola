@@ -15,6 +15,7 @@ import {
   type FieldError,
   type TycoonRoom,
 } from '../helpers/room';
+import { REQUEST_TIMEOUT_MS } from '../helpers/requestOnce';
 import { playSound } from '../audio';
 import { useTycoon } from './useTycoon';
 
@@ -61,8 +62,6 @@ const FIELD_ERRORS = new Map<string, FieldError>([
 ]);
 
 const REFRESH_AFTER = new Set<string>([GAME_ERROR_CODE.RoomFull, GAME_ERROR_CODE.RoomNotFound, GAME_ERROR_CODE.MatchNotFound]);
-
-const REQUEST_TIMEOUT_MS = 10_000;
 
 const tycoon = () => useTycoon.getState();
 
@@ -185,13 +184,18 @@ export const useRoomList = create<RoomListState>((set, get) => {
       handleFailure(GAME_ERROR_CODE.MatchNotFound, request);
       return;
     }
+    if (request.kind === 'spectate' && tycoon().boardMode === 'playing') {
+      handleFailure(GAME_ERROR_CODE.SpectateOwnMatch, request);
+      return;
+    }
     pending = request;
     set({ pendingId: request.kind === 'create' ? 'create' : request.room.id });
     pendingTimer = setTimeout(() => fail(NETWORK_ERROR), REQUEST_TIMEOUT_MS);
     if (request.kind === 'create')
       session.createRoom(request.input.bet, request.input.password || undefined, request.input.maxPlayers, request.input.allowSpectators);
-    else if (request.kind === 'spectate') tycoon().watchMatch(request.room.matchId ?? '');
-    else session.joinRoom(request.room.id, request.password);
+    else if (request.kind === 'spectate') {
+      if (!tycoon().watchMatch(request.room.matchId ?? '')) fail(NETWORK_ERROR);
+    } else session.joinRoom(request.room.id, request.password);
   }
 
   const attach = () => {

@@ -409,7 +409,11 @@ function rollout(start: GameState, seat: number): number {
     } catch {
       const fallback = moveOnTimeout(x, mover);
       if (!fallback) break;
-      next = applyMove(x, mover, fallback);
+      try {
+        next = applyMove(x, mover, fallback);
+      } catch {
+        break;
+      }
     }
     if (next.turn !== x.turn) turns--;
     x = next;

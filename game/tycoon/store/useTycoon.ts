@@ -749,7 +749,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       bridge.attention({ reason: ARCADE_ATTENTION_REASON.GameOver });
       const meId = players[you]?.id;
       const exp = data.expGains?.find((entry) => entry.userId === meId)?.exp;
-      const kenDelta = practice || !data.bet ? undefined : myPlace === 1 ? (data.kenDelta ?? data.payout ?? 0) : -data.bet;
+      const kenDelta = practice || !data.bet || !data.winnerId ? undefined : myPlace === 1 ? (data.kenDelta ?? data.payout ?? 0) : -data.bet;
       const bet = data.bet ?? 0;
       const rowsWithKen = practice || spectator || bet <= 0 || !data.winnerId ? rows : rows.map((row) => ({ ...row, kenDelta: row.place === 1 ? (data.kenDelta ?? 0) : -bet }));
       if (!practice && !spectator) bridge.refreshUser();
@@ -969,14 +969,14 @@ export const useTycoon = create<TycoonState>((set, get) => {
       }),
       session.onRoomSync((data) => {
         const s = get();
-        if (s.boardMode === 'playing' && !s.practice && !s.result && s.matchId) {
+        if (s.boardMode === 'playing' && !s.practice && !s.spectating && !s.result && s.matchId && !refs.handledMatches.includes(`over:${s.matchId}`)) {
           const backToRoom = Boolean(data.roomId) && s.room?.roomId === data.roomId;
           resetBoard();
           set({ ...(backToRoom ? {} : { room: null, roomChat: [], roomsOpen: true }) });
           get().showNotice({ kind: 'notice', tone: 'warning', icon: 'wifi-off', title: 'Đã rời ván', body: 'Bạn mất kết nối quá lâu nên đã rời ván đang chơi.', okLabel: 'Đã hiểu' });
           return;
         }
-        if (!data.roomId && s.room) set({ room: null, roomChat: [], roomsOpen: true });
+        if (!data.roomId && s.room) set({ room: null, roomChat: [], ...(s.boardMode === 'playing' ? {} : { roomsOpen: true }) });
       }),
       session.onRoomClosed((data) => {
         const s = get();

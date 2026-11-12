@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { historyFromServer, mergeHistory, readBotHistory, type HistoryEntry, type HistoryStatus } from '../helpers/history';
+import { createRequestGuard, requestOnce } from '../helpers/requestOnce';
 import { useTycoon } from './useTycoon';
 import { playSound } from '../audio';
 
@@ -15,8 +16,7 @@ interface HistoryState {
   toggle(id: string): void;
 }
 
-let requestSeq = 0;
-const REQUEST_TIMEOUT_MS = 10_000;
+const nextRequest = createRequestGuard();
 
 export const useHistory = create<HistoryState>((set, get) => ({
   status: 'loading',
@@ -32,7 +32,7 @@ export const useHistory = create<HistoryState>((set, get) => ({
   },
 
   async load() {
-    const seq = ++requestSeq;
+    const isCurrent = nextRequest();
     const tycoon = useTycoon.getState();
     const session = tycoon.session();
     if (navigator.onLine === false || !session || tycoon.online !== 'ready') {
@@ -41,27 +41,15 @@ export const useHistory = create<HistoryState>((set, get) => ({
     }
     set({ status: 'loading' });
     const meId = tycoon.profile?.id ?? '';
-    await new Promise<void>((resolve) => {
-      const timer = setTimeout(() => {
-        off();
-        if (seq === requestSeq) set({ status: 'error' });
-        resolve();
-      }, REQUEST_TIMEOUT_MS);
-      const off = session.onHistory((data) => {
-        clearTimeout(timer);
-        off();
-        resolve();
-        if (seq !== requestSeq) return;
-        if (data.error?.trim()) {
-          set({ status: 'error' });
-          return;
-        }
-        const online = (data.items ?? []).map((item) => historyFromServer(item, meId, tycoon.profile ?? undefined));
-        const { bot, touched, expandedId } = get();
-        set({ status: 'ready', online, expandedId: touched ? expandedId : (mergeHistory(online, bot)[0]?.id ?? null) });
-      });
-      session.getHistory();
-    });
+    const reply = await requestOnce({ subscribe: session.onHistory, isCurrent, send: () => session.getHistory() });
+    if (reply.status === 'stale') return;
+    if (reply.status === 'timeout' || reply.data.error?.trim()) {
+      set({ status: 'error' });
+      return;
+    }
+    const online = (reply.data.items ?? []).map((item) => historyFromServer(item, meId, tycoon.profile ?? undefined));
+    const { bot, touched, expandedId } = get();
+    set({ status: 'ready', online, expandedId: touched ? expandedId : (mergeHistory(online, bot)[0]?.id ?? null) });
   },
 
   toggle(id) {

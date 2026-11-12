@@ -3,19 +3,30 @@ import { GAME_ERROR_CODE, S2C } from '../src/sdk/protocol';
 import { botMove, botRng } from './logic/bot';
 import { ERROR_PREFIX, GAME_ID, TIME_LIMIT_MS, TURN_SECONDS } from './logic/constants';
 import { applyMove, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings } from './logic/engine';
-import { RuleError, type GameState, type Move, type TycoonView } from './logic/types';
+import { RuleError, type BotLevel, type GameState, type Move, type TycoonView } from './logic/types';
+import type { BotReply, BotRequest } from './logic/bot.worker';
 import { viewFor } from './logic/view';
 import { botName, type BotSetupItem } from './helpers/bot';
 
 const YOU = 0;
 const TURN_MS = TURN_SECONDS * 1000;
+const BOT_REPLY_TIMEOUT_MS = 8000;
+let practiceMatchSeq = 0;
 export const BOT_DELAY_MS = { card: 950, quick: 150, think: 360 };
+
+export interface BotWorkerLike {
+  postMessage(request: BotRequest): void;
+  terminate(): void;
+  onmessage: ((event: MessageEvent<BotReply>) => void) | null;
+  onerror: ((event: ErrorEvent) => void) | null;
+}
 
 export interface PracticeOptions {
   user: { id: string; username: string; vipType?: string | null };
   bots: readonly BotSetupItem[];
   speed: () => number;
   random?: () => number;
+  createBotWorker?: () => BotWorkerLike | null;
 }
 
 export interface PracticeSession extends GameSession<TycoonView, Move> {
@@ -28,13 +39,38 @@ export interface PracticeSession extends GameSession<TycoonView, Move> {
 type Handler = (data: never) => void;
 type ServerEventType = (typeof S2C)[keyof typeof S2C];
 
+interface BotRequestState {
+  id: number;
+  current: GameState;
+  seat: number;
+  level: BotLevel;
+  count: number;
+  reply: { move: Move | null } | null;
+  due: boolean;
+}
+
+function defaultBotWorker(): BotWorkerLike | null {
+  if (typeof Worker === 'undefined') return null;
+  try {
+    return new Worker(new URL('./logic/bot.worker.ts', import.meta.url), { type: 'module' });
+  } catch {
+    return null;
+  }
+}
+
 function botDelay(state: GameState): number {
   if (state.phase === 'card') return BOT_DELAY_MS.card;
   if (state.phase === 'manage' || state.phase === 'roll') return BOT_DELAY_MS.quick;
   return BOT_DELAY_MS.think;
 }
 
-export function createPracticeSession({ user, bots, speed, random = Math.random }: PracticeOptions): PracticeSession {
+export function createPracticeSession({
+  user,
+  bots,
+  speed,
+  random = Math.random,
+  createBotWorker = defaultBotWorker,
+}: PracticeOptions): PracticeSession {
   const listeners = new Map<ServerEventType, Set<Handler>>();
   const players: PlayerInfo[] = [
     { id: user.id, name: user.username, vipType: user.vipType ?? null },
@@ -45,9 +81,12 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
   let seed = 0;
   let botMoves: number[] = [];
   let matchId = '';
-  let matchCount = 0;
   let startedAt = 0;
   let newTurnPending = false;
+  let worker: BotWorkerLike | null = null;
+  let workerFailed = false;
+  let requestSeq = 0;
+  let pending: BotRequestState | null = null;
 
   const on = (type: ServerEventType, handler: Handler): (() => void) => {
     let set = listeners.get(type);
@@ -90,7 +129,7 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
     } satisfies MatchOverData<TycoonView>);
   };
 
-  const act = (seat: number, move: Move, autoMoved = false): void => {
+  const act = (seat: number, move: Move, autoMoved = false, retry = true): void => {
     if (!state || state.finished) return;
     let next: GameState;
     try {
@@ -101,10 +140,16 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
         emit(S2C.Error, { code: GAME_ERROR_CODE.InvalidMove, message: `${ERROR_PREFIX}${code}` } satisfies ErrorData);
         return;
       }
-      const fallback = moveOnTimeout(state, seat);
-      if (fallback && fallback.type !== move.type) act(seat, fallback, true);
+      const fallback = retry ? moveOnTimeout(state, seat) : null;
+      if (fallback) act(seat, fallback, true, false);
+      else commit(seat, move, quitPlayer(state, seat), true);
       return;
     }
+    commit(seat, move, next, autoMoved);
+  };
+
+  const commit = (seat: number, move: Move, next: GameState, autoMoved: boolean): void => {
+    if (!state) return;
     clearTimers();
     newTurnPending = isNewTurn(state, next);
     state = next;
@@ -120,6 +165,98 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
     if (isOver(next)) finish(next);
   };
 
+  const syncBotMove = (current: GameState, seat: number, level: BotLevel, count: number): Move | null => {
+    try {
+      return botMove(current, seat, level, botRng(seed, seat, count));
+    } catch {
+      return null;
+    }
+  };
+
+  const playBot = (current: GameState, seat: number, move: Move | null): void => {
+    botMoves[seat]++;
+    const chosen = move ?? moveOnTimeout(current, seat);
+    if (chosen) act(seat, chosen);
+  };
+
+  const tryApply = (request: BotRequestState): void => {
+    if (pending !== request || !request.reply || !request.due) return;
+    pending = null;
+    if (state !== request.current) return;
+    playBot(request.current, request.seat, request.reply.move);
+  };
+
+  const stopWorker = (): void => {
+    if (!worker) return;
+    worker.onmessage = null;
+    worker.onerror = null;
+    worker.terminate();
+    worker = null;
+  };
+
+  const dropPending = (): void => {
+    if (pending && !pending.reply) stopWorker();
+    pending = null;
+  };
+
+  const failWorker = (): void => {
+    stopWorker();
+    workerFailed = true;
+    const request = pending;
+    if (!request || request.reply) return;
+    if (state !== request.current) {
+      pending = null;
+      return;
+    }
+    request.reply = { move: syncBotMove(request.current, request.seat, request.level, request.count) };
+    tryApply(request);
+  };
+
+  const botWorker = (): BotWorkerLike | null => {
+    if (worker || workerFailed) return worker;
+    try {
+      worker = createBotWorker();
+    } catch {
+      worker = null;
+    }
+    if (!worker) {
+      workerFailed = true;
+      return null;
+    }
+    worker.onmessage = (event) => {
+      const request = pending;
+      if (!request || request.reply || event.data.id !== request.id) return;
+      request.reply = { move: event.data.move };
+      tryApply(request);
+    };
+    worker.onerror = () => failWorker();
+    return worker;
+  };
+
+  const askBot = (current: GameState, seat: number, level: BotLevel, delay: number): boolean => {
+    const target = botWorker();
+    if (!target) return false;
+    const request: BotRequestState = { id: ++requestSeq, current, seat, level, count: botMoves[seat], reply: null, due: false };
+    pending = request;
+    try {
+      target.postMessage({ id: request.id, state: current, seat, level, seed, count: request.count });
+    } catch {
+      pending = null;
+      stopWorker();
+      workerFailed = true;
+      return false;
+    }
+    later(delay, () => {
+      if (pending !== request) return;
+      request.due = true;
+      tryApply(request);
+    });
+    later(delay + BOT_REPLY_TIMEOUT_MS, () => {
+      if (pending === request && !request.reply) failWorker();
+    });
+    return true;
+  };
+
   const unsupported = (): void => undefined;
 
   return {
@@ -129,8 +266,9 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
 
     start() {
       clearTimers();
-      matchCount += 1;
-      matchId = `practice-${matchCount}`;
+      dropPending();
+      practiceMatchSeq += 1;
+      matchId = `practice-${practiceMatchSeq}`;
       startedAt = Date.now();
       newTurnPending = false;
       seed = Math.floor(random() * 2 ** 31) + 1;
@@ -149,6 +287,7 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
 
     idle() {
       clearTimers();
+      dropPending();
       if (!state || state.finished) return 0;
       if (newTurnPending && Date.now() - startedAt >= TIME_LIMIT_MS) {
         newTurnPending = false;
@@ -160,11 +299,12 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
       const current = state;
       const seat = current.turn;
       if (seat !== YOU) {
-        later(botDelay(current) / speed(), () => {
+        const level = bots[seat - 1]?.level ?? 'normal';
+        const delay = botDelay(current) / speed();
+        if (level === 'hard' && askBot(current, seat, level, delay)) return 0;
+        later(delay, () => {
           if (state !== current) return;
-          const rng = botRng(seed, seat, botMoves[seat]++);
-          const move = botMove(current, seat, bots[seat - 1]?.level ?? 'normal', rng) ?? moveOnTimeout(current, seat);
-          if (move) act(seat, move);
+          playBot(current, seat, syncBotMove(current, seat, level, botMoves[seat]));
         });
         return 0;
       }
@@ -195,6 +335,8 @@ export function createPracticeSession({ user, bots, speed, random = Math.random 
 
     disconnect() {
       clearTimers();
+      pending = null;
+      stopWorker();
       listeners.clear();
       state = null;
     },

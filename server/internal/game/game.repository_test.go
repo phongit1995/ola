@@ -1,6 +1,11 @@
 package game
 
 import (
+	"bytes"
+	"cmp"
+	"math/rand/v2"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -313,10 +318,14 @@ func TestTycoonLeaderboardFindsMeOutsideTop(t *testing.T) {
 	mock.ExpectQuery(`SELECT .* FROM "game_matches" CROSS JOIN LATERAL .* ORDER BY wins DESC, losses ASC, ken DESC.*LIMIT \$5`).
 		WithArgs("tycoon", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), leaderboardLimit).
 		WillReturnRows(top)
-	mock.ExpectQuery(`SELECT \* FROM \(SELECT board_rows\.\*, ROW_NUMBER\(\) OVER \(ORDER BY wins DESC, losses ASC, ken DESC, username ASC, user_id ASC\) AS board_rank FROM \(SELECT .*\) AS board_rows\) AS ranked WHERE ranked\.user_id = \$5 LIMIT \$6`).
+	mock.ExpectQuery(`SELECT seats\.user_id, .* FROM "game_matches" CROSS JOIN LATERAL .* AND seats\.user_id = \$5 GROUP BY seats\.user_id, .* HAVING .* LIMIT \$6$`).
 		WithArgs("tycoon", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), meID, 1).
-		WillReturnRows(sqlmock.NewRows(append(columns, "board_rank")).
-			AddRow(meID.String(), "toi", nil, nil, int64(0), int64(1), int64(4), int64(0), 137))
+		WillReturnRows(sqlmock.NewRows(columns).
+			AddRow(meID.String(), "toi", nil, nil, int64(7), int64(1), int64(4), int64(0)))
+	mock.ExpectQuery(`^SELECT COUNT\(\*\) FROM \(SELECT seats\.user_id, .* HAVING COUNT\(\*\) FILTER \(WHERE seats\.user_id = game_matches\.winner_id\) > 0\) AS board_rows WHERE board_rows\.wins >= \$5 AND \(board_rows\.wins > \$6 OR \(board_rows\.wins = \$7 AND \(board_rows\.losses < \$8 OR \(board_rows\.losses = \$9 AND \(board_rows\.ken > \$10 OR \(board_rows\.ken = \$11 AND \(board_rows\.username < \$12 OR \(board_rows\.username = \$13 AND \(board_rows\.user_id < \$14\)\)\)\)\)\)\)\)\)$`).
+		WithArgs("tycoon", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(),
+			int64(1), int64(1), int64(1), int64(4), int64(4), int64(7), int64(7), "toi", "toi", meID).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(int64(136)))
 
 	data, err := repo.Leaderboard("tycoon", "day", "", meID.String())
 	if err != nil {
@@ -325,11 +334,100 @@ func TestTycoonLeaderboardFindsMeOutsideTop(t *testing.T) {
 	if data.Board != "wins" || len(data.Items) != leaderboardLimit || data.Items[0].Matches != 4 {
 		t.Fatalf("unexpected board=%q items=%d first=%+v", data.Board, len(data.Items), data.Items[0])
 	}
-	if data.Me == nil || data.Me.Rank != 137 || data.Me.Wins != 1 || data.Me.Matches != 5 {
+	if data.Me == nil || data.Me.Rank != 137 || data.Me.Wins != 1 || data.Me.Matches != 5 || data.Me.Ken != 7 {
 		t.Fatalf("me=%+v, want rank 137 with 5 matches", data.Me)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func fullLeaderboardRows(columns []string, row func(*sqlmock.Rows)) *sqlmock.Rows {
+	rows := sqlmock.NewRows(columns)
+	for i := 0; i < leaderboardLimit; i++ {
+		row(rows)
+	}
+	return rows
+}
+
+func TestLevelLeaderboardCountsUsersAheadOfMeOutsideTop(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &Repository{db: db}
+	meID := uuid.New()
+	columns := []string{"user_id", "username", "vip_type", "vip_end_time", "ken", "wins", "losses", "game_exp"}
+
+	mock.ExpectQuery(`FROM user_game_levels AS levels .*ORDER BY levels\.exp DESC, users\.username ASC, levels\.user_id ASC LIMIT \$2`).
+		WithArgs("thirteen", leaderboardLimit).
+		WillReturnRows(fullLeaderboardRows(columns, func(rows *sqlmock.Rows) {
+			rows.AddRow(uuid.New().String(), "top", nil, nil, int64(0), int64(0), int64(0), int64(5000))
+		}))
+	mock.ExpectQuery(`^SELECT levels\.user_id, .* FROM user_game_levels AS levels JOIN users ON users\.id = levels\.user_id WHERE \(levels\.game_id = \$1 AND levels\.exp > 0 AND users\.deleted_at IS NULL\) AND levels\.user_id = \$2 LIMIT \$3$`).
+		WithArgs("thirteen", meID, 1).
+		WillReturnRows(sqlmock.NewRows(columns).
+			AddRow(meID.String(), "toi", nil, nil, int64(0), int64(0), int64(0), int64(420)))
+	mock.ExpectQuery(`^SELECT COUNT\(\*\) FROM \(SELECT levels\.user_id, .* FROM user_game_levels AS levels JOIN users ON users\.id = levels\.user_id WHERE levels\.game_id = \$1 AND levels\.exp > 0 AND users\.deleted_at IS NULL\) AS board_rows WHERE board_rows\.game_exp >= \$2 AND \(board_rows\.game_exp > \$3 OR \(board_rows\.game_exp = \$4 AND \(board_rows\.username < \$5 OR \(board_rows\.username = \$6 AND \(board_rows\.user_id < \$7\)\)\)\)\)$`).
+		WithArgs("thirteen", int64(420), int64(420), int64(420), "toi", "toi", meID).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(int64(250)))
+
+	data, err := repo.Leaderboard("thirteen", "day", "level", meID.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if data.Me == nil || data.Me.Rank != 251 || data.Me.Exp != 420 || data.Me.Matches != 0 {
+		t.Fatalf("me=%+v, want rank 251 with exp 420", data.Me)
+	}
+}
+
+func TestLeaderboardSkipsRankCountWhenMeIsNotOnBoard(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &Repository{db: db}
+	meID := uuid.New()
+	columns := []string{"user_id", "username", "vip_type", "vip_end_time", "ken", "wins", "losses", "game_exp"}
+
+	mock.ExpectQuery(`FROM "game_matches" CROSS JOIN LATERAL .*LIMIT \$5`).
+		WithArgs("thirteen", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), leaderboardLimit).
+		WillReturnRows(fullLeaderboardRows(columns, func(rows *sqlmock.Rows) {
+			rows.AddRow(uuid.New().String(), "top", nil, nil, int64(0), int64(3), int64(1), int64(0))
+		}))
+	mock.ExpectQuery(`AND seats\.user_id = \$5 GROUP BY .* LIMIT \$6$`).
+		WithArgs("thirteen", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), meID, 1).
+		WillReturnRows(sqlmock.NewRows(columns))
+
+	data, err := repo.Leaderboard("thirteen", "week", "wins", meID.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if data.Me != nil || len(data.Items) != leaderboardLimit {
+		t.Fatalf("me=%+v items=%d, want no pinned row", data.Me, len(data.Items))
+	}
+}
+
+func TestCaroLeaderboardMeQueryUsesWinnerOrLoserFilter(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &Repository{db: db}
+	meID := uuid.New()
+	columns := []string{"user_id", "username", "vip_type", "vip_end_time", "ken", "wins", "losses", "game_exp"}
+
+	mock.ExpectQuery(`FROM "game_matches" CROSS JOIN LATERAL \(VALUES.*LIMIT \$5`).
+		WithArgs("caro", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), leaderboardLimit).
+		WillReturnRows(fullLeaderboardRows(columns, func(rows *sqlmock.Rows) {
+			rows.AddRow(uuid.New().String(), "top", nil, nil, int64(10), int64(3), int64(0), int64(0))
+		}))
+	mock.ExpectQuery(`AND \(\(game_matches\.winner_id = \$5 OR game_matches\.loser_id = \$6\) AND results\.user_id = \$7\) GROUP BY results\.user_id, .* LIMIT \$8$`).
+		WithArgs("caro", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(), meID, meID, meID, 1).
+		WillReturnRows(sqlmock.NewRows(columns).
+			AddRow(meID.String(), "toi", nil, nil, int64(5), int64(2), int64(2), int64(0)))
+	mock.ExpectQuery(`^SELECT COUNT\(\*\) FROM \(SELECT results\.user_id, .*\) AS board_rows WHERE board_rows\.wins >= \$5 AND .*board_rows\.user_id < \$14\)+$`).
+		WithArgs("caro", matchStatusFinished, sqlmock.AnyArg(), sqlmock.AnyArg(),
+			int64(2), int64(2), int64(2), int64(2), int64(2), int64(5), int64(5), "toi", "toi", meID).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(int64(100)))
+
+	data, err := repo.Leaderboard("caro", "day", "", meID.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if data.Me == nil || data.Me.Rank != 101 || data.Me.Matches != 4 {
+		t.Fatalf("me=%+v, want rank 101", data.Me)
 	}
 }
 
@@ -373,5 +471,211 @@ func TestTycoonMatchHistoryReturnsEndAndExitReasons(t *testing.T) {
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+type aheadNode struct {
+	op       string
+	children []aheadNode
+	column   string
+	cmp      string
+	arg      int
+}
+
+func parseAheadCondition(t *testing.T, cond string) aheadNode {
+	t.Helper()
+	tokens := strings.Fields(strings.NewReplacer("(", " ( ", ")", " ) ").Replace(cond))
+	pos, arg := 0, 0
+	var expr func() aheadNode
+	factor := func() aheadNode {
+		if tokens[pos] == "(" {
+			pos++
+			node := expr()
+			if tokens[pos] != ")" {
+				t.Fatalf("expected ) at %d in %q", pos, cond)
+			}
+			pos++
+			return node
+		}
+		column := strings.TrimPrefix(tokens[pos], "board_rows.")
+		if column == tokens[pos] || tokens[pos+2] != "?" {
+			t.Fatalf("unexpected comparison at %d in %q", pos, cond)
+		}
+		node := aheadNode{column: column, cmp: tokens[pos+1], arg: arg}
+		pos += 3
+		arg++
+		return node
+	}
+	chain := func(op string, next func() aheadNode) aheadNode {
+		node := aheadNode{op: op, children: []aheadNode{next()}}
+		for pos < len(tokens) && tokens[pos] == op {
+			pos++
+			node.children = append(node.children, next())
+		}
+		return node
+	}
+	term := func() aheadNode { return chain("AND", factor) }
+	expr = func() aheadNode { return chain("OR", term) }
+	node := expr()
+	if pos != len(tokens) {
+		t.Fatalf("trailing tokens in %q", cond)
+	}
+	return node
+}
+
+func compareLeaderboardColumn(row leaderboardRow, column string, value any) int {
+	switch column {
+	case "user_id":
+		other := value.(uuid.UUID)
+		return bytes.Compare(row.UserID[:], other[:])
+	case "username":
+		return strings.Compare(row.Username, value.(string))
+	}
+	var mine int64
+	switch column {
+	case "wins":
+		mine = row.Wins
+	case "losses":
+		mine = row.Losses
+	case "ken":
+		mine = row.Ken
+	case "game_exp":
+		mine = row.GameExp
+	case "matches":
+		mine = row.Matches
+	default:
+		panic(column)
+	}
+	return cmp.Compare(mine, value.(int64))
+}
+
+func evalAhead(node aheadNode, row leaderboardRow, args []any) bool {
+	switch node.op {
+	case "AND":
+		for _, child := range node.children {
+			if !evalAhead(child, row, args) {
+				return false
+			}
+		}
+		return true
+	case "OR":
+		for _, child := range node.children {
+			if evalAhead(child, row, args) {
+				return true
+			}
+		}
+		return false
+	}
+	c := compareLeaderboardColumn(row, node.column, args[node.arg])
+	switch node.cmp {
+	case ">":
+		return c > 0
+	case ">=":
+		return c >= 0
+	case "<":
+		return c < 0
+	case "<=":
+		return c <= 0
+	case "=":
+		return c == 0
+	}
+	panic(node.cmp)
+}
+
+func valueOfColumn(row leaderboardRow, column string) any {
+	switch column {
+	case "user_id":
+		return row.UserID
+	case "username":
+		return row.Username
+	case "wins":
+		return row.Wins
+	case "losses":
+		return row.Losses
+	case "ken":
+		return row.Ken
+	case "game_exp":
+		return row.GameExp
+	case "matches":
+		return row.Matches
+	}
+	panic(column)
+}
+
+func TestLeaderboardAheadCountMatchesRowNumberOnTies(t *testing.T) {
+	db, _ := newSettlementMockDB(t)
+	repo := &Repository{db: db}
+	keysFor := func(gameID, board string) []leaderboardKey {
+		return repo.leaderboardQuery(gameID, board, time.Time{}, time.Time{}).keys
+	}
+	legacyRankOrders := map[string]struct {
+		gameID string
+		board  string
+	}{
+		"wins DESC, losses ASC, ken DESC, username ASC, user_id ASC": {gameID: "tycoon"},
+		"game_exp DESC, username ASC, user_id ASC":                   {gameID: "tycoon", board: "level"},
+		"ken DESC, matches DESC, username ASC, user_id ASC":          {gameID: "other-game"},
+	}
+	for _, gameID := range []string{"thirteen", "caro", "war-god", "xiangqi"} {
+		if got := keysFor(gameID, ""); len(got) != len(leaderboardKeysWinLoss) || got[0].column != "wins" {
+			t.Fatalf("%s keys=%d, want win/loss keys", gameID, len(got))
+		}
+	}
+	rng := rand.New(rand.NewPCG(7, 11))
+	names := []string{"an", "An", "binh", "chi", "chi"}
+	for rankOrder, target := range legacyRankOrders {
+		keys := keysFor(target.gameID, target.board)
+		var parts []string
+		for _, key := range keys {
+			dir := "ASC"
+			if key.desc {
+				dir = "DESC"
+			}
+			parts = append(parts, key.column+" "+dir)
+		}
+		if got := strings.Join(parts, ", "); got != rankOrder {
+			t.Fatalf("keys order %q, want legacy %q", got, rankOrder)
+		}
+		for round := 0; round < 50; round++ {
+			rows := make([]leaderboardRow, 40)
+			for i := range rows {
+				rows[i] = leaderboardRow{
+					UserID:   uuid.New(),
+					Username: names[rng.IntN(len(names))],
+					Wins:     rng.Int64N(3) + 1,
+					Losses:   rng.Int64N(3),
+					Ken:      rng.Int64N(2) * 100,
+					GameExp:  rng.Int64N(3) * 50,
+					Matches:  rng.Int64N(2) + 1,
+				}
+			}
+			sorted := slices.Clone(rows)
+			slices.SortFunc(sorted, func(a, b leaderboardRow) int {
+				for _, part := range strings.Split(rankOrder, ", ") {
+					column, dir, _ := strings.Cut(part, " ")
+					c := compareLeaderboardColumn(a, column, valueOfColumn(b, column))
+					if dir == "DESC" {
+						c = -c
+					}
+					if c != 0 {
+						return c
+					}
+				}
+				return 0
+			})
+			for want, me := range sorted {
+				cond, args := leaderboardAheadCondition(keys, me)
+				tree := parseAheadCondition(t, cond)
+				ahead := 0
+				for _, other := range rows {
+					if evalAhead(tree, other, args) {
+						ahead++
+					}
+				}
+				if ahead+1 != want+1 {
+					t.Fatalf("%s: rank=%d, ROW_NUMBER=%d for %+v", rankOrder, ahead+1, want+1, me)
+				}
+			}
+		}
 	}
 }

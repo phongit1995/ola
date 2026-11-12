@@ -87,7 +87,7 @@ Vào xem từ chính hàng bàn trong danh sách, không có màn danh sách xem
 | Message | Thay đổi |
 |---|---|
 | `ROOM_CREATE` | `{bet, password, maxPlayers, allowSpectators}`; `allowSpectators` không bắt buộc. Client tycoon luôn gửi (mặc định `false`). Thiếu trường (game khác, client cũ) thì giữ luật cũ: bàn không khóa xem được, bàn khóa không xem được |
-| `ROOM_LIST`, `ROOM_UPSERT`, `ROOM_WAITING`, `ROOM_STATE` | thêm `allowSpectators` (đã có `bet`, `status`, `matchId`), chỉ có khi chủ bàn đã chọn; S3 dùng để hiện nút `Xem` (§2.4), client tycoon coi thiếu là tắt |
+| `ROOM_LIST`, `ROOM_UPSERT`, `ROOM_WAITING`, `ROOM_STATE` | thêm `allowSpectators` (đã có `bet`, `status`, `matchId`), chỉ có khi chủ bàn đã chọn; S3 dùng để hiện nút `Xem` (§2.4); thiếu cờ thì client theo cùng luật server (bàn không khóa xem được) |
 | `SPECTATE_LIST` | chỉ trả ván có `allowSpectators = true` (hoặc thiếu cờ và bàn không khóa) |
 | `SPECTATE_JOIN` | `SPECTATE_NOT_ALLOWED` khi bàn tắt cho xem (hoặc thiếu cờ và bàn khóa); `ROOM_WATCH` theo cùng luật |
 

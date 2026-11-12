@@ -70,7 +70,7 @@ Protocol đầy đủ ở [05 §5–§9](./05-gameplay-rules-and-protocol.md#5-s
 - [x] Server: tycoon cài `SpectatorView` (view `you = -1`, không lộ bộ thẻ) và vào `playingRoomGames` nên `ROOM_LIST` có bàn đang chơi kèm `matchId`.
 - [x] Server (12/11): cờ `allowSpectators` theo bàn — `ROOM_CREATE` nhận, lưu trong room + match snapshot, trả trong `ROOM_LIST`/`ROOM_UPSERT`/`ROOM_WAITING`/`ROOM_STATE`; tắt thì không có trong `SPECTATE_LIST` và `SPECTATE_JOIN` trả `SPECTATE_NOT_ALLOWED`; bật thì bàn khóa vẫn xem được. Thiếu cờ (game khác, client cũ) giữ luật cũ: bàn không khóa xem được. Chi tiết [11 §4](./11-room-settings.md#4-việc-phía-server).
 - [x] Client: nút Xem ở S3, chế độ chỉ xem ở S6 (`you = -1`, pill "Đang xem · N người xem", menu chỉ còn "Thôi xem", không có Bỏ cuộc/chat), kết quả "@x thắng" + "Về danh sách bàn".
-- [x] Client (12/11): công tắc "Cho người khác xem" ở S4 hiện lại (mặc định Tắt), `createRoom` gửi `allowSpectators`; S3 chỉ hiện Xem khi bàn có `matchId` và `allowSpectators = true`, thiếu cờ coi như tắt → chip "Đang chơi".
+- [x] Client (12/11): công tắc "Cho người khác xem" ở S4 hiện lại (mặc định Tắt), `createRoom` gửi `allowSpectators`; S3 chỉ hiện Xem khi bàn có `matchId` và cho xem; thiếu cờ (bàn tạo trước bản này) theo đúng luật server: bàn không khóa xem được, bàn khóa → chip "Đang chơi".
 
 ## 3. Kiểm thử
 

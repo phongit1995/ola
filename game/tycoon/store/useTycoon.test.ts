@@ -230,6 +230,27 @@ describe('useTycoon online session', () => {
     expect(chatAttention()).toHaveLength(1);
   });
 
+  it('keeps the board and result when ROOM_SYNC follows a MATCH_OVER on reconnect', async () => {
+    await connect();
+    const state = startOn(1);
+    await startMatch(state);
+    const over = { ...state, finished: true, winner: 1, endReason: 'rounds' as const };
+    emit('onMatchOver', { matchId: currentMatch, reason: 'win', state: view(over, 0), rankings: [{ userId: 'p2', place: 1 }, { userId: 'me', place: 2 }, { userId: 'p3', place: 3 }] } satisfies MatchOverData<TycoonView>);
+    emit('onRoomSync', { roomId: '' });
+    await vi.waitFor(() => expect(useTycoon.getState().result).not.toBeNull());
+    expect(useTycoon.getState().notice).toBeNull();
+    expect(useTycoon.getState().roomsOpen).toBe(false);
+    expect(useTycoon.getState().boardMode).toBe('playing');
+  });
+
+  it('still drops a player who was away too long', async () => {
+    await connect();
+    await startMatch(startOn(1));
+    emit('onRoomSync', { roomId: '' });
+    expect(useTycoon.getState().boardMode).not.toBe('playing');
+    expect(useTycoon.getState().notice?.title).toBe('Đã rời ván');
+  });
+
   it('counts spectators for players too', async () => {
     await connect();
     await startMatch(startOn(1));
@@ -237,6 +258,23 @@ describe('useTycoon online session', () => {
     expect(useTycoon.getState().spectators).toBe(2);
     emit('onSpectators', { matchId: 'other', spectators: [] });
     expect(useTycoon.getState().spectators).toBe(2);
+  });
+});
+
+describe('useTycoon practice', () => {
+  afterEach(() => {
+    useTycoon.getState().dispose();
+    useTycoon.setState(originalState, true);
+  });
+
+  it('opens the board again for a second bot game in the same session', async () => {
+    const bots = [{ id: 'a', vip: 1, level: 'normal' as const }];
+    useTycoon.getState().startGame(bots);
+    await vi.waitFor(() => expect(useTycoon.getState().boardMode).toBe('playing'));
+    const first = useTycoon.getState().matchId;
+    useTycoon.getState().startGame(bots);
+    await vi.waitFor(() => expect(useTycoon.getState().boardMode).toBe('playing'));
+    expect(useTycoon.getState().matchId).not.toBe(first);
   });
 });
 

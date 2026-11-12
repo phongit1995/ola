@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"sort"
+	"strings"
 	"time"
 
 	"ola-chat-server/internal/constants"
@@ -120,8 +121,35 @@ type leaderboardRow struct {
 	Wins       int64      `gorm:"column:wins"`
 	Losses     int64      `gorm:"column:losses"`
 	GameExp    int64      `gorm:"column:game_exp"`
-	BoardRank  int        `gorm:"column:board_rank"`
+	Matches    int64      `gorm:"column:matches"`
 }
+
+type leaderboardKey struct {
+	column string
+	desc   bool
+	value  func(leaderboardRow) any
+}
+
+type leaderboardSpec struct {
+	query      *gorm.DB
+	order      string
+	userFilter string
+	keys       []leaderboardKey
+}
+
+var (
+	leaderboardKeyWins     = leaderboardKey{column: "wins", desc: true, value: func(row leaderboardRow) any { return row.Wins }}
+	leaderboardKeyLosses   = leaderboardKey{column: "losses", value: func(row leaderboardRow) any { return row.Losses }}
+	leaderboardKeyKen      = leaderboardKey{column: "ken", desc: true, value: func(row leaderboardRow) any { return row.Ken }}
+	leaderboardKeyMatches  = leaderboardKey{column: "matches", desc: true, value: func(row leaderboardRow) any { return row.Matches }}
+	leaderboardKeyExp      = leaderboardKey{column: "game_exp", desc: true, value: func(row leaderboardRow) any { return row.GameExp }}
+	leaderboardKeyUsername = leaderboardKey{column: "username", value: func(row leaderboardRow) any { return row.Username }}
+	leaderboardKeyUserID   = leaderboardKey{column: "user_id", value: func(row leaderboardRow) any { return row.UserID }}
+
+	leaderboardKeysWinLoss = []leaderboardKey{leaderboardKeyWins, leaderboardKeyLosses, leaderboardKeyKen, leaderboardKeyUsername, leaderboardKeyUserID}
+	leaderboardKeysLevel   = []leaderboardKey{leaderboardKeyExp, leaderboardKeyUsername, leaderboardKeyUserID}
+	leaderboardKeysKen     = []leaderboardKey{leaderboardKeyKen, leaderboardKeyMatches, leaderboardKeyUsername, leaderboardKeyUserID}
+)
 
 type matchHistoryRow struct {
 	GameMatchID   uuid.UUID  `gorm:"column:game_match_id"`
@@ -181,14 +209,19 @@ func normalizeLeaderboardBoard(board string) string {
 	return protocol.LeaderboardBoardWins
 }
 
-func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) (*gorm.DB, string, string) {
+func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) leaderboardSpec {
 	if board == protocol.LeaderboardBoardLevel {
 		query := r.db.Table("user_game_levels AS levels").
 			Select(`levels.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
 				0 AS ken, 0 AS wins, 0 AS losses, levels.exp AS game_exp`).
 			Joins("JOIN users ON users.id = levels.user_id").
 			Where("levels.game_id = ? AND levels.exp > 0 AND users.deleted_at IS NULL", gameID)
-		return query, "levels.exp DESC, users.username ASC, levels.user_id ASC", "game_exp DESC, username ASC, user_id ASC"
+		return leaderboardSpec{
+			query:      query,
+			order:      "levels.exp DESC, users.username ASC, levels.user_id ASC",
+			userFilter: "levels.user_id = ?",
+			keys:       leaderboardKeysLevel,
+		}
 	}
 	if gameID == thirteen.GameID || gameID == tycoon.GameID {
 		query := r.db.Table("game_matches").
@@ -206,7 +239,12 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 				gameID, matchStatusFinished, from, to).
 			Group("seats.user_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
 			Having("COUNT(*) FILTER (WHERE seats.user_id = game_matches.winner_id) > 0")
-		return query, "wins DESC, losses ASC, ken DESC, users.username ASC, seats.user_id ASC", "wins DESC, losses ASC, ken DESC, username ASC, user_id ASC"
+		return leaderboardSpec{
+			query:      query,
+			order:      "wins DESC, losses ASC, ken DESC, users.username ASC, seats.user_id ASC",
+			userFilter: "seats.user_id = ?",
+			keys:       leaderboardKeysWinLoss,
+		}
 	}
 	if gameID == "caro" || gameID == "war-god" || gameID == "xiangqi" {
 		query := r.db.Table("game_matches").
@@ -228,7 +266,12 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 				gameID, matchStatusFinished, from, to).
 			Group("results.user_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
 			Having("COALESCE(SUM(results.wins), 0) > 0")
-		return query, "wins DESC, losses ASC, ken DESC, users.username ASC, results.user_id ASC", "wins DESC, losses ASC, ken DESC, username ASC, user_id ASC"
+		return leaderboardSpec{
+			query:      query,
+			order:      "wins DESC, losses ASC, ken DESC, users.username ASC, results.user_id ASC",
+			userFilter: "(game_matches.winner_id = ? OR game_matches.loser_id = ?) AND results.user_id = ?",
+			keys:       leaderboardKeysWinLoss,
+		}
 	}
 	query := r.db.Table("game_matches").
 		Select(`game_matches.winner_id AS user_id, users.username, users.vip_used AS vip_type,
@@ -242,7 +285,63 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 			gameID, matchStatusFinished, from, to).
 		Group("game_matches.winner_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
 		Having("COALESCE(SUM(game_matches.ken_delta), 0) > 0")
-	return query, "ken DESC, COUNT(*) DESC, users.username ASC, game_matches.winner_id ASC", "ken DESC, matches DESC, username ASC, user_id ASC"
+	return leaderboardSpec{
+		query:      query,
+		order:      "ken DESC, COUNT(*) DESC, users.username ASC, game_matches.winner_id ASC",
+		userFilter: "game_matches.winner_id = ?",
+		keys:       leaderboardKeysKen,
+	}
+}
+
+func leaderboardKeyOps(key leaderboardKey) (string, string) {
+	if key.desc {
+		return ">", ">="
+	}
+	return "<", "<="
+}
+
+func leaderboardAheadCondition(keys []leaderboardKey, row leaderboardRow) (string, []any) {
+	last := keys[len(keys)-1]
+	strict, _ := leaderboardKeyOps(last)
+	cond := "board_rows." + last.column + " " + strict + " ?"
+	args := []any{last.value(row)}
+	for i := len(keys) - 2; i >= 0; i-- {
+		key := keys[i]
+		value := key.value(row)
+		strict, _ := leaderboardKeyOps(key)
+		cond = "board_rows." + key.column + " " + strict + " ? OR (board_rows." + key.column + " = ? AND (" + cond + "))"
+		args = append([]any{value, value}, args...)
+	}
+	first := keys[0]
+	_, bound := leaderboardKeyOps(first)
+	cond = "board_rows." + first.column + " " + bound + " ? AND (" + cond + ")"
+	return cond, append([]any{first.value(row)}, args...)
+}
+
+func repeatedArg(filter string, value any) []any {
+	args := make([]any, strings.Count(filter, "?"))
+	for i := range args {
+		args[i] = value
+	}
+	return args
+}
+
+func (r *Repository) leaderboardMe(gameID, board string, from, to time.Time, userID uuid.UUID) (*leaderboardRow, int, error) {
+	mineSpec := r.leaderboardQuery(gameID, board, from, to)
+	var mine []leaderboardRow
+	if err := mineSpec.query.Where(mineSpec.userFilter, repeatedArg(mineSpec.userFilter, userID)...).Limit(1).Scan(&mine).Error; err != nil {
+		return nil, 0, err
+	}
+	if len(mine) == 0 {
+		return nil, 0, nil
+	}
+	countSpec := r.leaderboardQuery(gameID, board, from, to)
+	cond, args := leaderboardAheadCondition(countSpec.keys, mine[0])
+	var ahead int64
+	if err := r.db.Table("(?) AS board_rows", countSpec.query).Select("COUNT(*)").Where(cond, args...).Scan(&ahead).Error; err != nil {
+		return nil, 0, err
+	}
+	return &mine[0], int(ahead) + 1, nil
 }
 
 func leaderboardEntry(row leaderboardRow, rank int, board string, to time.Time) protocol.LeaderboardEntry {
@@ -262,6 +361,8 @@ func leaderboardEntry(row leaderboardRow, rank int, board string, to time.Time) 
 	}
 	if board == protocol.LeaderboardBoardLevel {
 		entry.Exp = row.GameExp
+	} else if row.Matches > 0 {
+		entry.Matches = row.Matches
 	} else {
 		entry.Matches = row.Wins + row.Losses
 	}
@@ -280,9 +381,9 @@ func (r *Repository) Leaderboard(gameID, period, board, userID string) (protocol
 		Items:  []protocol.LeaderboardEntry{},
 	}
 
-	query, order, rankOrder := r.leaderboardQuery(gameID, board, from, to)
+	spec := r.leaderboardQuery(gameID, board, from, to)
 	var rows []leaderboardRow
-	if err := query.Order(order).Limit(leaderboardLimit).Scan(&rows).Error; err != nil {
+	if err := spec.query.Order(spec.order).Limit(leaderboardLimit).Scan(&rows).Error; err != nil {
 		return data, err
 	}
 
@@ -301,14 +402,12 @@ func (r *Repository) Leaderboard(gameID, period, board, userID string) (protocol
 	if err != nil {
 		return data, nil
 	}
-	base, _, _ := r.leaderboardQuery(gameID, board, from, to)
-	ranked := r.db.Table("(?) AS board_rows", base).Select("board_rows.*, ROW_NUMBER() OVER (ORDER BY " + rankOrder + ") AS board_rank")
-	var mine []leaderboardRow
-	if err := r.db.Table("(?) AS ranked", ranked).Where("ranked.user_id = ?", uid).Limit(1).Scan(&mine).Error; err != nil {
+	mine, rank, err := r.leaderboardMe(gameID, board, from, to, uid)
+	if err != nil {
 		return data, err
 	}
-	if len(mine) > 0 {
-		me := leaderboardEntry(mine[0], mine[0].BoardRank, board, to)
+	if mine != nil {
+		me := leaderboardEntry(*mine, rank, board, to)
 		data.Me = &me
 	}
 	return data, nil

@@ -1,15 +1,15 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { RoomStateData } from '../../src/sdk';
 import bgUrl from '../assets/lobby/bg-board-pixel.webp';
+import { ChatInput, ChatLog } from '../components/ChatLog';
 import { RoomIcon } from '../components/RoomIcon';
 import { TyIcon } from '../components/TyIcon';
 import { KenBadge, UiAvatar, UiButton, UiIconButton } from '../components/Ui';
 import { MIN_PLAYERS } from '../logic/constants';
+import { chatAuthor } from '../helpers/chat';
 import { avatarIconUrl, seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
-
-const CHAT_MAX_LENGTH = 120;
 
 function RoomSeats({ room, selfId, onKick }: { room: RoomStateData; selfId: string; onKick?: (userId: string) => void }) {
   return (
@@ -54,18 +54,6 @@ function RoomSeats({ room, selfId, onKick }: { room: RoomStateData; selfId: stri
 
 function RoomChat({ room, selfId }: { room: RoomStateData; selfId: string }) {
   const { roomChat, sendRoomChat } = useTycoon(useShallow((s) => ({ roomChat: s.roomChat, sendRoomChat: s.sendRoomChat })));
-  const [draft, setDraft] = useState('');
-  const logRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
-  }, [roomChat]);
-
-  const send = () => {
-    if (!draft.trim()) return;
-    sendRoomChat(draft);
-    setDraft('');
-  };
 
   return (
     <section className="ui-panel ty-wait-chat" aria-label="Trò chuyện trong bàn">
@@ -73,27 +61,17 @@ function RoomChat({ room, selfId }: { room: RoomStateData; selfId: string }) {
         <TyIcon name="chat" size={16} />
         Trò chuyện
       </h2>
-      <div ref={logRef} className="ty-wait-log" aria-live="polite">
-        {roomChat.length === 0 ? <p className="ty-wait-hint">Chưa có tin nhắn. Chào mọi người trong bàn nhé!</p> : null}
-        {roomChat.map((msg) => (
-          <p key={`${msg.userId}-${msg.sentAt}`} className="ty-wait-line">
-            <b className={msg.userId === room.ownerId ? 'ty-wait-owner' : undefined}>{msg.userId === selfId ? 'Bạn' : `@${msg.name}`}:</b> {msg.text}
+      <ChatLog
+        messages={roomChat}
+        className="ty-wait-log"
+        empty={<p className="ty-wait-hint">Chưa có tin nhắn. Chào mọi người trong bàn nhé!</p>}
+        renderLine={(msg) => (
+          <p className="ty-wait-line">
+            <b className={msg.userId === room.ownerId ? 'ty-wait-owner' : undefined}>{chatAuthor(msg, selfId)}:</b> {msg.text}
           </p>
-        ))}
-      </div>
-      <div className="ty-wait-input">
-        <input
-          value={draft}
-          maxLength={CHAT_MAX_LENGTH}
-          placeholder="Nhập tin nhắn…"
-          aria-label="Tin nhắn"
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') send();
-          }}
-        />
-        <UiIconButton icon="send" tone="gold" size="sm" label="Gửi" disabled={!draft.trim()} onClick={send} />
-      </div>
+        )}
+      />
+      <ChatInput className="ty-wait-input" onSend={sendRoomChat} />
     </section>
   );
 }

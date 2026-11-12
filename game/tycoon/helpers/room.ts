@@ -64,7 +64,7 @@ export function roomSeatsLabel(room: TycoonRoom): string {
 }
 
 export function roomAction(room: TycoonRoom): RoomAction {
-  if (room.status === 'playing') return room.matchId && room.allowSpectators === true ? 'watch' : 'playing';
+  if (room.status === 'playing') return room.matchId && (room.allowSpectators ?? !room.locked) ? 'watch' : 'playing';
   return room.full || room.players >= roomMaxPlayers(room) ? 'full' : 'join';
 }
 
