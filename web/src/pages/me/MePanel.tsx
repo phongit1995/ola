@@ -22,7 +22,7 @@ import { MarriageView } from '../marriage/MarriageView';
 import { MomentTray } from '../moment/components/MomentTray';
 import { MomentManageView } from '../moment/MomentManageView';
 import { useMomentTraySync } from '../moment/useMomentTraySync';
-import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { useMomentEnabled } from '@ola/shared/stores/moment/momentConfigStore';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
 import bellIcon from '@/assets/icons/me/header/ic_header_notification.png';

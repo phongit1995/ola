@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { NOTIFICATION_PAGE_SIZE } from '../constants/notification';
-import { toast } from '../lib/toast';
-import { MeService } from '../services/me.service';
-import type { MeNotification } from '../types/api/me.type';
-import type { MeNotificationState } from '../types/client/notification.type';
+import { NOTIFICATION_PAGE_SIZE } from '../../constants/notification';
+import { toast } from '../../lib/toast';
+import { MeService } from '../../services/me.service';
+import type { MeNotification } from '../../types/api/me.type';
+import type { MeNotificationState } from '../../types/client/notification.type';
 
 const removedIds = new Set<string>();
 let realtimeSeq = 0;

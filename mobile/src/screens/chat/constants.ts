@@ -1,5 +1,3 @@
-export { MAX_UPLOAD_BYTES } from '@ola/shared/constants';
-
 export const CHAT_BG = '#ECE5DD';
 
 export const SWIPE_MAX = 88;

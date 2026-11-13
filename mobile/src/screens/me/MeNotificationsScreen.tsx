@@ -4,7 +4,7 @@ import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
-import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { clearPushNotification, ME_NOTIF_ID } from '@lib/push';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { applyPostReaction, reconcileTopLikers } from '@ola/shared/stores/feed/postHelpers';

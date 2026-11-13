@@ -5,7 +5,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
-import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';

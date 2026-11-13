@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { registerKenRealtime } from '@ola/shared/stores/ken/kenRealtime';
+import { registerKenRealtime } from './kenRealtime';
 
 export function useKenRealtime() {
   useEffect(() => {

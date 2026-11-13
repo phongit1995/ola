@@ -21,7 +21,7 @@ import {
   toast,
 } from '@lib';
 import { MeService } from '@services';
-import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import type {

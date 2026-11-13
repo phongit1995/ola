@@ -14,10 +14,10 @@ import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
 import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
-import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
-import { useMegaphoneRealtime } from '@/pages/megaphone/useMegaphoneRealtime';
-import { useMeNotificationRealtime } from '@/pages/me/useMeNotificationRealtime';
-import { useAppNotificationRealtime } from '@/pages/apps/useAppNotificationRealtime';
+import { useKenRealtime } from '@ola/shared/stores/ken/useKenRealtime';
+import { useMegaphoneRealtime } from '@ola/shared/stores/megaphone/useMegaphoneRealtime';
+import { useMeNotificationRealtime } from '@ola/shared/stores/me-notification/useMeNotificationRealtime';
+import { useAppNotificationRealtime } from '@ola/shared/stores/app-notification/useAppNotificationRealtime';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useThemeStore } from '@ola/shared/stores/themeStore';
 

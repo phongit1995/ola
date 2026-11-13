@@ -28,7 +28,7 @@ import { PushService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
-import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { androidNotificationBase } from '@lib/notificationAndroid';
 import i18n from '../i18n';

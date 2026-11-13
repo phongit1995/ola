@@ -33,6 +33,7 @@ import {
   spinCountNoteUrl,
   titleBannerUrl,
 } from './spinWheelAssets';
+import { KEN_SOCKET_EVENTS } from '@ola/shared/constants';
 
 interface SpinWheelGamePageProps {
   onClose: () => void;
@@ -67,7 +68,7 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
       suppressKenSync: false,
       pendingResult: null,
     });
-    const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
+    const off = SocketService.on<{ ken?: number }>(KEN_SOCKET_EVENTS.updated, (data) => {
       if (typeof data?.ken === 'number')
         useSpinWheelStore.getState().syncKen(data.ken);
     });

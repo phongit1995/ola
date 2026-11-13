@@ -67,3 +67,9 @@ export const KEN_SOCKET_EVENTS = {
   chestAvailable: 'KEN_CHEST_AVAILABLE',
   chestClosed: 'KEN_CHEST_CLOSED',
 } as const;
+
+export const PEN_SOCKET_EVENTS = {
+  settled: 'PEN_SETTLED',
+} as const;
+
+export const ME_NOTIFICATION_SOCKET_EVENT = 'ME_NOTIFICATION';

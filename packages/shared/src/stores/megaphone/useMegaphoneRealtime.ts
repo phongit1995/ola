@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { registerMegaphoneRealtime } from '@ola/shared/stores/megaphone/megaphoneRealtime';
+import { registerMegaphoneRealtime } from './megaphoneRealtime';
 
 export function useMegaphoneRealtime() {
   useEffect(() => {
