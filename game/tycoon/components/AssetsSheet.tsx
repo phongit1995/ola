@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
-import { GROUPS, MAX_HOUSES } from '../logic/constants';
+import { GROUPS, LEVEL_NAMES, MAX_HOUSES } from '../logic/constants';
 import { canBuild, canSell, currentRent, worthOf } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { seatColor, SEAT_TINTS } from '../helpers/player';
@@ -87,7 +87,7 @@ export function AssetsSheet({ seat }: { seat: number }) {
                     <span>
                       <b>{tile.name}</b>
                       <small>
-                        {street ? `Lv${level}` : 'Sân bay'} · <em>Thuê {currentRent(view, idx)}</em>
+                        {street ? LEVEL_NAMES[level] : 'Sân bay'} · <em>Thuê {currentRent(view, idx)}</em>
                       </small>
                     </span>
                     {art ? <img className="ty-holding-house" src={art} alt="" draggable={false} /> : null}

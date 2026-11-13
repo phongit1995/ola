@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, tilesOfGroup } from '../logic/board';
-import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, MAX_HOUSES, TAX_RATE } from '../logic/constants';
+import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, LEVEL_NAMES, MAX_HOUSES, TAX_RATE } from '../logic/constants';
 import { takeoverPrice } from '../logic/engine';
 import { buildPlan, canBuild, currentRent, sellPlan } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
@@ -73,7 +73,7 @@ export function TileSheet({ idx }: { idx: number }) {
   const alongside = (moves: number[], dir: 1 | -1) =>
     tilesOfGroup(tile.group ?? '')
       .filter((g) => g !== idx && moves.includes(g))
-      .map((g) => `${BOARD[g].name} ${dir > 0 ? 'lên' : 'xuống'} Lv${view.tiles[g].houses + dir * moves.filter((t) => t === g).length}`);
+      .map((g) => `${BOARD[g].name} ${dir > 0 ? 'lên' : 'còn'} ${LEVEL_NAMES[view.tiles[g].houses + dir * moves.filter((t) => t === g).length] ?? ''}`);
   const sideNote = selling && sale ? alongside(sale.tiles, -1) : plan ? alongside(plan.tiles, 1) : [];
   const pick: LadderPick | undefined =
     canUpgrade || canDowngrade ? { target, can: (houses) => houses !== state.houses && (houses > state.houses ? canUpgrade : canDowngrade), onPick: setWant, selling } : undefined;
@@ -114,10 +114,10 @@ export function TileSheet({ idx }: { idx: number }) {
           <>
             <div className="ui-actions ty-manage-actions">
               <UiButton tone={selling ? 'red' : 'paper'} gain={sale?.cost} disabled={busy || !sale} onClick={() => sale && run('SELL_HOUSE', sale.tiles)}>
-                {selling ? `Hạ Lv${target}` : 'Hạ'}
+                Bán nhà
               </UiButton>
               <UiButton tone="gold" price={plan?.cost ?? houseCost} disabled={busy || !plan || short > 0} onClick={() => plan && run('BUILD', plan.tiles)}>
-                {plan ? `Lên Lv${target}` : 'Nâng'}
+                Nâng cấp
               </UiButton>
             </div>
             {sideNote.length > 0 ? <p className="ty-sheet-reason ty-sheet-reason-info">Đều cả nhóm: {sideNote.join(', ')}</p> : null}
@@ -149,13 +149,13 @@ export function TileSheet({ idx }: { idx: number }) {
 
       {property ? (
         <>
-          {pick ? <p className="ty-ladder-hint">Chạm cấp muốn nâng hoặc hạ</p> : null}
+          {pick ? <p className="ty-ladder-hint">Chạm vào cấp muốn nâng lên hoặc bán xuống</p> : null}
           <RentLadder view={view} idx={idx} pick={pick} />
           <p className="ty-deed-facts">
             {street && (owner < 0 || owner === you) ? (
               <>
                 <span>Nâng {formatMoney(houseCost)}/cấp</span>
-                <span>Hạ +{formatMoney(Math.floor(houseCost / 2))}/cấp</span>
+                <span>Bán +{formatMoney(Math.floor(houseCost / 2))}/cấp</span>
               </>
             ) : null}
             {street && owner >= 0 && state.houses < MAX_HOUSES ? (

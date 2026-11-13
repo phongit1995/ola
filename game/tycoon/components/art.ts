@@ -8,6 +8,7 @@ import cardMove from '../assets/art/card-move.webp';
 import cardRepair from '../assets/art/card-repair.webp';
 import flag from '../assets/pixel/fx-flag.webp';
 import lantern from '../assets/pixel/fx-lantern.webp';
+import house0 from '../assets/art/house-0.webp';
 import house1 from '../assets/art/house-1.webp';
 import house2 from '../assets/art/house-2.webp';
 import house3 from '../assets/art/house-3.webp';
@@ -27,6 +28,10 @@ export function pawnArt(seat: number): string {
 
 export function houseArt(level: number): string | null {
   return level > 0 ? HOUSE_ART[Math.min(level, HOUSE_ART.length) - 1] : null;
+}
+
+export function levelArt(level: number): string {
+  return houseArt(level) ?? house0;
 }
 
 export function cardArt(card: CardData | undefined): string {

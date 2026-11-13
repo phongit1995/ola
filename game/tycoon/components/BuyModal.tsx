@@ -85,7 +85,7 @@ export function BuyModal() {
             {houses > 0 ? (
               <>
                 {art ? <img src={art} alt="" draggable={false} /> : null}
-                Nhận luôn <b>Lv{houses} · {LEVEL_NAMES[houses]}</b>
+                Nhận luôn <b>{LEVEL_NAMES[houses]}</b>
               </>
             ) : (
               <>Nhận đất trống, chưa có nhà</>
