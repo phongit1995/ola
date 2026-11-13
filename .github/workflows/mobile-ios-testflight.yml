@@ -70,6 +70,7 @@ jobs:
           IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
           IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          IOS_NSE_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_NSE_PROVISIONING_PROFILE_BASE64 }}
           IOS_KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
@@ -81,6 +82,7 @@ jobs:
             IOS_DISTRIBUTION_CERTIFICATE_BASE64 \
             IOS_DISTRIBUTION_CERTIFICATE_PASSWORD \
             IOS_PROVISIONING_PROFILE_BASE64 \
+            IOS_NSE_PROVISIONING_PROFILE_BASE64 \
             IOS_KEYCHAIN_PASSWORD \
             ASC_KEY_ID \
             ASC_ISSUER_ID \
@@ -102,6 +104,7 @@ jobs:
           CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
           PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          NSE_PROFILE_BASE64: ${{ secrets.IOS_NSE_PROVISIONING_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
         run: |
           set -euo pipefail
@@ -130,9 +133,17 @@ jobs:
           }
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          NSE_PROFILE_PATH="$RUNNER_TEMP/ios_nse.mobileprovision"
+          printf '%s' "$NSE_PROFILE_BASE64" | base64 --decode > "$NSE_PROFILE_PATH"
+          NSE_PROFILE_PLIST="$RUNNER_TEMP/nse-profile.plist"
+          security cms -D -i "$NSE_PROFILE_PATH" > "$NSE_PROFILE_PLIST"
+          NSE_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$NSE_PROFILE_PLIST")
+          NSE_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$NSE_PROFILE_PLIST")
+          cp "$NSE_PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$NSE_PROFILE_UUID.mobileprovision"
           {
             echo "PROFILE_UUID=$PROFILE_UUID"
             echo "PROFILE_NAME=$PROFILE_NAME"
+            echo "NSE_PROFILE_NAME=$NSE_PROFILE_NAME"
           } >> "$GITHUB_OUTPUT"
 
       - name: Read and validate app identifiers
@@ -156,8 +167,19 @@ jobs:
             echo "Provisioning profile App ID mismatch: expected=$PROFILE_APP_ID actual=$PROFILE_APP_ID_ACTUAL" >&2
             exit 1
           }
+          NSE_BUNDLE_ID="$BUNDLE_ID.NotificationService"
+          NSE_PROFILE_APP_ID_ACTUAL=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$RUNNER_TEMP/nse-profile.plist")
+          test "$NSE_PROFILE_APP_ID_ACTUAL" = "$APPLE_TEAM_ID.$NSE_BUNDLE_ID" || {
+            echo "Notification Service profile App ID mismatch: expected=$APPLE_TEAM_ID.$NSE_BUNDLE_ID actual=$NSE_PROFILE_APP_ID_ACTUAL" >&2
+            exit 1
+          }
+          /usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.usernotifications.communication' "$RUNNER_TEMP/profile-check.plist" >/dev/null || {
+            echo "App profile thiếu capability Communication Notifications, tạo lại profile sau khi bật capability cho App ID" >&2
+            exit 1
+          }
           {
             echo "BUNDLE_ID=$BUNDLE_ID"
+            echo "NSE_BUNDLE_ID=$NSE_BUNDLE_ID"
             echo "PROFILE_NAME=${{ steps.signing.outputs.PROFILE_NAME }}"
           } >> "$GITHUB_OUTPUT"
 
@@ -177,6 +199,7 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY='Apple Distribution' \
             OLA_PROVISIONING_PROFILE='${{ steps.signing.outputs.PROFILE_NAME }}' \
+            OLA_NSE_PROVISIONING_PROFILE='${{ steps.signing.outputs.NSE_PROFILE_NAME }}' \
             | tee "$RUNNER_TEMP/xcodebuild-archive.log"
           ARCHIVE_PLIST="$RUNNER_TEMP/OlaMobile.xcarchive/Info.plist"
           ARCHIVED_VERSION=$(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleShortVersionString' "$ARCHIVE_PLIST")
@@ -204,6 +227,7 @@ jobs:
             <key>teamID</key><string>$APPLE_TEAM_ID</string>
             <key>provisioningProfiles</key><dict>
               <key>${{ steps.app.outputs.BUNDLE_ID }}</key><string>${{ steps.signing.outputs.PROFILE_NAME }}</string>
+              <key>${{ steps.app.outputs.NSE_BUNDLE_ID }}</key><string>${{ steps.signing.outputs.NSE_PROFILE_NAME }}</string>
             </dict>
           </dict></plist>
           PLIST
