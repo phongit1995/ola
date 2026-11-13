@@ -5,7 +5,7 @@ import {
   isAllowedVerifyEmailDomain,
   isAllowedVerifyEmailLocal,
 } from '@ola/shared/constants';
-import { ApiError, EMAIL_UNAVAILABLE_STATUS } from '@ola/shared/lib';
+import { verifyEmailErrorKey } from '@ola/shared/lib';
 import { AuthService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
@@ -19,33 +19,6 @@ interface VerifyEmailDialogProps {
   initialEmail: string;
   onClose: () => void;
   onVerified: () => void;
-}
-
-type VerifyEmailErrorKey =
-  | 'verifyEmail.errGeneric'
-  | 'verifyEmail.errEmailInvalid'
-  | 'verifyEmail.errDomainNotAllowed'
-  | 'verifyEmail.errDailyLimit'
-  | 'verifyEmail.errCooldown'
-  | 'verifyEmail.errTaken'
-  | 'verifyEmail.errTooMany'
-  | 'verifyEmail.errCodeExpired'
-  | 'verifyEmail.errCodeInvalid'
-  | 'verifyEmail.errUnavailable';
-
-function messageKey(err: unknown): VerifyEmailErrorKey {
-  if (!(err instanceof ApiError)) return 'verifyEmail.errGeneric';
-  if (err.status === EMAIL_UNAVAILABLE_STATUS) return 'verifyEmail.errUnavailable';
-  const msg = err.message.toLowerCase();
-  if (msg.includes('domain')) return 'verifyEmail.errDomainNotAllowed';
-  if (msg.includes('format')) return 'verifyEmail.errEmailInvalid';
-  if (msg.includes('daily')) return 'verifyEmail.errDailyLimit';
-  if (msg.includes('wait')) return 'verifyEmail.errCooldown';
-  if (msg.includes('already exists')) return 'verifyEmail.errTaken';
-  if (msg.includes('too many')) return 'verifyEmail.errTooMany';
-  if (msg.includes('expired') || msg.includes('invalid verification request')) return 'verifyEmail.errCodeExpired';
-  if (msg.includes('invalid verification code')) return 'verifyEmail.errCodeInvalid';
-  return 'verifyEmail.errGeneric';
 }
 
 export function VerifyEmailDialog({ visible, initialEmail, onClose, onVerified }: VerifyEmailDialogProps) {
@@ -105,7 +78,7 @@ export function VerifyEmailDialog({ visible, initialEmail, onClose, onVerified }
       setStep('code');
       setCooldown(RESEND_SECONDS);
     } catch (err) {
-      push('error', t(messageKey(err)));
+      push('error', t(verifyEmailErrorKey(err)));
     } finally {
       setSubmitting(false);
     }
@@ -128,7 +101,7 @@ export function VerifyEmailDialog({ visible, initialEmail, onClose, onVerified }
       reset();
       onClose();
     } catch (err) {
-      push('error', t(messageKey(err)));
+      push('error', t(verifyEmailErrorKey(err)));
     } finally {
       setSubmitting(false);
     }

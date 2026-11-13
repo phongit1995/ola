@@ -5,9 +5,9 @@ import { authTokens } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
 import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import { removeSavedAccount } from '@lib/session';
 import { TEXT_SECONDARY } from '@constants';
 import { ChangeNicknameDialog } from './ChangeNicknameDialog';
+import { removeSavedAccount } from '@ola/shared/stores/savedAccountsStore';
 
 const nicknameIcon = require('@assets/icons/apps/nickname.png');
 

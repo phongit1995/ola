@@ -9,6 +9,7 @@ import {
   SPIN_TURNS,
   WHEEL_CENTER,
   WHEEL_DIVIDER_INNER_RADIUS,
+  WHEEL_POINTER_MAX_TICK_DEG,
   WHEEL_SLICE_RADIUS,
 } from './spinWheel.constants';
 import { formatKen } from './number';
@@ -113,4 +114,11 @@ export function isVipDaysKind(kind: WheelSegmentKind): boolean {
 
 export function isVipItemKind(kind: WheelSegmentKind): boolean {
   return kind === WHEEL_SEGMENT_KIND.vipItem || kind === WHEEL_SEGMENT_KIND.vipRandom;
+}
+
+export function pointerTickDeg(wheelAngle: number, angle: number): number {
+  if (angle <= 0) return 0;
+  const phase = (((wheelAngle - angle / 2) % angle) + angle) % angle;
+  const t = phase / angle;
+  return -WHEEL_POINTER_MAX_TICK_DEG * t * t;
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { colorForName, toast } from '@ola/shared/lib';
+import { colorForName, toast, formatDateSlashDMY } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { DiaryEntry } from '@ola/shared/types';
@@ -35,12 +35,6 @@ function FramedAvatar({
       <Avatar name={name} color={color} uri={src} size={size} rounded={false} />
     </View>
   );
-}
-
-function formatDate(ms: number): string {
-  const d = new Date(ms);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
 }
 
 export function MarriageBoxView() {
@@ -128,7 +122,7 @@ export function MarriageBoxView() {
         </Text>
         {marriedSince != null && (
           <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.55)' }}>
-            {t('marriage.marriedSince', { date: formatDate(marriedSince) })}
+            {t('marriage.marriedSince', { date: formatDateSlashDMY(marriedSince) })}
           </Text>
         )}
         <View

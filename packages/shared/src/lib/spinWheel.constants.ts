@@ -30,3 +30,5 @@ export const WHEEL_CENTER = WHEEL_VIEWBOX / 2;
 export const WHEEL_SLICE_RADIUS = 48;
 export const WHEEL_LABEL_RADIUS = 31;
 export const WHEEL_DIVIDER_INNER_RADIUS = 12;
+
+export const WHEEL_POINTER_MAX_TICK_DEG = 15;

@@ -19,7 +19,9 @@ import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
 import { SupportDialog } from '../apps/SupportDialog';
 import { GiftCodeDialog } from './GiftCodeDialog';
-import { removeSavedAccountOfCurrentUser } from './utils';
+import {
+  removeSavedAccountOfCurrentUser,
+} from '@ola/shared/stores/savedAccountsStore';
 
 export function PersonalPanel() {
   const wallpaperStyle = useLobbyWallpaperStyle();

@@ -4,42 +4,9 @@ import { MeService } from '@services';
 import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 import type { MePhoto } from '@app-types';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
+import { groupPhotosByMonth } from '@lib';
 
 const PAGE_SIZE = 50;
-
-interface PhotoGroup {
-  key: string;
-  label: string;
-  items: { url: string; index: number }[];
-}
-
-function monthKey(iso: string): string {
-  const date = new Date(iso);
-  return `${date.getFullYear()}-${date.getMonth()}`;
-}
-
-function monthLabel(iso: string, language: string): string {
-  const date = new Date(iso);
-  const text = new Intl.DateTimeFormat(language, {
-    month: 'long',
-    year: 'numeric',
-  }).format(date);
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-function groupByMonth(photos: MePhoto[], language: string): PhotoGroup[] {
-  const groups: PhotoGroup[] = [];
-  photos.forEach((photo, index) => {
-    const key = monthKey(photo.createdAt);
-    let last = groups[groups.length - 1];
-    if (last == null || last.key !== key) {
-      last = { key, label: monthLabel(photo.createdAt, language), items: [] };
-      groups.push(last);
-    }
-    last.items.push({ url: photo.url, index });
-  });
-  return groups;
-}
 
 function EmptyIcon() {
   return (
@@ -162,7 +129,7 @@ export function MediaStorePage({ onClose }: { onClose: () => void }) {
 
   const allUrls = useMemo(() => photos.map((photo) => photo.url), [photos]);
   const groups = useMemo(
-    () => groupByMonth(photos, i18n.language),
+    () => groupPhotosByMonth(photos, i18n.language),
     [photos, i18n.language]
   );
   const hasPhotos = photos.length > 0;

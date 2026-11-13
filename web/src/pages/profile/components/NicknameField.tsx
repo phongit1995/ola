@@ -8,8 +8,8 @@ import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import nicknameIcon from '@/assets/icons/apps/nickname.png';
-import { removeSavedAccount } from '../../personal/utils';
 import { ChangeNicknameDialog } from './ChangeNicknameDialog';
+import { removeSavedAccount } from '@ola/shared/stores/savedAccountsStore';
 
 export function NicknameField({ username }: { username: string }) {
   const { t } = useTranslation();

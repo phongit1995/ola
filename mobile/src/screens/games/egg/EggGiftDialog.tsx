@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -10,7 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { EGG_GIFT_FIXTURE, formatKen, formatOddsPercent, vipName } from '@ola/shared/lib';
+import { EGG_GIFT_FIXTURE, formatOddsPercent, eggRewardText } from '@ola/shared/lib';
 import { EggService } from '@ola/shared/services';
 import type { EggCategoryKind, EggGiftReward, EggGiftSection } from '@ola/shared/types';
 import { Dialog } from '@components/ui/Dialog';
@@ -60,18 +59,6 @@ const SECTION_STYLES: Partial<Record<EggCategoryKind, SectionStyle>> = {
     labelKey: 'eggGame.gifts.section.vip_icon',
   },
 };
-
-function rewardText(type: EggCategoryKind, reward: EggGiftReward, t: TFunction): string {
-  if (type === EGG_CATEGORY_KIND.vipIcon && reward.vipTypeId != null)
-    return vipName(reward.vipTypeId);
-  if (reward.label) return reward.label;
-  if (type === EGG_CATEGORY_KIND.ken && reward.kenAmount)
-    return `${formatKen(reward.kenAmount)} Ken`;
-  if (type === EGG_CATEGORY_KIND.vipDays && reward.vipDays) {
-    return t('eggGame.gifts.vipDaysLabel', { days: reward.vipDays });
-  }
-  return '';
-}
 
 function RewardIcon({ type, reward }: { type: EggCategoryKind; reward: EggGiftReward }) {
   if (type === EGG_CATEGORY_KIND.ken) {
@@ -213,7 +200,7 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
                           return (
                             <View key={rowIndex} style={{ flexDirection: 'row', gap: 8 }}>
                               {rowRewards.map((reward) => {
-                                const label = rewardText(section.type, reward, t);
+                                const label = eggRewardText(t, section.type, reward);
                                 return (
                                   <View
                                     key={`${section.type}-${label}`}

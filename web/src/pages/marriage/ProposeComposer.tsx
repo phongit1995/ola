@@ -7,8 +7,7 @@ import {
   UserName,
   VipAvatar,
 } from '@components';
-import { RELATIONSHIP_STATUS } from '@constants';
-import { toast } from '@lib';
+import { toast, isBlockedRelationship } from '@lib';
 import type { UserSearchResult } from '@app-types';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import { useUserSearch } from '@ola/shared/stores/user/useUserSearch';
@@ -17,13 +16,6 @@ const MESSAGE_LIMIT = 500;
 
 interface ProposeComposerProps {
   onClose: () => void;
-}
-
-function isBlocked(user: UserSearchResult): boolean {
-  return (
-    user.relationship === RELATIONSHIP_STATUS.blockedByMe ||
-    user.relationship === RELATIONSHIP_STATUS.blockedByThem
-  );
 }
 
 const PROPOSE_SEARCH_LIMIT = 20;
@@ -180,7 +172,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
                           </li>
                         ) : (
                           results.map((user) => {
-                            const blocked = isBlocked(user);
+                            const blocked = isBlockedRelationship(user.relationship);
                             return (
                               <li key={user.id}>
                                 <button

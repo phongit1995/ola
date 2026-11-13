@@ -37,3 +37,5 @@ export type * from './story.type';
 export type * from './wordChain.type';
 export type * from './announcement.type';
 export type * from './menu.type';
+export type * from './media.type';
+export type * from './verifyEmail.type';

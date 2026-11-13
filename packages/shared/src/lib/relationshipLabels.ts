@@ -21,3 +21,7 @@ export function profileFriendLabel(
   if (status === RELATIONSHIP_STATUS.pendingIncoming) return t('profile.acceptFriend');
   return t('profile.makeFriend');
 }
+
+export function isBlockedRelationship(status: RelationshipStatus | null | undefined): boolean {
+  return status === RELATIONSHIP_STATUS.blockedByMe || status === RELATIONSHIP_STATUS.blockedByThem;
+}

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { MAX_SAVED_ACCOUNTS } from '../constants/storage';
 import { encodeSecret } from '../lib/secret';
 import { sharedPersistStorage } from '../platform/persistStorage';
+import { useAuthStore } from './auth/authStore';
 import type {
   SavedAccount,
   SavedAccountsState,
@@ -72,3 +73,18 @@ export const useSavedAccountsStore = create<SavedAccountsState>()(
     }
   )
 );
+
+export function removeSavedAccount(username: string): void {
+  const normalizedUsername = username.trim().toLowerCase();
+  const savedAccount = useSavedAccountsStore
+    .getState()
+    .accounts.find((account) => account.username.trim().toLowerCase() === normalizedUsername);
+  if (savedAccount != null) {
+    useSavedAccountsStore.getState().removeAccount(savedAccount.username);
+  }
+}
+
+export function removeSavedAccountOfCurrentUser(): void {
+  const currentUsername = useAuthStore.getState().user?.username;
+  if (currentUsername != null) removeSavedAccount(currentUsername);
+}

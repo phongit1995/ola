@@ -21,40 +21,10 @@ import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { CachedImage } from '@components/ui/CachedImage';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { PHOTOS_PAGE_SIZE } from './constants';
+import { groupPhotosByMonth } from '@ola/shared/lib';
 const MUTED = 'rgba(0,0,0,0.45)';
 
 const mediaIcon = require('@assets/icons/apps/media.png');
-
-interface PhotoGroup {
-  key: string;
-  label: string;
-  items: { url: string; index: number }[];
-}
-
-function monthKey(iso: string): string {
-  const date = new Date(iso);
-  return `${date.getFullYear()}-${date.getMonth()}`;
-}
-
-function monthLabel(iso: string, language: string): string {
-  const date = new Date(iso);
-  const text = new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(date);
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-function groupByMonth(photos: MePhoto[], language: string): PhotoGroup[] {
-  const groups: PhotoGroup[] = [];
-  photos.forEach((photo, index) => {
-    const key = monthKey(photo.createdAt);
-    let last = groups[groups.length - 1];
-    if (last == null || last.key !== key) {
-      last = { key, label: monthLabel(photo.createdAt, language), items: [] };
-      groups.push(last);
-    }
-    last.items.push({ url: photo.url, index });
-  });
-  return groups;
-}
 
 function PhotoSkeleton() {
   return (
@@ -141,7 +111,7 @@ export function MediaStoreScreen({ navigation }: Props) {
   }
 
   const allUrls = useMemo(() => photos.map((photo) => photo.url), [photos]);
-  const groups = useMemo(() => groupByMonth(photos, i18n.language), [photos, i18n.language]);
+  const groups = useMemo(() => groupPhotosByMonth(photos, i18n.language), [photos, i18n.language]);
   const hasPhotos = photos.length > 0;
 
   return (

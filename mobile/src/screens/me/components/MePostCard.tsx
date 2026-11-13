@@ -10,7 +10,7 @@ import Animated, {
   runOnJS,
   type SharedValue,
 } from 'react-native-reanimated';
-import { colorForName, formatDuration, postAudio } from '@ola/shared/lib';
+import { colorForName, formatDuration, postAudio, formatLikeCount } from '@ola/shared/lib';
 import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { playLikeMeSound } from '@lib/sound';
@@ -34,10 +34,6 @@ const likeIconActive = require('@assets/icons/me/ic_like_selected.png');
 const likeStickerFly = require('@assets/icons/me/sticker_like.png');
 const checkInIcon = require('@assets/icons/me/ic_check_in.png');
 const pinIcon = require('@assets/icons/me/ic_pin.png');
-
-function formatLikeCount(count: number): string {
-  return count > 9 ? '9+' : String(count);
-}
 
 function LikerStack({ likers }: { likers: PostAuthor[] }) {
   if (likers.length === 0) return null;

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
-import { withAlpha } from '@ola/shared/lib';
+import { withAlpha, emojiToken } from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { SMILEY_PANEL } from '@lib/chatSmiley';
-import { EMOJI_IMAGES, emojiToken } from '@lib/emoji';
+import { EMOJI_IMAGES } from '@lib/emoji';
 import { KUL_IMAGES } from '@lib/kul';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 

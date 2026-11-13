@@ -16,13 +16,14 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
-import { removeSavedAccountOfCurrentUser, signOut } from '@lib/session';
+import { signOut } from '@lib/session';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { SocialConnectionsDialog } from '../apps/SocialConnectionsDialog';
 import { SupportDialog } from '../apps/SupportDialog';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';
 import { GiftCodeDialog } from './GiftCodeDialog';
 import { useGiftCodeConfigSync } from './useGiftCodeConfigSync';
+import { removeSavedAccountOfCurrentUser } from '@ola/shared/stores/savedAccountsStore';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
 const APP_VERSION_LABEL = `v${DeviceInfo.getVersion()} (${DeviceInfo.getBuildNumber()})`;

@@ -1,8 +1,8 @@
 import { Image } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import { buildSmileyMap, buildSmileyPanel, buildSmileyRegex } from '@ola/shared/lib';
+import { buildSmileyMap, buildSmileyPanel, buildSmileyRegex, isEmojiToken } from '@ola/shared/lib';
 import { SMILEY_IMAGES } from './smileyImages';
-import { emojiImageForToken, isEmojiToken } from './emoji';
+import { emojiImageForToken } from './emoji';
 
 export { SMILEY_IMAGES };
 

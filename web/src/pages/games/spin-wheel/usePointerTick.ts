@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from 'react';
+import { pointerTickDeg } from '@lib';
 
-const POINTER_MAX_TICK_DEG = 15;
 
 function wheelAngleFromTransform(transform: string): number {
   if (!transform || transform === 'none') return 0;
@@ -12,13 +12,6 @@ function wheelAngleFromTransform(transform: string): number {
   const b = Number(parts[1]);
   if (Number.isNaN(a) || Number.isNaN(b)) return 0;
   return (Math.atan2(b, a) * 180) / Math.PI;
-}
-
-function pointerTickDeg(wheelAngle: number, angle: number): number {
-  if (angle <= 0) return 0;
-  const phase = (((wheelAngle - angle / 2) % angle) + angle) % angle;
-  const t = phase / angle;
-  return -POINTER_MAX_TICK_DEG * t * t;
 }
 
 export function usePointerTick(

@@ -4,7 +4,7 @@ import {
   isAllowedVerifyEmailDomain,
   isAllowedVerifyEmailLocal,
 } from '@ola/shared/constants';
-import { ApiError, EMAIL_UNAVAILABLE_STATUS, toast } from '@lib';
+import { toast, verifyEmailErrorKey } from '@lib';
 import { AuthService } from '@services';
 import { Dialog, DialogButton, OtpInput } from '@components';
 
@@ -16,35 +16,6 @@ interface VerifyEmailDialogProps {
   initialEmail: string;
   onClose: () => void;
   onVerified: () => void;
-}
-
-type VerifyEmailErrorKey =
-  | 'verifyEmail.errGeneric'
-  | 'verifyEmail.errEmailInvalid'
-  | 'verifyEmail.errDomainNotAllowed'
-  | 'verifyEmail.errDailyLimit'
-  | 'verifyEmail.errCooldown'
-  | 'verifyEmail.errTaken'
-  | 'verifyEmail.errTooMany'
-  | 'verifyEmail.errCodeExpired'
-  | 'verifyEmail.errCodeInvalid'
-  | 'verifyEmail.errUnavailable';
-
-function messageKey(err: unknown): VerifyEmailErrorKey {
-  if (!(err instanceof ApiError)) return 'verifyEmail.errGeneric';
-  if (err.status === EMAIL_UNAVAILABLE_STATUS) return 'verifyEmail.errUnavailable';
-  const msg = err.message.toLowerCase();
-  if (msg.includes('domain')) return 'verifyEmail.errDomainNotAllowed';
-  if (msg.includes('format')) return 'verifyEmail.errEmailInvalid';
-  if (msg.includes('daily')) return 'verifyEmail.errDailyLimit';
-  if (msg.includes('wait')) return 'verifyEmail.errCooldown';
-  if (msg.includes('already exists')) return 'verifyEmail.errTaken';
-  if (msg.includes('too many')) return 'verifyEmail.errTooMany';
-  if (msg.includes('expired') || msg.includes('invalid verification request'))
-    return 'verifyEmail.errCodeExpired';
-  if (msg.includes('invalid verification code'))
-    return 'verifyEmail.errCodeInvalid';
-  return 'verifyEmail.errGeneric';
 }
 
 export function VerifyEmailDialog({
@@ -108,7 +79,7 @@ export function VerifyEmailDialog({
       setStep('code');
       setCooldown(RESEND_SECONDS);
     } catch (err) {
-      toast.error(t(messageKey(err)));
+      toast.error(t(verifyEmailErrorKey(err)));
     } finally {
       setSubmitting(false);
     }
@@ -133,7 +104,7 @@ export function VerifyEmailDialog({
       reset();
       onClose();
     } catch (err) {
-      toast.error(t(messageKey(err)));
+      toast.error(t(verifyEmailErrorKey(err)));
     } finally {
       setSubmitting(false);
     }

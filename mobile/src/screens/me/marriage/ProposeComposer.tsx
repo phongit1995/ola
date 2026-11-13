@@ -10,12 +10,11 @@ import {
   View,
 } from 'react-native';
 import { KeyboardView } from '@components/KeyboardView';
-import { toast } from '@ola/shared/lib';
+import { toast, isBlockedRelationship } from '@ola/shared/lib';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useUserSearch } from '@ola/shared/stores/user/useUserSearch';
 
 const MESSAGE_LIMIT = 500;
@@ -24,10 +23,6 @@ const searchIcon = require('@assets/icons/me/ic_action_search.png');
 
 interface ProposeComposerProps {
   onClose: () => void;
-}
-
-function isBlocked(user: UserSearchResult): boolean {
-  return user.relationship === RELATIONSHIP_STATUS.blockedByMe || user.relationship === RELATIONSHIP_STATUS.blockedByThem;
 }
 
 function UserRowName({ user }: { user: UserSearchResult }) {
@@ -216,7 +211,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
                         </View>
                       ) : (
                         results.map((user) => {
-                          const blocked = isBlocked(user);
+                          const blocked = isBlockedRelationship(user.relationship);
                           return (
                             <Pressable
                               key={user.id}

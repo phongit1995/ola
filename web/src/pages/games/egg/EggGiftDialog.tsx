@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Spinner, VipIcon } from '@components';
-import { EGG_GIFT_FIXTURE, formatKen, portalRoot, vipName } from '@lib';
+import { EGG_GIFT_FIXTURE, portalRoot, eggRewardText } from '@lib';
 import { EggService } from '@services';
 import type {
   EggCategoryKind,
@@ -53,22 +52,6 @@ const SECTION_STYLES: Partial<Record<EggCategoryKind, SectionStyle>> = {
     labelKey: 'eggGame.gifts.section.vip_icon',
   },
 };
-
-function rewardText(
-  type: EggCategoryKind,
-  reward: EggGiftReward,
-  t: TFunction
-): string {
-  if (type === EGG_CATEGORY_KIND.vipIcon && reward.vipTypeId != null)
-    return vipName(reward.vipTypeId);
-  if (reward.label) return reward.label;
-  if (type === EGG_CATEGORY_KIND.ken && reward.kenAmount)
-    return `${formatKen(reward.kenAmount)} Ken`;
-  if (type === EGG_CATEGORY_KIND.vipDays && reward.vipDays) {
-    return t('eggGame.gifts.vipDaysLabel', { days: reward.vipDays });
-  }
-  return '';
-}
 
 function RewardIcon({
   type,
@@ -185,7 +168,7 @@ export function EggGiftDialog({ open, packId, onClose }: EggGiftDialogProps) {
                     </span>
                     <div className="grid grid-cols-3 gap-2">
                       {section.rewards.map((reward) => {
-                        const label = rewardText(section.type, reward, t);
+                        const label = eggRewardText(t, section.type, reward);
                         return (
                           <div
                             key={`${section.type}-${label}`}

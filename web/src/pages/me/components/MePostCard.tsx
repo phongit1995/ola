@@ -12,7 +12,12 @@ import likeSoundUrl from '@/assets/sounds/like_me.mp3';
 import { Avatar, UserName } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
-import { DEFAULT_AVATAR_COLOR, formatDuration, portalRoot } from '@lib';
+import {
+  DEFAULT_AVATAR_COLOR,
+  formatDuration,
+  portalRoot,
+  formatLikeCount,
+} from '@lib';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
@@ -29,10 +34,6 @@ function popClass(anim: 'in' | 'out' | null): string {
 function playLikeSound() {
   const audio = new Audio(likeSoundUrl);
   audio.play().catch(() => undefined);
-}
-
-function formatLikeCount(count: number): string {
-  return count > 9 ? '9+' : String(count);
 }
 
 function LikerStack({ likers }: { likers: MePost['topLikers'] }) {

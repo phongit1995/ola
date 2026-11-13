@@ -18,7 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { formatKen } from '@ola/shared/lib';
+import { formatKen, formatCountdownMMSS } from '@ola/shared/lib';
 import {
   useKenTreasureStore,
   useKenTreasurePositionStore,
@@ -45,13 +45,6 @@ const whiteTextStyle: TextStyle = {
   textShadowOffset: { width: 0, height: 2 },
   textShadowRadius: 3,
 };
-
-function formatCountdown(ms: number): string {
-  const total = Math.max(0, Math.ceil(ms / 1000));
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
 
 function useRemaining(expiresAt: string, onExpire: () => void): number {
   const [remaining, setRemaining] = useState(0);
@@ -204,7 +197,7 @@ function ChestCountdown({
         className="items-center justify-center"
       >
         <Text style={[{ fontSize: 11, fontWeight: '800' }, goldTextStyle]}>
-          {formatCountdown(remaining)}
+          {formatCountdownMMSS(remaining)}
         </Text>
       </View>
     </View>
