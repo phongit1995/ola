@@ -14,7 +14,7 @@ import type {
   VipPurchaseHistoryItem,
   VipTransferHistoryItem,
 } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 
 const PAGE_SIZE = 20;
 const TABS = ['purchases', 'transfers'] as const;

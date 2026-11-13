@@ -4,7 +4,7 @@ import { ConfirmDialog } from '@components';
 import { toast } from '@lib';
 import { RoomChatView } from './components/RoomChatView';
 import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
-import { useRoomChatStore } from '@/store/roomChatStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
 import type { ActiveRoom } from '@ola/shared/types';

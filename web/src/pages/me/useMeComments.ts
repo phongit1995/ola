@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { MeService } from '@services';
 import type { PostAuthor, PostComment } from '@app-types';
 import { toApiError, toast } from '@lib';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import i18n from '@/i18n';
 
 const COMMENTS_FETCH_LIMIT = 50;

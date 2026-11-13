@@ -5,7 +5,7 @@ import type { RoomMember } from '@app-types';
 import { DEVICE_ICONS, GENDER, normalizeDevice } from '@constants';
 import { PresenceBadge, UserName, VipAvatar } from '@components';
 import { colorForName } from '@lib';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useLobbyWallpaperStyle } from '@hooks';
 
 interface RoomMembersTabProps {

@@ -1,5 +1,5 @@
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 
 export function removeSavedAccount(username: string) {
   const normalizedUsername = username.trim().toLowerCase();

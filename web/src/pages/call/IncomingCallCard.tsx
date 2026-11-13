@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CALL_TYPE } from '@constants';
 import { callPeerNameView, colorForName, peerDisplayName } from '@lib';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { ChatPhoneIcon, EndCallIcon } from './icons';
 import {
   useCallDraggable,

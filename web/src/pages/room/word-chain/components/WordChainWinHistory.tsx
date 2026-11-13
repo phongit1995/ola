@@ -3,7 +3,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Spinner } from '@components';
 import { createTimeFormatter } from '@lib';
 import type { WordChainWin } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { WordChainListStatus, WordChainUserRow } from './WordChainList';
 import { WordChainStatusIcon } from './WordChainStatusIcon';

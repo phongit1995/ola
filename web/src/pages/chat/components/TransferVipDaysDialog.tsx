@@ -4,7 +4,7 @@ import { Dialog, DialogButton, Spinner, UserRow } from '@components';
 import { formatKen, toApiError, toast } from '@lib';
 import { VipService } from '@services';
 import type { VipPackageItem } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import vipIcon from '@/assets/icons/apps/vip.png';
 
 interface TransferVipDaysReceiver {

@@ -26,7 +26,7 @@ import {
   GENDER,
   MIN_IMAGE_SOURCE,
 } from '@constants';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';

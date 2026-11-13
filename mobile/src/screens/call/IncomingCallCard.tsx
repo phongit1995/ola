@@ -10,7 +10,7 @@ import {
   peerDisplayName,
 } from '@ola/shared/lib';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { CALL_BG } from './constants';
 import { ChatPhoneIcon, EndCallIcon } from './icons';
 import { ensureCallPermissions } from './lib/callPermissionGuard';

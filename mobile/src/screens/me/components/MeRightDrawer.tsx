@@ -5,7 +5,7 @@ import { UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { activeVipTypeId, colorForName } from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { useMeLocalStore } from '@store/meLocalStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import type { ViewedProfile } from '@ola/shared/types';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { VipBadge } from '@components/ui/VipBadge';

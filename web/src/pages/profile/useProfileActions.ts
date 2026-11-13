@@ -6,7 +6,7 @@ import { RelationshipService, UserService } from '@services';
 import { compressImageForUpload, imageUploadErrorText, toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
 import { useChatStore } from '@/store/chat/chatStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { ProfileActions, UserProfile } from './types';
 
 interface UseProfileActionsArgs {

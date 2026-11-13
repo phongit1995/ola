@@ -7,7 +7,7 @@ import {
   KEN_TX_META,
   KEN_TX_META_FALLBACK,
 } from '@constants';
-import { KEN_HISTORY_PAGE, useKenHistoryStore } from '@/store/kenHistoryStore';
+import { KEN_HISTORY_PAGE, useKenHistoryStore } from '@ola/shared/stores/ken/kenHistoryStore';
 import type { KenHistoryRow, KenHistoryTab } from '@ola/shared/types';
 
 function TransactionRow({ row }: { row: KenHistoryRow }) {

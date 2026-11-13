@@ -10,16 +10,16 @@ import {
   useUnreadTitle,
 } from '@hooks';
 import { AppRouter } from '@/routes';
-import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
-import { useCallStore } from '@/store/callStore';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
 import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
 import { useMegaphoneRealtime } from '@/pages/megaphone/useMegaphoneRealtime';
 import { useMeNotificationRealtime } from '@/pages/me/useMeNotificationRealtime';
 import { useAppNotificationRealtime } from '@/pages/apps/useAppNotificationRealtime';
-import { useSettingsStore } from '@/store/settingsStore';
-import { useThemeStore } from '@/store/themeStore';
+import { useSettingsStore } from '@ola/shared/stores/settingsStore';
+import { useThemeStore } from '@ola/shared/stores/themeStore';
 
 const MediaViewer = lazy(() =>
   import('@/pages/me/components/MediaViewer').then((m) => ({

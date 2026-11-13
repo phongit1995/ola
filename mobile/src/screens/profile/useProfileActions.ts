@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MeService, RelationshipService, UserService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { useMeLocalStore } from '@store/meLocalStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import {
   activeVipTypeId,
   appendUniquePosts,

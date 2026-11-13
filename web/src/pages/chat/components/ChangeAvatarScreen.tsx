@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import { colorForName } from '@lib';
 import { AVATAR_ASPECT } from '@constants';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { ChangeUserImageDialog } from './ChangeUserImageDialog';
 import { CameraIcon } from './Icons';
 

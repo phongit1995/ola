@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast, withCallPeerFrame } from '@lib';
 import type { CallerBrief, CallType } from '@app-types';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { ChatPhoneIcon, ChatVideoIcon } from './icons';

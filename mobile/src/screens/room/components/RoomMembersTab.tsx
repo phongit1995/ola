@@ -7,7 +7,7 @@ import type { RoomMember } from '@ola/shared/types';
 import { useTabSwipeGesture } from '@hooks/useTabSwipeGesture';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { DEVICE_ICONS, normalizeDevice } from '@lib/deviceIcons';
-import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { GENDER } from '@ola/shared/constants';
 
 const maleIcon = require('@assets/icons/chat/ic_indicate_male.png');

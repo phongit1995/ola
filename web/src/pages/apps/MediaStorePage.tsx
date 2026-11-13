@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MeService } from '@services';
 import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 import type { MePhoto } from '@app-types';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 
 const PAGE_SIZE = 50;
 

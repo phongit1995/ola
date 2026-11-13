@@ -1,6 +1,6 @@
 import { colorForName, postAudio } from '@lib';
 import type { Post, PostReaction } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { MePost } from './types';
 
 export function reconcileMeLikers(server: MePost, fallback: MePost): MePost {

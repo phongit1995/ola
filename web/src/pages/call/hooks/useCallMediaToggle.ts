@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocalParticipant } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { toast } from '@lib';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { PERM_NAME, PERM_STATE, REQUEST_RESULT } from '../constants';
 import type { MediaSource, PermState } from '../types';
 import { requestAndPublish } from '../lib/callMedia';

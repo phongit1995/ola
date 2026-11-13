@@ -21,7 +21,7 @@ import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
 import { CHAT_BOT_TYPE } from '@ola/shared/constants';
 import type { ChatStackParamList, RootStackParamList } from '@navigation/types';
 import { CHAT_ROUTES, ROOT_ROUTES } from '@navigation/routes';
-import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';

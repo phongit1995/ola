@@ -1,5 +1,5 @@
 import spinSoundUrl from '@/assets/sounds/lucky_wheel_spin.mp3';
-import { useSettingsStore } from '@/store/settingsStore';
+import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 
 const spinAudio = new Audio(spinSoundUrl);
 spinAudio.preload = 'auto';

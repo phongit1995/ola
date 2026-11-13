@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { SocketService } from '@services';
 import { registerAppNotificationRealtime } from '@ola/shared/stores/app-notification/appNotificationRealtime';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 
 export function useAppNotificationRealtime() {
   const userId = useAuthStore((s) => s.user?.id ?? null);

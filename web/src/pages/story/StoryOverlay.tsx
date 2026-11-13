@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import {
   useStoryOverlayStore,
   type StoryScreen,

@@ -24,7 +24,7 @@ import {
 } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { CallerBrief } from '@ola/shared/types';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { CALL_BG } from './constants';
 import { CallControls } from './CallControls';
 import { CallMiniWidget } from './CallMiniWidget';

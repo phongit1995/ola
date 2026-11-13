@@ -4,7 +4,7 @@ import { Dialog, DialogButton } from '@components';
 import { UserService } from '@services';
 import { ApiError, compressImageForUpload, imageUploadErrorText, toast } from '@lib';
 import type { UpdateProfileRequest } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import { CloseIcon } from './Icons';
 

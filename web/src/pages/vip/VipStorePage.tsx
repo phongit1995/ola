@@ -13,7 +13,7 @@ import {
 import { formatDateDMY, isVipIconTransferable, vipName } from '@lib';
 import { VipService } from '@services';
 import type { VipIconInstance, VipStoreResult } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { VipHistoryDialog } from './VipHistoryDialog';
 
 const PRIVACY_KEYS = [

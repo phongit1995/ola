@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRoomContext } from '@livekit/components-react';
 import { toast } from '@lib';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { DEVICE_KIND } from '../constants';
 import type { DeviceKind } from '../types';
 import { useMediaDevices } from './useMediaDevices';

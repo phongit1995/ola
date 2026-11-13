@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { VipBadge } from '@components';
 import { formatVnd, toAllHistoryRow } from '@lib';
 import type { PenUserBrief } from '@app-types';
-import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@/store/penHistoryStore';
+import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@ola/shared/stores/pen/penHistoryStore';
 import { penAssets } from './penAssets';
 import { PenHistoryTable } from './PenHistoryTable';
 

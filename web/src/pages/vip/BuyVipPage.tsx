@@ -21,7 +21,7 @@ import {
 import type { ListOption } from '@components';
 import { VipService } from '@services';
 import type { VipIconCatalogItem, VipPackageItem } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useVipDayTransferForm } from '@ola/shared/stores/vip/useVipDayTransferForm';
 import {
   selectVipDayTransferEnabled,

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SPIN_START_KEN, toast } from '@lib';
 import { AnimatedKen, FullScreenOverlay, Spinner } from '@components';
 import { SocketService } from '@services';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useSpinWheelStore } from '@ola/shared/stores/spinWheelStore';
 import { SpinWheel } from './SpinWheel';

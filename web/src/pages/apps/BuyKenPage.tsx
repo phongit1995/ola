@@ -12,8 +12,8 @@ import {
 } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import type { TopupBonusTier } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
-import { useTopupConfigStore } from '@/store/topupConfigStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import { MIN_AMOUNT, STEP_AMOUNT, PRESET_AMOUNTS } from './constants';
 import { SupportDialog } from './SupportDialog';
 

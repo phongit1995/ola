@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
-import { selectTopupEnabled, useTopupConfigStore } from '@/store/topupConfigStore';
+import { selectTopupEnabled, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import { AnimatedKen, FullScreenOverlay } from '@components';
 import { formatKen, playKenShotFailSound, toApiError, toast } from '@lib';
 import { PenService, SocketService } from '@services';
 import type { PenSettledEvent, PenSide, PenShotView } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import {
   PEN_SHOTS_PAGE,
   PEN_SHOTS_PAGE_MOBILE,
   usePenStore,
-} from '@/store/penStore';
+} from '@ola/shared/stores/pen/penStore';
 import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
 import { PenShootModal } from './PenShootModal';

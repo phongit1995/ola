@@ -17,7 +17,7 @@ import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { AppDownloadBar, Spinner } from '@components';
 import { AuthService } from '@services';
 import { ApiError, USERNAME_MAX, decodeSecret, toast } from '@lib';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import type { SavedAccount } from '@ola/shared/types';
 import { SavedAccountGallery } from './SavedAccountGallery';

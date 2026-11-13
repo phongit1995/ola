@@ -1,6 +1,6 @@
 import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
 import { CALL_MODE } from '@constants';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { CallContent } from './CallContent';
 import { IncomingCallCard } from './IncomingCallCard';
 import { useEndCallOnUnload } from './hooks/useEndCallOnUnload';

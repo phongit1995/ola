@@ -4,7 +4,7 @@ import { useRoomContext } from '@livekit/components-react';
 import { ConnectionState } from 'livekit-client';
 import { CALL_CONNECT_TIMEOUT_MS } from '@ola/shared/constants';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 
 export function useCallConnectTimeout() {
   const { t } = useTranslation();

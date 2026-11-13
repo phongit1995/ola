@@ -13,7 +13,7 @@ import { useAvatarFrameShop } from '@ola/shared/stores/avatar-frame/useAvatarFra
 import { ReceiverField } from '@/pages/vip/components/ReceiverField';
 import { SelectChevron } from '@/pages/vip/components/SelectChevron';
 import { useReceiverSearch } from '@/pages/vip/useReceiverSearch';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { AvatarFramePickerDialog } from './components/AvatarFramePickerDialog';
 import { OwnFramedAvatar } from './components/OwnFramedAvatar';
 import { VipRequiredHint } from './components/VipRequiredHint';

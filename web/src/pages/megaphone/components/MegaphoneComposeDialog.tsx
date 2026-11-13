@@ -6,7 +6,7 @@ import type { SendMegaphoneResult } from '@app-types';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import megaphoneImage from '@/assets/images/member-megaphone.webp';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { MegaphoneContentInput } from './MegaphoneContentInput';
 import { MegaphonePreview } from './MegaphonePreview';
 

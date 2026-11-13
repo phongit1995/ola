@@ -5,7 +5,7 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import type { CallerBrief, CallType } from '@ola/shared/types';
 import { withCallPeerFrame } from '@ola/shared/lib';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { ChatPhoneIcon, ChatVideoIcon } from './icons';
 

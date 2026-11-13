@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, VipAvatar } from '@components';
 import { createTimeFormatter, toast } from '@lib';
-import { useMarriageStore } from '@/store/marriageStore';
+import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { PendingProposal } from '@ola/shared/types';
 
 interface MarriageLockedViewProps {

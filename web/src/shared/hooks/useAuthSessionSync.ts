@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { setOnUnauthorized } from '@api';
 import { authTokens, toast } from '@lib';
 import { SocketService } from '@services';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 
 function clearSession() {
   SocketService.disconnect();

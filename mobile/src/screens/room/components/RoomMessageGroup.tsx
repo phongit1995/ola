@@ -24,7 +24,7 @@ import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
-import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useThemeColors } from '@hooks/useThemeColors';
 import type { AnchorRect } from './MessageActionSheet';
 import { OTHER_CORNERS, OWN_CORNERS } from '../constants';

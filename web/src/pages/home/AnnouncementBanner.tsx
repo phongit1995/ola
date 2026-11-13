@@ -1,8 +1,10 @@
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, PillCloseButton } from '@components';
-import { selectVisibleAnnouncement } from '@ola/shared/stores/announcementStore';
-import { useAnnouncementStore } from '@/store/announcementStore';
+import {
+  selectVisibleAnnouncement,
+  useAnnouncementStore,
+} from '@ola/shared/stores/announcementStore';
 import announcementMegaphone from '@/assets/images/announcement-megaphone.png';
 
 const MARQUEE_SPEED_PX_PER_SECOND = 40;

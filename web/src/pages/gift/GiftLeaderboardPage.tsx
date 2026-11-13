@@ -22,7 +22,7 @@ import {
 import { useGiftLeaderboard } from '@ola/shared/stores/gift/useGiftLeaderboard';
 import type { GiftLeaderboardEntry } from '@app-types';
 import { cn, colorForName, formatKen } from '@lib';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 
 interface GiftLeaderboardPageProps {
   onClose: () => void;

@@ -16,7 +16,7 @@ import { MeService } from '@ola/shared/services';
 import type { MePhoto } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { CachedImage } from '@components/ui/CachedImage';
 import { useThemeColors } from '@hooks/useThemeColors';

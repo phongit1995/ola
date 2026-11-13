@@ -5,7 +5,7 @@ import { Dialog, DialogButton, ImageCropOverlay } from '@components';
 import { MeService, UserService } from '@services';
 import { compressImageForUpload, imageUploadErrorText, toast, validatedImageObjectUrl } from '@lib';
 import { MIN_IMAGE_SOURCE } from '@constants';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { CheckIcon } from './Icons';
 
 interface ChangeUserImageTexts {

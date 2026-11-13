@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { GIFT_ANIMATION_DURATION_MS } from '@constants';
 import { portalRoot } from '@lib';
-import { useGiftAnimationStore } from '@/store/giftAnimationStore';
+import { useGiftAnimationStore } from '@ola/shared/stores/gift/giftAnimationStore';
 import {
   GIFT_BUBBLES,
   GIFT_CONFETTI,

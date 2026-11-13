@@ -39,8 +39,8 @@ import type {
 } from '@app-types';
 import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clan/clanStore';
-import { useAuthStore } from '@/store/authStore';
-import { useMeLocalStore } from '@/store/meLocalStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import { ImageCropEditor } from '@components';
 import {
   MeComposerDialog,

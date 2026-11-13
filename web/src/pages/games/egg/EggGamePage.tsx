@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatedKen, FullScreenOverlay } from '@components';
 import { SocketService } from '@services';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import { useEggGame } from './useEggGame';
 import { EggStage } from './EggStage';

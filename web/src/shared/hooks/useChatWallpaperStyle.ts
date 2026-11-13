@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import { chatWallpaperStyle } from '@lib';
-import { useSettingsStore } from '@/store/settingsStore';
+import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 
 export function useChatWallpaperStyle(): CSSProperties | undefined {
   const wallpaperUrl = useSettingsStore((s) => s.settings.wallpaperUrl);

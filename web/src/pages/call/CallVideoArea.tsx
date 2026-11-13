@@ -9,7 +9,7 @@ import {
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName } from '@lib';
 import type { CallerBrief } from '@app-types';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { PIP_ASPECT, PIP_DEFAULT_WIDTH } from './constants';
 import {
   useCallDraggable,

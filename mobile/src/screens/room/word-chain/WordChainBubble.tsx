@@ -4,7 +4,7 @@ import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore'
 import { FloatingBubble } from '@components/ui/FloatingBubble';
 import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
+import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
 import { WordChainImage } from './WordChainIcons';
 import { WORD_CHAIN_ICONS } from './wordChainAssets';
 

@@ -9,8 +9,8 @@ import {
 } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName, toast } from '@lib';
-import { useAuthStore } from '@/store/authStore';
-import { useMarriageStore } from '@/store/marriageStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { DiaryEntry } from '@ola/shared/types';
 
 const DAY_MS = 86_400_000;

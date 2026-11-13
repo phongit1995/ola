@@ -13,7 +13,7 @@ import { Avatar, UserName } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
 import { DEFAULT_AVATAR_COLOR, formatDuration, portalRoot } from '@lib';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
 import { CheckInCard } from './CheckInCard';

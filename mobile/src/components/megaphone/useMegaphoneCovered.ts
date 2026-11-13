@@ -2,7 +2,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 import type { NavigationContainerRefWithCurrent, ParamListBase } from '@react-navigation/native';
 import { CHAT_ROUTES, ROOM_ROUTES, ROOT_ROUTES, STORY_ROUTES, TAB_ROUTES } from '@navigation/routes';
-import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
+import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
 import { useOpenModalStore } from '@store/openModalStore';
 
 const MEGAPHONE_ROUTES: ReadonlySet<string> = new Set([

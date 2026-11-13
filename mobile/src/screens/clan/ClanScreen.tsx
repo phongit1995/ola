@@ -14,7 +14,7 @@ import type { Post, PostReaction, PostVisibility } from '@ola/shared/types';
 import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { useMeLocalStore } from '@store/meLocalStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ReportDialog } from '@components/ui/ReportDialog';

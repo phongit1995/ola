@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
-import { useMeLocalStore } from '@/store/meLocalStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import {
   compressImagesForUpload,
   createTimeFormatter,

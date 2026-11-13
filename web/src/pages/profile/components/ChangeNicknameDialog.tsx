@@ -11,7 +11,7 @@ import {
 import { UserService } from '@services';
 import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
 import { Dialog, DialogButton } from '@components';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type {
   CheckUsernameResult,
   UsernameChangeTier,

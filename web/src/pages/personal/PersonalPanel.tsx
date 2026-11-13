@@ -12,7 +12,7 @@ import {
   useGiftCodeConfigStore,
 } from '@ola/shared/stores/gift-code/giftCodeConfigStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useLobbyWallpaperStyle } from '@hooks';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import { PERSONAL_ITEMS, type AppItem } from '../apps/constants';

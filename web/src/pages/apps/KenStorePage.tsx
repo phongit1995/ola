@@ -2,12 +2,12 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatKen } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import {
   selectTopupEnabled,
   useTopupConfigStore,
-} from '@/store/topupConfigStore';
+} from '@ola/shared/stores/topupConfigStore';
 import { TransferKenDialog } from '@/pages/chat/components/TransferKenDialog';
 import { KenHistorySection } from './KenHistorySection';
 import { KEN_LOW_THRESHOLD } from './constants';

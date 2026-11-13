@@ -13,7 +13,7 @@ import {
 import { GIFT_SOURCE } from '@constants';
 import { colorForName, formatKen } from '@lib';
 import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { GiftWallSection } from '../profile/components/GiftWallSection';
 import { GiftLeaderboardPage } from './GiftLeaderboardPage';
 import { GiftHistoryPage } from './GiftHistoryPage';

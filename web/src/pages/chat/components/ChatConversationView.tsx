@@ -41,7 +41,7 @@ import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete_outline.svg';
 import reportActionIcon from '@/assets/icons/chat/ic_menu_report.svg';
 import { useChatStore } from '@/store/chat/chatStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
 import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../utils';
@@ -71,7 +71,7 @@ import {
 import { ChatCallButtons } from '@/pages/call/ChatCallButtons';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 

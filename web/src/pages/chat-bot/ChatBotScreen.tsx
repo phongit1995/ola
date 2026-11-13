@@ -5,7 +5,7 @@ import { colorForName } from '@lib';
 import { CHAT_BOT_I18N } from '@ola/shared/constants';
 import type { ChatBotType } from '@ola/shared/types';
 import deleteIcon from '@/assets/icons/chat/ic_menu_delete.png';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatBotConversation } from './useChatBotConversation';
 import { BotAvatar } from './components/BotAvatar';
 import { ChatBotComposer } from './components/ChatBotComposer';

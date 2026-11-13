@@ -10,7 +10,7 @@ import {
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { activeVipTypeId, colorForName, toast } from '@lib';
 import { UserService } from '@services';
-import { useMeLocalStore } from '@/store/meLocalStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import type { ViewedProfile } from '@ola/shared/types';
 import { CLOSE_ANIMATION_MS } from '../constants';
 

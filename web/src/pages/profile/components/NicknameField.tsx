@@ -6,7 +6,7 @@ import { authTokens } from '@lib';
 import { SocketService } from '@services';
 import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import nicknameIcon from '@/assets/icons/apps/nickname.png';
 import { removeSavedAccount } from '../../personal/utils';
 import { ChangeNicknameDialog } from './ChangeNicknameDialog';

@@ -4,7 +4,7 @@ import { Dialog, DialogButton, UserRow, UserSearchPicker } from '@components';
 import { colorForName, formatKen, toApiError, toast } from '@lib';
 import { KenService } from '@services';
 import type { UserSearchResult } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import { KEN_TRANSFER_MAX, KEN_TRANSFER_MIN } from '../constants';
 

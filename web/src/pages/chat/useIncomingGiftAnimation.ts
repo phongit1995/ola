@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { giftDisplayName, isRecentGift } from '@lib';
-import { useGiftAnimationStore } from '@/store/giftAnimationStore';
+import { useGiftAnimationStore } from '@ola/shared/stores/gift/giftAnimationStore';
 import type { ChatMessage } from './types';
 
 export function useIncomingGiftAnimation(bubbles: ChatMessage[], senderName: string) {

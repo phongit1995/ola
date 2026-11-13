@@ -27,7 +27,7 @@ import {
 } from '@ola/shared/constants';
 import { colorForName } from '@ola/shared/lib';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { CALL_BG } from './constants';
 import { EndCallIcon, ExpandIcon, MicIcon, MicOffIcon } from './icons';
 import { useCallMediaToggle } from './hooks/useCallMediaToggle';

@@ -12,7 +12,7 @@ import {
 import type { AvatarFrameHistoryTab } from '@app-types';
 import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
 import { useAvatarFrameHistory } from '@ola/shared/stores/avatar-frame/useAvatarFrameHistory';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { FRAME_HISTORY_TONE_CLASS } from '../constants';
 import { AvatarFrameThumb } from './AvatarFrameThumb';
 

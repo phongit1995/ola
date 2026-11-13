@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import groupMessageIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
 import filterIcon from '@/assets/icons/room/ic_filter_unselected.png';
-import { useRoomChatStore } from '@/store/roomChatStore';
-import { useAuthStore } from '@/store/authStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import {
   useRoomFilterStore,
   memberMatchesFilter,

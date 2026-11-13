@@ -18,7 +18,7 @@ import {
 } from '@lib';
 import type { GiftHistoryItem, GiftUserBrief } from '@app-types';
 import kenIcon from '@/assets/icons/apps/ken.png';
-import { useGiftAnimationStore } from '@/store/giftAnimationStore';
+import { useGiftAnimationStore } from '@ola/shared/stores/gift/giftAnimationStore';
 
 interface GiftHistoryPageProps {
   onClose: () => void;

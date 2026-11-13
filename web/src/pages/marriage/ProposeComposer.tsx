@@ -12,7 +12,7 @@ import { RELATIONSHIP_STATUS } from '@constants';
 import { toast } from '@lib';
 import { UserService } from '@services';
 import type { UserSearchResult } from '@app-types';
-import { useMarriageStore } from '@/store/marriageStore';
+import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 
 const MESSAGE_LIMIT = 500;
 

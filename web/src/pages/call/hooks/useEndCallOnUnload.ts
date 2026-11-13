@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { signApiGuard } from '@api';
 import { authTokens } from '@lib';
 import { env } from '@ola/shared/config';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 
 function pathnameOf(url: string): string {
   const withoutProtocol = url.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]*/i, '');

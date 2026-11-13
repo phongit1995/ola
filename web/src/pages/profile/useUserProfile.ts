@@ -11,8 +11,8 @@ import {
   imageUploadErrorText,
   toast,
 } from '@lib';
-import { useAuthStore } from '@/store/authStore';
-import { useMeLocalStore } from '@/store/meLocalStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import type { PostReaction, PostUploadRef, RelationshipInfo } from '@app-types';
 import {
   applyMeReaction,

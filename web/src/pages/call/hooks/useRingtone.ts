@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSettingsStore } from '@/store/settingsStore';
+import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 
 const RING_INTERVAL_MS = 1500;
 const BEEP_GAP_SECONDS = 0.45;

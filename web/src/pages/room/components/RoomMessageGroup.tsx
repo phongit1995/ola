@@ -19,7 +19,7 @@ import {
   SmileyText,
 } from '@lib';
 import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import type {
   BubblePosition,
   GroupedMessage,

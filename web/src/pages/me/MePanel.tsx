@@ -4,7 +4,7 @@ import { HomeHeader } from '@components/HomeHeader';
 import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import menuIcon from '@/assets/icons/me/header/ic_header_menu.png';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useHorizontalSwipe } from './useHorizontalSwipe';
 import { PullToRefresh } from '@components';
 import { MeAnnouncementCard } from './components/MeAnnouncementCard';

@@ -7,7 +7,7 @@ import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { useMeLocalStore } from '@store/meLocalStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import { isPostEditExpired } from '@lib/post';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
