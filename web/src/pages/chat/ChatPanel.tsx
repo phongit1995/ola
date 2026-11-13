@@ -34,6 +34,7 @@ import {
   usePresenceListPolling,
 } from './usePresence';
 import type { ChatBotType, Relationship } from '@app-types';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 
 interface ProfileTarget {
   username: string;
@@ -76,7 +77,7 @@ export function ChatPanel() {
   const requests = useFriendsStore((s) => s.requests);
   const requestsLoading = useFriendsStore((s) => s.requestsLoading);
   const friendsRaw = useFriendsWithPresence();
-  const [now, setNow] = useState(() => Date.now());
+  const now = useMinuteNow();
   const friends = useMemo(
     () => mapFriendsToContacts(friendsRaw, i18n.language, now),
     [friendsRaw, i18n.language, now]
@@ -86,11 +87,6 @@ export function ChatPanel() {
   );
 
   usePresenceListPolling();
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     if (sub !== 'contacts') return;

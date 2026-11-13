@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
@@ -12,6 +12,7 @@ import {
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useFocusPresence } from './usePresence';
 import { clearPushNotification, dmNotifId } from '@lib/push';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 
 export function useChatDetail(conversationId: string | null | undefined) {
   const { t, i18n } = useTranslation();
@@ -80,12 +81,7 @@ export function useChatDetail(conversationId: string | null | undefined) {
     (livePresence?.isOnline ?? peerProfile?.isOnline ?? conversation?.otherUser?.isOnline) === true;
   const peerLastActiveAt =
     livePresence?.lastActiveAt ?? peerProfile?.lastActiveAt ?? conversation?.otherUser?.lastActiveAt;
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  const now = useMinuteNow();
 
   const lastActiveTime = formatLastActive(i18n.language, peerLastActiveAt, now);
 

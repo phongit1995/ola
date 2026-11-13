@@ -36,6 +36,7 @@ import { VipBadge } from '@components/ui/VipBadge';
 import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
 import { DIVIDER } from '@constants';
 import type { Contact } from '@ola/shared/types';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 const addContactIcon = require('@assets/icons/chat/ic_add_contact_gray.png');
@@ -111,12 +112,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
   const [addOpen, setAddOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  const now = useMinuteNow();
 
   useEffect(() => {
     const store = useFriendsStore.getState();

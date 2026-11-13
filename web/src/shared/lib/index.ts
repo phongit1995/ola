@@ -15,3 +15,4 @@ export * from './compressImage';
 export * from './reactions';
 export * from './sound';
 export * from './dragOffset';
+export * from './clipboard';

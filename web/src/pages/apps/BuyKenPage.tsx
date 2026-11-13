@@ -9,6 +9,7 @@ import {
   fillMemoTemplate,
   quoteTopupKen,
   topupBonusPercentFor,
+  copyToClipboard,
 } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import type { TopupBonusTier } from '@app-types';
@@ -56,9 +57,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   const { t } = useTranslation();
 
   async function copyValue() {
-    if (navigator.clipboard == null) return;
-    await navigator.clipboard.writeText(value);
-    toast.info(t('ken.buy.copied'));
+    if (await copyToClipboard(value)) toast.info(t('ken.buy.copied'));
   }
 
   return (

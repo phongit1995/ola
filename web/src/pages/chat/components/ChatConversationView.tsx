@@ -31,6 +31,7 @@ import {
   parseMessageMetadata,
   SmileyText,
   toast,
+  copyToClipboard,
 } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
@@ -56,6 +57,7 @@ import {
   useLongPress,
   useOutsideClick,
   useStickyScroll,
+  useMessageHighlight,
 } from '@hooks';
 import { ChatReactionBalloons } from './ChatReactionBalloons';
 import { MessageRow } from './MessageRow';
@@ -76,8 +78,8 @@ import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import { ChatTransferDialogs } from './ChatTransferDialogs';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 
-const HIGHLIGHT_DURATION_MS = 1500;
 
 interface PendingImage {
   id: string;
@@ -183,14 +185,12 @@ export function ChatConversationView({
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
   const [reportTarget, setReportTarget] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const [profileTarget, setProfileTarget] = useState<{
     username: string;
     color: string;
   } | null>(null);
-  const [now, setNow] = useState<number | null>(null);
+  const now = useMinuteNow();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerAreaRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
@@ -213,16 +213,6 @@ export function ChatConversationView({
   }, [loadGiftSettings]);
 
   useEffect(() => {
-    const tick = () => setNow(Date.now());
-    const initial = setTimeout(tick, 0);
-    const interval = setInterval(tick, 60_000);
-    return () => {
-      clearTimeout(initial);
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
     pendingImageRef.current = pendingImage;
   }, [pendingImage]);
   useEffect(
@@ -234,7 +224,7 @@ export function ChatConversationView({
   );
 
   const lastActiveTime =
-    now != null && !online && !peerTyping
+    !online && !peerTyping
       ? formatLastActive(i18n.language, lastActiveAt, now)
       : undefined;
   const lastActiveText =
@@ -278,6 +268,13 @@ export function ChatConversationView({
     hiddenStorage: peerCardHiddenStorage,
   });
 
+  const { highlightedId, scrollToMessage, clearHighlight } =
+    useMessageHighlight({
+      scrollRef,
+      notFoundText: t('chat.replyNotFound'),
+      onBeforeScroll: unpin,
+    });
+
   const lastOwnId = useMemo(() => {
     for (let index = bubbles.length - 1; index >= 0; index -= 1) {
       if (bubbles[index]!.direction === 'out') return bubbles[index]!.id;
@@ -294,16 +291,9 @@ export function ChatConversationView({
     setVoiceRecording(false);
     setOpenTab(null);
     setEditing(null);
-    setHighlightedId(null);
+    clearHighlight();
     setDraft('');
   }
-
-  useEffect(() => {
-    return () => {
-      if (highlightTimerRef.current != null)
-        clearTimeout(highlightTimerRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     if (replyTarget != null) composerRef.current?.focus();
@@ -367,32 +357,9 @@ export function ChatConversationView({
     setReplyTarget(target);
   }
 
-  function scrollToMessage(id: string) {
-    const element = scrollRef.current?.querySelector(
-      `[data-message-id="${CSS.escape(id)}"]`
-    );
-    if (element == null) {
-      toast.error(t('chat.replyNotFound'));
-      return;
-    }
-    unpin();
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setHighlightedId(id);
-    if (highlightTimerRef.current != null)
-      clearTimeout(highlightTimerRef.current);
-    highlightTimerRef.current = setTimeout(
-      () => setHighlightedId(null),
-      HIGHLIGHT_DURATION_MS
-    );
-  }
-
   async function copyMessage(text: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success(t('chat.copied'));
-    } catch {
-      toast.error(t('common.error'));
-    }
+    if (await copyToClipboard(text)) toast.success(t('chat.copied'));
+    else toast.error(t('common.error'));
   }
 
   function messageSheetActions(message: ChatMessage): MessageSheetAction[] {

@@ -8,8 +8,13 @@ import {
   filterVisibleRoomMessages,
   SmileyText,
   toast,
+  copyToClipboard,
 } from '@lib';
-import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
+import {
+  useChatWallpaperStyle,
+  useStickyScroll,
+  useMessageHighlight,
+} from '@hooks';
 import {
   ConfirmDialog,
   DateSeparator,
@@ -101,9 +106,7 @@ export function RoomMessagesTab({
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(
     null
   );
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const composerRef = useRef<RoomComposerHandle>(null);
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const messageById = useMemo(
     () => new Map(messages.map((item) => [item.id, item])),
@@ -121,13 +124,6 @@ export function RoomMessagesTab({
       loadMoreViewports: LOAD_OLDER_VIEWPORTS,
       onStickyChange: setPinnedToBottom,
     });
-
-  useEffect(() => {
-    return () => {
-      if (highlightTimerRef.current != null)
-        clearTimeout(highlightTimerRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     scrollToBottomIfPinned();
@@ -155,35 +151,15 @@ export function RoomMessagesTab({
     []
   );
 
-  const scrollToMessage = useCallback(
-    (id: string) => {
-      const element = scrollRef.current?.querySelector(
-        `[data-message-id="${CSS.escape(id)}"]`
-      );
-      if (element == null) {
-        toast.error(t('room.replyNotFound'));
-        return;
-      }
-      unpin();
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setHighlightedId(id);
-      if (highlightTimerRef.current != null)
-        clearTimeout(highlightTimerRef.current);
-      highlightTimerRef.current = setTimeout(
-        () => setHighlightedId(null),
-        1500
-      );
-    },
-    [t, unpin, scrollRef]
-  );
+  const { highlightedId, scrollToMessage } = useMessageHighlight({
+    scrollRef,
+    notFoundText: t('room.replyNotFound'),
+    onBeforeScroll: unpin,
+  });
 
   async function copyMessage(content: string) {
-    try {
-      await navigator.clipboard.writeText(content);
-      toast.success(t('room.copied'));
-    } catch {
-      toast.error(t('common.error'));
-    }
+    if (await copyToClipboard(content)) toast.success(t('room.copied'));
+    else toast.error(t('common.error'));
   }
 
   function sheetActions(message: RoomMessage): MessageSheetAction[] {

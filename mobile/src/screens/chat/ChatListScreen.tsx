@@ -46,6 +46,7 @@ import { ContactsPane } from './components/ContactsPane';
 import { useConversationsWithPresence, usePresenceListPolling } from './usePresence';
 import { DIVIDER } from '@constants';
 import { SWIPE_MAX, SWIPE_TRIGGER } from './constants';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 
 const sentIcon = require('@assets/icons/chat/ic_message_sent.png');
 const kulIcon = require('@assets/icons/chat/ic_kul.png');
@@ -347,17 +348,12 @@ export function ChatListScreen() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [coverOpen, setCoverOpen] = useState(false);
   const [logoutAll, setLogoutAll] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
+  const now = useMinuteNow();
   const openSwipeableRef = useRef<SwipeableMethods | null>(null);
 
   useEffect(() => {
     void loadConversations();
   }, [loadConversations]);
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
 
   usePresenceListPolling();
 

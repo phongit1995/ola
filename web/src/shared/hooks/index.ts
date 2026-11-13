@@ -14,3 +14,4 @@ export * from './useChatWallpaperStyle';
 export * from './useUnreadTitle';
 export * from './useLobbyWallpaperStyle';
 export * from './useDraggableOffset';
+export * from './useMessageHighlight';
