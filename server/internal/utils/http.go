@@ -324,9 +324,7 @@ func HTTPStatusFromError(err error) int {
 }
 
 func isInternalError(err error) bool {
-	return apperr.IsDatabaseError(err) ||
-		errors.Is(err, context.DeadlineExceeded) ||
-		errors.Is(err, context.Canceled)
+	return apperr.IsDatabaseError(err) || errors.Is(err, context.DeadlineExceeded)
 }
 
 func getOrCreateTraceID(c *gin.Context) string {

@@ -14,6 +14,7 @@ var (
 	ErrAccessTokenRevoked   = errors.New("token has been revoked")
 	ErrAccessTokenPayload   = errors.New("invalid token payload")
 	ErrAccessTokenAdmin     = errors.New("invalid token")
+	ErrAccessTokenNoUserID  = errors.New("id missing from token")
 	ErrAccessTokenUserID    = errors.New("invalid id in token")
 	ErrAccessSessionRevoked = errors.New("session revoked")
 	ErrAuthUnavailable      = errors.New("authentication service unavailable")
@@ -52,7 +53,10 @@ func AuthenticateUserAccessToken(jwtService *JWTService, cache *CacheService, to
 		return nil, ErrAccessTokenAdmin
 	}
 
-	userIDStr, _ := data[ClaimUserID].(string)
+	userIDStr, ok := data[ClaimUserID].(string)
+	if !ok {
+		return nil, ErrAccessTokenNoUserID
+	}
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, ErrAccessTokenUserID

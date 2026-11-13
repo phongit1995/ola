@@ -1,6 +1,7 @@
 package conversation
 
 import (
+	"errors"
 	"fmt"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
@@ -10,6 +11,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
+
+var errMembersStoreUnavailable = errors.New("conversation members store unavailable")
 
 type ConversationMember struct {
 	ConversationID uuid.UUID
@@ -95,6 +98,9 @@ func (a *ConversationCacheAdapter) GetConversationMembers(conversationID string)
 }
 
 func (a *ConversationCacheAdapter) loadMembers(convID uuid.UUID) ([]ConversationMember, error) {
+	if a.session == nil {
+		return nil, errMembersStoreUnavailable
+	}
 	iter := a.session.Query(
 		`SELECT user_id, joined_at, left_at, is_active, role FROM conversation_members_by_conversation WHERE conversation_id = ?`,
 		gocql.UUID(convID),

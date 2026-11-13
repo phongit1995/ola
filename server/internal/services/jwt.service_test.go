@@ -119,3 +119,14 @@ func TestAuthenticateUserAccessTokenRejectsAdminAndRefresh(t *testing.T) {
 		t.Fatalf("identity = %+v", identity)
 	}
 }
+
+func TestLegacyTokenClassificationIgnoresServiceAccessExpiry(t *testing.T) {
+	s := NewJWTService(&config.Config{JWTSecret: testJWTSecret, JWTExpiry: "15m", RefreshTokenExpiry: "720h"})
+
+	if _, err := s.VerifyAccessToken(signLegacyToken(t, 24*time.Hour)); err != nil {
+		t.Fatalf("legacy 24h access token rejected by service with 15m expiry: %v", err)
+	}
+	if _, err := s.VerifyAccessToken(signLegacyToken(t, 720*time.Hour)); !errors.Is(err, ErrWrongTokenUse) {
+		t.Fatalf("legacy refresh token accepted as access: err = %v", err)
+	}
+}

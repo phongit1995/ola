@@ -70,11 +70,6 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		if tokenUse, _ := dataMap[services.ClaimTokenUse].(string); tokenUse != services.TokenUseAccess {
-			utils.RespondError(c, http.StatusUnauthorized, "invalid token type")
-			c.Abort()
-			return
-		}
 
 		adminIDStr, ok := dataMap["id"].(string)
 		if !ok {

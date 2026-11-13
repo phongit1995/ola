@@ -77,7 +77,7 @@ func (s *JWTService) TokenUse(claims *TokenClaims) string {
 	if claims.IssuedAt == nil || claims.ExpiresAt == nil {
 		return TokenUseAccess
 	}
-	if claims.ExpiresAt.Sub(claims.IssuedAt.Time) > s.accessExpiry()+legacyTokenLifetimeSlack {
+	if claims.ExpiresAt.Sub(claims.IssuedAt.Time) >= s.refreshExpiry()-legacyTokenLifetimeSlack {
 		return TokenUseRefresh
 	}
 	return TokenUseAccess
