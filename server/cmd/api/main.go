@@ -45,8 +45,6 @@ func main() {
 		log.Fatalf("❌ Failed to initialize container: %v", err)
 	}
 
-	// Validate được gọi trong LoadAPIConfig() -> container init
-	// Kiểm tra database connection
 	if err := c.Invoke(func(db *gorm.DB) error {
 		return nil
 	}); err != nil {
@@ -72,37 +70,34 @@ func main() {
 	}
 	schedulers.Start(rootCtx)
 
+	var (
+		srv      *http.Server
+		wsServer *websocket.Server
+		producer *kafka.Producer
+	)
+	if err := c.Invoke(func(s *Server, ws *websocket.Server, p *kafka.Producer, cfg *config.Config) {
+		wsServer = ws
+		producer = p
+		srv = &http.Server{
+			Addr:    fmt.Sprintf(":%d", cfg.ServerPort),
+			Handler: s.Router,
+		}
+	}); err != nil {
+		log.Fatalf("❌ Failed to init server: %v", err)
+	}
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	errChan := make(chan error, 1)
 
-	type serverContext struct {
-		srv      *http.Server
-		wsServer *websocket.Server
-	}
-	var srvCtx serverContext
-
 	go func() {
-		if err := c.Invoke(func(s *Server, ws *websocket.Server, cfg *config.Config) error {
-			srvCtx.wsServer = ws
+		log.Println("🚀 API Service started")
+		log.Printf("📡 HTTP REST API running on %s\n", srv.Addr)
+		log.Printf("🔌 WebSocket server available at ws://localhost%s/socket.io/\n", srv.Addr)
+		log.Println("📤 Kafka Producer ready")
+		log.Println("👉 Press Ctrl+C to stop server")
 
-			addr := fmt.Sprintf(":%d", cfg.ServerPort)
-			srvCtx.srv = &http.Server{
-				Addr:    addr,
-				Handler: s.Router,
-			}
-
-			log.Println("🚀 API Service started")
-			log.Printf("📡 HTTP REST API running on %s\n", addr)
-			log.Printf("🔌 WebSocket server available at ws://localhost%s/socket.io/\n", addr)
-			log.Println("📤 Kafka Producer ready")
-			log.Println("👉 Press Ctrl+C to stop server")
-
-			if err := srvCtx.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				return err
-			}
-			return nil
-		}); err != nil {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errChan <- err
 		}
 	}()
@@ -116,18 +111,21 @@ func main() {
 
 		cancelRoot()
 
-		if srvCtx.wsServer != nil {
-			log.Println("🔌 Closing WebSocket connections...")
-			srvCtx.wsServer.Close()
-		}
-
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		if err := srvCtx.srv.Shutdown(ctx); err != nil {
-			log.Fatalf("❌ Server shutdown error: %v", err)
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Printf("❌ Server shutdown error: %v", err)
 		}
+
+		log.Println("🔌 Closing WebSocket connections...")
+		wsServer.Close()
+
 		schedulers.Wait(ctx)
+
+		if err := producer.Close(); err != nil {
+			log.Printf("❌ Kafka producer close error: %v", err)
+		}
 
 		log.Println("✅ API Service shutdown successfully!")
 	}
