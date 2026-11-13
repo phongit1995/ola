@@ -325,6 +325,10 @@ func buildMessage(token models.DeviceToken, content Content, data map[string]str
 	return msg
 }
 
+func hasRichMedia(data map[string]string) bool {
+	return data["imageUrl"] != "" || data["senderAvatar"] != ""
+}
+
 func apnsConfig(content Content, ttl time.Duration) *messaging.APNSConfig {
 	headers := map[string]string{
 		APNSHeaderPushType:   APNSPushTypeAlert,
@@ -338,9 +342,10 @@ func apnsConfig(content Content, ttl time.Duration) *messaging.APNSConfig {
 		Headers: headers,
 		Payload: &messaging.APNSPayload{
 			Aps: &messaging.Aps{
-				Alert:    &messaging.ApsAlert{Title: content.Title, Body: content.Body},
-				Sound:    APNSSoundDefault,
-				ThreadID: content.NotifID,
+				Alert:          &messaging.ApsAlert{Title: content.Title, Body: content.Body},
+				Sound:          APNSSoundDefault,
+				ThreadID:       content.NotifID,
+				MutableContent: hasRichMedia(content.Data),
 			},
 		},
 	}

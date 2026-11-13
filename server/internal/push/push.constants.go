@@ -38,6 +38,15 @@ const (
 	PushAudienceUser         = "user"
 )
 
+const (
+	dmPreviewImage   = "📷 Đã gửi một ảnh"
+	dmPreviewAudio   = "🎤 Đã gửi một tin nhắn thoại"
+	dmPreviewSticker = "Đã gửi một nhãn dán"
+	dmPreviewGift    = "🎁 Đã gửi một món quà"
+	dmPreviewMissed  = "📞 Cuộc gọi nhỡ"
+	dmPreviewMissedV = "📹 Cuộc gọi video nhỡ"
+)
+
 func PushBroadcastNotifID(campaignID string) string {
 	return PushBroadcastNotifPrefix + campaignID
 }
