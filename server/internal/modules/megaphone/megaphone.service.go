@@ -257,7 +257,7 @@ type GiftAnnouncement struct {
 }
 
 func giftContent(sender, receiver megaphoneEvents.Sender, giftName string, quantity int) string {
-	content := fmt.Sprintf("%s tặng %s %s ×%d", senderName(sender), senderName(receiver), giftName, quantity)
+	content := fmt.Sprintf("%s đã tặng %s %s ×%d", senderName(sender), senderName(receiver), giftName, quantity)
 	runes := []rune(content)
 	if len(runes) > giftContentRunes {
 		return string(runes[:giftContentRunes])
