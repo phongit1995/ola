@@ -31,7 +31,7 @@ import { VipDayTransferFields } from './components/VipDayTransferFields';
 import { VipDayTransferSummary } from './components/VipDayTransferSummary';
 import { ReceiverField } from './components/ReceiverField';
 import { SelectChevron } from './components/SelectChevron';
-import { useReceiverSearch } from './useReceiverSearch';
+import { useReceiverSearch } from '@ola/shared/stores/user/useReceiverSearch';
 
 const DEFAULT_VIP_ID = 4;
 const MODE_ORDER: BuyVipMode[] = ['buy', 'give', 'giveDays', 'transferDays', 'extend'];

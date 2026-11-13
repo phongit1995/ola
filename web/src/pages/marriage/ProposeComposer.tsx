@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import {
   FullScreenOverlay,
@@ -10,9 +9,9 @@ import {
 } from '@components';
 import { RELATIONSHIP_STATUS } from '@constants';
 import { toast } from '@lib';
-import { UserService } from '@services';
 import type { UserSearchResult } from '@app-types';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
+import { useUserSearch } from '@ola/shared/stores/user/useUserSearch';
 
 const MESSAGE_LIMIT = 500;
 
@@ -27,38 +26,24 @@ function isBlocked(user: UserSearchResult): boolean {
   );
 }
 
+const PROPOSE_SEARCH_LIMIT = 20;
+
 export function ProposeComposer({ onClose }: ProposeComposerProps) {
   const { t } = useTranslation();
   const propose = useMarriageStore((s) => s.propose);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [selected, setSelected] = useState<UserSearchResult | null>(null);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const runSearch = useDebouncedCallback((value: string) => {
-    if (selected != null) return;
-    if (value === '') {
-      setResults([]);
-      setSearching(false);
-      return;
-    }
-    setSearching(true);
-    UserService.search(value, 20)
-      .then((result) => setResults(result.users))
-      .catch(() => setResults([]))
-      .finally(() => setSearching(false));
-  }, 300);
+  const { results, searching } = useUserSearch(query, {
+    limit: PROPOSE_SEARCH_LIMIT,
+    enabled: selected == null,
+  });
 
-  function handleQueryChange(value: string) {
-    setQuery(value);
-    runSearch(value.trim());
-  }
 
   function pick(user: UserSearchResult) {
     setSelected(user);
-    setResults([]);
     setQuery('');
   }
 
@@ -182,7 +167,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
                     <input
                       value={query}
                       onChange={(event) =>
-                        handleQueryChange(event.target.value)
+                        setQuery(event.target.value)
                       }
                       placeholder={t('marriage.searchPlaceholder')}
                       className="w-full rounded-2xl border border-ola-marriage-soft bg-white py-3 pl-10 pr-3 text-sm outline-none transition-colors focus:border-ola-marriage focus:shadow-[0_0_0_3px_rgba(255,77,125,0.15)]"

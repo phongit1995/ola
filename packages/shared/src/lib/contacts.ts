@@ -1,5 +1,7 @@
 import type { Friend } from '../types/api/relationship.type';
+import type { UserSearchResult } from '../types/api/user.type';
 import type { Contact, DeviceType } from '../types/client/contact.type';
+import type { ViewedProfile } from '../types/client/meLocal.type';
 import { colorForName } from './avatarColor';
 import { formatLastActive, isBirthdayToday } from './presence';
 import { activeVipTypeId, isVipActive } from './vip';
@@ -35,4 +37,15 @@ export function mapFriendsToContacts(friends: Friend[], locale: string, now: num
     statusImage: friend.bioImage ?? undefined,
     group: isBirthdayToday(friend.dateOfBirth, today) ? 'birthday' : 'friend',
   }));
+}
+
+export function viewedProfileFromSearchResult(user: UserSearchResult): ViewedProfile {
+  return {
+    id: user.id,
+    username: user.username,
+    fullName: user.fullName,
+    avatar: user.avatar,
+    vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime),
+    avatarFrameId: user.avatarFrameId ?? null,
+  };
 }

@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { RelationshipService, UserService } from '@ola/shared/services';
+import { RelationshipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { UserListDialog } from '@components/ui/UserListDialog';
 import { UserIdentityRow } from '@components/user/UserIdentityRow';
 import { userIdentityFromSearchResult } from '@components/user/userIdentity';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import {
+  useUserSearch,
+  USER_SEARCH_TYPING_DEBOUNCE_MS,
+} from '@ola/shared/stores/user/useUserSearch';
 
 interface AddContactDialogProps {
   onClose: () => void;
@@ -20,28 +24,14 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
   const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
   const [sentIds, setSentIds] = useState<string[]>([]);
   const [acceptedIds, setAcceptedIds] = useState<string[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const value = query.trim();
-    const timer = setTimeout(() => {
-      if (value === '') {
-        setResults([]);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      UserService.search(value, 30)
-        .then((result) => setResults(result.users))
-        .catch(() => push('error', t('chat.searchError')))
-        .finally(() => setLoading(false));
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [query, push, t]);
+  const { results, searching: loading } = useUserSearch(query, {
+    debounceMs: USER_SEARCH_TYPING_DEBOUNCE_MS,
+    onError: () => push('error', t('chat.searchError')),
+  });
 
   async function sendRequest(user: UserSearchResult) {
     setBusyId(user.id);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -11,12 +11,12 @@ import {
 } from 'react-native';
 import { KeyboardView } from '@components/KeyboardView';
 import { toast } from '@ola/shared/lib';
-import { UserService } from '@ola/shared/services';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import { useUserSearch } from '@ola/shared/stores/user/useUserSearch';
 
 const MESSAGE_LIMIT = 500;
 
@@ -48,37 +48,23 @@ function UserRowName({ user }: { user: UserSearchResult }) {
   );
 }
 
+const PROPOSE_SEARCH_LIMIT = 20;
+
 export function ProposeComposer({ onClose }: ProposeComposerProps) {
   const { t } = useTranslation();
   const propose = useMarriageStore((s) => s.propose);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [selected, setSelected] = useState<UserSearchResult | null>(null);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (selected != null) return;
-    const keyword = query.trim();
-    if (keyword === '') {
-      setResults([]);
-      setSearching(false);
-      return;
-    }
-    const timer = setTimeout(() => {
-      setSearching(true);
-      UserService.search(keyword, 20)
-        .then((result) => setResults(result.users))
-        .catch(() => setResults([]))
-        .finally(() => setSearching(false));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query, selected]);
+  const { results, searching } = useUserSearch(query, {
+    limit: PROPOSE_SEARCH_LIMIT,
+    enabled: selected == null,
+  });
 
   function pick(user: UserSearchResult) {
     setSelected(user);
-    setResults([]);
     setQuery('');
   }
 

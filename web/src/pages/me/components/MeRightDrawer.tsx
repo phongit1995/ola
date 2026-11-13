@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ConfirmDialog,
@@ -8,11 +7,14 @@ import {
   VipIcon,
 } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
-import { activeVipTypeId, colorForName, toast } from '@lib';
-import { UserService } from '@services';
+import { colorForName, toast, viewedProfileFromSearchResult } from '@lib';
 import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import type { ViewedProfile } from '@ola/shared/types';
 import { CLOSE_ANIMATION_MS } from '../constants';
+import {
+  USER_SEARCH_TYPING_DEBOUNCE_MS,
+  useUserSearch,
+} from '@ola/shared/stores/user/useUserSearch';
 
 interface MeRightDrawerProps {
   onClose: () => void;
@@ -23,8 +25,6 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
   const { t } = useTranslation();
   const [shown, setShown] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<ViewedProfile[]>([]);
-  const [loading, setLoading] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
   const viewedProfiles = useMeLocalStore((state) => state.viewedProfiles);
@@ -37,34 +37,14 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const runSearch = useDebouncedCallback((value: string) => {
-    if (value === '') {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    UserService.search(value, 30)
-      .then((result) =>
-        setResults(
-          result.users.map((user) => ({
-            id: user.id,
-            username: user.username,
-            fullName: user.fullName,
-            avatar: user.avatar,
-            vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime),
-            avatarFrameId: user.avatarFrameId ?? null,
-          }))
-        )
-      )
-      .catch(() => toast.error(t('me.searchError')))
-      .finally(() => setLoading(false));
-  }, 350);
-
-  function handleQueryChange(value: string) {
-    setQuery(value);
-    runSearch(value.trim());
-  }
+  const { results: foundUsers, searching: loading } = useUserSearch(query, {
+    debounceMs: USER_SEARCH_TYPING_DEBOUNCE_MS,
+    onError: () => toast.error(t('me.searchError')),
+  });
+  const results = useMemo(
+    () => foundUsers.map(viewedProfileFromSearchResult),
+    [foundUsers]
+  );
 
   function handleClose() {
     setShown(false);
@@ -99,7 +79,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
             <input
               type="search"
               value={query}
-              onChange={(event) => handleQueryChange(event.target.value)}
+              onChange={(event) => setQuery(event.target.value)}
               placeholder={t('me.searchHint')}
               className="w-full bg-transparent text-base text-black/87 outline-none placeholder:text-black/26"
             />

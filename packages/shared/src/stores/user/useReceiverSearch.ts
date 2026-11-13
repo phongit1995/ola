@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import { useUserSearch } from '@ola/shared/stores/user/useUserSearch';
-import type { UserSearchResult } from '@app-types';
+import type { UserSearchResult } from '../../types/api/user.type';
+import { useUserSearch, type UserSearchOptions } from './useUserSearch';
 
-export function useReceiverSearch() {
-  const [receiverUser, setReceiverUser] = useState<UserSearchResult | null>(
-    null
-  );
+export function useReceiverSearch(options?: UserSearchOptions) {
+  const [receiverUser, setReceiverUser] = useState<UserSearchResult | null>(null);
   const [receiverQuery, setReceiverQuery] = useState('');
-  const { results, searching } = useUserSearch(receiverQuery);
+  const { results, searching } = useUserSearch(receiverQuery, options);
 
   function pickReceiver(picked: UserSearchResult) {
     setReceiverUser(picked);

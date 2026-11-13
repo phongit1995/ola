@@ -12,12 +12,12 @@ import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
 import { useAvatarFrameShop } from '@ola/shared/stores/avatar-frame/useAvatarFrameShop';
 import { ReceiverField } from '@/pages/vip/components/ReceiverField';
 import { SelectChevron } from '@/pages/vip/components/SelectChevron';
-import { useReceiverSearch } from '@/pages/vip/useReceiverSearch';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { AvatarFramePickerDialog } from './components/AvatarFramePickerDialog';
 import { OwnFramedAvatar } from './components/OwnFramedAvatar';
 import { VipRequiredHint } from './components/VipRequiredHint';
 import { FRAME_SELECT_AVATAR_SIZE } from './constants';
+import { useReceiverSearch } from '@ola/shared/stores/user/useReceiverSearch';
 
 type ShopMode = 'buy' | 'gift';
 

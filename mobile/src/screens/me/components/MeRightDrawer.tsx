@@ -1,15 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Animated, BackHandler, FlatList, Image, Pressable, Text, TextInput, View } from 'react-native';
-import { UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { activeVipTypeId, colorForName } from '@ola/shared/lib';
+import { colorForName, viewedProfileFromSearchResult } from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import type { ViewedProfile } from '@ola/shared/types';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { VipBadge } from '@components/ui/VipBadge';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import {
+  USER_SEARCH_TYPING_DEBOUNCE_MS,
+  useUserSearch,
+} from '@ola/shared/stores/user/useUserSearch';
 
 const searchEmptyIcon = require('@assets/icons/me/ic_action_search.png');
 
@@ -83,8 +86,6 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
   const clearViewedProfiles = useMeLocalStore((s) => s.clearViewedProfiles);
 
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<ViewedProfile[]>([]);
-  const [loading, setLoading] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
   useEffect(() => {
@@ -102,33 +103,11 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
     return () => sub.remove();
   }, [onClose]);
 
-  useEffect(() => {
-    const keyword = query.trim();
-    const timer = setTimeout(() => {
-      if (keyword === '') {
-        setResults([]);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      UserService.search(keyword, 30)
-        .then((result) =>
-          setResults(
-            result.users.map((user) => ({
-              id: user.id,
-              username: user.username,
-              fullName: user.fullName,
-              avatar: user.avatar,
-              vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime),
-              avatarFrameId: user.avatarFrameId ?? null,
-            }))
-          )
-        )
-        .catch(() => push('error', t('me.searchError')))
-        .finally(() => setLoading(false));
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [query, push, t]);
+  const { results: foundUsers, searching: loading } = useUserSearch(query, {
+    debounceMs: USER_SEARCH_TYPING_DEBOUNCE_MS,
+    onError: () => push('error', t('me.searchError')),
+  });
+  const results = useMemo(() => foundUsers.map(viewedProfileFromSearchResult), [foundUsers]);
 
   const searching = query.trim() !== '';
 

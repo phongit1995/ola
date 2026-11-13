@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { UserService } from '../../services/user.service';
 import type { UserSearchResult } from '../../types/api/user.type';
 
 const USER_SEARCH_DEBOUNCE_MS = 300;
+export const USER_SEARCH_TYPING_DEBOUNCE_MS = 350;
 const USER_SEARCH_LIMIT = 30;
 
 interface UserSearchAnswer {
@@ -10,26 +11,49 @@ interface UserSearchAnswer {
   users: UserSearchResult[];
 }
 
-export function useUserSearch(query: string): { results: UserSearchResult[]; searching: boolean } {
-  const value = query.trim();
+export interface UserSearchOptions {
+  limit?: number;
+  debounceMs?: number;
+  enabled?: boolean;
+  onError?: () => void;
+}
+
+export function useUserSearch(
+  query: string,
+  {
+    limit = USER_SEARCH_LIMIT,
+    debounceMs = USER_SEARCH_DEBOUNCE_MS,
+    enabled = true,
+    onError,
+  }: UserSearchOptions = {}
+): { results: UserSearchResult[]; searching: boolean } {
+  const value = enabled ? query.trim() : '';
   const [answer, setAnswer] = useState<UserSearchAnswer>({ query: '', users: [] });
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
 
   useEffect(() => {
     if (value === '') return;
     let cancelled = false;
     const timer = setTimeout(() => {
-      UserService.search(value, USER_SEARCH_LIMIT)
+      UserService.search(value, limit)
         .then((res) => res.users)
-        .catch(() => [] as UserSearchResult[])
+        .catch(() => {
+          if (!cancelled) onErrorRef.current?.();
+          return [] as UserSearchResult[];
+        })
         .then((users) => {
           if (!cancelled) setAnswer({ query: value, users });
         });
-    }, USER_SEARCH_DEBOUNCE_MS);
+    }, debounceMs);
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [value]);
+  }, [value, limit, debounceMs]);
 
   const answered = answer.query === value;
   return { results: answered ? answer.users : [], searching: value !== '' && !answered };
