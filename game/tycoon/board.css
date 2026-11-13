@@ -833,10 +833,10 @@
   box-shadow: 0 2px 0 var(--ty-navy);
 }
 .ty-s6-fline img {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  object-fit: cover;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  object-fit: contain;
 }
 .ty-s6-fline span {
   overflow: hidden;
@@ -1985,17 +1985,94 @@ button.ty-level-card:focus-visible {
   text-align: center;
   color: var(--ty-coral);
 }
-.ty-log-full {
+.ty-logx {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.ty-log-line {
-  padding: 8px 2px;
-  border-bottom: 1px solid var(--ty-paper-deep);
+.ty-logx-round {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 2px 6px;
   font-family: var(--ty-font);
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: var(--ui-mute);
+  text-transform: uppercase;
+}
+.ty-logx-round::after {
+  content: '';
+  flex: 1;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--ty-paper-deep);
+}
+.ty-logx-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 5px 8px 5px 5px;
+  border-radius: 12px;
+  font-family: var(--ty-font);
+}
+.ty-logx-row-me {
+  background: color-mix(in srgb, var(--seat) 10%, transparent);
+}
+.ty-logx-ic {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid color-mix(in srgb, var(--seat) 55%, transparent);
+  border-radius: 10px;
+  background: var(--ty-paper);
+  color: var(--ty-navy);
+}
+.ty-logx-ic img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.ty-logx-ic-debt,
+.ty-logx-ic-bankrupt {
+  color: var(--ty-coral);
+}
+.ty-logx-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
   font-weight: 600;
   line-height: 1.3;
+  color: var(--ty-navy);
+}
+.ty-logx-text b {
+  font-weight: 900;
+  color: var(--seat);
+}
+.ty-logx-money {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--ty-font);
+  font-size: 12px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ty-logx-money-up {
+  background: color-mix(in srgb, var(--ty-jade) 14%, transparent);
+  color: var(--ty-jade);
+}
+.ty-logx-money-down {
+  background: color-mix(in srgb, var(--ty-coral) 14%, transparent);
+  color: var(--ty-coral);
 }
 .ty-log-up {
   color: var(--ty-jade);
@@ -2608,6 +2685,9 @@ button.ty-level-card:focus-visible {
   }
   .ty-s6-pods[data-count] .ty-s6-av > img:first-child {
     display: block;
+    border-radius: 10px;
+    object-fit: contain;
+    background: var(--soft, var(--ty-paper-light));
   }
   .ty-s6-pods[data-count] .ty-s6-av-pawn {
     position: absolute;

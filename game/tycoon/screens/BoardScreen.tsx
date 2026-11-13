@@ -4,7 +4,6 @@ import { ActionDock } from '../components/ActionDock';
 import { AssetsSheet } from '../components/AssetsSheet';
 import { Board } from '../components/Board';
 import { BoardCenter } from '../components/BoardCenter';
-import { BottomSheet } from '../components/BottomSheet';
 import { BuyModal } from '../components/BuyModal';
 import { DebtModal } from '../components/DebtModal';
 import { ChatSheet, ReactionBubbles } from '../components/MatchChat';
@@ -12,9 +11,10 @@ import { TyIcon } from '../components/TyIcon';
 import { KenBadge, UiAvatar, UiIconButton } from '../components/Ui';
 import { PlayerPods } from '../components/PlayerPods';
 import { TileSheet } from '../components/TileSheet';
+import { LogSheet } from '../components/LogSheet';
 import { attachParticles } from '../fx/particles';
 import { MAX_ROUNDS, TIME_LIMIT_MS } from '../logic/constants';
-import { useTycoon } from '../store/useTycoon';
+import { logLineText, useTycoon } from '../store/useTycoon';
 import bgUrl from '../assets/lobby/bg-board-pixel.webp';
 import logoUrl from '../assets/lobby/logo.webp';
 
@@ -57,23 +57,6 @@ function ConnectionBanner() {
       <UiAvatar src={players[Number(seat)]?.avatar} size={20} />
       @{players[Number(seat)]?.name ?? '?'} mất kết nối · còn {left}s
     </div>
-  );
-}
-
-function LogSheet() {
-  const { log, closeSheet } = useTycoon(useShallow((s) => ({ log: s.log, closeSheet: s.closeSheet })));
-  return (
-    <BottomSheet title="Diễn biến ván chơi" onClose={closeSheet} tall>
-      <h2 className="ui-title ty-sheet-head">Diễn biến</h2>
-      <div className="ty-log-full">
-        {log.length === 0 ? <p className="ty-sheet-desc">Chưa có gì xảy ra.</p> : null}
-        {[...log].reverse().map((line) => (
-          <div key={line.seq} className={`ty-log-line ty-log-${line.tone}`}>
-            {line.text}
-          </div>
-        ))}
-      </div>
-    </BottomSheet>
   );
 }
 
@@ -285,7 +268,7 @@ export function BoardScreen() {
         <UiIconButton icon="deed" label="Tài sản" size="sm" onClick={() => state.openSheet({ kind: 'assets', seat: state.you >= 0 ? state.you : (state.view?.turn ?? 0) })} />
         <button type="button" className="ty-s6-ticker" aria-label="Xem toàn bộ diễn biến" onClick={() => state.openSheet({ kind: 'log' })}>
           <span key={latest?.seq} className={`ty-log-${latest?.tone ?? 'neutral'}`}>
-            {latest?.text ?? 'Ván mới bắt đầu'}
+            {latest ? logLineText(latest) : 'Ván mới bắt đầu'}
           </span>
         </button>
         <UiIconButton icon="history" label="Diễn biến" size="sm" onClick={() => state.openSheet({ kind: 'log' })} />
