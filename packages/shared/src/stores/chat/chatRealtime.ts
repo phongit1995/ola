@@ -59,9 +59,6 @@ function handleNewMessage(get: ChatGet, set: ChatSet, event: NewMessageEvent) {
   const existing = conversations.find((item) => item.id === message.conversationId);
   const isMuted = existing?.isMuted ?? conversation.isMuted;
 
-  // Incoming messages should be audible even while their conversation is
-  // open; the platform adapter still applies the user's notification-sound
-  // setting. Per-conversation mute remains authoritative.
   if (!fromMe && !isMuted) playMessageSound();
 
   if (isCurrent) {

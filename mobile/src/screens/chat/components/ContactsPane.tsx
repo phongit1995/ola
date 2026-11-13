@@ -299,38 +299,6 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           </Pressable>
         )}
 
-        {/* TODO: "Có thể bạn muốn làm quen" — tạm ẩn, chờ API gợi ý kết bạn thật
-            (SuggestedFriendsScreen đang chạy trên SUGGESTED_FRIENDS hardcode, nút Kết bạn chỉ toast).
-            Mở lại thì import lại peopleIcon và SUGGESTED_FRIENDS.
-        <Pressable
-          onPress={() => navigation.navigate(ROOT_ROUTES.SuggestedFriends)}
-          className="flex-row items-center gap-3 bg-white px-4 py-2"
-          style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
-        >
-          <View className="h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: '#e0e0e0' }}>
-            <Image source={peopleIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
-          </View>
-          <View className="min-w-0 flex-1">
-            <Text className="text-base text-ola-ink">{t('chat.suggestFriends')}</Text>
-            <View className="mt-1 flex-row items-center gap-2">
-              {SUGGESTED_FRIENDS.slice(0, 3).map((friend) => (
-                <View
-                  key={friend.name}
-                  className="h-7 w-7 items-center justify-center rounded"
-                  style={{ backgroundColor: friend.color }}
-                >
-                  <Text className="text-xs font-semibold text-white">{friend.name.charAt(0).toUpperCase()}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-          <View className="h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1">
-            <Text className="text-[10px] font-bold text-white">{SUGGESTED_FRIENDS.length}</Text>
-          </View>
-          <Text className="text-xl text-ola-ink-hint">›</Text>
-        </Pressable>
-        */}
-
         {enabledBots.length > 0 && <SectionHeader label={t('chat.sectionApps')} />}
         {enabledBots.includes(CHAT_BOT_TYPE.olala) && (
           <ActionRow

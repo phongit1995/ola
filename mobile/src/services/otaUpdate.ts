@@ -4,7 +4,6 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import DeviceInfo from 'react-native-device-info';
 
 const OTA_REPO = 'ducphanvanntq/ola-release';
-// Link tải asset đi qua CDN của GitHub, không dính giới hạn 60 request/giờ/IP của API.
 const MANIFEST_URL = `https://github.com/${OTA_REPO}/releases/latest/download/manifest.json`;
 
 interface OtaEntry {
@@ -13,7 +12,6 @@ interface OtaEntry {
   ios?: string;
 }
 
-// Manifest gộp dồn: mỗi app_version (versionName / MARKETING_VERSION) giữ bundle mới nhất của nó.
 interface OtaManifest {
   bundle_id?: string;
   versions?: Record<string, OtaEntry>;
@@ -34,7 +32,6 @@ export async function checkForOtaUpdate(): Promise<void> {
     const currentVersion = Number(await hotUpdate.getCurrentVersion()) || 0;
     if (entry.version <= currentVersion) return;
 
-    // Không khởi động lại giữa chừng: bundle mới được nạp ở lần mở app sau.
     hotUpdate.downloadBundleUri(ReactNativeBlobUtil, url, entry.version, {
       restartAfterInstall: false,
       updateFail: () => undefined,

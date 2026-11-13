@@ -12,12 +12,6 @@ const marriageIcon = require('@assets/icons/me/header/ic_header_marriage.png');
 const favoriteIcon = require('@assets/icons/me/header/ic_header_favorite.png');
 const visitorsIcon = require('@assets/icons/me/header/ic_header_visitors.png');
 const clanIcon = require('@assets/icons/me/header/ic_header_clan.png');
-// TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
-// const eggIcon = require('@assets/icons/me/ic_indicate_broken_egg.png');
-// const androidIcon = require('@assets/icons/me/ic_indicate_android.png');
-// const olaIcon = require('@assets/icons/me/ic_indicate_me.png');
-// const funnyIcon = require('@assets/icons/me/ic_indicate_funny.png');
-// const publicIcon = require('@assets/icons/me/ic_indicate_public.png');
 
 const WIDTH = 240;
 
@@ -71,12 +65,6 @@ export function MeLeftDrawer({
     { key: 'likes', icon: favoriteIcon, label: t('me.drawerLikes') },
     { key: 'visitors', icon: visitorsIcon, label: t('me.tabVisitors') },
     { key: 'clan', icon: clanIcon, label: t('me.drawerClan'), opticalSize: 28, opticalOffsetY: 1 },
-    // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
-    // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg') },
-    // { key: 'android', icon: androidIcon, label: '#Android' },
-    // { key: 'ola', icon: olaIcon, label: '#Ola' },
-    // { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny') },
-    // { key: 'public', icon: publicIcon, label: t('me.drawerPublic') },
   ];
 
   return (

@@ -140,9 +140,7 @@ export function useProfileActions(username: string) {
       setProfile(data);
       setFollowing(data.relationship?.isFollowing ?? false);
       setFans(data.followerCount);
-    } catch {
-      /* ignore */
-    }
+    } catch {}
   }, [username]);
 
   const reloadPosts = useCallback(async () => {

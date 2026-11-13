@@ -26,7 +26,6 @@ export function AppUpdateGate() {
     return () => subscription.remove();
   }, []);
 
-  // iOS bỏ qua lần present Modal nếu lúc đó đang có màn khác chen vào (vừa mở app, redbox...) và không tự thử lại; chưa thấy onShow thì gắn lại Dialog.
   useEffect(() => {
     if (!required) {
       shownRef.current = false;

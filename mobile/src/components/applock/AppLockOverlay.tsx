@@ -66,11 +66,6 @@ function PrivacyCover() {
   );
 }
 
-/**
- * Lớp khoá/che đặt ở root và bên trong MỌI Modal (OlaModal, Dialog). Modal
- * native luôn nằm trên view thường nên không thể đè từ ngoài vào; thay vì ẩn
- * modal (mất bản nháp), mỗi modal tự vẽ lớp này lên trên nội dung của nó.
- */
 export function AppLockOverlay() {
   const blocked = useBlockedByAppLock();
   const locked = useAppLockStore((s) => s.locked);

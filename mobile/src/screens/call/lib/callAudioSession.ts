@@ -10,19 +10,12 @@ const SPEAKER_KEYWORD = 'speaker';
 let sessionDepth = 0;
 let queue: Promise<unknown> = Promise.resolve();
 
-// Nối tiếp mọi thao tác vào/ra: nếu overlay unmount giữa lúc configureAudio còn
-// await thì cleanup phải đợi setup xong mới chạy, không thì stop() rơi vào giữa
-// và session bị bỏ lại ở trạng thái đang bật.
 function serialize<T>(task: () => Promise<T>): Promise<T> {
   const next = queue.then(task, task);
   queue = next.catch(() => undefined);
   return next;
 }
 
-// Ba thứ tranh nhau audio route: react-native-sound (SFX, category Ambient đặt ở
-// top-level lib/sound.ts), nitro-sound (ghi/phát voice message) và WebRTC. Vào
-// cuộc gọi phải nhả hẳn voice playback rồi mới đổi category, nếu không iOS giữ
-// route cũ và cuộc gọi không có tiếng.
 export function enterCallAudioSession(withVideo = false): Promise<void> {
   return serialize(async () => {
     sessionDepth += 1;

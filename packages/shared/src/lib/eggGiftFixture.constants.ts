@@ -1,6 +1,5 @@
 import type { EggGiftSection } from '../types/api/egg.type';
 
-// Static fallback gift catalog used by clients.
 import { vipName } from './vip';
 
 const FIXTURE_KEN_AMOUNTS = [

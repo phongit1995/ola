@@ -36,8 +36,6 @@ export function CallVideoArea({
   const localTrack = tracks.find((item) => item.participant.isLocal);
   const remoteTrack = tracks.find((item) => !item.participant.isLocal);
 
-  // SurfaceView của VideoTrack trên Android không tôn trọng opacity:0, nên khi
-  // overlay bị ẩn (thu nhỏ) phải gỡ hẳn renderer thay vì chỉ làm mờ.
   const showRemoteVideo = visible && isVideo && isTrackReference(remoteTrack);
   const showLocalVideo =
     visible && isVideo && !camOff && isTrackReference(localTrack);

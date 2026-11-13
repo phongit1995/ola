@@ -11,8 +11,6 @@ export function useBlockedByAppLock(): boolean {
 
 let OverlayComponent: ComponentType | null = null;
 
-// Dialog/OlaModal chỉ phụ thuộc file nhẹ này; AppLockOverlay (kéo theo
-// services, native module) tự đăng ký khi app khởi động qua AppLockGate.
 export function registerAppLockOverlay(component: ComponentType): void {
   OverlayComponent = component;
 }

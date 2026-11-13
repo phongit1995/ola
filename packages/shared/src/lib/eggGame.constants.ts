@@ -1,7 +1,5 @@
 import type { Nest, SmashTail } from '../types/client/eggGame.type';
 
-// Static geometry, timing and animation sequences for the egg game.
-
 export const BG_W = 640;
 export const BG_H = 832;
 

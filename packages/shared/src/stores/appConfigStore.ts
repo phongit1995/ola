@@ -7,8 +7,6 @@ const APP_CONFIG_FRESH_MS = 5_000;
 
 let inflight: Promise<boolean> | null = null;
 
-// Every screen reloads on entry; screens opened within a few seconds of each other share one request,
-// and an unchanged config only costs a notModified round trip.
 export const useAppConfigStore = create<AppConfigState>((set, get) => ({
   configs: {},
   version: null,

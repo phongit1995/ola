@@ -292,9 +292,6 @@ function MessengerPopup({
 
   const anchorY = anchor.y + ANCHOR_TOP_OFFSET;
 
-  // Giữ preview trùng vị trí tin thật. Nếu bên dưới không đủ chỗ cho menu thì
-  // lật menu lên trên (menu trên preview, reaction bar trên menu) thay vì kéo
-  // preview dịch lên — nhờ vậy tin ở sát đáy vẫn không bị lệch.
   const spaceBelow = usableBottom - bottomInset - (anchorY + bubbleH);
   const menuBelow = menuH === 0 || spaceBelow >= menuStack;
 

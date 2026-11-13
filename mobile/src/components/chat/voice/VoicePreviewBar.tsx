@@ -69,8 +69,6 @@ export function VoicePreviewBar({
   const release = useCallback(
     (resetPosition: boolean) => {
       clearTimer();
-      // Huỷ lượt load đang bay để callback của nó không thể phát sau khi
-      // recorder (hoặc một voice khác) đã giành playback session.
       loadTokenRef.current += 1;
       const sound = soundRef.current;
       const leasedUri = leasedUriRef.current;
@@ -78,7 +76,6 @@ export function VoicePreviewBar({
       leasedUriRef.current = null;
       loadingRef.current = false;
       if (sound != null) {
-        // Native release() dừng và gỡ player khỏi pool trong cùng một lệnh.
         sound.release();
       }
       if (leasedUri != null) releaseTemporaryVoiceFile(leasedUri);
@@ -117,9 +114,6 @@ export function VoicePreviewBar({
   function playFrom(sound: Sound) {
     activateVoicePlayback(playbackOwnerRef.current, releaseForReplacement);
     const resumeAt = currentTimeRef.current;
-    // Tiếp tục sau khi pause thì start() tự chạy từ chỗ đang dừng, không cần
-    // seek. Chỉ seek khi player biết độ dài thật: seek trên player có
-    // duration = 0 bị coi là "past end" và làm media extractor của máy abort.
     if (resumeAt > 0 && sound.getDuration() > 0) sound.setCurrentTime(resumeAt);
     setPlaying(true);
     clearTimer();
@@ -132,10 +126,6 @@ export function VoicePreviewBar({
     }, 200);
     sound.play(success => {
       if (soundRef.current !== sound) return;
-      // Phát xong là bỏ hẳn player, lần sau tạo mới. Dùng lại MediaPlayer ở
-      // trạng thái PlaybackCompleted làm media extractor của máy chết (MIUI:
-      // libmmparser_lite.so abort -> MEDIA_ERROR_SERVER_DIED), lần phát thứ hai
-      // luôn hỏng.
       clearTimer();
       const leasedUri = leasedUriRef.current;
       soundRef.current = null;
@@ -154,9 +144,6 @@ export function VoicePreviewBar({
 
   function toggle() {
     if (loadingRef.current) return;
-    // mixWithOthers phải là true như mọi chỗ khác trong app: mặc định false của
-    // lib bật nhánh audio-focus của react-native-sound trên Android, nhánh đó
-    // không nhả focus đúng và đụng MediaPlayer từ main thread.
     Sound.setCategory('Playback', true);
     const existing = soundRef.current;
     if (existing != null) {
@@ -173,8 +160,6 @@ export function VoicePreviewBar({
 
     errorShownRef.current = false;
     loadingRef.current = true;
-    // Đăng ký ngay từ lúc load để releaseVoicePlayback() có thể huỷ lượt này
-    // nếu recorder bắt đầu trước khi callback của Sound chạy.
     activateVoicePlayback(playbackOwnerRef.current, releaseForReplacement);
     const loadToken = ++loadTokenRef.current;
     retainTemporaryVoiceFile(uri);

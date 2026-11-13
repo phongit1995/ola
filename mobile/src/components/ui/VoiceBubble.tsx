@@ -96,10 +96,8 @@ export function VoiceBubble({
       soundRef.current = null;
       leasedUriRef.current = null;
       loadingRef.current = false;
-      // Huỷ luôn lượt load đang bay: callback của nó sẽ không được phát nữa.
       loadTokenRef.current += 1;
       if (sound != null) {
-        // Native release() dừng và gỡ player khỏi pool trong cùng một lệnh.
         sound.release();
       }
       if (leasedUri != null) releaseTemporaryVoiceFile(leasedUri);
@@ -157,19 +155,12 @@ export function VoiceBubble({
   function playFrom(sound: Sound) {
     activateVoicePlayback(playbackOwnerRef.current, releaseForReplacement);
     const resumeAt = currentTimeRef.current;
-    // Tiếp tục sau khi pause thì start() tự chạy từ chỗ đang dừng, không cần
-    // seek. Chỉ seek khi player biết độ dài thật: seek trên player có
-    // duration = 0 bị coi là "past end" và làm media extractor của máy abort.
     if (resumeAt > 0 && sound.getDuration() > 0) sound.setCurrentTime(resumeAt);
     setPlaying(true);
     setLoading(false);
     startProgressTimer(sound.getDuration());
     sound.play(success => {
       if (soundRef.current !== sound) return;
-      // Phát xong là bỏ hẳn player, lần sau tạo mới. Dùng lại MediaPlayer ở
-      // trạng thái PlaybackCompleted làm media extractor của máy chết (MIUI:
-      // libmmparser_lite.so abort -> MEDIA_ERROR_SERVER_DIED), lần phát thứ hai
-      // luôn hỏng.
       clearTimer();
       const leasedUri = leasedUriRef.current;
       soundRef.current = null;
@@ -190,9 +181,6 @@ export function VoiceBubble({
 
   function toggle() {
     if (url == null || url === '' || loadingRef.current) return;
-    // mixWithOthers phải là true như mọi chỗ khác trong app: mặc định false của
-    // lib bật nhánh audio-focus của react-native-sound trên Android, nhánh đó
-    // không nhả focus đúng và đụng MediaPlayer từ main thread.
     Sound.setCategory('Playback', true);
     const existing = soundRef.current;
     if (existing != null) {
@@ -208,8 +196,6 @@ export function VoiceBubble({
     errorShownRef.current = false;
     loadingRef.current = true;
     setLoading(true);
-    // Nhận quyền phát ngay từ lúc bắt đầu load, không đợi load xong: bấm ghi âm
-    // giữa chừng thì releaseVoicePlayback() mới thấy và huỷ được lượt này.
     activateVoicePlayback(playbackOwnerRef.current, releaseForReplacement);
     const loadToken = ++loadTokenRef.current;
     const sourceUrl = url;

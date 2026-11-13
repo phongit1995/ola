@@ -76,33 +76,6 @@ export function RoomList({
   const { t } = useTranslation();
   return (
     <ul>
-      {/* Banner VIP tạm ẩn theo yêu cầu — bật lại: bỏ comment + thêm lại prop onBuyVip
-      <li className="flex items-center justify-between gap-3 border-b border-black/12 bg-[#fff8e1] px-4 py-3">
-        <span className="min-w-0">
-          <span className="block text-sm font-medium text-black/87">
-            {t('room.warningVipTitle')}
-          </span>
-          <span className="block text-xs text-black/54">
-            {t('room.warningVipBody')}
-          </span>
-        </span>
-        <button
-          type="button"
-          onClick={onBuyVip}
-          className="shrink-0 rounded-sm bg-amber-400 px-3 py-1.5 text-sm font-medium text-white"
-        >
-          {t('room.buyVip')}
-        </button>
-      </li>
-      */}
-      {/* "Xung quanh bạn" tạm ẩn theo yêu cầu — bật lại: bỏ comment + thêm lại prop onAroundYou vào destructure
-      <SpecialRow
-        icon="📍"
-        title={t('room.aroundYou')}
-        subtitle={t('room.aroundYouDesc')}
-        onClick={onAroundYou}
-      />
-      */}
       {showQuickJoin && (
         <SpecialRow
           icon={

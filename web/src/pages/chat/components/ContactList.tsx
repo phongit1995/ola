@@ -300,68 +300,6 @@ export function ContactList({
         </button>
       )}
 
-      {/* TODO: "Có thể bạn muốn làm quen" — tạm ẩn, chờ API gợi ý kết bạn thật
-          (SuggestedFriendsScreen đang chạy trên SUGGESTED_FRIENDS hardcode, nút Kết bạn chỉ toast).
-          Mở lại thì import lại PeopleIcon, SUGGESTED_FRIENDS và prop onOpenSuggested.
-      <button
-        type="button"
-        onClick={onOpenSuggested}
-        className="flex w-full items-center gap-3 border-b border-black/12 bg-white/80 px-4 py-2 text-left"
-      >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e0e0e0]">
-          <PeopleIcon />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-base text-black/87">
-            {t('chat.suggestFriends')}
-          </span>
-          <span className="mt-1 flex items-center gap-2">
-            {SUGGESTED_FRIENDS.slice(0, 3).map((friend) => (
-              <span key={friend.name} className="block overflow-hidden rounded">
-                <Avatar
-                  name={friend.name}
-                  color={friend.color}
-                  size={28}
-                  rounded={false}
-                />
-              </span>
-            ))}
-          </span>
-        </span>
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1 text-[10px] font-bold text-white">
-          {SUGGESTED_FRIENDS.length}
-        </span>
-        <span className="shrink-0 text-xl text-black/26">›</span>
-      </button>
-      */}
-
-      {/* TODO: "Mời thêm bạn bè" — tạm ẩn, chưa có chức năng mời bạn qua Facebook
-      <ActionRow
-        badge={
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[#1877f2] text-xl font-bold text-white">
-            f
-          </span>
-        }
-        title={t('chat.inviteFriends')}
-        subtitle={t('chat.inviteFriendsSub')}
-        onClick={onComingSoon}
-      />
-      */}
-
-      {/* TODO: "Chat nhóm" — tạm ẩn, chưa có chức năng chat nhóm. Mở lại thì import lại groupIcon.
-      <ActionRow
-        badge={
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-ola-primary">
-            <img src={groupIcon} alt="" className="h-6 w-6 object-contain" />
-          </span>
-        }
-        title={t('chat.chatGroup')}
-        subtitle={t('chat.chatGroupSub')}
-        showChevron
-        onClick={onComingSoon}
-      />
-      */}
-
       {enabledBots.length > 0 && (
         <SectionHeader label={t('chat.sectionApps')} />
       )}
