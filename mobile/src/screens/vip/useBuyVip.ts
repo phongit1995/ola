@@ -21,7 +21,6 @@ import type { ListOption } from '@components/ui/ListOptionDialog';
 import {
   DEFAULT_VIP_ID,
   MODE_ORDER,
-  MOCK_KEN_BALANCE,
   RECEIVER_SEARCH_DEBOUNCE_MS,
   RECEIVER_SEARCH_LIMIT,
 } from './constants';
@@ -132,7 +131,7 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
   const displayVipId = selectedShopItem?.vipTypeId ?? selectedVipId;
   const selectedVip = vipById(displayVipId);
   const selectedPackage = packages.find((p) => p.id === selectedPackageId) ?? null;
-  const kenBalance = user?.ken ?? MOCK_KEN_BALANCE;
+  const kenBalance = user?.ken ?? 0;
 
   function handlePickVip(item: PickerItem) {
     setSelectedVipId(item.typeId);

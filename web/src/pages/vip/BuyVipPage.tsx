@@ -33,7 +33,6 @@ import { ReceiverField } from './components/ReceiverField';
 import { SelectChevron } from './components/SelectChevron';
 import { useReceiverSearch } from './useReceiverSearch';
 
-const MOCK_KEN_BALANCE = 12_345;
 const DEFAULT_VIP_ID = 4;
 const MODE_ORDER: BuyVipMode[] = ['buy', 'give', 'giveDays', 'transferDays', 'extend'];
 
@@ -221,7 +220,7 @@ export function BuyVipPage({
 
   const selectedPackage =
     packages.find((p) => p.id === selectedPackageId) ?? null;
-  const kenBalance = user?.ken ?? MOCK_KEN_BALANCE;
+  const kenBalance = user?.ken ?? 0;
 
   function handlePickVip(item: PickerItem) {
     setSelectedVipId(item.typeId);

@@ -2,8 +2,6 @@ import type { BuyVipMode } from '@ola/shared/types';
 
 export const DEFAULT_VIP_ID = 4;
 
-export const MOCK_KEN_BALANCE = 12_345;
-
 export const VIP_PAGE_SIZE = 100;
 
 export const RECEIVER_SEARCH_DEBOUNCE_MS = 350;
