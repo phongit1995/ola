@@ -11,7 +11,6 @@ import type {
 } from '@ola/shared/types';
 import type { ReaderPalette } from './types';
 
-export const SEARCH_DEBOUNCE_MS = 300;
 
 export const STORY_SECTION_ART = {
   continueReading: require('@assets/icons/story/illustrated/continue-reading.webp'),

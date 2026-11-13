@@ -4,11 +4,8 @@ import { useGiftWall } from '@ola/shared/stores/gift/useGiftWall';
 import { formatKen, giftDisplayName, randomUuid } from '@lib';
 import type { GiftWallItem } from '@app-types';
 import { useGiftAnimationStore } from '@ola/shared/stores/gift/giftAnimationStore';
-import {
-  GIFT_WALL_GRID_CLASS,
-  GIFT_WALL_PREVIEW_ROWS,
-  type GiftWallColumns,
-} from '../constants';
+import { GIFT_WALL_GRID_CLASS, type GiftWallColumns } from '../constants';
+import { GIFT_WALL_PREVIEW_ROWS } from '@constants';
 
 interface GiftWallSectionProps {
   userId: string;

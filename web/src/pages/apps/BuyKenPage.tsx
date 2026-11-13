@@ -15,8 +15,12 @@ import { ScreenHeader, FullScreenOverlay } from '@components';
 import type { TopupBonusTier } from '@app-types';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
-import { MIN_AMOUNT, STEP_AMOUNT, PRESET_AMOUNTS } from './constants';
 import { SupportDialog } from './SupportDialog';
+import {
+  KEN_TOPUP_MIN_AMOUNT,
+  KEN_TOPUP_STEP_AMOUNT,
+  KEN_TOPUP_PRESET_AMOUNTS,
+} from '@constants';
 
 const NO_BONUS_TIERS: TopupBonusTier[] = [];
 const QR_DOWNLOAD_PX = 1080;
@@ -94,9 +98,9 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
     void loadConfig();
   }, [loadConfig]);
 
-  const minAmount = config?.minAmount ?? MIN_AMOUNT;
-  const stepAmount = config?.stepAmount ?? STEP_AMOUNT;
-  const presetAmounts = config?.presetAmounts ?? PRESET_AMOUNTS;
+  const minAmount = config?.minAmount ?? KEN_TOPUP_MIN_AMOUNT;
+  const stepAmount = config?.stepAmount ?? KEN_TOPUP_STEP_AMOUNT;
+  const presetAmounts = config?.presetAmounts ?? KEN_TOPUP_PRESET_AMOUNTS;
   const bonusTiers = config?.bonusTiers ?? NO_BONUS_TIERS;
   const bank = config?.bank;
 

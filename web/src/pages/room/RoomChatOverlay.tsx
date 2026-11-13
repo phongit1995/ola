@@ -8,8 +8,7 @@ import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
 import type { ActiveRoom } from '@ola/shared/types';
-import { ROOM_BROWSE_LIMIT } from './constants';
-import { ROOM_CHAT_STATUS } from '@constants';
+import { ROOM_CHAT_STATUS, ROOM_BROWSE_LIMIT } from '@constants';
 
 export function RoomChatOverlay({ visible }: { visible: boolean }) {
   const { t } = useTranslation();

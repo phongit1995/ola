@@ -14,4 +14,3 @@ export const OTHER_CORNERS: Record<BubblePosition, string> = {
   last: 'rounded-2xl rounded-tl-none',
 };
 
-export const ROOM_BROWSE_LIMIT = 50;

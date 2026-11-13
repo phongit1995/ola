@@ -10,7 +10,7 @@ import {
 } from '@ola/shared/stores/topupConfigStore';
 import { TransferKenDialog } from '@/pages/chat/components/TransferKenDialog';
 import { KenHistorySection } from './KenHistorySection';
-import { KEN_LOW_THRESHOLD } from './constants';
+import { KEN_LOW_THRESHOLD } from '@constants';
 
 function KenCoin({ className = 'h-[18px] w-[18px]' }: { className?: string }) {
   return (

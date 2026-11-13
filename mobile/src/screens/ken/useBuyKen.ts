@@ -3,7 +3,11 @@ import { buildVietQrImageUrl, fillMemoTemplate, quoteTopupKen } from '@ola/share
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { selectTopupVisibleOnMobile, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import type { TopupBonusTier } from '@ola/shared/types';
-import { MIN_AMOUNT, PRESET_AMOUNTS, STEP_AMOUNT } from './constants';
+import {
+  KEN_TOPUP_MIN_AMOUNT,
+  KEN_TOPUP_PRESET_AMOUNTS,
+  KEN_TOPUP_STEP_AMOUNT,
+} from '@ola/shared/constants';
 
 const NO_BONUS_TIERS: TopupBonusTier[] = [];
 
@@ -19,9 +23,9 @@ export function useBuyKen() {
     void loadConfig();
   }, [loadConfig]);
 
-  const minAmount = config?.minAmount ?? MIN_AMOUNT;
-  const stepAmount = config?.stepAmount ?? STEP_AMOUNT;
-  const presetAmounts = config?.presetAmounts ?? PRESET_AMOUNTS;
+  const minAmount = config?.minAmount ?? KEN_TOPUP_MIN_AMOUNT;
+  const stepAmount = config?.stepAmount ?? KEN_TOPUP_STEP_AMOUNT;
+  const presetAmounts = config?.presetAmounts ?? KEN_TOPUP_PRESET_AMOUNTS;
   const bonusTiers = config?.bonusTiers ?? NO_BONUS_TIERS;
   const bank = config?.bank;
 

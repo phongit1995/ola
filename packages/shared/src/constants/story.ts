@@ -18,6 +18,7 @@ export const STORY_SORT = {
 } as const satisfies Record<string, StorySort>;
 
 export const STORY_LATEST_COMMENTS_THREAD = 'latest';
+export const STORY_SEARCH_DEBOUNCE_MS = 300;
 
 export const STORY_STATUS_FILTER = {
   all: 'all',

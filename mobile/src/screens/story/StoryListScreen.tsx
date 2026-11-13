@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { STORY_STATUS_FILTER } from '@ola/shared/constants';
+import { STORY_STATUS_FILTER, STORY_SEARCH_DEBOUNCE_MS } from '@ola/shared/constants';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
 import type { Story, StoryProgress, StoryStatusFilter } from '@ola/shared/types';
@@ -22,13 +22,7 @@ import { ROOT_ROUTES, STORY_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
 import { useThemeColors } from '@hooks/useThemeColors';
-import {
-  ROW_SEPARATOR,
-  SEARCH_DEBOUNCE_MS,
-  SORT_OPTIONS,
-  STATUS_FILTER_OPTIONS,
-  STORY_SECTION_ART,
-} from './constants';
+import { ROW_SEPARATOR, SORT_OPTIONS, STATUS_FILTER_OPTIONS, STORY_SECTION_ART } from './constants';
 import {
   ContinueCard,
   StorySectionTitle,
@@ -151,7 +145,7 @@ export function StoryListScreen() {
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed === filter.q) return;
-    const timer = setTimeout(() => void setFilter({ q: trimmed }), SEARCH_DEBOUNCE_MS);
+    const timer = setTimeout(() => void setFilter({ q: trimmed }), STORY_SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [query, filter.q, setFilter]);
 

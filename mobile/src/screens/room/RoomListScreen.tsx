@@ -20,9 +20,8 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { ROOM_BROWSE_LIMIT } from './constants';
 import { WORD_CHAIN_ICONS } from './word-chain/wordChainAssets';
-import { ROOM_CHAT_STATUS } from '@ola/shared/constants';
+import { ROOM_CHAT_STATUS, ROOM_BROWSE_LIMIT } from '@ola/shared/constants';
 
 const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');
 const quickJoinIcon = require('@assets/icons/room/ic_action_auto_join_room.png');

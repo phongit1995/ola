@@ -26,9 +26,8 @@ import { CLAN_ROLE_ICONS } from './constants';
 import addIcon from '@/assets/icons/clan/ic_action_add.png';
 import memberIcon from '@/assets/icons/clan/ic_clan_member.png';
 import visitIcon from '@/assets/icons/clan/ic_clan_visit.png';
-import { CLAN_ROLE } from '@constants';
+import { CLAN_ROLE, CLAN_SEARCH_DEBOUNCE_MS } from '@constants';
 
-const SEARCH_DEBOUNCE_MS = 300;
 
 interface TopResult {
   q: string;
@@ -166,7 +165,7 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
             }
           });
       },
-      searching ? SEARCH_DEBOUNCE_MS : 0
+      searching ? CLAN_SEARCH_DEBOUNCE_MS : 0
     );
     return () => {
       active = false;

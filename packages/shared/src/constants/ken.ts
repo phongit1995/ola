@@ -4,6 +4,10 @@ import type { KenHistoryTab } from '../types/client/kenHistory.type';
 export const KEN_HISTORY_PAGE_SIZE = 20;
 export const KEN_TRANSFER_MIN = 1000;
 export const KEN_TRANSFER_MAX = 10_000_000;
+export const KEN_LOW_THRESHOLD = 10_000;
+export const KEN_TOPUP_MIN_AMOUNT = 10_000;
+export const KEN_TOPUP_STEP_AMOUNT = 1_000;
+export const KEN_TOPUP_PRESET_AMOUNTS = [10_000, 20_000, 50_000, 100_000, 200_000, 500_000];
 export const KEN_TREASURE_OPEN_ANIMATION_MS = 1_000;
 
 export const KEN_TX_META = {

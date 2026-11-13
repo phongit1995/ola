@@ -23,8 +23,8 @@ import {
   USERNAME_MAX,
   USERNAME_PATTERN,
   toast,
+  REGISTER_USERNAME_MIN,
 } from '@lib';
-import { USERNAME_MIN } from './constants';
 
 interface RegisterForm {
   username: string;
@@ -115,7 +115,7 @@ export function RegisterPage() {
         field={register('username', {
           required: t('register.errUsernameRequired'),
           minLength: {
-            value: USERNAME_MIN,
+            value: REGISTER_USERNAME_MIN,
             message: t('register.errUsernameMin'),
           },
           maxLength: {

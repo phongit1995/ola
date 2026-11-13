@@ -53,6 +53,7 @@ export const GIFT_HISTORY_TABS = [
 ] as const;
 
 export const GIFT_HISTORY_PAGE_SIZE = 20;
+export const GIFT_WALL_PREVIEW_ROWS = 2;
 export const GIFT_LEADERBOARD_LIMIT = 50;
 export const GIFT_LEADERBOARD_PODIUM_SIZE = 3;
 export const GIFT_ANIMATION_DURATION_MS = 2_400;
