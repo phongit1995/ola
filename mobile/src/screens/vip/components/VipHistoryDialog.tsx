@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import {
@@ -7,44 +7,16 @@ import {
   formatKen,
   isVipDayTransferSource,
   vipName,
+  VIP_HISTORY_TABS,
+  vipHistoryIconTypeId,
+  vipHistorySourceKey,
 } from '@ola/shared/lib';
-import { VipService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import type { VipPurchaseHistoryItem, VipTransferHistoryItem } from '@ola/shared/types';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { VipIconImage } from './VipIconImage';
-
-const PAGE_SIZE = 20;
-const TABS = ['purchases', 'transfers'] as const;
-
-type HistoryTab = (typeof TABS)[number];
-
-const SOURCE_KEYS = [
-  'package',
-  'purchase',
-  'icon',
-  'gift',
-  'email_verify',
-  'egg',
-  'wheel',
-  'admin',
-  'gift_code',
-  'day_transfer_out',
-  'day_transfer_in',
-] as const;
-
-type SourceKey = (typeof SOURCE_KEYS)[number];
-
-function sourceKeyOf(source: string): SourceKey | 'other' {
-  return (SOURCE_KEYS as readonly string[]).includes(source) ? (source as SourceKey) : 'other';
-}
-
-function iconTypeIdOf(packageName: string): number | null {
-  const match = /^VIP #(\d+)$/.exec(packageName);
-  return match ? Number(match[1]) : null;
-}
+import { useVipHistory } from '@ola/shared/stores/vip/useVipHistory';
 
 interface VipHistoryDialogProps {
   visible: boolean;
@@ -55,48 +27,19 @@ export function VipHistoryDialog({ visible, onClose }: VipHistoryDialogProps) {
   const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const myId = useAuthStore((s) => s.user?.id);
-  const [tab, setTab] = useState<HistoryTab>('purchases');
-  const [purchases, setPurchases] = useState<VipPurchaseHistoryItem[]>([]);
-  const [transfers, setTransfers] = useState<VipTransferHistoryItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const {
+    tab,
+    setTab,
+    purchases,
+    transfers,
+    items,
+    loading,
+    error,
+    hasMore,
+    loadMore,
+  } = useVipHistory(visible);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
-
-  const loadPage = useCallback(async (offset: number, target: HistoryTab) => {
-    setLoading(true);
-    setError(false);
-    if (offset === 0) {
-      setPurchases([]);
-      setTransfers([]);
-      setTotal(0);
-    }
-    try {
-      if (target === 'purchases') {
-        const result = await VipService.getHistory({ limit: PAGE_SIZE, offset });
-        setTotal(result.total);
-        setPurchases((prev) => (offset === 0 ? result.items : [...prev, ...result.items]));
-      } else {
-        const result = await VipService.getTransfers({ limit: PAGE_SIZE, offset });
-        setTotal(result.total);
-        setTransfers((prev) => (offset === 0 ? result.items : [...prev, ...result.items]));
-      }
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!visible) return;
-    void loadPage(0, tab);
-  }, [visible, tab, loadPage]);
-
-  const items: Array<VipPurchaseHistoryItem | VipTransferHistoryItem> =
-    tab === 'purchases' ? purchases : transfers;
-  const hasMore = items.length < total;
 
   return (
     <Dialog
@@ -106,7 +49,7 @@ export function VipHistoryDialog({ visible, onClose }: VipHistoryDialogProps) {
       footer={<DialogButton onPress={onClose}>{t('vip.historyDialog.close')}</DialogButton>}
     >
       <View className="mb-2 flex-row gap-1.5">
-        {TABS.map((key) => {
+        {VIP_HISTORY_TABS.map((key) => {
           const active = tab === key;
           return (
             <Pressable
@@ -141,7 +84,7 @@ export function VipHistoryDialog({ visible, onClose }: VipHistoryDialogProps) {
           </Text>
         ) : tab === 'purchases' ? (
           purchases.map((item) => {
-            const iconTypeId = iconTypeIdOf(item.packageName);
+            const iconTypeId = vipHistoryIconTypeId(item.packageName);
             return (
               <View
                 key={item.id}
@@ -155,7 +98,7 @@ export function VipHistoryDialog({ visible, onClose }: VipHistoryDialogProps) {
                       {iconTypeId != null ? vipName(iconTypeId) : item.packageName}
                     </Text>
                     <Text className="text-xs" style={{ color: TEXT_SECONDARY }} numberOfLines={1}>
-                      {t(`vip.historyDialog.source.${sourceKeyOf(item.source)}`)}
+                      {t(`vip.historyDialog.source.${vipHistorySourceKey(item.source)}`)}
                       {item.days > 0 && !isVipDayTransferSource(item.source)
                         ? ` ·${t('vip.historyDialog.until', { date: formatDateDMY(item.vipEndTime) })}`
                         : ''}
@@ -223,7 +166,7 @@ export function VipHistoryDialog({ visible, onClose }: VipHistoryDialogProps) {
 
         {hasMore && !error && (
           <Pressable
-            onPress={() => void loadPage(items.length, tab)}
+            onPress={loadMore}
             disabled={loading}
             className="mt-2 items-center rounded py-2 active:opacity-80"
             style={{ borderWidth: 1, borderColor: '#d1cece', backgroundColor: '#f6f6f6' }}
