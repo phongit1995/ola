@@ -35,6 +35,9 @@ import {
 } from '@ola/shared/stores/room/roomFilterStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 
+const LOAD_OLDER_VIEWPORTS = 1.5;
+const LOAD_OLDER_MIN_DISTANCE = 600;
+
 interface RoomMessagesTabProps {
   currentUserId: string;
   messages: RoomMessage[];
@@ -114,7 +117,8 @@ export function RoomMessagesTab({
       loadingMore,
       onLoadMore,
       enabled: active && visible,
-      loadMoreAtTop: 80,
+      loadMoreAtTop: LOAD_OLDER_MIN_DISTANCE,
+      loadMoreViewports: LOAD_OLDER_VIEWPORTS,
       onStickyChange: setPinnedToBottom,
     });
 
@@ -229,9 +233,10 @@ export function RoomMessagesTab({
     () =>
       buildRoomFeed(
         filterVisibleRoomMessages(messages, blockedUserIds),
-        currentUserId
+        currentUserId,
+        { omitLeadingDate: hasMore }
       ),
-    [messages, currentUserId, blockedUserIds]
+    [messages, currentUserId, blockedUserIds, hasMore]
   );
 
   return (
