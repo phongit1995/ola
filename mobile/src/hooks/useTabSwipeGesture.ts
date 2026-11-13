@@ -18,7 +18,6 @@ export function useTabSwipeGesture({ onSwipeLeft, onSwipeRight }: TabSwipeOption
         onMoveShouldSetPanResponderCapture: (_event, { dx, dy }) =>
           Math.abs(dx) > ACTIVE_OFFSET_X && Math.abs(dx) > Math.abs(dy) * HORIZONTAL_RATIO,
         onPanResponderTerminationRequest: () => false,
-        // Blocking native responders makes GestureHandlerRootView on Android cancel the JS touch right after grant.
         onShouldBlockNativeResponder: () => false,
         onPanResponderRelease: (_event, { dx, vx }) => {
           if (dx <= -SWIPE_DISTANCE || (dx < 0 && vx <= -FLING_VELOCITY)) onSwipeLeft?.();

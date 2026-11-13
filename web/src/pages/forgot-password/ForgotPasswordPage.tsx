@@ -14,9 +14,9 @@ import {
   resolveForgotConfirmError,
   resolveForgotSendError,
   USERNAME_MAX,
+  LOGIN_USERNAME_MIN,
 } from '@lib';
 import { AuthService } from '@services';
-import { USERNAME_MIN } from './constants';
 
 interface UsernameForm {
   username: string;
@@ -150,7 +150,7 @@ export function ForgotPasswordPage() {
             field={usernameForm.register('username', {
               required: t('forgot.errUsernameRequired'),
               minLength: {
-                value: USERNAME_MIN,
+                value: LOGIN_USERNAME_MIN,
                 message: t('forgot.errUsernameRequired'),
               },
               maxLength: {

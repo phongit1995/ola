@@ -6,6 +6,8 @@ const (
 	MaxAudioWaveformSamples = 64
 	UploadDateLayout        = "02012006"
 	UploadDateLayoutDay     = "2006-01-02"
+
+	imageSniffBytes = 512
 )
 
 var AllowedImageMimes = []string{

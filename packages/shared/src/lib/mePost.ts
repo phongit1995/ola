@@ -39,3 +39,7 @@ export function appendUniquePosts<T extends { id: string }>(current: T[], incomi
 export function hasMorePostPages(page: PostListResult): boolean {
   return page.items.length > 0 && page.offset + page.items.length < page.total;
 }
+
+export function formatLikeCount(count: number): string {
+  return count > 9 ? '9+' : String(count);
+}

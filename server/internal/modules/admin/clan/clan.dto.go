@@ -1,11 +1,8 @@
 package adminclan
 
-type ClanUserResponse struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+import userModule "ola-chat-server/internal/modules/user"
+
+type ClanUserResponse = userModule.UserBrief
 
 type ClanResponse struct {
 	ID               string            `json:"id"`

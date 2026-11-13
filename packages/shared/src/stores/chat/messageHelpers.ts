@@ -1,4 +1,4 @@
-import { CHAT_REPLY_EXCERPT_MAX_RUNES } from '../../constants/chat';
+import { CHAT_REPLY_EXCERPT_MAX_RUNES, MESSAGE_STATUS, MESSAGE_TYPE } from '../../constants/chat';
 import { useAuthStore } from '../auth/authStore';
 import { parseMessageMetadata } from '../../lib/messageMetadata';
 import type { ChatReplySnapshot, Message } from '../../types/api/chat.type';
@@ -15,7 +15,8 @@ export function replySnapshotOf(message: Message): ChatReplySnapshot {
     senderName: message.senderName,
     excerpt: Array.from(message.content).slice(0, CHAT_REPLY_EXCERPT_MAX_RUNES).join(''),
     type: message.type,
-    imageUrl: message.type === 'image' ? parseMessageMetadata(message.metadata).url : undefined,
+    imageUrl:
+      message.type === MESSAGE_TYPE.image ? parseMessageMetadata(message.metadata).url : undefined,
   };
 }
 
@@ -77,7 +78,7 @@ export async function runOptimisticSend(
     set((state) => ({
       messages: markByClientMsgId(state.messages, clientMsgId, {
         ...saved,
-        status: 'sent',
+        status: MESSAGE_STATUS.sent,
       }),
     }));
     onSuccess?.();
@@ -85,7 +86,7 @@ export async function runOptimisticSend(
   } catch (error) {
     set((state) => ({
       messages: markByClientMsgId(state.messages, clientMsgId, {
-        status: 'failed',
+        status: MESSAGE_STATUS.failed,
       }),
     }));
     onFailure?.(error);

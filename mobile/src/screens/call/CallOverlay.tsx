@@ -24,7 +24,7 @@ import {
 } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { CallerBrief } from '@ola/shared/types';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { CALL_BG } from './constants';
 import { CallControls } from './CallControls';
 import { CallMiniWidget } from './CallMiniWidget';
@@ -40,20 +40,12 @@ import {
   enterCallAudioSession,
   leaveCallAudioSession,
 } from './lib/callAudioSession';
-// TẮT TẠM: foreground service bị gỡ khỏi AndroidManifest để khỏi phải khai báo
-// với Play Console. Bỏ comment cả 3 chỗ trong file này khi bật lại.
-// import {
-//   startCallForegroundService,
-//   stopCallForegroundService,
-// } from './lib/callForegroundService';
 import { CALL_MODE, CALL_TYPE } from '@ola/shared/constants';
 import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 
 const CONTROLS_HEIGHT = 64;
 const CONTROLS_GAP = 24;
 
-// Lớp fullscreen chỉ ẩn bằng opacity + pointerEvents khi thu nhỏ — unmount là
-// rớt audio session/foreground service giữa cuộc gọi.
 function FullscreenLayer({
   hidden,
   children,
@@ -231,8 +223,6 @@ function CallSessionUi({ withVideo }: { withVideo: boolean }) {
     [endActive],
   );
 
-  // Chỉ chạy khi call kết thúc (unmount) — đặt trong cleanup của effect
-  // [mode] thì chuyển outgoing→active lúc đang PiP sẽ dismiss nhầm cửa sổ.
   useEffect(
     () => () => {
       setPipSupported(false, false);
@@ -294,8 +284,6 @@ function CallSessionUi({ withVideo }: { withVideo: boolean }) {
   );
 }
 
-// LiveKit publish mic ngay khi connect, nên phải đợi audio session native cấu
-// hình xong mới cho LiveKitRoom mount — mount trước thì track lên trước route.
 function useCallSession(withVideo: boolean, onFailed: () => void) {
   const [ready, setReady] = useState(false);
 
@@ -306,11 +294,6 @@ function useCallSession(withVideo: boolean, onFailed: () => void) {
       try {
         await enterCallAudioSession(withVideo);
         if (cancelled) return;
-        // await startCallForegroundService(withVideo);
-        // if (cancelled) {
-        //   await stopCallForegroundService().catch(() => {});
-        //   return;
-        // }
         setReady(true);
       } catch {
         if (cancelled) return;
@@ -322,7 +305,6 @@ function useCallSession(withVideo: boolean, onFailed: () => void) {
     void start();
     return () => {
       cancelled = true;
-      // void stopCallForegroundService().catch(() => {});
       void leaveCallAudioSession();
     };
   }, [withVideo, onFailed]);
@@ -379,7 +361,7 @@ export function CallOverlay() {
   const setExpanded = useCallStore((s) => s.setExpanded);
 
   const incoming = mode === CALL_MODE.incoming;
-  const inCall = !incoming && mode !== 'idle' && callType != null;
+  const inCall = !incoming && mode !== CALL_MODE.idle && callType != null;
   useOverlayBreadcrumb(
     'CallOverlay',
     incoming ? 'incoming' : inCall ? (expanded ? 'call-expanded' : 'call') : null,

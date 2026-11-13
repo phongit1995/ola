@@ -162,6 +162,11 @@
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+.ui-ken img {
+  width: 1.15em;
+  height: 1.15em;
+  object-fit: contain;
+}
 .ui-btn .ui-money {
   height: 24px;
   margin-left: 2px;

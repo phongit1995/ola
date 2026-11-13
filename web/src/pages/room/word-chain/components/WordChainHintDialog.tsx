@@ -9,7 +9,7 @@ import {
   wordChainHintErrorText,
   wordChainMoveErrorText,
 } from '@lib';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useWordChainPrefsStore } from '@ola/shared/stores/word-chain/wordChainPrefsStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { WordChainHintIcon } from './WordChainHintIcon';

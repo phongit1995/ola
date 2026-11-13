@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/vip"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -149,7 +151,7 @@ func (r *Repository) ApplyDraw(userID uuid.UUID, pack *models.EggPack, outcome D
 		}
 
 		if u.Ken < pack.KenCost {
-			return ErrInsufficientKen
+			return ledger.ErrInsufficientKen
 		}
 
 		before := u.Ken
@@ -157,66 +159,24 @@ func (r *Repository) ApplyDraw(userID uuid.UUID, pack *models.EggPack, outcome D
 		finalKen := afterCost
 
 		var costTxID *uuid.UUID
-		// TODO(ken): tạm tắt ghi ken_transactions cho game EGG — mở lại sau.
-		// if pack.KenCost > 0 {
-		// 	costTx := models.KenTransaction{
-		// 		UserID:        userID,
-		// 		Direction:     models.KenDirectionDebit,
-		// 		Type:          models.KenTxTypeEggOpen,
-		// 		Amount:        pack.KenCost,
-		// 		BalanceBefore: before,
-		// 		BalanceAfter:  afterCost,
-		// 		Description:   pack.Name,
-		// 		RefType:       "egg_draw",
-		// 		ActorType:     models.KenActorUser,
-		// 		ActorID:       &userID,
-		// 	}
-		// 	if err := tx.Create(&costTx).Error; err != nil {
-		// 		return err
-		// 	}
-		// 	costTxID = &costTx.ID
-		// }
+		// TODO(ken): tạm tắt ghi ken_transactions cho game EGG, code bật lại ở docs/hidden-features.md
 
 		newEnd := u.VipEndTime
 		switch outcome.CategoryType {
 		case models.EggCategoryKen:
 			if outcome.KenAmount != nil && *outcome.KenAmount > 0 {
-				// TODO(ken): tạm tắt ghi ken_transactions cho game EGG — mở lại sau.
-				// rewardTx := models.KenTransaction{
-				// 	UserID:        userID,
-				// 	Direction:     models.KenDirectionCredit,
-				// 	Type:          models.KenTxTypeReward,
-				// 	Amount:        *outcome.KenAmount,
-				// 	BalanceBefore: finalKen,
-				// 	BalanceAfter:  finalKen + *outcome.KenAmount,
-				// 	Description:   outcome.RewardLabel,
-				// 	RefType:       "egg_draw",
-				// 	ActorType:     models.KenActorSystem,
-				// }
-				// if err := tx.Create(&rewardTx).Error; err != nil {
-				// 	return err
-				// }
+				// TODO(ken): tạm tắt ghi ken_transactions cho game EGG, code bật lại ở docs/hidden-features.md
 				finalKen += *outcome.KenAmount
 			}
 		case models.EggCategoryVipIcon:
 			if outcome.VipTypeID != nil {
-				icon := models.UserVipIcon{
-					UserID:     userID,
-					VipIconID:  *outcome.VipTypeID,
-					Source:     "egg",
-					AcquiredAt: time.Now(),
-				}
-				if err := tx.Create(&icon).Error; err != nil {
+				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceEgg); err != nil {
 					return err
 				}
 			}
 		case models.EggCategoryVipDays:
 			if outcome.VipDays != nil && *outcome.VipDays > 0 {
-				base := time.Now()
-				if u.VipEndTime != nil && u.VipEndTime.After(base) {
-					base = *u.VipEndTime
-				}
-				end := base.Add(time.Duration(*outcome.VipDays) * 24 * time.Hour)
+				end := vip.ExtendEnd(time.Now(), u.VipEndTime, *outcome.VipDays)
 				newEnd = &end
 			}
 		}

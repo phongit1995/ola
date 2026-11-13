@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[marriage_diary_controller]")}
 }
 
-// List godoc
 // @Summary      Danh sách nhật ký Box - Kết Hôn
 // @Tags         marriage-diary
 // @Produce      json
@@ -40,7 +39,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Create godoc
 // @Summary      Viết Box - Kết Hôn
 // @Tags         marriage-diary
 // @Accept       json
@@ -67,7 +65,6 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Delete godoc
 // @Summary      Xoá một bài Box - Kết Hôn
 // @Tags         marriage-diary
 // @Produce      json

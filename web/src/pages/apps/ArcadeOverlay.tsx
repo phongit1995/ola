@@ -11,8 +11,8 @@ import type {
 } from '@ola/shared/types';
 import { Avatar, FloatingBubble } from '@components';
 import { colorForName } from '@lib';
-import { useAuthStore } from '@/store/authStore';
-import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
 import { useDraggableOffset } from '@hooks';
 import {
   ARCADE_BUBBLE_STORAGE_KEY,

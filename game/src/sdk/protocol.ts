@@ -307,6 +307,8 @@ export interface RoomInfo {
   full?: boolean;
   status?: 'waiting' | 'playing';
   matchId?: string;
+  /** Set only when the creator chose; absent keeps the legacy rule (public rooms watchable). */
+  allowSpectators?: boolean;
 }
 
 export interface RoomListData {
@@ -326,6 +328,7 @@ export interface RoomWaitingData {
   bet: number;
   locked: boolean;
   maxPlayers?: number;
+  allowSpectators?: boolean;
 }
 
 export interface RoomMember {
@@ -349,6 +352,7 @@ export interface RoomStateData {
   afterMatchId?: string;
   /** Sent to people watching the room from outside; youId is empty. */
   watcher?: boolean;
+  allowSpectators?: boolean;
 }
 
 export interface RoomSyncData {

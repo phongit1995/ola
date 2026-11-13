@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { formatKen, giftDisplayName, randomUuid } from '@lib';
 import type { GiftMessageMetadata } from '@app-types';
 import { CharmIcon } from '@components';
-import { useGiftAnimationStore } from '@/store/giftAnimationStore';
+import { useGiftAnimationStore } from '@ola/shared/stores/gift/giftAnimationStore';
 
 interface GiftMessageBubbleProps {
   gift: GiftMessageMetadata;

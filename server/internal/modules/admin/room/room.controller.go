@@ -20,7 +20,6 @@ func NewController(service *room.Service, logger *zap.SugaredLogger) *Controller
 	return &Controller{service: service, logger: logger.Named("[admin_room_controller]")}
 }
 
-// CreateRoom godoc
 // @Summary      Create room (admin)
 // @Tags         admin-room
 // @Accept       json
@@ -45,7 +44,6 @@ func (ctrl *Controller) CreateRoom(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListRooms godoc
 // @Summary      List rooms (admin, includes disabled)
 // @Tags         admin-room
 // @Produce      json
@@ -65,7 +63,6 @@ func (ctrl *Controller) ListRooms(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdateRoom godoc
 // @Summary      Update room (admin)
 // @Tags         admin-room
 // @Accept       json
@@ -91,7 +88,6 @@ func (ctrl *Controller) UpdateRoom(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeleteRoom godoc
 // @Summary      Delete room (admin)
 // @Tags         admin-room
 // @Produce      json
@@ -110,7 +106,6 @@ func (ctrl *Controller) DeleteRoom(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "room deleted"}, nil
 }
 
-// Messages godoc
 // @Summary      Get room message history (admin, includes disabled rooms)
 // @Tags         admin-room
 // @Produce      json
@@ -133,7 +128,6 @@ func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeleteMessage godoc
 // @Summary      Delete a room message (admin)
 // @Tags         admin-room
 // @Produce      json
@@ -157,7 +151,6 @@ func (ctrl *Controller) DeleteMessage(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "message deleted"}, nil
 }
 
-// PreviewImagePurge godoc
 // @Summary      Tính số ảnh phòng chat sẽ xoá (admin)
 // @Description  Đếm ảnh tin nhắn phòng chat cũ hơn olderThanDays ngày và tổng dung lượng, chưa xoá gì
 // @Tags         admin-room
@@ -179,7 +172,6 @@ func (ctrl *Controller) PreviewImagePurge(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// PurgeImages godoc
 // @Summary      Xoá ảnh phòng chat cũ (admin)
 // @Description  Chỉ xoá file ảnh tin nhắn phòng chat tải lên trước mốc before (lấy từ purge-preview), tin nhắn vẫn giữ nguyên
 // @Tags         admin-room
@@ -203,7 +195,6 @@ func (ctrl *Controller) PurgeImages(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ReorderRooms godoc
 // @Summary      Lưu thứ tự toàn bộ phòng chat (admin), gán lại thành 1..N
 // @Tags         admin-room
 // @Accept       json

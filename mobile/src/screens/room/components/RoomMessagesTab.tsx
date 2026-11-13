@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   AppState,
   NativeSyntheticEvent,
-  Platform,
   Pressable,
   NativeScrollEvent,
   useWindowDimensions,
@@ -27,7 +26,7 @@ import {
   createDateSeparatorFormatter,
   filterVisibleRoomMessages,
 } from '@ola/shared/lib';
-import { REPORT_TARGET_TYPE } from '@ola/shared/constants';
+import { REPORT_TARGET_TYPE, ROOM_CHAT_STATUS } from '@ola/shared/constants';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
   RoomBlockLimitError,
@@ -52,6 +51,8 @@ import {
   type MessageSheetAction,
 } from './MessageActionSheet';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
+import { useTimedHighlight } from '@ola/shared/stores/useTimedHighlight';
+import { useAfterDismiss } from '@hooks/useAfterDismiss';
 
 interface RoomMessagesTabProps {
   currentUserId: string;
@@ -79,6 +80,14 @@ interface RoomMessagesTabProps {
   onReact: (messageId: string, type: ReactionType) => void;
   onDeleteMessage: (messageId: string) => Promise<void>;
   onSwipeRight?: () => void;
+}
+
+const LOAD_OLDER_VIEWPORTS = 1.5;
+const LOAD_OLDER_MIN_DISTANCE = 600;
+
+function feedItemKey(item: RoomFeedItem): string {
+  if (item.kind !== 'group') return item.key;
+  return item.messages[item.messages.length - 1]?.key ?? item.key;
 }
 
 export function RoomMessagesTab({
@@ -124,12 +133,9 @@ export function RoomMessagesTab({
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(
     null,
   );
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const pendingSheetDialogRef = useRef<{
-    kind: 'delete' | 'block' | 'report' | 'selectText';
-    target: RoomMessage;
-  } | null>(null);
-  const pendingBlockCommitRef = useRef<RoomMessage | null>(null);
+  const { highlightedId, highlight } = useTimedHighlight();
+  const sheetFollowUp = useAfterDismiss();
+  const blockFollowUp = useAfterDismiss();
   const {
     listRef,
     suspendRef,
@@ -146,12 +152,11 @@ export function RoomMessagesTab({
     isUserInteracting,
     isStuckToBottom,
   } = useStickyBottomList<RoomFeedItem>({ onStickChange: setPinnedToBottom });
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const composerRef = useRef<RoomComposerHandle>(null);
   const wasStuckBeforeBackgroundRef = useRef(true);
   const [foregroundEpoch, setForegroundEpoch] = useState(0);
 
-  const canSend = status === 'joined';
+  const canSend = status === ROOM_CHAT_STATUS.joined;
   const dateFormatter = useMemo(
     () => createDateSeparatorFormatter(language),
     [language],
@@ -161,8 +166,9 @@ export function RoomMessagesTab({
       buildRoomFeed(
         filterVisibleRoomMessages(messages, blockedUserIds),
         currentUserId,
+        { omitLeadingDate: hasMore },
       ),
-    [messages, currentUserId, blockedUserIds],
+    [messages, currentUserId, blockedUserIds, hasMore],
   );
   const messageById = useMemo(
     () => new Map(messages.map(item => [item.id, item])),
@@ -200,19 +206,7 @@ export function RoomMessagesTab({
     composerRef.current?.insertMention(name);
   }, []);
 
-  const openPendingSheetDialog = useCallback(() => {
-    const pending = pendingSheetDialogRef.current;
-    pendingSheetDialogRef.current = null;
-    if (pending?.kind === 'delete') setDeleteTarget(pending.target);
-    if (pending?.kind === 'block') setBlockTarget(pending.target);
-    if (pending?.kind === 'report') setReportTarget(pending.target);
-    if (pending?.kind === 'selectText') setSelectTextTarget(pending.target.content);
-  }, []);
-
-  const commitPendingBlock = useCallback(() => {
-    const target = pendingBlockCommitRef.current;
-    pendingBlockCommitRef.current = null;
-    if (target == null) return;
+  const commitBlock = useCallback((target: RoomMessage) => {
     blockUser(target.senderId, {
       userId: target.senderId,
       username: target.senderName ?? '',
@@ -260,15 +254,9 @@ export function RoomMessagesTab({
         animated: true,
         viewPosition: 0.5,
       });
-      setHighlightedId(id);
-      if (highlightTimerRef.current != null)
-        clearTimeout(highlightTimerRef.current);
-      highlightTimerRef.current = setTimeout(
-        () => setHighlightedId(null),
-        1500,
-      );
+      highlight(id);
     },
-    [feed, pushToast, t, listRef, unstick],
+    [feed, pushToast, t, listRef, unstick, highlight],
   );
 
   function copyMessage(content: string) {
@@ -289,9 +277,8 @@ export function RoomMessagesTab({
       key: 'selectText',
       label: t('chat.actionSelectText'),
       icon: 'selectText',
-      onSelect: () => {
-        pendingSheetDialogRef.current = { kind: 'selectText', target: message };
-      },
+      onSelect: () =>
+        sheetFollowUp.schedule(() => setSelectTextTarget(message.content)),
     };
     if (!isOwn) {
       actions.push({
@@ -305,18 +292,14 @@ export function RoomMessagesTab({
         key: 'report',
         label: t('room.actionReport'),
         icon: 'report',
-        onSelect: () => {
-          pendingSheetDialogRef.current = { kind: 'report', target: message };
-        },
+        onSelect: () => sheetFollowUp.schedule(() => setReportTarget(message)),
       });
       actions.push({
         key: 'block',
         label: t('room.actionBlock'),
         icon: 'block',
         destructive: true,
-        onSelect: () => {
-          pendingSheetDialogRef.current = { kind: 'block', target: message };
-        },
+        onSelect: () => sheetFollowUp.schedule(() => setBlockTarget(message)),
       });
     } else {
       if (canCopy) actions.push(copyAction, selectTextAction);
@@ -325,9 +308,7 @@ export function RoomMessagesTab({
         label: t('chat.actionDelete'),
         icon: 'delete',
         destructive: true,
-        onSelect: () => {
-          pendingSheetDialogRef.current = { kind: 'delete', target: message };
-        },
+        onSelect: () => sheetFollowUp.schedule(() => setDeleteTarget(message)),
       });
     }
     return actions;
@@ -335,9 +316,14 @@ export function RoomMessagesTab({
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     onScroll(event);
+    const { contentOffset, layoutMeasurement } = event.nativeEvent;
+    const prefetchDistance = Math.max(
+      LOAD_OLDER_MIN_DISTANCE,
+      layoutMeasurement.height * LOAD_OLDER_VIEWPORTS,
+    );
     if (
       isUserInteracting() &&
-      event.nativeEvent.contentOffset.y < 80 &&
+      contentOffset.y < prefetchDistance &&
       hasMore &&
       !loadingMore
     ) {
@@ -392,10 +378,10 @@ export function RoomMessagesTab({
       <ChatWallpaper />
       <RoomReactionNotice />
       <RoomReactionBalloons />
-      {status !== 'joined' && (
+      {status !== ROOM_CHAT_STATUS.joined && (
         <View className="bg-black/5 py-1.5">
           <Text className="text-center text-sm text-ola-ink-soft">
-            {status === 'connecting'
+            {status === ROOM_CHAT_STATUS.connecting
               ? t('room.connecting')
               : t('room.joinError')}
           </Text>
@@ -415,7 +401,7 @@ export function RoomMessagesTab({
               ref={listRef}
               data={feed}
               extraData={foregroundEpoch}
-              keyExtractor={item => item.key}
+              keyExtractor={feedItemKey}
               getItemType={item => item.kind}
               drawDistance={1500}
               maintainVisibleContentPosition={{
@@ -430,18 +416,21 @@ export function RoomMessagesTab({
               contentContainerClassName="p-3"
               onContentSizeChange={onContentSizeChange}
               onLayout={onListLayout}
-              ListHeaderComponent={
-                loadingMore ? (
-                  <Text
-                    className="py-1 text-center text-xs"
-                    style={{ color: 'rgba(0,0,0,0.4)' }}
-                  >
-                    {t('common.loading')}
-                  </Text>
-                ) : null
-              }
               renderItem={renderItem}
             />
+          )}
+          {loadingMore && (
+            <View
+              pointerEvents="none"
+              className="absolute left-0 right-0 top-2 items-center"
+            >
+              <Text
+                className="rounded-full px-3 py-0.5 text-xs text-white"
+                style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+              >
+                {t('common.loading')}
+              </Text>
+            </View>
           )}
         </View>
       </View>
@@ -492,18 +481,12 @@ export function RoomMessagesTab({
         anchor={actionTarget?.anchor ?? null}
         preview={
           actionTarget != null ? (
-            <View
-              style={{
-                alignSelf: actionTarget.isOwn ? 'flex-end' : 'flex-start',
-              }}
-            >
-              <RoomBubbleBody
-                message={actionTarget.grouped}
-                isOwn={actionTarget.isOwn}
-                position={actionTarget.grouped.position}
-                onMention={() => undefined}
-              />
-            </View>
+            <RoomBubbleBody
+              message={actionTarget.grouped}
+              isOwn={actionTarget.isOwn}
+              position={actionTarget.grouped.position}
+              onMention={() => undefined}
+            />
           ) : null
         }
         actions={actionTarget != null ? sheetActions(actionTarget.message) : []}
@@ -517,10 +500,9 @@ export function RoomMessagesTab({
         onClose={() => {
           suspendRef.current = false;
           setActionTarget(null);
-          if (Platform.OS !== 'ios')
-            requestAnimationFrame(openPendingSheetDialog);
+          sheetFollowUp.runAfterClose();
         }}
-        onDismiss={openPendingSheetDialog}
+        onDismiss={sheetFollowUp.onDismiss}
       />
 
       {reportTarget != null && (
@@ -582,16 +564,15 @@ export function RoomMessagesTab({
           const target = blockTarget;
           setBlockTarget(null);
           if (target != null) {
-            pendingBlockCommitRef.current = target;
-            if (Platform.OS !== 'ios')
-              requestAnimationFrame(commitPendingBlock);
+            blockFollowUp.schedule(() => commitBlock(target));
+            blockFollowUp.runAfterClose();
           }
         }}
         onCancel={() => {
-          pendingBlockCommitRef.current = null;
+          blockFollowUp.cancel();
           setBlockTarget(null);
         }}
-        onDismiss={commitPendingBlock}
+        onDismiss={blockFollowUp.onDismiss}
       />
     </View>
   );

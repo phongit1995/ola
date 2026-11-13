@@ -6,6 +6,10 @@ jest.mock('../../KeyboardView', () => ({
   KeyboardView: require('react-native').View,
 }));
 
+jest.mock('@lib/telemetry', () => ({
+  logBreadcrumb: jest.fn(),
+}));
+
 describe('Dialog', () => {
   beforeEach(() => {
     jest.useFakeTimers();

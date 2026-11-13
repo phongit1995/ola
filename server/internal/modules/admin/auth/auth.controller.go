@@ -22,7 +22,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	}
 }
 
-// Login godoc
 // @Summary      Admin login
 // @Description  Authenticate an admin account and return access + refresh tokens
 // @Tags         admin-auth
@@ -35,19 +34,18 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Failure      403  {object}  utils.APIError
 // @Router       /admin/auth/login [post]
 func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
-	var req LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[LoginRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
-	resp, err := ctrl.service.Login(&req, c.ClientIP(), c.GetHeader("User-Agent"))
+	resp, err := ctrl.service.Login(req, c.ClientIP(), c.GetHeader("User-Agent"))
 	if err != nil {
 		return nil, ctrl.httpError(err)
 	}
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
 
-// Refresh godoc
 // @Summary      Refresh admin token
 // @Description  Exchange a valid admin refresh token for a new token pair
 // @Tags         admin-auth
@@ -59,9 +57,9 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /admin/auth/refresh [post]
 func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
-	var req RefreshTokenRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[RefreshTokenRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := ctrl.service.RefreshToken(req.RefreshToken, c.ClientIP(), c.GetHeader("User-Agent"))
@@ -72,7 +70,6 @@ func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
 
-// Logout godoc
 // @Summary      Admin logout
 // @Description  Revoke the authenticated admin session
 // @Tags         admin-auth
@@ -98,7 +95,6 @@ func (ctrl *Controller) Logout(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "logged out successfully"}, nil
 }
 
-// ChangePassword godoc
 // @Summary      Change admin password
 // @Description  Change the authenticated admin's password; revokes existing sessions
 // @Tags         admin-auth
@@ -116,19 +112,18 @@ func (ctrl *Controller) ChangePassword(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 	}
 
-	var req ChangePasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[ChangePasswordRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := ctrl.service.ChangePassword(adminID, &req); err != nil {
+	if err := ctrl.service.ChangePassword(adminID, req); err != nil {
 		return nil, ctrl.httpError(err)
 	}
 
 	return map[string]string{"message": "password changed successfully"}, nil
 }
 
-// Me godoc
 // @Summary      Current admin profile
 // @Description  Return the authenticated admin's profile
 // @Tags         admin-auth

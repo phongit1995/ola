@@ -11,8 +11,6 @@ interface AppUpdateState {
   check: () => Promise<void>;
 }
 
-// Hỏi store trước: store chưa có bản mới hơn thì thôi, khỏi gọi API (cũng không chặn oan khi store chưa duyệt xong bản mới).
-// Không hỏi được store (máy không có Google Play, mất mạng...) thì vẫn gọi API để danh sách bản phải cập nhật còn hiệu lực.
 async function runCheck(set: (partial: Partial<AppUpdateState>) => void): Promise<void> {
   if ((await checkStoreForUpdate()) === STORE_CHECK.latest) {
     set({ required: false });

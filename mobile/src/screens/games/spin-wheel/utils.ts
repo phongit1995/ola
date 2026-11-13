@@ -1,12 +1,13 @@
 import type { TFunction } from 'i18next';
 import type { ImageSourcePropType } from 'react-native';
-import { formatKen, vipName } from '@ola/shared/lib';
+import { vipName, formatRewardKen, isVipItemKind } from '@ola/shared/lib';
 import type {
   WheelPlayerOption,
   WheelPlayerSegment,
   WheelSegmentKind,
 } from '@ola/shared/types';
 import { wheelAssets } from './spinWheelAssets';
+import { WHEEL_SEGMENT_KIND } from '@ola/shared/constants';
 
 export interface RewardVisual {
   icon: ImageSourcePropType | null;
@@ -20,35 +21,15 @@ export interface GiftOptionVisual {
   icon: ImageSourcePropType | null;
 }
 
-export function formatRewardKen(amount: number): string {
-  if (amount >= 10000) {
-    const k = amount / 1000;
-    return `${Number.isInteger(k) ? k : k.toFixed(1)}K`;
-  }
-  return formatKen(amount);
-}
-
-export function isKenKind(kind: WheelSegmentKind): boolean {
-  return kind === 'ken_fixed' || kind === 'ken_random';
-}
-
-export function isVipDaysKind(kind: WheelSegmentKind): boolean {
-  return kind === 'vip_days';
-}
-
-export function isVipItemKind(kind: WheelSegmentKind): boolean {
-  return kind === 'vip_item' || kind === 'vip_random';
-}
-
 export function rewardKindIcon(kind: WheelSegmentKind): ImageSourcePropType {
   switch (kind) {
-    case 'ken_fixed':
+    case WHEEL_SEGMENT_KIND.kenFixed:
       return wheelAssets.spinCoin;
-    case 'ken_random':
+    case WHEEL_SEGMENT_KIND.kenRandom:
       return wheelAssets.rewardKenRandom;
-    case 'vip_random':
+    case WHEEL_SEGMENT_KIND.vipRandom:
       return wheelAssets.rewardVipRandom;
-    case 'miss':
+    case WHEEL_SEGMENT_KIND.miss:
       return wheelAssets.rewardMiss;
     default:
       return wheelAssets.rewardVipDays;
@@ -56,10 +37,10 @@ export function rewardKindIcon(kind: WheelSegmentKind): ImageSourcePropType {
 }
 
 function rewardIconWidthFraction(kind: WheelSegmentKind): number {
-  if (kind === 'ken_fixed') return 0.44;
-  if (kind === 'ken_random') return 0.54;
-  if (kind === 'vip_random') return 0.6;
-  if (kind === 'miss') return 0.52;
+  if (kind === WHEEL_SEGMENT_KIND.kenFixed) return 0.44;
+  if (kind === WHEEL_SEGMENT_KIND.kenRandom) return 0.54;
+  if (kind === WHEEL_SEGMENT_KIND.vipRandom) return 0.6;
+  if (kind === WHEEL_SEGMENT_KIND.miss) return 0.52;
   return 0.58;
 }
 

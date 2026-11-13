@@ -122,9 +122,6 @@ export function initAppReview(): void {
   writeState({ ...state, firstSeenAt: Date.now() });
 }
 
-// Gọi ở những khoảnh khắc người dùng vừa nhận được thứ gì đó vui, KHÔNG gọi lúc
-// mở app: cả Apple lẫn Google đều giới hạn số lần hiện popup và không báo lại
-// kết quả, nên mỗi lần bắn đi là một lượt bị tiêu.
 export function maybeAskForReview(trigger: AppReviewTrigger): void {
   const now = Date.now();
   const previous = readState();

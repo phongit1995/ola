@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SPIN_START_KEN, toast } from '@lib';
 import { AnimatedKen, FullScreenOverlay, Spinner } from '@components';
 import { SocketService } from '@services';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useSpinWheelStore } from '@ola/shared/stores/spinWheelStore';
 import { SpinWheel } from './SpinWheel';
@@ -33,6 +33,7 @@ import {
   spinCountNoteUrl,
   titleBannerUrl,
 } from './spinWheelAssets';
+import { KEN_SOCKET_EVENTS } from '@ola/shared/constants';
 
 interface SpinWheelGamePageProps {
   onClose: () => void;
@@ -67,7 +68,7 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
       suppressKenSync: false,
       pendingResult: null,
     });
-    const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
+    const off = SocketService.on<{ ken?: number }>(KEN_SOCKET_EVENTS.updated, (data) => {
       if (typeof data?.ken === 'number')
         useSpinWheelStore.getState().syncKen(data.ken);
     });

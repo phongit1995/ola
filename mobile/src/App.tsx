@@ -25,10 +25,10 @@ import { ToastHost } from './components/ui/ToastHost';
 import { MediaViewer } from './components/ui/MediaViewer';
 import { AppUpdateGate } from './components/AppUpdateGate';
 import { AppLockGate } from './components/applock/AppLockGate';
-import { useMeNotificationRealtime } from './hooks/useMeNotificationRealtime';
-import { useAppNotificationRealtime } from './hooks/useAppNotificationRealtime';
-import { useKenRealtime } from './hooks/useKenRealtime';
-import { useMegaphoneRealtime } from './hooks/useMegaphoneRealtime';
+import { useMeNotificationRealtime } from '@ola/shared/stores/me-notification/useMeNotificationRealtime';
+import { useAppNotificationRealtime } from '@ola/shared/stores/app-notification/useAppNotificationRealtime';
+import { useKenRealtime } from '@ola/shared/stores/ken/useKenRealtime';
+import { useMegaphoneRealtime } from '@ola/shared/stores/megaphone/useMegaphoneRealtime';
 import { KenTreasureOverlay } from './screens/games/ken-treasure/KenTreasureOverlay';
 import { ArcadeOverlay } from './screens/apps/ArcadeOverlay';
 import { GiftAnimationOverlay } from './components/gift/GiftAnimationOverlay';
@@ -151,8 +151,6 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppFontProvider>
-        {/* ChatKeyboardArea đo tọa độ từ mép màn hình; giữ statusBarTranslucent
-            để content.height của RNKC dùng cùng gốc y = 0 trên Android. */}
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <SafeAreaProvider>
             <StatusBar barStyle="light-content" />

@@ -28,11 +28,11 @@ import { PushService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
-import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { androidNotificationBase } from '@lib/notificationAndroid';
 import i18n from '../i18n';
-import { ROOT_ROUTES } from '../navigation/routes';
+import { ROOT_ROUTES } from '@navigation/routes';
 
 type PushData = Record<string, string>;
 type NavRef = NavigationContainerRefWithCurrent<ParamListBase>;
@@ -155,6 +155,13 @@ function androidOptions(
     };
   }
   if (data.type !== 'dm') return withBadge;
+  if (data.imageUrl) {
+    return {
+      ...withBadge,
+      visibility: AndroidVisibility.PRIVATE,
+      style: { type: AndroidStyle.BIGPICTURE, picture: data.imageUrl, largeIcon: null },
+    };
+  }
   const me = useAuthStore.getState().user;
   return {
     ...withBadge,

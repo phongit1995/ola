@@ -1,16 +1,11 @@
 import type { ParseKeys } from 'i18next';
 import type { AppOverlayKind } from '@/store/appOverlayStore';
 import iconNotify from '@/assets/icons/apps/notify.png';
-// TODO: mở lại các import icon dưới khi bật lại mục Kho game / Đăng quảng cáo / OlaMall / Lân cận
-// import iconGame from '@/assets/icons/apps/game.png';
 import iconPersonal from '@/assets/icons/apps/personal.png';
 import iconVip from '@/assets/icons/apps/vip-crown.webp';
 import iconAvatarFrame from '@/assets/icons/apps/avatar-frame.webp';
 import iconKen from '@/assets/icons/apps/ken.png';
-// import iconAdme from '@/assets/icons/apps/adme.png';
 import iconMedia from '@/assets/icons/apps/media.png';
-// import iconMall from '@/assets/icons/apps/mall.png';
-// import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconRemoveAccount from '@/assets/icons/apps/delete-account.png';
 import iconSupport from '@/assets/icons/apps/support.png';
@@ -37,14 +32,6 @@ export const GAME_ITEMS: AppItem[] = [
   { icon: iconEgg, titleKey: 'home.apps.egg', overlay: 'egg' },
   { icon: iconPen, titleKey: 'home.apps.pen', overlay: 'pen' },
   { icon: iconWheel, titleKey: 'home.apps.wheel', overlay: 'wheel' },
-  // TODO: mở lại mục Kho game khi có tính năng thật
-  // { icon: iconGame, titleKey: 'home.apps.gameStore', subtitleKey: 'home.appGameSubtitle' },
-  // TODO: mở lại mục Đăng quảng cáo khi có tính năng thật
-  // { icon: iconAdme, titleKey: 'home.apps.advertise' },
-  // TODO: mở lại mục OlaMall khi có tính năng thật
-  // { icon: iconMall, titleKey: 'home.apps.mall', subtitleKey: 'home.appMallSubtitle' },
-  // TODO: mở lại mục Lân cận khi NearbyPlacesPage hết dữ liệu mock (MOCK_VENUES)
-  // { icon: iconNearby, titleKey: 'home.apps.nearby', app: 'nearby' },
 ];
 
 export const PERSONAL_ITEMS: AppItem[] = [
@@ -117,11 +104,4 @@ export const MOCK_VENUES: Venue[] = [
     address: 'Bùi Viện, Q.1',
     cover: 'linear-gradient(135deg,#ba68c8,#6a1b9a)',
   },
-];
-
-export const KEN_LOW_THRESHOLD = 10_000;
-export const MIN_AMOUNT = 10_000;
-export const STEP_AMOUNT = 1_000;
-export const PRESET_AMOUNTS = [
-  10_000, 20_000, 50_000, 100_000, 200_000, 500_000,
 ];

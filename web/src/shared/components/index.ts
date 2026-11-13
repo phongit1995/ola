@@ -5,6 +5,7 @@ export * from './ui/ScreenHeader';
 export * from './ui/Spinner';
 export * from './ui/ChevronRightIcon';
 export * from './ui/SearchIcon';
+export * from './ui/CloseIcon';
 export * from './ui/DateSeparator';
 export * from './ui/PullToRefresh';
 export * from './ui/FullScreenOverlay';

@@ -5,8 +5,7 @@ import { toApiError } from '../../lib/apiError';
 import { toast } from '../../lib/toast';
 import { ReportService } from '../../services/report.service';
 import type { ReportReason, ReportTarget } from '../../types/report';
-
-const HTTP_NOT_FOUND = 404;
+import { HTTP_STATUS } from '../../constants/http';
 
 export function useReportSubmit(target: ReportTarget, onDone: () => void) {
   const [submitting, setSubmitting] = useState(false);
@@ -34,7 +33,7 @@ export function useReportSubmit(target: ReportTarget, onDone: () => void) {
         if (apiError.code === REPORT_ERROR_CODE.alreadySubmitted) {
           toast.info(i18n.t('report.already'));
           onDone();
-        } else if (apiError.status === HTTP_NOT_FOUND) {
+        } else if (apiError.status === HTTP_STATUS.notFound) {
           toast.error(i18n.t('report.notFound'));
           onDone();
         } else {

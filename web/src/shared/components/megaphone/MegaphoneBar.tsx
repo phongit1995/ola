@@ -1,10 +1,12 @@
 import { useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { selectVisibleAnnouncement } from '@ola/shared/stores/announcementStore';
+import {
+  selectVisibleAnnouncement,
+  useAnnouncementStore,
+} from '@ola/shared/stores/announcementStore';
 import { useMegaphoneStore } from '@ola/shared/stores/megaphone/megaphoneStore';
 import type { Megaphone } from '@app-types';
 import megaphoneImage from '@/assets/images/member-megaphone.webp';
-import { useAnnouncementStore } from '@/store/announcementStore';
 import { PillCloseButton } from '../ui/PillCloseButton';
 import { isMegaphoneCovered } from './megaphoneCover';
 import { MegaphoneText } from './MegaphoneText';

@@ -13,7 +13,6 @@ interface UserRowProps {
   online?: boolean;
   deviceIcon?: string;
   layout?: 'stacked' | 'inline';
-  rounded?: boolean;
   onClick?: () => void;
   trailing?: ReactNode;
 }
@@ -28,7 +27,6 @@ export function UserRow({
   online = false,
   deviceIcon,
   layout = 'stacked',
-  rounded = true,
   onClick,
   trailing,
 }: UserRowProps) {
@@ -40,7 +38,6 @@ export function UserRow({
           color={color}
           src={avatar}
           size={40}
-          rounded={rounded}
           frameId={frameId}
         />
         {online && (

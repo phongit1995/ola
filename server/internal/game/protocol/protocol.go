@@ -337,9 +337,10 @@ type ForfeitData struct {
 }
 
 type RoomCreateData struct {
-	Bet        int    `json:"bet"`
-	Password   string `json:"password"`
-	MaxPlayers int    `json:"maxPlayers,omitempty"`
+	Bet             int    `json:"bet"`
+	Password        string `json:"password"`
+	MaxPlayers      int    `json:"maxPlayers,omitempty"`
+	AllowSpectators *bool  `json:"allowSpectators,omitempty"`
 }
 
 type RoomJoinData struct {
@@ -362,16 +363,17 @@ type RoomReadyData struct {
 }
 
 type RoomInfo struct {
-	ID           string  `json:"id"`
-	Owner        string  `json:"owner"`
-	OwnerVipType *string `json:"ownerVipType,omitempty"`
-	Bet          int     `json:"bet"`
-	Locked       bool    `json:"locked"`
-	Players      int     `json:"players"`
-	MaxPlayers   int     `json:"maxPlayers,omitempty"`
-	Full         bool    `json:"full,omitempty"`
-	Status       string  `json:"status,omitempty"`
-	MatchID      string  `json:"matchId,omitempty"`
+	ID              string  `json:"id"`
+	Owner           string  `json:"owner"`
+	OwnerVipType    *string `json:"ownerVipType,omitempty"`
+	Bet             int     `json:"bet"`
+	Locked          bool    `json:"locked"`
+	Players         int     `json:"players"`
+	MaxPlayers      int     `json:"maxPlayers,omitempty"`
+	Full            bool    `json:"full,omitempty"`
+	Status          string  `json:"status,omitempty"`
+	MatchID         string  `json:"matchId,omitempty"`
+	AllowSpectators *bool   `json:"allowSpectators,omitempty"`
 }
 
 type RoomListData struct {
@@ -387,10 +389,11 @@ type RoomRemovedData struct {
 }
 
 type RoomWaitingData struct {
-	RoomID     string `json:"roomId"`
-	Bet        int    `json:"bet"`
-	Locked     bool   `json:"locked"`
-	MaxPlayers int    `json:"maxPlayers,omitempty"`
+	RoomID          string `json:"roomId"`
+	Bet             int    `json:"bet"`
+	Locked          bool   `json:"locked"`
+	MaxPlayers      int    `json:"maxPlayers,omitempty"`
+	AllowSpectators *bool  `json:"allowSpectators,omitempty"`
 }
 
 type RoomMember struct {
@@ -403,15 +406,16 @@ type RoomMember struct {
 }
 
 type RoomStateData struct {
-	RoomID       string       `json:"roomId"`
-	OwnerID      string       `json:"ownerId"`
-	YouID        string       `json:"youId"`
-	Bet          int          `json:"bet"`
-	Locked       bool         `json:"locked"`
-	MaxPlayers   int          `json:"maxPlayers,omitempty"`
-	Members      []RoomMember `json:"members"`
-	AfterMatchID string       `json:"afterMatchId,omitempty"`
-	Watcher      bool         `json:"watcher,omitempty"`
+	RoomID          string       `json:"roomId"`
+	OwnerID         string       `json:"ownerId"`
+	YouID           string       `json:"youId"`
+	Bet             int          `json:"bet"`
+	Locked          bool         `json:"locked"`
+	MaxPlayers      int          `json:"maxPlayers,omitempty"`
+	Members         []RoomMember `json:"members"`
+	AfterMatchID    string       `json:"afterMatchId,omitempty"`
+	Watcher         bool         `json:"watcher,omitempty"`
+	AllowSpectators *bool        `json:"allowSpectators,omitempty"`
 }
 
 type RoomSyncData struct {

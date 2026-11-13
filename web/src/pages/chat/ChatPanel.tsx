@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
 import { ROUTES } from '@constants';
-import { toast } from '@lib';
+import { toast, mapFriendsToContacts } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import addContactIcon from '@/assets/icons/chat/ic_add_contact_gray.png';
 import { AuthService, RelationshipService, SocketService } from '@services';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@/store/chat/chatStore';
-import { useFriendsStore } from '@/store/friendsStore';
+import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
 import { BlockedListDialog } from './components/BlockedListDialog';
@@ -25,16 +25,16 @@ import { UserProfileView } from '../profile/UserProfileView';
 import { SuggestedFriendsScreen } from './components/SuggestedFriendsScreen';
 import { FriendRequestsScreen } from './components/FriendRequestsScreen';
 import { ChatBotScreen } from '@/pages/chat-bot/ChatBotScreen';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useLobbyWallpaperStyle } from '@hooks';
-import { mapFriendsToContacts } from './utils';
 import {
   useConversationsWithPresence,
   useFriendsWithPresence,
   usePresenceListPolling,
 } from './usePresence';
 import type { ChatBotType, Relationship } from '@app-types';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 
 interface ProfileTarget {
   username: string;
@@ -77,7 +77,7 @@ export function ChatPanel() {
   const requests = useFriendsStore((s) => s.requests);
   const requestsLoading = useFriendsStore((s) => s.requestsLoading);
   const friendsRaw = useFriendsWithPresence();
-  const [now, setNow] = useState(() => Date.now());
+  const now = useMinuteNow();
   const friends = useMemo(
     () => mapFriendsToContacts(friendsRaw, i18n.language, now),
     [friendsRaw, i18n.language, now]
@@ -87,11 +87,6 @@ export function ChatPanel() {
   );
 
   usePresenceListPolling();
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     if (sub !== 'contacts') return;

@@ -206,7 +206,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                         fullName={fullName !== username ? fullName : undefined}
                         className="text-sm text-ola-ink"
                       />
-                      {item.role !== 'member' && (
+                      {item.role !== CLAN_ROLE.member && (
                         <Image
                           source={CLAN_ROLE_ICONS[item.role]}
                           style={{ width: 17, height: 15 }}
@@ -220,7 +220,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                     </Text>
                   </View>
                 </Pressable>
-                {staff && item.role !== 'owner' && (owner || bannable(item)) && (
+                {staff && item.role !== CLAN_ROLE.owner && (owner || bannable(item)) && (
                   <Pressable onPress={() => setMenuTarget(item)} className="px-2 py-1" hitSlop={6}>
                     <Text className="text-lg text-ola-ink-soft">
                       ⋯

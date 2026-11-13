@@ -8,6 +8,7 @@ import {
   PASSWORD_MAX,
   PASSWORD_MIN,
   ROUTES,
+  HTTP_STATUS,
 } from '@constants';
 import { trackEvent } from '@config';
 import olaLogo from '@/assets/images/ola-logo.png';
@@ -22,8 +23,8 @@ import {
   USERNAME_MAX,
   USERNAME_PATTERN,
   toast,
+  REGISTER_USERNAME_MIN,
 } from '@lib';
-import { USERNAME_MIN } from './constants';
 
 interface RegisterForm {
   username: string;
@@ -67,7 +68,7 @@ export function RegisterPage() {
       toast.success(t('register.success'));
       navigate(ROUTES.login);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
+      if (err instanceof ApiError && err.status === HTTP_STATUS.conflict) {
         const message = t('register.errUsernameTaken');
         setError('username', { message });
         setSubmitError(message);
@@ -114,7 +115,7 @@ export function RegisterPage() {
         field={register('username', {
           required: t('register.errUsernameRequired'),
           minLength: {
-            value: USERNAME_MIN,
+            value: REGISTER_USERNAME_MIN,
             message: t('register.errUsernameMin'),
           },
           maxLength: {

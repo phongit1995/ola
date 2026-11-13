@@ -60,7 +60,6 @@ func parseFilter(c *gin.Context) (AdminMatchFilter, error) {
 	return f, nil
 }
 
-// ListMatches godoc
 // @Summary      Danh sách trận PvP mini-game (admin)
 // @Tags         admin-game-match
 // @Produce      json
@@ -93,7 +92,6 @@ func (ctrl *Controller) ListMatches(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetStats godoc
 // @Summary      Thống kê trận & cược mini-game (admin)
 // @Tags         admin-game-match
 // @Produce      json
@@ -136,7 +134,6 @@ func parseThreshold(c *gin.Context, key string, def, min int) int {
 	return value
 }
 
-// GetSuspects godoc
 // @Summary      Người chơi & cặp đấu thắng bất thường (admin)
 // @Tags         admin-game-match
 // @Produce      json
@@ -174,7 +171,6 @@ func (ctrl *Controller) GetSuspects(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListLevels godoc
 // @Summary      Level/EXP người chơi theo từng game (admin)
 // @Tags         admin-game-match
 // @Produce      json

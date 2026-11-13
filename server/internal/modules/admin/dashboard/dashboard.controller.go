@@ -19,7 +19,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_dashboard_controller]")}
 }
 
-// GetOverview godoc
 // @Summary      Thống kê tổng quan (admin)
 // @Description  Số liệu tổng quan cho dashboard: người dùng, doanh thu KEN/VIP, tương tác, xã hội, game và chuỗi thời gian
 // @Tags         admin-dashboard
@@ -38,19 +37,15 @@ func (ctrl *Controller) GetOverview(c *gin.Context) (interface{}, error) {
 		To:   now,
 	}
 
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		q.From = t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		q.To = t
+	if from != nil {
+		q.From = *from
+	}
+	if to != nil {
+		q.To = *to
 	}
 	if q.To.Before(q.From) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "to must be after from")

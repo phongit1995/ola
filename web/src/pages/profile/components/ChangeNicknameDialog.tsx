@@ -1,55 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import {
-  ApiError,
   formatKen,
   toast,
-  USERNAME_MAX,
-  USERNAME_PATTERN,
+  isNicknameChangeDisabledError,
+  isValidNickname,
+  NICKNAME_CHECK_DEBOUNCE_MS,
+  nicknameTierLabel,
+  normalizeNickname,
+  ApiError,
 } from '@lib';
 import { UserService } from '@services';
 import { requireAppConfig } from '@ola/shared/stores/appConfigStore';
 import { Dialog, DialogButton } from '@components';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type {
   CheckUsernameResult,
   UsernameChangeTier,
 } from '@ola/shared/types';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import nicknameIcon from '@/assets/icons/apps/nickname.png';
-
-const USERNAME_MIN = 2;
-const CHECK_DEBOUNCE_MS = 400;
-
-function normalizeNickname(value: string): string {
-  return value.trim().toLowerCase().replace(/^@/, '');
-}
-
-function isValidNickname(nickname: string): boolean {
-  return (
-    nickname.length >= USERNAME_MIN &&
-    nickname.length <= USERNAME_MAX &&
-    USERNAME_PATTERN.test(nickname)
-  );
-}
-
-function isDisabledError(err: unknown): boolean {
-  return err instanceof ApiError && /disabled/i.test(err.message);
-}
-
-function tierLabel(
-  tier: UsernameChangeTier,
-  next: UsernameChangeTier | undefined,
-  t: TFunction
-): string {
-  if (!next) return t('changeNickname.tierLabelPlus', { n: tier.minLength });
-  const upper = next.minLength - 1;
-  if (upper === tier.minLength) {
-    return t('changeNickname.tierLabel', { n: tier.minLength });
-  }
-  return t('changeNickname.tierRange', { from: tier.minLength, to: upper });
-}
 
 export function ChangeNicknameDialog({
   open,
@@ -123,13 +93,13 @@ export function ChangeNicknameDialog({
         })
         .catch((err) => {
           if (cancelled) return;
-          if (isDisabledError(err)) {
+          if (isNicknameChangeDisabledError(err)) {
             setFeatureDisabled(true);
             return;
           }
           setCheckFailedFor(nickname);
         });
-    }, CHECK_DEBOUNCE_MS);
+    }, NICKNAME_CHECK_DEBOUNCE_MS);
     return () => {
       cancelled = true;
       clearTimeout(timer);
@@ -203,7 +173,7 @@ export function ChangeNicknameDialog({
       }
       let message = t('changeNickname.error');
       if (err instanceof ApiError) {
-        if (isDisabledError(err)) {
+        if (isNicknameChangeDisabledError(err)) {
           setFeatureDisabled(true);
           message = t('changeNickname.disabledNotice');
         } else if (/cost has changed/i.test(err.message)) {
@@ -263,7 +233,7 @@ export function ChangeNicknameDialog({
                   key={tier.minLength}
                   className="flex items-center justify-between px-3 py-1.5 text-sm text-black/80"
                 >
-                  <span>{tierLabel(tier, tiers[index + 1], t)}</span>
+                  <span>{nicknameTierLabel(t, tier, tiers[index + 1])}</span>
                   <span className="flex items-center gap-1 font-semibold">
                     {formatKen(tier.cost)}
                     <img

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRoomChatStore } from '@/store/roomChatStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { REACTION_IMAGE } from '@lib';
 import type { ReactionType } from '@app-types';
 

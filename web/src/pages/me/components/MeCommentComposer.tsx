@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import {
   ComposerSmileyPanel,
   SmileyInput,
   type SmileyInputHandle,
+  CloseIcon,
 } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { useOutsideClick } from '@hooks';
@@ -68,16 +69,7 @@ export function MeCommentComposer({
             onClick={onCancelReply}
             className="shrink-0 rounded-full p-1 text-black/45 hover:text-ola-error"
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-3.5 w-3.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              aria-hidden="true"
-            >
-              <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-            </svg>
+            <CloseIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
           </button>
         </div>
       )}

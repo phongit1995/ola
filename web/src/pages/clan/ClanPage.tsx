@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -30,17 +29,15 @@ import {
   isPostVisible,
   toast,
 } from '@lib';
-import { ClanService, MeService } from '@services';
+import { MeService } from '@services';
 import type {
-  Clan,
   PostReaction,
   PostVisibility,
   PostUploadRef,
 } from '@app-types';
 import { useClanFeedStore } from '@ola/shared/stores/clan/clanFeedStore';
-import { useClanStore } from '@ola/shared/stores/clan/clanStore';
-import { useAuthStore } from '@/store/authStore';
-import { useMeLocalStore } from '@/store/meLocalStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import { ImageCropEditor } from '@components';
 import {
   MeComposerDialog,
@@ -66,6 +63,7 @@ import followIcon from '@/assets/icons/clan/ic_follow_black_disable.png';
 import followingIcon from '@/assets/icons/clan/ic_state_following.png';
 import postMeIcon from '@/assets/icons/clan/ic_post_me_gray.png';
 import policyIcon from '@/assets/icons/clan/ic_profile_note.png';
+import { useClanDetail } from '@ola/shared/stores/clan/useClanDetail';
 
 interface ClanPageProps {
   handle?: string;
@@ -125,8 +123,17 @@ export function ClanPage({
   const hidePostLocal = useMeLocalStore((s) => s.hidePost);
   const blockAuthorLocal = useMeLocalStore((s) => s.blockAuthor);
 
-  const [clan, setClan] = useState<Clan | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const {
+    clan,
+    loadError,
+    imageUploading,
+    handleJoin,
+    handleLeave: leaveClan,
+    togglePinTop: togglePinTopById,
+    runStaffAction,
+    deleteOwnPost,
+    uploadImage,
+  } = useClanDetail(handle, id);
   const [composerOpen, setComposerOpen] = useState(false);
   const [leaveConfirm, setLeaveConfirm] = useState(false);
   const [staffConfirm, setStaffConfirm] = useState<StaffConfirm | null>(null);
@@ -134,7 +141,6 @@ export function ClanPage({
     field: 'avatar' | 'cover';
     src: string;
   } | null>(null);
-  const [imageUploading, setImageUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -149,51 +155,6 @@ export function ClanPage({
     () => createTimeFormatter(i18n.language),
     [i18n.language]
   );
-
-  const loadClan = useCallback(async (): Promise<Clan | null> => {
-    try {
-      const loaded =
-        handle != null
-          ? await ClanService.byHandle(handle)
-          : await ClanService.get(id ?? '');
-      setClan(loaded);
-      setLoadError(null);
-      return loaded;
-    } catch (error) {
-      setLoadError(clanErrorText(error));
-      return null;
-    }
-  }, [handle, id]);
-
-  useEffect(() => {
-    let active = true;
-    const request =
-      handle != null ? ClanService.byHandle(handle) : ClanService.get(id ?? '');
-    request
-      .then((loaded) => {
-        if (!active) return;
-        setClan(loaded);
-        setLoadError(null);
-        void useClanFeedStore.getState().load(loaded.id);
-      })
-      .catch((error) => {
-        if (active) setLoadError(clanErrorText(error));
-      });
-    return () => {
-      active = false;
-      useClanFeedStore.getState().reset();
-    };
-  }, [handle, id]);
-
-  const refreshAll = useCallback(async () => {
-    const loaded =
-      handle != null
-        ? await ClanService.byHandle(handle)
-        : await ClanService.get(id ?? '');
-    setClan(loaded);
-    setLoadError(null);
-    await useClanFeedStore.getState().refresh(loaded.id);
-  }, [handle, id]);
 
   const pinnedPost = useMemo(
     () =>
@@ -253,19 +214,6 @@ export function ClanPage({
     [t]
   );
 
-  const deleteOwnPost = useCallback(
-    async (postId: string) => {
-      try {
-        await MeService.remove(postId);
-        useClanFeedStore.getState().removePost(postId);
-        toast.success(t('me.deleteSuccess'));
-      } catch {
-        toast.error(t('me.deleteError'));
-      }
-    },
-    [t]
-  );
-
   const addPost = useCallback(
     async (draft: ComposedPost): Promise<boolean> => {
       if (clan == null) return false;
@@ -290,73 +238,25 @@ export function ClanPage({
     [clan, t]
   );
 
-  async function handleJoin() {
-    if (clan == null) return;
-    try {
-      const updated = await ClanService.join(clan.id);
-      setClan(updated);
-      useClanStore
-        .getState()
-        .refreshMine()
-        .catch(() => undefined);
-    } catch (error) {
-      toast.error(clanErrorText(error));
-    }
-  }
-
   async function handleLeave() {
-    if (clan == null) return;
     setLeaveConfirm(false);
-    try {
-      const updated = await ClanService.leave(clan.id);
-      setClan(updated);
-      useClanStore
-        .getState()
-        .refreshMine()
-        .catch(() => undefined);
-    } catch (error) {
-      toast.error(clanErrorText(error));
-    }
+    await leaveClan();
   }
 
   async function togglePinTop(post: MePost) {
-    if (clan == null) return;
-    try {
-      if (clan.meTopPostId === post.id) {
-        await ClanService.unpinPost(clan.id);
-        toast.success(t('clan.unpinSuccess'));
-      } else {
-        await ClanService.pinPost(clan.id, post.id);
-        toast.success(t('clan.pinSuccess'));
-      }
-      await refreshAll();
-    } catch (error) {
-      toast.error(clanErrorText(error));
-    }
+    await togglePinTopById(post.id);
   }
 
   async function runStaffConfirm() {
     if (clan == null || staffConfirm == null) return;
     const { type, post } = staffConfirm;
     setStaffConfirm(null);
-    try {
-      if (type === 'deletePost') {
-        await ClanService.deletePost(clan.id, post.id);
-        useClanFeedStore.getState().removePost(post.id);
-      } else if (type === 'deleteByUser') {
-        await ClanService.deletePostsByUser(clan.id, post.authorId);
-        useClanFeedStore.getState().removePostsByAuthor(post.authorId);
-      } else {
-        await ClanService.ban(clan.id, post.author);
-        toast.success(t('clan.banSuccess', { username: post.author }));
-        await refreshAll();
-        return;
-      }
-      toast.success(t('clan.deleteSuccess'));
-      void loadClan();
-    } catch (error) {
-      toast.error(clanErrorText(error));
-    }
+    await runStaffAction({
+      type,
+      postId: post.id,
+      authorId: post.authorId,
+      authorName: post.author,
+    });
   }
 
   function pickImage(
@@ -378,22 +278,11 @@ export function ClanPage({
 
   async function applyImage(file: File) {
     if (clan == null || imageEdit == null || imageUploading) return;
-    setImageUploading(true);
-    try {
+    const uploaded = await uploadImage(imageEdit.field, async () => {
       const prepared = await compressImagesForUpload([file]);
-      const upload = prepared[0] ?? file;
-      const result =
-        imageEdit.field === 'avatar'
-          ? await ClanService.uploadAvatar(clan.id, upload)
-          : await ClanService.uploadCover(clan.id, upload);
-      setClan({ ...clan, [imageEdit.field]: result.url });
-      toast.success(t('clan.uploadSuccess'));
-      closeImageEdit();
-    } catch (error) {
-      toast.error(imageUploadErrorText(t, error, clanErrorText(error)));
-    } finally {
-      setImageUploading(false);
-    }
+      return prepared[0] ?? file;
+    });
+    if (uploaded) closeImageEdit();
   }
 
   function extraMenuItems(post: MePost): ListOption[] {

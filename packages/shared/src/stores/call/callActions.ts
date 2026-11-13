@@ -1,5 +1,5 @@
 import i18n from 'i18next';
-import { ringFallbackMs } from '../../constants/call';
+import { ringFallbackMs, CALL_MODE } from '../../constants/call';
 import { ApiError } from '../../lib/apiError';
 import { toast } from '../../lib/toast';
 import { CallService } from '../../services/call.service';
@@ -63,7 +63,7 @@ export function createCallActions(set: CallSet, get: CallGet): CallActions {
   const armOutgoingTimeout = (callId: string, ringTimeoutSeconds?: number) => {
     armRingTimeout(() => {
       const { mode, active } = get();
-      if (mode !== 'outgoing' || active?.callId !== callId) return;
+      if (mode !== CALL_MODE.outgoing || active?.callId !== callId) return;
       set({ ...initialCallState, locallyEndedCallId: callId });
       void CallService.end(callId).catch(() => {});
       toast.info(i18n.t('call.noAnswer'));
@@ -72,7 +72,7 @@ export function createCallActions(set: CallSet, get: CallGet): CallActions {
 
   return {
     startCall: async (conversationId, callType, peer) => {
-      if (get().mode !== 'idle' || get().pendingAction != null) return;
+      if (get().mode !== CALL_MODE.idle || get().pendingAction != null) return;
       set({ pendingAction: 'starting' });
 
       try {
@@ -83,7 +83,7 @@ export function createCallActions(set: CallSet, get: CallGet): CallActions {
         }
         set({
           ...initialCallState,
-          mode: 'outgoing',
+          mode: CALL_MODE.outgoing,
           active: toActiveCall(data, peer),
           expanded: true,
         });
@@ -112,7 +112,7 @@ export function createCallActions(set: CallSet, get: CallGet): CallActions {
         clearRingTimeout();
         set({
           ...initialCallState,
-          mode: 'active',
+          mode: CALL_MODE.active,
           active: toActiveCall(data, incoming.caller),
           expanded: true,
         });
@@ -141,13 +141,13 @@ export function createCallActions(set: CallSet, get: CallGet): CallActions {
       if (active == null) return;
       goIdle(active.callId);
       void CallService.end(active.callId).catch(() => {});
-      toast.info(i18n.t(mode === 'active' ? 'call.ended' : 'call.cancelled'));
+      toast.info(i18n.t(mode === CALL_MODE.active ? 'call.ended' : 'call.cancelled'));
     },
 
     markRemoteJoined: () => {
-      if (get().mode !== 'outgoing') return;
+      if (get().mode !== CALL_MODE.outgoing) return;
       clearRingTimeout();
-      set({ mode: 'active' });
+      set({ mode: CALL_MODE.active });
     },
 
     setExpanded: (expanded) => set({ expanded }),

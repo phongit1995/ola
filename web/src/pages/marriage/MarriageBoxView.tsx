@@ -8,9 +8,9 @@ import {
   VipAvatar,
 } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
-import { colorForName, toast } from '@lib';
-import { useAuthStore } from '@/store/authStore';
-import { useMarriageStore } from '@/store/marriageStore';
+import { colorForName, toast, formatDateSlashDMY } from '@lib';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { DiaryEntry } from '@ola/shared/types';
 
 const DAY_MS = 86_400_000;
@@ -47,12 +47,6 @@ function FramedAvatar({
       <Avatar name={name} color={color} src={src} size={size} rounded={false} />
     </span>
   );
-}
-
-function formatDate(ms: number): string {
-  const d = new Date(ms);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
 }
 
 export function MarriageBoxView() {
@@ -135,7 +129,7 @@ export function MarriageBoxView() {
         </p>
         {marriedSince != null && (
           <p className="text-xs text-black/55">
-            {t('marriage.marriedSince', { date: formatDate(marriedSince) })}
+            {t('marriage.marriedSince', { date: formatDateSlashDMY(marriedSince) })}
           </p>
         )}
         <div className="mt-3 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-ola-marriage shadow-sm">

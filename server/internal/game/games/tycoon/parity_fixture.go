@@ -4,6 +4,8 @@ package tycoon
 import (
 	"encoding/json"
 	"strconv"
+
+	"ola-chat-server/internal/game/splitmix"
 )
 
 const (
@@ -296,14 +298,7 @@ type explorer struct {
 }
 
 func (e *explorer) next() uint64 {
-	e.z += 0x9E3779B97F4A7C15
-	v := e.z
-	v ^= v >> 30
-	v *= 0xBF58476D1CE4E5B9
-	v ^= v >> 27
-	v *= 0x94D049BB133111EB
-	v ^= v >> 31
-	return v
+	return splitmix.Next(&e.z)
 }
 
 func (e *explorer) intn(n int) int {

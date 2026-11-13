@@ -253,12 +253,8 @@ export function useVoiceRecorder(
         }
       });
 
-      // Ghi âm không được để voice playback tiếp tục sống. Release trước khi mở
-      // mic cũng là lớp bảo vệ phía app nếu audio route của iOS thay đổi.
       releaseVoicePlayback();
 
-      // Custom numeric AudioSet values can fail to bridge correctly in iOS
-      // release builds. Let AVAudioRecorder use Nitro Sound's iOS defaults.
       const audioSet =
         Platform.OS === 'ios' ? undefined : ANDROID_AUDIO_SET;
       await Sound.startRecorder(undefined, audioSet, true);

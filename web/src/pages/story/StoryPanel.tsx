@@ -3,14 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
 import { ConfirmDialog, Spinner } from '@components';
 import { cn } from '@lib';
-import { STORY_STATUS_FILTER } from '@constants';
+import { STORY_STATUS_FILTER, STORY_SEARCH_DEBOUNCE_MS } from '@constants';
 import { useHorizontalDragScroll } from './useHorizontalDragScroll';
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryPrefsStore } from '@ola/shared/stores/story/storyPrefsStore';
 import type { StoryProgress, StoryStatusFilter } from '@app-types';
 import { useStoryOverlayStore } from '@/store/storyOverlayStore';
 import {
-  SEARCH_DEBOUNCE_MS,
   SORT_OPTIONS,
   STATUS_FILTER_OPTIONS,
   STORY_SECTION_ART,
@@ -128,7 +127,7 @@ export function StoryPanel() {
     if (trimmed === filter.q) return;
     const timer = setTimeout(
       () => void setFilter({ q: trimmed }),
-      SEARCH_DEBOUNCE_MS
+      STORY_SEARCH_DEBOUNCE_MS
     );
     return () => clearTimeout(timer);
   }, [query, filter.q, setFilter]);

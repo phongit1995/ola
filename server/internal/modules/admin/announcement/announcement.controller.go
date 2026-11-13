@@ -17,7 +17,6 @@ func NewController(service *announcement.Service, logger *zap.SugaredLogger) *Co
 	return &Controller{service: service, logger: logger.Named("[admin_announcement_controller]")}
 }
 
-// List godoc
 // @Summary      Danh sách thông báo (admin)
 // @Tags         admin-announcement
 // @Produce      json
@@ -32,7 +31,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Create godoc
 // @Summary      Tạo thông báo (admin)
 // @Tags         admin-announcement
 // @Accept       json
@@ -53,7 +51,6 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// Update godoc
 // @Summary      Cập nhật thông báo (admin)
 // @Tags         admin-announcement
 // @Accept       json
@@ -80,7 +77,6 @@ func (ctrl *Controller) Update(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// Delete godoc
 // @Summary      Xoá thông báo (admin)
 // @Tags         admin-announcement
 // @Produce      json

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, VipIcon } from '@components';
 import { ApiError, vipName } from '@lib';
 import { VipService } from '@services';
-import type { VipIconInstance } from '@app-types';
+import { HTTP_STATUS } from '@constants';
+import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
 
 interface PeerVipStoreDialogProps {
   userId: string;
@@ -21,46 +22,24 @@ export function PeerVipStoreDialog({
   onClose,
 }: PeerVipStoreDialogProps) {
   const { t } = useTranslation();
-  const [items, setItems] = useState<VipIconInstance[]>([]);
-  const [total, setTotal] = useState(0);
-  const [state, setState] = useState<LoadState>('loading');
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    VipService.userStore(userId, { limit: PAGE_SIZE, offset: 0 })
-      .then((res) => {
-        if (!active) return;
-        setItems(res.items);
-        setTotal(res.total);
-        setState('ready');
-      })
-      .catch((err) => {
-        if (!active) return;
-        setState(
-          err instanceof ApiError && err.status === 403 ? 'private' : 'error'
-        );
-      });
-    return () => {
-      active = false;
-    };
-  }, [userId]);
-
-  const hasMore = items.length < total;
-
-  function loadMore() {
-    if (loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    VipService.userStore(userId, { limit: PAGE_SIZE, offset: items.length })
-      .then((res) => setItems((prev) => [...prev, ...res.items]))
-      .catch(() => {})
-      .finally(() => setLoadingMore(false));
-  }
+  const fetchPage = useCallback(
+    (offset: number) => VipService.userStore(userId, { limit: PAGE_SIZE, offset }),
+    [userId]
+  );
+  const { items, total, loading, loadingMore, error, loadMore } =
+    useOffsetPage(fetchPage);
+  const state: LoadState = loading
+    ? 'loading'
+    : error == null
+      ? 'ready'
+      : error instanceof ApiError && error.status === HTTP_STATUS.forbidden
+        ? 'private'
+        : 'error';
 
   function handleScroll(event: React.UIEvent<HTMLDivElement>) {
     const el = event.currentTarget;
     if (el.scrollHeight - el.scrollTop - el.clientHeight > 200) return;
-    loadMore();
+    void loadMore();
   }
 
   return (

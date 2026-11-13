@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthService } from '@ola/shared/services';
-import { ApiError, toast, USERNAME_MAX, decodeSecret } from '@ola/shared/lib';
+import { ApiError, toast, USERNAME_MAX, decodeSecret, LOGIN_USERNAME_MIN } from '@ola/shared/lib';
 import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
@@ -24,7 +24,6 @@ import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { SavedAccountGallery } from './components/SavedAccountGallery';
 import type { AuthStackParamList } from '@navigation/types';
 import { AUTH_ROUTES } from '@navigation/routes';
-import { USERNAME_MIN } from './constants';
 
 const APP_VERSION = `${DeviceInfo.getVersion()} (${DeviceInfo.getBuildNumber()})`;
 
@@ -144,7 +143,7 @@ export function LoginScreen({ navigation }: Props) {
             name="username"
             rules={{
               required: t('login.errUsernameRequired'),
-              minLength: { value: USERNAME_MIN, message: t('login.errUsernameLength') },
+              minLength: { value: LOGIN_USERNAME_MIN, message: t('login.errUsernameLength') },
               maxLength: { value: USERNAME_MAX, message: t('login.errUsernameLength') },
             }}
             render={({ field: { onChange, onBlur, value } }) => (

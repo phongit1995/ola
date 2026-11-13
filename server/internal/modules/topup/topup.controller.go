@@ -22,7 +22,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[topup_controller]")}
 }
 
-// BankWebhook godoc
 // @Summary      Webhook SieuThiCode nhận giao dịch ngân hàng để tự động cộng KEN
 // @Tags         topup
 // @Accept       json

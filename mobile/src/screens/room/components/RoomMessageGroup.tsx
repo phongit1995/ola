@@ -9,7 +9,13 @@ import {
   View,
   type ViewInstance,
 } from 'react-native';
-import { colorForName, formatClockHM, formatDuration, withAlpha } from '@ola/shared/lib';
+import {
+  colorForName,
+  formatClockHM,
+  formatDuration,
+  withAlpha,
+  fitImageInBox,
+} from '@ola/shared/lib';
 import type {
   BubblePosition,
   GroupedMessage,
@@ -24,12 +30,12 @@ import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
-import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useThemeColors } from '@hooks/useThemeColors';
 import type { AnchorRect } from './MessageActionSheet';
 import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
 import { roomBubbleTextMaxWidth } from '../utils';
-import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
+import { MESSAGE_TYPE, ROOM_MESSAGE_STATUS } from '@ola/shared/constants';
 import { BUBBLE_IN_BG, BUBBLE_IN_SHADOW } from '@constants';
 
 const mentionIcon = require('@assets/icons/room/ic_tag_people.png');
@@ -41,19 +47,6 @@ const IMAGE_MAX_HEIGHT = 176;
 const IMAGE_RADIUS = 8;
 
 const imageRatioCache = new Map<string, number>();
-
-function fitImageSize(ratio: number | null) {
-  if (ratio == null || ratio <= 0) {
-    return { width: IMAGE_MAX_HEIGHT, height: IMAGE_MAX_HEIGHT };
-  }
-  let width = IMAGE_MAX_WIDTH;
-  let height = width / ratio;
-  if (height > IMAGE_MAX_HEIGHT) {
-    height = IMAGE_MAX_HEIGHT;
-    width = height * ratio;
-  }
-  return { width, height };
-}
 
 interface RoomMessageGroupProps {
   group: MessageGroup;
@@ -174,11 +167,15 @@ function BubbleContent({
     message.type === MESSAGE_TYPE.audio &&
     message.audioUrl != null &&
     message.audioUrl !== '';
-  const uploading = message.status === MESSAGE_STATUS.uploading;
-  const failed = message.status === MESSAGE_STATUS.failed;
+  const uploading = message.status === ROOM_MESSAGE_STATUS.uploading;
+  const failed = message.status === ROOM_MESSAGE_STATUS.failed;
 
   if (isImage) {
-    const size = fitImageSize(imageRatio);
+    const size = fitImageInBox(
+      imageRatio,
+      { width: IMAGE_MAX_WIDTH, height: IMAGE_MAX_HEIGHT },
+      { width: IMAGE_MAX_HEIGHT, height: IMAGE_MAX_HEIGHT },
+    );
     return (
       <Pressable
         onPress={() => {
@@ -381,8 +378,8 @@ function RoomBubble({
   onResendImage?: (id: string) => void;
   onResendAudio?: (id: string) => void;
 }) {
-  const uploading = message.status === MESSAGE_STATUS.uploading;
-  const failed = message.status === MESSAGE_STATUS.failed;
+  const uploading = message.status === ROOM_MESSAGE_STATUS.uploading;
+  const failed = message.status === ROOM_MESSAGE_STATUS.failed;
   const bubbleRef = useRef<ViewInstance>(null);
 
   function handleLongPress() {

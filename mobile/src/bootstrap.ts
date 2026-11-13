@@ -12,7 +12,7 @@ import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore
 import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
-import { useArcadeOverlayStore } from './store/arcadeOverlayStore';
+import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
 import { clearAllPushNotifications } from '@lib/push';
 import { mobileEnv } from './platform/env';
 import { configureRichTextNative } from './lib/richTextNativeConfig';

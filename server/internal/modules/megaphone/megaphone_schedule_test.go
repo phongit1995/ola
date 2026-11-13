@@ -108,7 +108,7 @@ func TestGiftContentIsCutToColumnSize(t *testing.T) {
 	if got := []rune(giftContent(sender, receiver, "Hoa", 1)); len(got) != giftContentRunes {
 		t.Fatalf("content has %d runes", len(got))
 	}
-	if got := giftContent(megaphoneEvents.Sender{Username: "an"}, receiver, "Hoa", 5); got != "an tặng Bình Hoa ×5" {
+	if got := giftContent(megaphoneEvents.Sender{Username: "an"}, receiver, "Hoa", 5); got != "an đã tặng Bình Hoa ×5" {
 		t.Fatalf("got %q", got)
 	}
 }

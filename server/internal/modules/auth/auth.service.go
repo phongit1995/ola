@@ -10,7 +10,6 @@ import (
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
-	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/user"
@@ -68,7 +67,7 @@ func (s *Service) Logout(token string) error {
 	if claims.ID != "" {
 		ttl := time.Until(claims.ExpiresAt.Time)
 		if ttl > 0 {
-			key := fmt.Sprintf(middleware.CacheKeyTokenBlacklist, claims.ID)
+			key := fmt.Sprintf(constants.CacheKeyTokenBlacklist, claims.ID)
 			if err := s.cache.Set(key, "1", ttl); err != nil {
 				s.logger.Errorw("Failed to blacklist token", "jti", claims.ID, "error", err)
 				return err
@@ -76,11 +75,11 @@ func (s *Service) Logout(token string) error {
 		}
 	}
 
-	if sessionID, err := s.jwtService.GetSessionIDFromToken(token); err == nil && sessionID != uuid.Nil {
+	if sessionID, err := services.SessionIDFromClaims(claims); err == nil && sessionID != uuid.Nil {
 		if err := s.sessionService.Revoke(sessionID); err != nil {
 			s.logger.Warnw("Failed to revoke session", "session_id", sessionID, "error", err)
 		}
-	} else if userID, err := s.jwtService.GetUserIDFromToken(token); err == nil {
+	} else if userID, err := services.UserIDFromClaims(claims); err == nil {
 		if err := s.repo.ClearRefreshToken(userID); err != nil {
 			s.logger.Warnw("Failed to clear refresh token", "user_id", userID, "error", err)
 		}
@@ -91,12 +90,17 @@ func (s *Service) Logout(token string) error {
 }
 
 func (s *Service) RefreshToken(refreshTokenStr, clientIP, userAgent string) (*RefreshTokenResponse, error) {
-	userID, err := s.jwtService.GetUserIDFromToken(refreshTokenStr)
+	claims, err := s.jwtService.VerifyRefreshToken(refreshTokenStr)
 	if err != nil {
 		return nil, errors.New("invalid or expired refresh token")
 	}
 
-	sessionID, err := s.jwtService.GetSessionIDFromToken(refreshTokenStr)
+	userID, err := services.UserIDFromClaims(claims)
+	if err != nil {
+		return nil, errors.New("invalid or expired refresh token")
+	}
+
+	sessionID, err := services.SessionIDFromClaims(claims)
 	if err != nil {
 		return nil, errors.New("invalid or expired refresh token")
 	}

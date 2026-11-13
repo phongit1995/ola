@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
 import { toast } from '@lib';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
-import { useArcadeStore } from '@/store/arcadeStore';
-import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
+import { useArcadeStore } from '@ola/shared/stores/arcadeStore';
+import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
 import { GAME_ITEMS, type AppItem } from '../apps/constants';
 
 interface GameTileProps {

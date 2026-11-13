@@ -42,3 +42,7 @@ export function isClanStaff(clan: Clan): boolean {
 export function canPostPublicInClan(clan: Clan): boolean {
   return isClanStaff(clan) || (clan.memberPublicPost && clan.isMember);
 }
+
+export function clanRoleHolder(clan: Clan, role: 'deputy' | 'ambassador'): string | undefined {
+  return role === 'deputy' ? clan.deputy?.username : clan.ambassador?.username;
+}

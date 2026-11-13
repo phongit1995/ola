@@ -14,7 +14,7 @@ import { useMegaphoneHistory } from '@ola/shared/stores/megaphone/useMegaphoneHi
 import type { Megaphone } from '@app-types';
 import megaphoneImage from '@/assets/images/member-megaphone.webp';
 import { selectMegaphoneEnabled, useMegaphoneConfigStore } from '@ola/shared/stores/megaphone/megaphoneConfigStore';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { UserProfileView } from '../profile/UserProfileView';
 import { MegaphoneComposeDialog } from './components/MegaphoneComposeDialog';
 import { MegaphoneHistoryItem } from './components/MegaphoneHistoryItem';

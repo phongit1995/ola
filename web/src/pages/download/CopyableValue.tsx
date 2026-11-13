@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { toast } from '@lib';
+import { toast, copyToClipboard } from '@lib';
 import { CopyIcon } from './platformIcons';
-import { copyToClipboard } from './copyToClipboard';
 
 interface CopyableValueProps {
   label: string;

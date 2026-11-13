@@ -36,6 +36,7 @@ import { PenLeaderboardModal } from './PenLeaderboardModal';
 import { PenWinBurst } from './PenWinBurst';
 import { penAssets, penLeaderboardAssets } from './penAssets';
 import { assetRatio, PenBg, penTextShadow, sizeByHeight, PEN_COLORS } from './penUi';
+import { PEN_SOCKET_EVENTS } from '@ola/shared/constants';
 
 const PEN_START_KEN = 12_345;
 const DEFAULT_BET = 1000;
@@ -232,19 +233,9 @@ export function PenGameScreen({ navigation }: Props) {
   });
 
   useEffect(() => {
-    const offKen = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
-      const current = useAuthStore.getState().user;
-      if (current && typeof data?.ken === 'number') {
-        useAuthStore.getState().setUser({ ...current, ken: data.ken });
-      }
-    });
-    const offSettled = SocketService.on<PenSettledEvent>('PEN_SETTLED', (data) => {
+    return SocketService.on<PenSettledEvent>(PEN_SOCKET_EVENTS.settled, (data) => {
       if (data) onShotSettled.current(data);
     });
-    return () => {
-      offKen();
-      offSettled();
-    };
   }, []);
 
   const handleCreateShot = async ({ side, betAmount }: { side: PenSide; betAmount: number }) => {

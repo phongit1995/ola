@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[marriage_controller]")}
 }
 
-// Propose godoc
 // @Summary      Gửi lời cầu hôn
 // @Tags         marriage
 // @Accept       json
@@ -43,7 +42,6 @@ func (ctrl *Controller) Propose(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListProposals godoc
 // @Summary      Danh sách lời cầu hôn
 // @Tags         marriage
 // @Produce      json
@@ -71,7 +69,6 @@ func (ctrl *Controller) ListProposals(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Accept godoc
 // @Summary      Đồng ý lời cầu hôn
 // @Tags         marriage
 // @Produce      json
@@ -96,7 +93,6 @@ func (ctrl *Controller) Accept(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(resp, 200), nil
 }
 
-// Reject godoc
 // @Summary      Từ chối lời cầu hôn
 // @Tags         marriage
 // @Produce      json
@@ -120,7 +116,6 @@ func (ctrl *Controller) Reject(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(MessageResponse{Message: "proposal rejected"}, 200), nil
 }
 
-// Cancel godoc
 // @Summary      Huỷ lời cầu hôn của mình
 // @Tags         marriage
 // @Produce      json
@@ -144,7 +139,6 @@ func (ctrl *Controller) Cancel(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "proposal cancelled"}, nil
 }
 
-// GetStatus godoc
 // @Summary      Trạng thái hôn nhân của tôi
 // @Tags         marriage
 // @Produce      json
@@ -163,7 +157,6 @@ func (ctrl *Controller) GetStatus(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Divorce godoc
 // @Summary      Ly hôn
 // @Tags         marriage
 // @Produce      json

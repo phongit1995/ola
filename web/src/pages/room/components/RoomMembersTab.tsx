@@ -2,10 +2,10 @@ import { useTranslation } from 'react-i18next';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import type { RoomMember } from '@app-types';
-import { DEVICE_ICONS, GENDER, normalizeDevice } from '@constants';
+import { DEVICE_ICONS, GENDER } from '@constants';
 import { PresenceBadge, UserName, VipAvatar } from '@components';
-import { colorForName } from '@lib';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { colorForName, normalizeDevice } from '@lib';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useLobbyWallpaperStyle } from '@hooks';
 
 interface RoomMembersTabProps {

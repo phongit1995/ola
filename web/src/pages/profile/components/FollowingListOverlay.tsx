@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader, Spinner, UserRow } from '@components';
 import { UserService } from '@services';
 import { mapFollowing } from '../utils';
 import type { ProfileFriend } from '../types';
+import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
 
 const FOLLOW_PAGE_SIZE = 10;
 
@@ -25,49 +26,27 @@ export function FollowingListOverlay({
   title,
 }: FollowingListOverlayProps) {
   const { t } = useTranslation();
-  const [rows, setRows] = useState<ProfileFriend[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const loadPage = useCallback(
-    (offset: number) =>
-      kind === 'followers'
-        ? UserService.followers(userId, { limit: FOLLOW_PAGE_SIZE, offset })
-        : UserService.following(userId, { limit: FOLLOW_PAGE_SIZE, offset }),
+    async (offset: number) => {
+      const params = { limit: FOLLOW_PAGE_SIZE, offset };
+      const result =
+        kind === 'followers'
+          ? await UserService.followers(userId, params)
+          : await UserService.following(userId, params);
+      return { items: mapFollowing(result.users), total: result.total };
+    },
     [userId, kind]
   );
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const result = await loadPage(0).catch(() => null);
-      if (!active) return;
-      if (result != null) {
-        setRows(mapFollowing(result.users));
-        setTotal(result.total);
-      }
-      setLoading(false);
-    })();
-    return () => {
-      active = false;
-    };
-  }, [loadPage]);
-
-  const hasMore = rows.length < total;
-
-  const loadMore = useCallback(async () => {
-    if (loading || loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    const result = await loadPage(rows.length).catch(() => null);
-    if (result != null) {
-      setRows((current) => [...current, ...mapFollowing(result.users)]);
-      setTotal(result.total);
-    }
-    setLoadingMore(false);
-  }, [loadPage, loading, loadingMore, hasMore, rows.length]);
+  const {
+    items: rows,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+  } = useOffsetPage(loadPage);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -106,7 +85,6 @@ export function FollowingListOverlay({
                 frameId={friend.avatarFrameId}
                 color={friend.color}
                 layout="inline"
-                rounded={false}
                 onClick={() => onSelect(friend)}
               />
             </div>

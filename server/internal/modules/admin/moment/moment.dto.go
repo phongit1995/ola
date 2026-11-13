@@ -3,14 +3,10 @@ package adminmoment
 import (
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/moment"
+	userModule "ola-chat-server/internal/modules/user"
 )
 
-type AuthorResponse struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+type AuthorResponse = userModule.UserBrief
 
 type MomentItem struct {
 	ID                 string                       `json:"id"`

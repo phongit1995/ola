@@ -17,7 +17,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[avatar_frame_controller]")}
 }
 
-// ListShop godoc
 // @Summary      Khung avatar đang bán, kèm cờ đã sở hữu
 // @Tags         avatar-frame
 // @Produce      json
@@ -36,7 +35,6 @@ func (ctrl *Controller) ListShop(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Buy godoc
 // @Summary      Mua khung avatar bằng KEN
 // @Tags         avatar-frame
 // @Accept       json
@@ -61,7 +59,6 @@ func (ctrl *Controller) Buy(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Gift godoc
 // @Summary      Mua khung avatar tặng người khác
 // @Tags         avatar-frame
 // @Accept       json
@@ -86,7 +83,6 @@ func (ctrl *Controller) Gift(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetMyStore godoc
 // @Summary      Kho khung avatar của tôi
 // @Tags         avatar-frame
 // @Produce      json
@@ -105,7 +101,6 @@ func (ctrl *Controller) GetMyStore(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetUserStore godoc
 // @Summary      Kho khung avatar của người khác (theo quyền xem)
 // @Tags         avatar-frame
 // @Produce      json
@@ -129,7 +124,6 @@ func (ctrl *Controller) GetUserStore(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Equip godoc
 // @Summary      Đeo khung avatar (cần còn VIP), frameId rỗng để tháo
 // @Tags         avatar-frame
 // @Accept       json
@@ -154,7 +148,6 @@ func (ctrl *Controller) Equip(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Transfer godoc
 // @Summary      Chuyển khung avatar đã sở hữu cho người khác
 // @Tags         avatar-frame
 // @Accept       json
@@ -179,7 +172,6 @@ func (ctrl *Controller) Transfer(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "avatar frame transferred"}, nil
 }
 
-// SetPrivacy godoc
 // @Summary      Đổi quyền xem Kho khung avatar (0 mọi người, 1 bạn bè, 2 chỉ mình tôi)
 // @Tags         avatar-frame
 // @Accept       json
@@ -203,7 +195,6 @@ func (ctrl *Controller) SetPrivacy(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "privacy updated"}, nil
 }
 
-// GetHistory godoc
 // @Summary      Lịch sử mua và được tặng khung avatar của tôi
 // @Tags         avatar-frame
 // @Produce      json
@@ -222,7 +213,6 @@ func (ctrl *Controller) GetHistory(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetTransfers godoc
 // @Summary      Lịch sử chuyển khung avatar của tôi
 // @Tags         avatar-frame
 // @Produce      json

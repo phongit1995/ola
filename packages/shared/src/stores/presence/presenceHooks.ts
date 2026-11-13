@@ -4,6 +4,7 @@ import { useFriendsStore } from '../friends/friendsStore';
 import { usePresenceStore, type PresenceInfo } from './presenceStore';
 import type { Conversation } from '../../types/api/chat.type';
 import type { Friend } from '../../types/api/relationship.type';
+import { CONVERSATION_KIND } from '../../constants/chat';
 
 export function useConversationsWithPresence(): Conversation[] {
   const conversations = useChatStore((s) => s.conversations);
@@ -57,7 +58,8 @@ export function usePresenceListPolling(): void {
       const ids = new Set<string>();
       for (const conversation of useChatStore.getState().conversations) {
         const otherId = conversation.otherUser?.id;
-        if (conversation.type === 'direct' && otherId != null && otherId !== '') ids.add(otherId);
+        if (conversation.type === CONVERSATION_KIND.direct && otherId != null && otherId !== '')
+          ids.add(otherId);
       }
       for (const friend of useFriendsStore.getState().friends) ids.add(friend.id);
       return [...ids];

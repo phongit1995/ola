@@ -11,7 +11,7 @@ import {
   sessionMessages,
   wordChainInputLock,
 } from '@lib';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { WordChainMessageRow } from './WordChainMessageRow';

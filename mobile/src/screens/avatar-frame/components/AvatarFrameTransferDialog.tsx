@@ -6,8 +6,8 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ReceiverField } from '@screens/vip/components/ReceiverField';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
-import { useReceiverSearch } from '../useReceiverSearch';
 import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
+import { useReceiverSearch } from '@ola/shared/stores/user/useReceiverSearch';
 
 interface AvatarFrameTransferDialogProps {
   frameId: string;

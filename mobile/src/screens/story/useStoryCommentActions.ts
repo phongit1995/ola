@@ -4,8 +4,8 @@ import { toApiError } from '@ola/shared/lib';
 import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { StoryComment } from '@ola/shared/types';
-import { RATE_LIMITED_STATUS } from './constants';
 import { commentUnlockMinChars, currentStoryAccess } from './useStoryAccess';
+import { HTTP_STATUS } from '@ola/shared/constants';
 
 export function useStoryCommentActions(storyId: string) {
   const { t } = useTranslation();
@@ -28,7 +28,7 @@ export function useStoryCommentActions(storyId: string) {
       } catch (error) {
         push(
           'error',
-          toApiError(error).status === RATE_LIMITED_STATUS
+          toApiError(error).status === HTTP_STATUS.tooManyRequests
             ? t('story.commentRateLimited')
             : t('story.commentSendError')
         );

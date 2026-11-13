@@ -1,5 +1,5 @@
 import { ReactionBalloons } from '@components';
-import { useRoomChatStore } from '@/store/roomChatStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 
 function subscribeRoomReactions(onReaction: (type: string) => void) {
   return useRoomChatStore.subscribe((state, prevState) => {

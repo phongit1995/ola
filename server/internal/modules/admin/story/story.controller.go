@@ -17,7 +17,6 @@ func NewController(service *story.Service, crawler *story.Crawler, rookies *stor
 	return &Controller{service: service, crawler: crawler, rookies: rookies}
 }
 
-// List godoc
 // @Summary      Danh sách truyện (admin), gồm cả truyện ẩn
 // @Tags         admin-story
 // @Produce      json
@@ -51,7 +50,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Summary godoc
 // @Summary      Số truyện, số chương và số chương đã có nội dung (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -66,7 +64,6 @@ func (ctrl *Controller) Summary(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Genres godoc
 // @Summary      Thể loại truyện, gồm cả truyện ẩn (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -81,7 +78,6 @@ func (ctrl *Controller) Genres(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Sources godoc
 // @Summary      Các nguồn truyện và số truyện mỗi nguồn (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -96,7 +92,6 @@ func (ctrl *Controller) Sources(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdateMany godoc
 // @Summary      Ẩn hoặc hiện nhiều truyện theo danh sách ID hoặc theo bộ lọc (admin)
 // @Tags         admin-story
 // @Accept       json
@@ -118,7 +113,6 @@ func (ctrl *Controller) UpdateMany(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Detail godoc
 // @Summary      Thông tin một truyện (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -134,7 +128,6 @@ func (ctrl *Controller) Detail(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Update godoc
 // @Summary      Ẩn hoặc hiện truyện (admin)
 // @Tags         admin-story
 // @Accept       json
@@ -156,7 +149,6 @@ func (ctrl *Controller) Update(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Delete godoc
 // @Summary      Xoá truyện và toàn bộ chương (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -171,7 +163,6 @@ func (ctrl *Controller) Delete(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "story deleted"}, nil
 }
 
-// Chapters godoc
 // @Summary      Danh sách chương kèm trạng thái nội dung (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -187,7 +178,6 @@ func (ctrl *Controller) Chapters(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// FetchContent godoc
 // @Summary      Lấy nội dung mọi chương còn thiếu của truyện, chạy nền (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -204,7 +194,6 @@ func (ctrl *Controller) FetchContent(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Chapter godoc
 // @Summary      Xem nội dung chương đang lưu, không tự lấy từ nguồn (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -221,7 +210,6 @@ func (ctrl *Controller) Chapter(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Refetch godoc
 // @Summary      Lấy lại nội dung chương từ nguồn, ghi đè nội dung cũ (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -239,7 +227,6 @@ func (ctrl *Controller) Refetch(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Crawler godoc
 // @Summary      Cấu hình, trạng thái và log của tự động cập nhật truyện (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -254,7 +241,6 @@ func (ctrl *Controller) Crawler(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// RunCrawler godoc
 // @Summary      Chạy ngay một lượt cập nhật truyện ở nền (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -269,7 +255,6 @@ func (ctrl *Controller) RunCrawler(c *gin.Context) (interface{}, error) {
 	return story.CrawlRunResponse{Started: true}, nil
 }
 
-// RookiesCrawler godoc
 // @Summary      Cấu hình, trạng thái và log của tự động cập nhật truyện rookies (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -284,7 +269,6 @@ func (ctrl *Controller) RookiesCrawler(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// RunRookiesCrawler godoc
 // @Summary      Chạy ngay một lượt cập nhật truyện rookies ở nền (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -299,7 +283,6 @@ func (ctrl *Controller) RunRookiesCrawler(c *gin.Context) (interface{}, error) {
 	return story.CrawlRunResponse{Started: true}, nil
 }
 
-// Comments godoc
 // @Summary      Bình luận của truyện, gồm cả bình luận đã xoá (admin)
 // @Tags         admin-story
 // @Produce      json
@@ -317,7 +300,6 @@ func (ctrl *Controller) Comments(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeleteComment godoc
 // @Summary      Xoá bình luận của truyện (admin)
 // @Tags         admin-story
 // @Produce      json

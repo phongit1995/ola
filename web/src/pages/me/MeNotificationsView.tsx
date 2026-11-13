@@ -6,7 +6,12 @@ import {
   Spinner,
 } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
-import { ME_ERROR_CODE, ME_NOTIFICATION_LABEL_KEY } from '@constants';
+import {
+  ME_ERROR_CODE,
+  ME_NOTIFICATION_LABEL_KEY,
+  POST_REACTION,
+  ME_NOTIFICATION_TYPE,
+} from '@constants';
 import {
   colorForName,
   createTimeFormatter,
@@ -21,7 +26,7 @@ import {
   toast,
 } from '@lib';
 import { MeService } from '@services';
-import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import type {
@@ -133,7 +138,8 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
     if (openPost == null) return;
     const optimistic = applyMeReaction(openPost, type, meSelfLiker());
     setOpenPost(optimistic);
-    const wasActive = type === 'like' ? openPost.liked : openPost.disliked;
+    const wasActive =
+      type === POST_REACTION.like ? openPost.liked : openPost.disliked;
     try {
       const updated = wasActive
         ? await MeService.removeReaction(id)
@@ -198,15 +204,15 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
                         )}
                         {t(ME_NOTIFICATION_LABEL_KEY[item.type])}
                       </p>
-                      {item.type === 'moment_comment' &&
+                      {item.type === ME_NOTIFICATION_TYPE.momentComment &&
                         item.preview != null &&
                         item.preview !== '' && (
                           <p className="mt-0.5 truncate text-sm text-black/54">
                             <SmileyText text={item.preview} />
                           </p>
                         )}
-                      {(item.type === 'comment' ||
-                        item.type === 'comment_like') &&
+                      {(item.type === ME_NOTIFICATION_TYPE.comment ||
+                        item.type === ME_NOTIFICATION_TYPE.commentLike) &&
                         item.preview != null &&
                         item.preview !== '' && (
                           <p className="mt-0.5 truncate text-sm text-black/54">
@@ -244,8 +250,8 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
         <MeCommentSheet
           post={openPost}
           onClose={() => setOpenPost(null)}
-          onToggleLike={(id) => toggleReaction(id, 'like')}
-          onToggleDislike={(id) => toggleReaction(id, 'dislike')}
+          onToggleLike={(id) => toggleReaction(id, POST_REACTION.like)}
+          onToggleDislike={(id) => toggleReaction(id, POST_REACTION.dislike)}
           onOpenProfile={(nick, color) =>
             setProfileTarget({ username: nick, color })
           }

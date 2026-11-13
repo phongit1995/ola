@@ -67,8 +67,10 @@ Protocol đầy đủ ở [05 §5–§9](./05-gameplay-rules-and-protocol.md#5-s
 
 ### Giai đoạn 6 — Người xem (sau, tuỳ chọn)
 
-- [x] Server: tycoon cài `SpectatorView` (view `you = -1`, không lộ bộ thẻ) và vào `playingRoomGames` nên `ROOM_LIST` có bàn đang chơi kèm `matchId`. **Chưa làm cờ `allowSpectators` theo bàn** — giống Tiến Lên, mọi bàn đang chơi đều xem được.
-- [x] Client: nút Xem ở S3, chế độ chỉ xem ở S6 (`you = -1`, pill "Đang xem · N người xem", menu chỉ còn "Thôi xem", không có Bỏ cuộc/chat), kết quả "@x thắng" + "Về danh sách bàn". Công tắc ở S4 vẫn ẩn tới khi có cờ theo bàn.
+- [x] Server: tycoon cài `SpectatorView` (view `you = -1`, không lộ bộ thẻ) và vào `playingRoomGames` nên `ROOM_LIST` có bàn đang chơi kèm `matchId`.
+- [x] Server (12/11): cờ `allowSpectators` theo bàn — `ROOM_CREATE` nhận, lưu trong room + match snapshot, trả trong `ROOM_LIST`/`ROOM_UPSERT`/`ROOM_WAITING`/`ROOM_STATE`; tắt thì không có trong `SPECTATE_LIST` và `SPECTATE_JOIN` trả `SPECTATE_NOT_ALLOWED`; bật thì bàn khóa vẫn xem được. Thiếu cờ (game khác, client cũ) giữ luật cũ: bàn không khóa xem được. Chi tiết [11 §4](./11-room-settings.md#4-việc-phía-server).
+- [x] Client: nút Xem ở S3, chế độ chỉ xem ở S6 (`you = -1`, pill "Đang xem · N người xem", menu chỉ còn "Thôi xem", không có Bỏ cuộc/chat), kết quả "@x thắng" + "Về danh sách bàn".
+- [x] Client (12/11): công tắc "Cho người khác xem" ở S4 hiện lại (mặc định Tắt), `createRoom` gửi `allowSpectators`; S3 chỉ hiện Xem khi bàn có `matchId` và cho xem; thiếu cờ (bàn tạo trước bản này) theo đúng luật server: bàn không khóa xem được, bàn khóa → chip "Đang chơi".
 
 ## 3. Kiểm thử
 
@@ -92,5 +94,5 @@ Protocol đầy đủ ở [05 §5–§9](./05-gameplay-rules-and-protocol.md#5-s
 - Kết nối socket ngay khi mở sảnh, không chặn: lỗi mạng thì sảnh vẫn mở, "Chơi với máy" vẫn chạy, "Vào bàn" thử nối lại.
 - Chat + thả cảm xúc trong ván: nút chat ở footer (chấm đỏ khi có tin mới) mở sheet Trò chuyện; cảm xúc bay lên từ pod người gửi; ảnh cảm xúc dùng chung `caro/assets/reactions`. Chơi với máy và người xem không có.
 - Step `bankrupt` có thêm `amount` (số nợ, bỏ khi bỏ cuộc) ở cả Go và `engine.ts`, fixture parity sinh lại; modal phá sản dùng số này.
-- Người xem: mọi bàn đang chơi xem được (như Tiến Lên), ẩn công tắc "Cho người khác xem" ở S4.
+- Người xem: ~~mọi bàn đang chơi xem được (như Tiến Lên), ẩn công tắc "Cho người khác xem" ở S4.~~ Từ 12/11 theo cờ `allowSpectators` của từng bàn, chủ bàn bật ở S4 (mặc định tắt).
 - Trường `owner` trong `ROOM_LIST` là username, script E2E dùng `TY_JOIN_OWNER=<username>` để bot vào bàn của người đang thử trên trình duyệt.

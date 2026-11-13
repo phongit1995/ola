@@ -1,8 +1,6 @@
 package usersetting
 
 import (
-	"net/http"
-
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +19,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	}
 }
 
-// GetSettings godoc
 // @Summary      Get user settings
 // @Description  Get the authenticated user's settings (returns defaults if not set yet)
 // @Tags         user-settings
@@ -48,7 +45,6 @@ func (ctrl *Controller) GetSettings(c *gin.Context) (interface{}, error) {
 	return settings, nil
 }
 
-// UpdateSettings godoc
 // @Summary      Update user settings
 // @Description  Partially update the authenticated user's settings (upsert)
 // @Tags         user-settings
@@ -66,16 +62,16 @@ func (ctrl *Controller) UpdateSettings(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	var req UpdateSettingsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	req, err := utils.BindJSON[UpdateSettingsRequest](c)
+	if err != nil {
 		ctrl.logger.Warnw("Invalid update settings request",
 			"user_id", userID,
 			"error", err.Error(),
 		)
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		return nil, err
 	}
 
-	settings, err := ctrl.service.UpdateSettings(userID, &req)
+	settings, err := ctrl.service.UpdateSettings(userID, req)
 	if err != nil {
 		ctrl.logger.Errorw("Failed to update user settings",
 			"user_id", userID,

@@ -9,7 +9,8 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { GIFT_ACCENT, GIFT_ACCENT_DARK } from '@components/gift/constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
-import { CARD_SHADOW, GIFT_WALL_COLUMNS, GIFT_WALL_IMAGE_STYLE, GIFT_WALL_PREVIEW_ROWS } from '../constants';
+import { CARD_SHADOW, GIFT_WALL_COLUMNS, GIFT_WALL_IMAGE_STYLE } from '../constants';
+import { GIFT_WALL_PREVIEW_ROWS } from '@ola/shared/constants';
 
 interface GiftWallSectionProps {
   userId: string;

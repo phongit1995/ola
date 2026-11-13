@@ -20,8 +20,8 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { LobbyWallpaper } from '@components/ChatWallpaper';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { ROOM_BROWSE_LIMIT } from './constants';
 import { WORD_CHAIN_ICONS } from './word-chain/wordChainAssets';
+import { ROOM_CHAT_STATUS, ROOM_BROWSE_LIMIT } from '@ola/shared/constants';
 
 const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');
 const quickJoinIcon = require('@assets/icons/room/ic_action_auto_join_room.png');
@@ -226,7 +226,7 @@ export function RoomListScreen() {
 
   useEffect(() => {
     if (joiningRoom == null) return;
-    if (joinStatus === 'joined' && activeRoom?.id === joiningRoom.id) {
+    if (joinStatus === ROOM_CHAT_STATUS.joined && activeRoom?.id === joiningRoom.id) {
       const room = joiningRoom;
       setJoiningRoom(null);
       navigation.navigate(ROOM_ROUTES.RoomChat, { roomId: room.id, roomName: room.name });
@@ -340,12 +340,12 @@ export function RoomListScreen() {
               elevation: 8,
             }}
           >
-            {joinStatus === 'error' || joinStatus === 'vipRequired' ? (
+            {joinStatus === ROOM_CHAT_STATUS.error || joinStatus === ROOM_CHAT_STATUS.vipRequired ? (
               <>
                 <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
-                  {t(joinStatus === 'vipRequired' ? 'room.vipRequired' : 'room.joinError')}
+                  {t(joinStatus === ROOM_CHAT_STATUS.vipRequired ? 'room.vipRequired' : 'room.joinError')}
                 </Text>
-                {joinStatus === 'vipRequired' && (
+                {joinStatus === ROOM_CHAT_STATUS.vipRequired && (
                   <Pressable
                     onPress={buyVip}
                     className="rounded-full bg-ola-button px-6 py-2 active:opacity-90"

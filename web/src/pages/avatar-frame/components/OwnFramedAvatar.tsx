@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { colorForName } from '@lib';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 
 interface OwnFramedAvatarProps {
   frameId: string | null;

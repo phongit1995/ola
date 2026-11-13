@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { GAME_ERROR_CODE } from '../../src/sdk/protocol';
 import {
   BET_INVALID_TEXT,
   BET_OVER_BALANCE_TEXT,
@@ -10,6 +11,7 @@ import {
   parseBetInput,
   roomAction,
   roomBetLabel,
+  roomToastText,
   type CreateRoomInput,
   type TycoonRoom,
 } from './room';
@@ -22,8 +24,22 @@ describe('roomAction', () => {
     expect(roomAction(room({ players: 2 }))).toBe('join');
     expect(roomAction(room({ players: 4 }))).toBe('full');
     expect(roomAction(room({ players: 1, full: true }))).toBe('full');
+    expect(roomAction(room({ status: 'playing', matchId: 'm1', allowSpectators: true }))).toBe('watch');
+    expect(roomAction(room({ status: 'playing', matchId: 'm1', allowSpectators: true, locked: true }))).toBe('watch');
+    expect(roomAction(room({ status: 'playing', allowSpectators: true }))).toBe('playing');
     expect(roomAction(room({ status: 'playing', matchId: 'm1' }))).toBe('watch');
-    expect(roomAction(room({ status: 'playing' }))).toBe('playing');
+  });
+
+  it('shows the playing chip unless the owner allowed spectators', () => {
+    expect(roomAction(room({ status: 'playing', matchId: 'm1', allowSpectators: false }))).toBe('playing');
+    expect(roomAction(room({ status: 'playing', matchId: 'm1', locked: true }))).toBe('playing');
+    expect(roomAction(room({ status: 'waiting', players: 2, allowSpectators: false }))).toBe('join');
+  });
+});
+
+describe('roomToastText', () => {
+  it('explains a room that refuses spectators', () => {
+    expect(roomToastText(GAME_ERROR_CODE.SpectateNotAllowed)).toBe('Bàn này không cho người ngoài xem');
   });
 });
 

@@ -6,7 +6,6 @@ import {
   Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -17,37 +16,29 @@ import { ChatWallpaper } from '@components/ChatWallpaper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
-import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
+import { isSameDay, parseMessageMetadata } from '@ola/shared/lib';
 import {
-  imageUploadErrorText,
-  isSameDay,
-  parseMessageMetadata,
-} from '@ola/shared/lib';
-import {
-  GIFT_SOURCE,
   MESSAGE_STATUS,
   MESSAGE_TYPE,
   RELATIONSHIP_STATUS,
   REPORT_TARGET_TYPE,
 } from '@ola/shared/constants';
-import type { Message, NativeUploadFile, ReactionType } from '@ola/shared/types';
+import type { Message, ReactionType, ChatTransferKind } from '@ola/shared/types';
 import { ChatCallButtons } from '@screens/call/ChatCallButtons';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { SelectTextDialog } from '@components/chat/SelectTextDialog';
-import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { kulToken } from '@lib/kul';
-import { pastedImageFile, uploadFileFromAsset } from '@lib/imagePicker';
-import { compressImageForUpload } from '@lib/compressImage';
 import {
   deleteTemporaryVoiceFile,
   deleteTemporaryVoiceFileAfterUiUpdate,
@@ -55,12 +46,11 @@ import {
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { RoomReactionsDialog } from '@screens/room/components/RoomReactionsDialog';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
-import { TransferKenDialog } from '@screens/ken/components/TransferKenDialog';
-import { GiftPickerDialog } from '@components/gift/GiftPickerDialog';
 import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 import { DIVIDER } from '@constants';
 import { useChatDetail } from './useChatDetail';
-import { usePeerCard } from './usePeerCard';
+import { usePeerCard } from '@ola/shared/stores/chat/usePeerCard';
+import { peerCardHiddenStorage } from '@store/chatLocalStore';
 import { useIncomingGiftAnimation } from './useIncomingGiftAnimation';
 import { chatMessageAbilities } from './utils';
 import { CHAT_BG } from './constants';
@@ -73,9 +63,6 @@ import {
   VoiceRecorderControl,
   type VoiceRecorderControlHandle,
 } from '@components/chat/voice/VoiceRecorderControl';
-import { TradingVipDialog } from './components/TradingVipDialog';
-import { TransferVipDaysDialog } from './components/TransferVipDaysDialog';
-import { VipDayTransferDialog } from './components/VipDayTransferDialog';
 import {
   selectVipDayTransferEnabled,
   useVipDayTransferConfigStore,
@@ -85,7 +72,10 @@ import { ChatHeader } from './components/ChatHeader';
 import { TypingIndicator } from './components/TypingIndicator';
 import { ReplyPreviewBar } from './components/ReplyPreviewBar';
 import { EditingNotice } from './components/EditingNotice';
-import type { PendingComposerImage } from '@components/chat/composerTypes';
+import { ChatTransferDialogs } from './components/ChatTransferDialogs';
+import { useTimedHighlight } from '@ola/shared/stores/useTimedHighlight';
+import { useAfterDismiss } from '@hooks/useAfterDismiss';
+import { usePendingChatImages } from './usePendingChatImages';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 
@@ -140,36 +130,26 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   useIncomingGiftAnimation(messages, myId, title);
 
   const [openTab, setOpenTab] = useState<AttachPanelTab | null>(null);
-  const [transferKenOpen, setTransferKenOpen] = useState(false);
-  const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
-  const [vipDayTransferOpen, setVipDayTransferOpen] = useState(false);
+  const [activeTransfer, setActiveTransfer] = useState<ChatTransferKind | null>(null);
   const vipDayTransferEnabled = useVipDayTransferConfigStore(selectVipDayTransferEnabled);
   const loadVipDayTransferConfig = useVipDayTransferConfigStore((s) => s.load);
 
   useEffect(() => {
     void loadVipDayTransferConfig();
   }, [loadVipDayTransferConfig]);
-  const [tradingVipOpen, setTradingVipOpen] = useState(false);
-  const [giftOpen, setGiftOpen] = useState(false);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
   const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
   const pendingAudioRef = useRef<VoiceRecording | null>(null);
   const pendingAudioCleanupQueueRef = useRef<VoiceRecording[]>([]);
   const [voiceRecording, setVoiceRecording] = useState(false);
-  const [pendingImages, setPendingImages] = useState<PendingComposerImage[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const imageIdRef = useRef(0);
+  const { highlightedId, highlight, clearHighlight } = useTimedHighlight();
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
-  const pendingDeleteTargetRef = useRef<Message | null>(null);
   const [reportTarget, setReportTarget] = useState<Message | null>(null);
-  const pendingReportTargetRef = useRef<Message | null>(null);
   const [selectTextTarget, setSelectTextTarget] = useState<string | null>(null);
-  const pendingSelectTextRef = useRef<string | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: Message;
     anchor: AnchorRect;
@@ -194,6 +174,25 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   } = useStickyBottomList<Message>();
   const composerRef = useRef<ChatInputBarHandle>(null);
   const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
+  const {
+    pendingImages,
+    queuePastedImage,
+    removePendingImage,
+    clearPendingImages,
+    sendPendingImages,
+    pickImages,
+    capturePhoto,
+  } = usePendingChatImages({
+    sendImage,
+    onBeforeQueue: () => {
+      if (editing != null) cancelEdit();
+    },
+    onBeforeSend: () => {
+      setOpenTab(null);
+      pinOnNextContent();
+    },
+    refocusComposer: () => composerRef.current?.focus(),
+  });
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const loadingMore = useChatStore((s) => s.loadingMore);
   const [activeConversationId, setActiveConversationId] = useState(currentConversationId);
@@ -207,7 +206,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     setVoiceRecording(false);
     setOpenTab(null);
     setEditing(null);
-    setHighlightedId(null);
+    clearHighlight();
   }
 
   useEffect(() => {
@@ -251,6 +250,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     messagesReady: !loadingMessages,
     peerCardRoll,
     lastMessageId: messages[messages.length - 1]?.id,
+    hiddenStorage: peerCardHiddenStorage,
   });
 
   const closeAttachTab = useCallback(() => setOpenTab(null), []);
@@ -299,48 +299,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     composerRef.current?.clear();
   }
 
-  async function compressAndSend(file: NativeUploadFile) {
-    try {
-      const prepared = await compressImageForUpload(file);
-      await sendImage(prepared);
-    } catch (err) {
-      push('error', imageUploadErrorText(t, err, t('chat.imageError')));
-    }
-  }
-
-  function queuePickedAssets(assets: Asset[]) {
-    if (assets.length === 0) return;
-    if (editing != null) cancelEdit();
-    setPendingImages((current) => {
-      const next = [...current];
-      for (const asset of assets) {
-        if (asset.uri == null) continue;
-        imageIdRef.current += 1;
-        next.push({
-          id: String(imageIdRef.current),
-          uri: asset.uri,
-          file: uploadFileFromAsset({ ...asset, uri: asset.uri }),
-        });
-      }
-      return next;
-    });
-  }
-
-  function queuePastedImage(uri: string) {
-    if (editing != null) cancelEdit();
-    imageIdRef.current += 1;
-    const id = String(imageIdRef.current);
-    setPendingImages((current) => [...current, { id, uri, file: pastedImageFile(uri) }]);
-  }
-
-  function removePendingImage(id: string) {
-    setPendingImages((current) => current.filter((image) => image.id !== id));
-  }
-
-  function clearPendingImages() {
-    setPendingImages([]);
-  }
-
   function showPendingAudio(recording: VoiceRecording) {
     pendingAudioRef.current = recording;
     setPendingAudio(recording);
@@ -365,43 +323,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     if (sent && previewUri !== '') {
       deleteTemporaryVoiceFileAfterUiUpdate(previewUri);
     }
-  }
-
-  async function sendPendingImages() {
-    const images = pendingImages;
-    if (images.length === 0) return;
-    setPendingImages([]);
-    setOpenTab(null);
-    pinOnNextContent();
-    for (const image of images) {
-      await compressAndSend(image.file);
-    }
-  }
-
-  async function pickImages() {
-    const keyboardWasVisible = Keyboard.isVisible();
-    const result = await launchImageLibrary({
-      mediaType: 'photo',
-      selectionLimit: 0,
-    });
-    if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
-    if (result.didCancel) return;
-    queuePickedAssets(result.assets ?? []);
-  }
-
-  async function capturePhoto() {
-    const keyboardWasVisible = Keyboard.isVisible();
-    const result = await launchCamera({
-      mediaType: 'photo',
-      saveToPhotos: false,
-    });
-    if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
-    if (result.didCancel) return;
-    if (result.errorCode != null) {
-      push('error', t('chat.imageError'));
-      return;
-    }
-    queuePickedAssets(result.assets ?? []);
   }
 
   const menuOptions: ListOption[] = [
@@ -438,17 +359,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     }
     unstick();
     listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
-    setHighlightedId(id);
-    if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
-    highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
+    highlight(id);
   }
-
-  useEffect(
-    () => () => {
-      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
-    },
-    []
-  );
 
   function startReply(message: Message) {
     setEditing(null);
@@ -461,17 +373,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     push('success', t('chat.copied'));
   }
 
-  const openPendingDeleteDialog = useCallback(() => {
-    const target = pendingDeleteTargetRef.current;
-    pendingDeleteTargetRef.current = null;
-    if (target != null) setDeleteTarget(target);
-    const report = pendingReportTargetRef.current;
-    pendingReportTargetRef.current = null;
-    if (report != null) setReportTarget(report);
-    const selectText = pendingSelectTextRef.current;
-    pendingSelectTextRef.current = null;
-    if (selectText != null) setSelectTextTarget(selectText);
-  }, []);
+  const sheetFollowUp = useAfterDismiss();
 
   function sheetActions(message: Message): MessageSheetAction[] {
     const abilities = chatMessageAbilities(message, myId, blocked);
@@ -495,9 +397,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         key: 'selectText',
         label: t('chat.actionSelectText'),
         icon: 'selectText',
-        onSelect: () => {
-          pendingSelectTextRef.current = message.content;
-        },
+        onSelect: () => sheetFollowUp.schedule(() => setSelectTextTarget(message.content)),
       });
     }
     if (abilities.canEdit) {
@@ -513,9 +413,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         key: 'report',
         label: t('chat.actionReport'),
         icon: 'report',
-        onSelect: () => {
-          pendingReportTargetRef.current = message;
-        },
+        onSelect: () => sheetFollowUp.schedule(() => setReportTarget(message)),
       });
     }
     if (abilities.canDelete) {
@@ -524,12 +422,19 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         label: t('chat.actionDelete'),
         icon: 'delete',
         destructive: true,
-        onSelect: () => {
-          pendingDeleteTargetRef.current = message;
-        },
+        onSelect: () => sheetFollowUp.schedule(() => setDeleteTarget(message)),
       });
     }
     return actions;
+  }
+
+  function openTransfer(kind: ChatTransferKind) {
+    setOpenTab(null);
+    if (peerId === '') {
+      push('error', t('chat.actionError'));
+      return;
+    }
+    setActiveTransfer(kind);
   }
 
   const transferReceiver = {
@@ -833,46 +738,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           }}
           onPickImage={() => void pickImages()}
           onPickCamera={() => void capturePhoto()}
-          onTransferKen={() => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
-            setTransferKenOpen(true);
-          }}
-          onTradingVip={() => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
-            setTradingVipOpen(true);
-          }}
-          onSendVipDays={() => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
-            setTransferVipDaysOpen(true);
-          }}
-          onVipDayTransfer={vipDayTransferEnabled ? () => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
-            setVipDayTransferOpen(true);
-          } : undefined}
+          onTransferKen={() => openTransfer('ken')}
+          onTradingVip={() => openTransfer('vip')}
+          onSendVipDays={() => openTransfer('vipDays')}
+          onVipDayTransfer={vipDayTransferEnabled ? () => openTransfer('vipDayTransfer') : undefined}
           onSendGift={giftsEnabled ? () => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
             Keyboard.dismiss();
-            setGiftOpen(true);
+            openTransfer('gift');
           } : undefined}
         />
       )}
@@ -882,43 +754,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
       <ChatReactionBalloons />
 
-      {transferKenOpen && peerId !== '' && (
-        <TransferKenDialog
-          visible
-          onClose={() => setTransferKenOpen(false)}
+      {peerId !== '' && (
+        <ChatTransferDialogs
+          active={activeTransfer}
           receiver={transferReceiver}
-        />
-      )}
-
-      {transferVipDaysOpen && peerId !== '' && (
-        <TransferVipDaysDialog
-          visible
-          onClose={() => setTransferVipDaysOpen(false)}
-          receiver={transferReceiver}
-        />
-      )}
-
-      {vipDayTransferOpen && vipDayTransferEnabled && peerId !== '' && (
-        <VipDayTransferDialog
-          visible
-          onClose={() => setVipDayTransferOpen(false)}
-          receiver={transferReceiver}
-        />
-      )}
-
-      {giftOpen && peerId !== '' && (
-        <GiftPickerDialog
-          source={GIFT_SOURCE.chat}
-          onClose={() => setGiftOpen(false)}
-          receiver={transferReceiver}
-        />
-      )}
-
-      {tradingVipOpen && peerId !== '' && (
-        <TradingVipDialog
-          visible
-          onClose={() => setTradingVipOpen(false)}
-          receiver={transferReceiver}
+          vipDayTransferEnabled={vipDayTransferEnabled}
+          onClose={() => setActiveTransfer(null)}
         />
       )}
 
@@ -945,9 +786,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onClose={() => {
           suspendRef.current = false;
           setActionTarget(null);
-          if (Platform.OS !== 'ios') requestAnimationFrame(openPendingDeleteDialog);
+          sheetFollowUp.runAfterClose();
         }}
-        onDismiss={openPendingDeleteDialog}
+        onDismiss={sheetFollowUp.onDismiss}
       />
 
       {reportTarget != null && (

@@ -1,15 +1,14 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { cardById } from '../logic/board';
-import { TURN_SECONDS } from '../logic/constants';
 import { animate, reducedMotion } from '../fx/runtime';
 import { seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
 import { cardArt } from './art';
+import { TurnRing, URGENT_SECONDS } from './TurnRing';
 import { MoneyBadge, UiAvatar, UiButton } from './Ui';
 
 const CELLS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-const TIMER_BLOCKS = 10;
 const NO_DICE_PHASES = new Set(['festival', 'travel']);
 
 function Dice({ hidden }: { hidden: boolean }) {
@@ -35,22 +34,6 @@ function Dice({ hidden }: { hidden: boolean }) {
   );
 }
 
-function TimerBar({ leftMs }: { leftMs: number }) {
-  const seconds = Math.max(0, Math.ceil(leftMs / 1000));
-  const lit = Math.ceil((Math.max(0, Math.min(1, leftMs / (TURN_SECONDS * 1000))) * TIMER_BLOCKS));
-  const urgent = seconds <= 10;
-  return (
-    <span className={`ty-s6-timer ${urgent ? 'ty-s6-timer-urgent' : ''}`} role="timer" aria-label={`Còn ${seconds} giây`}>
-      <span className="ty-s6-timer-bar" aria-hidden="true">
-        {Array.from({ length: TIMER_BLOCKS }, (_, i) => (
-          <i key={i} className={i < lit ? 'ty-s6-timer-on' : undefined} />
-        ))}
-      </span>
-      <b>{seconds}</b>
-    </span>
-  );
-}
-
 function TurnChip() {
   const { view, players, you, myTurn, replaying, deadline, timerLeftMs } = useTycoon(
     useShallow((s) => ({ view: s.view, players: s.players, you: s.you, myTurn: s.myTurn, replaying: s.replaying, deadline: s.deadline, timerLeftMs: s.timerLeftMs })),
@@ -67,12 +50,22 @@ function TurnChip() {
   }, [turn]);
   const mine = myTurn && !view?.players[you]?.bankrupt;
   const showTimer = mine && !replaying && deadline !== 0;
+  const seconds = Math.max(0, Math.ceil(timerLeftMs / 1000));
+  const urgent = showTimer && seconds <= URGENT_SECONDS;
+  const className = ['ty-s6-chip', mine ? 'ty-s6-chip-me' : '', showTimer ? 'ty-s6-chip-timed' : '', urgent ? 'ty-s6-chip-urgent' : ''].join(' ');
   return (
     <div className="ty-s6-chiprow">
-      <span ref={chip} className={`ty-s6-chip ${mine ? 'ty-s6-chip-me' : ''}`} style={{ '--seat': seatColor(turn) } as CSSProperties}>
-        <UiAvatar src={players[turn]?.avatar} size={22} ring={seatColor(turn)} />
-        <span>{mine ? 'Lượt của bạn' : players[turn]?.name ?? '?'}</span>
-        {mine ? null : (
+      <span ref={chip} className={className} style={{ '--seat': seatColor(turn) } as CSSProperties}>
+        <span className="ty-s6-chip-av">
+          <UiAvatar src={players[turn]?.avatar} size={showTimer ? 22 : 24} ring={showTimer ? 'transparent' : seatColor(turn)} />
+          {showTimer ? <TurnRing leftMs={timerLeftMs} /> : null}
+        </span>
+        <span className="ty-s6-chip-name">{mine ? 'Lượt của bạn' : players[turn]?.name ?? '?'}</span>
+        {showTimer ? (
+          <b className="ty-s6-chip-sec" role="timer" aria-label={`Còn ${seconds} giây`}>
+            {seconds}
+          </b>
+        ) : mine ? null : (
           <span className="ty-s6-thinking" aria-hidden="true">
             <i />
             <i />
@@ -80,7 +73,6 @@ function TurnChip() {
           </span>
         )}
       </span>
-      {showTimer ? <TimerBar leftMs={timerLeftMs} /> : null}
     </div>
   );
 }
@@ -135,7 +127,7 @@ function CardBox() {
         <div className="ty-s6-cfront">
           <header>{label}</header>
           <img className="ty-s6-cart" src={cardArt(card)} alt="" draggable={false} />
-          <p>{card?.text ?? ''}</p>
+          <p>{(card?.text ?? '').replace(/ tr(?=[.,!)]|$)/g, '\u00a0tr')}</p>
           {amount != null ? <MoneyBadge amount={amount} signed className={amount < 0 ? 'ty-s6-camt-neg' : 'ty-s6-camt-pos'} /> : null}
           {canAck ? (
             <UiButton tone="gold" size="sm" disabled={movePending} onClick={() => sendMove({ type: 'CARD_ACK' })}>

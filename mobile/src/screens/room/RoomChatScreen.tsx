@@ -42,7 +42,7 @@ import {
   deleteTemporaryVoiceFile,
   deleteTemporaryVoiceFileAfterUiUpdate,
 } from '@lib/temporaryVoiceFile';
-import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
+import { MESSAGE_TYPE, ROOM_CHAT_STATUS, ROOM_MESSAGE_STATUS } from '@ola/shared/constants';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<RoomStackParamList, 'RoomChat'>,
@@ -185,7 +185,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      if (useRoomChatStore.getState().status === 'vipRequired') {
+      if (useRoomChatStore.getState().status === ROOM_CHAT_STATUS.vipRequired) {
         void open({ id: roomId, name: roomName });
       }
     }, [open, roomId, roomName]),
@@ -195,8 +195,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
     const current = useRoomChatStore.getState();
     if (
       current.activeRoom?.id !== roomId ||
-      current.status === 'error' ||
-      current.status === 'vipRequired'
+      current.status === ROOM_CHAT_STATUS.error ||
+      current.status === ROOM_CHAT_STATUS.vipRequired
     ) {
       void open({ id: roomId, name: roomName });
     }
@@ -204,7 +204,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
       const failedAudioUris = useRoomChatStore
         .getState()
         .messages.filter(
-          message => message.type === MESSAGE_TYPE.audio && message.status === MESSAGE_STATUS.failed,
+          message =>
+            message.type === MESSAGE_TYPE.audio && message.status === ROOM_MESSAGE_STATUS.failed,
         )
         .map(message => message.audioUrl)
         .filter((uri): uri is string => uri != null && uri !== '');
@@ -232,7 +233,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', event => {
       if (confirmedLeaveRef.current) return;
-      if (useRoomChatStore.getState().status !== 'joined') return;
+      if (useRoomChatStore.getState().status !== ROOM_CHAT_STATUS.joined) return;
       event.preventDefault();
       Keyboard.dismiss();
       setPendingLeave(event.data.action);
@@ -275,7 +276,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
         current.messages.some(
           message =>
             message.type === MESSAGE_TYPE.audio &&
-            message.status === MESSAGE_STATUS.failed &&
+            message.status === ROOM_MESSAGE_STATUS.failed &&
             message.audioUrl === previewUri,
         );
       if (!retryable) deleteTemporaryVoiceFileAfterUiUpdate(previewUri);
@@ -359,15 +360,15 @@ export function RoomChatScreen({ navigation, route }: Props) {
       </View>
 
       <ChatKeyboardArea>
-        {status === 'error' || status === 'vipRequired' ? (
+        {status === ROOM_CHAT_STATUS.error || status === ROOM_CHAT_STATUS.vipRequired ? (
           <View className="flex-1 items-center justify-center gap-4 px-8">
             <Text
               className="text-center text-base"
               style={{ color: 'rgba(0,0,0,0.7)' }}
             >
-              {t(status === 'vipRequired' ? 'room.vipRequired' : 'room.joinError')}
+              {t(status === ROOM_CHAT_STATUS.vipRequired ? 'room.vipRequired' : 'room.joinError')}
             </Text>
-            {status === 'vipRequired' && (
+            {status === ROOM_CHAT_STATUS.vipRequired && (
               <Pressable
                 onPress={() => navigation.navigate(ROOT_ROUTES.BuyVip, { mode: 'extend' })}
                 className="rounded-full bg-ola-button px-6 py-2 active:opacity-90"
@@ -386,7 +387,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
               </Text>
             </Pressable>
           </View>
-        ) : status !== 'joined' ? (
+        ) : status !== ROOM_CHAT_STATUS.joined ? (
           <View className="flex-1 items-center justify-center gap-3">
             <ActivityIndicator color={colors.primary} size="large" />
             <Text className="text-sm text-ola-ink-soft">

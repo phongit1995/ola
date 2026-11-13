@@ -1,17 +1,16 @@
 package marriagediary
 
-import "ola-chat-server/internal/utils"
+import (
+	"ola-chat-server/internal/utils"
+
+	userModule "ola-chat-server/internal/modules/user"
+)
 
 type CreateDiaryRequest struct {
 	Content string `json:"content" binding:"required,min=1,max=2000" example:"Hôm nay mình đi ăn cùng nhau 🥰"`
 }
 
-type UserBrief struct {
-	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username string `json:"username" example:"john_doe"`
-	FullName string `json:"fullName,omitempty" example:"John Doe"`
-	Avatar   string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-}
+type UserBrief = userModule.UserBrief
 
 type DiaryEntryItem struct {
 	ID        string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`

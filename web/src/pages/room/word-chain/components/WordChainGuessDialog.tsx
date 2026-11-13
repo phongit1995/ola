@@ -9,7 +9,7 @@ import {
   wordChainGuessErrorText,
 } from '@lib';
 import kenIcon from '@/assets/icons/apps/ken.png';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { WordChainKen } from './WordChainKen';
 

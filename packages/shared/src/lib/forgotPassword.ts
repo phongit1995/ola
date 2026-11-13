@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import { ApiError } from './apiError';
+import { HTTP_STATUS } from '../constants/http';
 
 export const FORGOT_RESEND_COOLDOWN_SECONDS = 60;
 export const FORGOT_CODE_LENGTH = 6;
@@ -10,7 +11,7 @@ export function resolveForgotSendError(error: unknown, t: TFunction): string {
   if (error instanceof ApiError) {
     if (error.status === 0) return t('auth.errNetwork');
     if (error.status === EMAIL_UNAVAILABLE_STATUS) return t('forgot.errUnavailable');
-    if (error.status === 429 || /wait|limit/i.test(error.message)) {
+    if (error.status === HTTP_STATUS.tooManyRequests || /wait|limit/i.test(error.message)) {
       return t('forgot.errRateLimited');
     }
   }
@@ -20,7 +21,7 @@ export function resolveForgotSendError(error: unknown, t: TFunction): string {
 export function resolveForgotConfirmError(error: unknown, t: TFunction): string {
   if (error instanceof ApiError) {
     if (error.status === 0) return t('auth.errNetwork');
-    if (error.status === 429) return t('forgot.errRateLimited');
+    if (error.status === HTTP_STATUS.tooManyRequests) return t('forgot.errRateLimited');
     if (/attempts/i.test(error.message)) return t('forgot.errTooManyAttempts');
     if (/expired|not found/i.test(error.message)) return t('forgot.errCodeExpired');
     if (/invalid/i.test(error.message)) return t('forgot.errInvalidCode');

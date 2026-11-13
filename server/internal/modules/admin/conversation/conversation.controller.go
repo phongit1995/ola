@@ -19,7 +19,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_conversation_controller]")}
 }
 
-// ListByUser godoc
 // @Summary      Hội thoại của một user (admin, chỉ xem)
 // @Description  hidden=false: hội thoại đang hiển thị, sắp theo tin mới nhất. hidden=true: hội thoại user đã ẩn, sắp theo lúc ẩn. missing=true là hội thoại không còn dữ liệu
 // @Tags         admin-conversation
@@ -47,7 +46,6 @@ func (ctrl *Controller) ListByUser(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Detail godoc
 // @Summary      Thông tin và thành viên của hội thoại (admin)
 // @Tags         admin-conversation
 // @Produce      json
@@ -68,7 +66,6 @@ func (ctrl *Controller) Detail(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Messages godoc
 // @Summary      Tin nhắn của hội thoại (admin, chỉ xem)
 // @Description  Trả mới nhất trước, gồm cả tin đã bị xoá (deletedAt). Truyền around để lấy các tin quanh một tin (mở từ báo cáo vi phạm)
 // @Tags         admin-conversation

@@ -1,13 +1,22 @@
 package utils
 
 import (
+	"context"
+	"database/sql/driver"
 	"errors"
+	"net"
 	"net/http"
 	"strings"
 	"time"
 
+	"ola-chat-server/internal/apperr"
+
 	"github.com/gin-gonic/gin"
+	"github.com/gocql/gocql"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 type AppHandler func(c *gin.Context) (interface{}, error)
@@ -271,7 +280,6 @@ func matchKnownError(msg string, table map[string]bool) bool {
 	return false
 }
 
-// KnownHTTPStatusFromMessage maps registered service messages to HTTP statuses.
 func KnownHTTPStatusFromMessage(msg string) (int, bool) {
 	if matchKnownError(msg, errorsBadRequest) {
 		return http.StatusBadRequest, true
@@ -304,10 +312,35 @@ func HTTPStatusFromError(err error) int {
 	if err == nil {
 		return http.StatusOK
 	}
+	var httpErr *HTTPError
+	if errors.As(err, &httpErr) {
+		return httpErr.Status
+	}
 	if status, known := KnownHTTPStatusFromMessage(err.Error()); known {
 		return status
 	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return http.StatusNotFound
+	}
+	if isInternalError(err) {
+		return http.StatusInternalServerError
+	}
 	return http.StatusBadRequest
+}
+
+func isInternalError(err error) bool {
+	if apperr.IsDatabaseError(err) || errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	var connectErr *pgconn.ConnectError
+	var netErr net.Error
+	return errors.As(err, &connectErr) ||
+		errors.As(err, &netErr) ||
+		errors.Is(err, driver.ErrBadConn) ||
+		errors.Is(err, redis.ErrPoolTimeout) ||
+		errors.Is(err, redis.ErrClosed) ||
+		errors.Is(err, gocql.ErrNoConnections) ||
+		errors.Is(err, gocql.ErrTimeoutNoResponse)
 }
 
 func getOrCreateTraceID(c *gin.Context) string {
@@ -344,7 +377,6 @@ func RespondErrorWithCode(c *gin.Context, status int, message, code string) {
 	})
 }
 
-// RespondSuccess dùng cho handler RawPOST tự ghi response nhưng vẫn cần đúng envelope.
 func RespondSuccess(c *gin.Context, status int, data any) {
 	traceID := getOrCreateTraceID(c)
 	c.JSON(status, ApiResponse{

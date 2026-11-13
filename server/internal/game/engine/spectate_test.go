@@ -229,27 +229,130 @@ func TestThirteenSpectateFromStoredSnapshotIsProjected(t *testing.T) {
 	}
 }
 
-func TestSpectateRejectsPrivateRooms(t *testing.T) {
-	gameEngine, activeStore, emitter, match := startCaroIntegrationMatch(t)
-	defer stopEngineTimers(gameEngine)
-	match.mu.Lock()
-	match.room = &Room{ID: "room-private", GameID: match.GameID, OwnerID: match.players[0].ID, Password: "secret"}
-	if err := gameEngine.persistMatch(match); err != nil {
-		match.mu.Unlock()
-		t.Fatalf("persist private room: %v", err)
-	}
-	match.mu.Unlock()
+func boolPtr(value bool) *bool {
+	return &value
+}
 
-	if box, ok := joinAs(gameEngine, match, "watcher", "sock-1"); ok || box.lastError(t).Code != protocol.ErrorCodeSpectateNotAllowed {
-		t.Fatalf("expected SPECTATE_NOT_ALLOWED, got %+v", box.messages)
+func TestSpectateHonoursRoomSpectatorFlag(t *testing.T) {
+	tests := []struct {
+		name            string
+		password        string
+		allowSpectators *bool
+		allowed         bool
+	}{
+		{name: "public room without flag", allowed: true},
+		{name: "private room without flag", password: "secret", allowed: false},
+		{name: "public room with spectators off", allowSpectators: boolPtr(false), allowed: false},
+		{name: "public room with spectators on", allowSpectators: boolPtr(true), allowed: true},
+		{name: "locked room with spectators on", password: "secret", allowSpectators: boolPtr(true), allowed: true},
+		{name: "locked room with spectators off", password: "secret", allowSpectators: boolPtr(false), allowed: false},
 	}
-	if count, _ := activeStore.SpectatorCount(match.GameID, match.ID); count != 0 {
-		t.Fatalf("a rejected spectator must not hold a seat, got %d", count)
+	for _, test := range tests {
+		for _, fromSnapshot := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/snapshot=%v", test.name, fromSnapshot), func(t *testing.T) {
+				gameEngine, activeStore, emitter, match := startCaroIntegrationMatch(t)
+				defer stopEngineTimers(gameEngine)
+				match.mu.Lock()
+				match.room = &Room{
+					ID:              "room-flag",
+					GameID:          match.GameID,
+					OwnerID:         match.players[0].ID,
+					Password:        test.password,
+					AllowSpectators: test.allowSpectators,
+				}
+				if err := gameEngine.persistMatch(match); err != nil {
+					match.mu.Unlock()
+					t.Fatalf("persist room: %v", err)
+				}
+				match.mu.Unlock()
+				if fromSnapshot {
+					gameEngine.mu.Lock()
+					delete(gameEngine.matches, match.ID)
+					gameEngine.mu.Unlock()
+				}
+
+				gameEngine.SpectateList(match.GameID, "lurker")
+				envelope, found := emitter.last("lurker", protocol.S2CSpectateList)
+				if !found {
+					t.Fatal("lurker did not receive SPECTATE_LIST")
+				}
+				listed := len(envelope.Data.(protocol.SpectateListData).Matches) == 1
+				if listed != test.allowed {
+					t.Fatalf("SPECTATE_LIST listed=%v, want %v: %+v", listed, test.allowed, envelope)
+				}
+
+				box, ok := joinAs(gameEngine, match, "watcher", "sock-1")
+				if ok != test.allowed {
+					t.Fatalf("SPECTATE_JOIN ok=%v, want %v: %+v", ok, test.allowed, box.messages)
+				}
+				count, _ := activeStore.SpectatorCount(match.GameID, match.ID)
+				if test.allowed {
+					if count != 1 {
+						t.Fatalf("allowed spectator should hold a seat, got %d", count)
+					}
+					return
+				}
+				if code := box.lastError(t).Code; code != protocol.ErrorCodeSpectateNotAllowed {
+					t.Fatalf("expected SPECTATE_NOT_ALLOWED, got %s", code)
+				}
+				if count != 0 {
+					t.Fatalf("a rejected spectator must not hold a seat, got %d", count)
+				}
+			})
+		}
 	}
-	gameEngine.SpectateList(match.GameID, "lurker")
-	envelope, found := emitter.last("lurker", protocol.S2CSpectateList)
-	if !found || len(envelope.Data.(protocol.SpectateListData).Matches) != 0 {
-		t.Fatalf("private rooms must not be listed for spectating: %+v", envelope)
+}
+
+func TestCreateRoomCarriesSpectatorFlag(t *testing.T) {
+	tests := []struct {
+		name            string
+		allowSpectators *bool
+	}{
+		{name: "absent"},
+		{name: "off", allowSpectators: boolPtr(false)},
+		{name: "on", allowSpectators: boolPtr(true)},
+	}
+	sameFlag := func(got, want *bool) bool {
+		if got == nil || want == nil {
+			return got == nil && want == nil
+		}
+		return *got == *want
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
+			defer stopEngineTimers(gameEngine)
+			gameEngine.CreateRoomWithSpectators(persistenceTestGameID, lifecyclePlayer("owner"), 0, "secret", 0, test.allowSpectators)
+			room := onlyRoom(t, rooms)
+			if !sameFlag(room.AllowSpectators, test.allowSpectators) {
+				t.Fatalf("stored flag %v, want %v", room.AllowSpectators, test.allowSpectators)
+			}
+			upsert, found := emitter.last("", protocol.S2CRoomUpsert)
+			if !found || !sameFlag(upsert.Data.(protocol.RoomUpsertData).Room.AllowSpectators, test.allowSpectators) {
+				t.Fatalf("ROOM_UPSERT flag mismatch: %+v", upsert)
+			}
+			waiting, found := emitter.last("owner", protocol.S2CRoomWaiting)
+			if !found || !sameFlag(waiting.Data.(protocol.RoomWaitingData).AllowSpectators, test.allowSpectators) {
+				t.Fatalf("ROOM_WAITING flag mismatch: %+v", waiting)
+			}
+			state, found := emitter.last("owner", protocol.S2CRoomState)
+			if !found || !sameFlag(state.Data.(protocol.RoomStateData).AllowSpectators, test.allowSpectators) {
+				t.Fatalf("ROOM_STATE flag mismatch: %+v", state)
+			}
+			gameEngine.ListRooms(persistenceTestGameID, "lobby")
+			list, found := emitter.last("lobby", protocol.S2CRoomList)
+			listed := list.Data.(protocol.RoomListData).Rooms
+			if !found || len(listed) != 1 || !sameFlag(listed[0].AllowSpectators, test.allowSpectators) {
+				t.Fatalf("ROOM_LIST flag mismatch: %+v", list)
+			}
+			encoded, err := json.Marshal(upsert.Data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if hasKey := strings.Contains(string(encoded), `"allowSpectators"`); hasKey != (test.allowSpectators != nil) {
+				t.Fatalf("allowSpectators must be omitted only when absent: %s", encoded)
+			}
+		})
 	}
 }
 
@@ -445,8 +548,23 @@ func TestRoomWatchRefusesPrivateAndMissingRooms(t *testing.T) {
 	if err := rooms.Save(private); err != nil {
 		t.Fatal(err)
 	}
+	closed := thirteenRoom("tl-closed", "tl-c")
+	closed.AllowSpectators = boolPtr(false)
+	if err := rooms.Save(closed); err != nil {
+		t.Fatal(err)
+	}
+	lockedOpen := thirteenRoom("tl-locked-open", "tl-d")
+	lockedOpen.Password = "secret"
+	lockedOpen.AllowSpectators = boolPtr(true)
+	if err := rooms.Save(lockedOpen); err != nil {
+		t.Fatal(err)
+	}
+	box := &inbox{}
+	if !gameEngine.WatchRoom(thirteen.GameID, "watcher", lockedOpen.ID, box.deliver) {
+		t.Fatalf("a locked room that allows spectators should be watchable, got %+v", box.messages)
+	}
 
-	for _, roomID := range []string{private.ID, "tl-missing"} {
+	for _, roomID := range []string{private.ID, closed.ID, "tl-missing"} {
 		box := &inbox{}
 		if gameEngine.WatchRoom(thirteen.GameID, "watcher", roomID, box.deliver) {
 			t.Fatalf("room %s must not be watchable", roomID)

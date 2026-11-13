@@ -14,7 +14,7 @@ import { TransferKenDialog } from './components/TransferKenDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { DIVIDER, ERROR, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { KEN_LOW_THRESHOLD } from './constants';
+import { KEN_LOW_THRESHOLD } from '@ola/shared/constants';
 
 interface RowActionProps {
   icon: ReactNode;

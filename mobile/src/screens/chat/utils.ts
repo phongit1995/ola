@@ -1,20 +1,11 @@
 import type { TFunction } from 'i18next';
-import type { Friend, Message } from '@ola/shared/types';
-import { normalizeDevice } from '@lib/deviceIcons';
+import type { Message } from '@ola/shared/types';
 import {
   isCopyableMessageText,
   messageReplyExcerpt,
 } from '@lib/messageView';
 import { MESSAGE_TYPE } from '@ola/shared/constants';
-import {
-  activeVipTypeId,
-  colorForName,
-  formatLastActive,
-  isBirthdayToday,
-  isVipActive,
-  isWithinMessageDeleteWindow,
-} from '@ola/shared/lib';
-import type { Contact } from './types';
+import { isWithinMessageDeleteWindow } from '@ola/shared/lib';
 
 export function replyExcerpt(t: TFunction, message: Message): string {
   return messageReplyExcerpt(message, {
@@ -46,23 +37,4 @@ export function chatMessageAbilities(
     canDelete: isOwn && isWithinMessageDeleteWindow(message.createdAt),
     canReport: !isOwn && !isSystemCard,
   };
-}
-
-export function mapFriendsToContacts(friends: Friend[], locale: string, now: number): Contact[] {
-  const today = new Date(now);
-  return friends.map((friend) => ({
-    id: friend.id,
-    name: friend.username,
-    fullName: friend.fullName,
-    status: friend.bio,
-    color: colorForName(friend.id),
-    avatar: friend.avatar,
-    vip: isVipActive(friend.vipEndTime),
-    vipTypeId: activeVipTypeId(friend.vipUsed, friend.vipEndTime),
-    online: friend.isOnline,
-    deviceType: normalizeDevice(friend.deviceType),
-    lastActive: friend.isOnline ? undefined : formatLastActive(locale, friend.lastActiveAt, now),
-    statusImage: friend.bioImage ?? undefined,
-    group: isBirthdayToday(friend.dateOfBirth, today) ? 'birthday' : 'friend',
-  }));
 }

@@ -6,7 +6,6 @@ export const DEFAULT_COVER_COLOR = '#33691e';
 
 export const PROFILE_POSTS_LIMIT = 30;
 export const FOLLOWING_FETCH_LIMIT = 12;
-export const GIFT_WALL_PREVIEW_ROWS = 2;
 export const GIFT_WALL_GRID_CLASS = { 4: 'grid-cols-4', 5: 'grid-cols-5' } as const;
 export type GiftWallColumns = keyof typeof GIFT_WALL_GRID_CLASS;
 

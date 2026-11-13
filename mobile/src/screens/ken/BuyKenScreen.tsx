@@ -14,7 +14,7 @@ import { useBuyKen } from './useBuyKen';
 import { BankInfoRow } from './components/BankInfoRow';
 import { CopyRow } from './components/CopyRow';
 import { TopupQrCode } from './components/TopupQrCode';
-import { SupportDialog } from '../apps/SupportDialog';
+import { SupportDialog } from '@screens/apps/SupportDialog';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.BuyKen>;
 

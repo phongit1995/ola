@@ -26,7 +26,6 @@ var audiences = map[string]bool{
 	push.PushAudienceUser: true,
 }
 
-// ListCampaigns godoc
 // @Summary      List push campaigns (admin)
 // @Tags         admin-push-campaign
 // @Produce      json
@@ -43,7 +42,6 @@ func (ctrl *Controller) ListCampaigns(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Audience godoc
 // @Summary      Count users and devices a push campaign would reach (admin)
 // @Tags         admin-push-campaign
 // @Produce      json
@@ -64,7 +62,6 @@ func (ctrl *Controller) Audience(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CreateCampaign godoc
 // @Summary      Queue a push campaign (admin)
 // @Tags         admin-push-campaign
 // @Accept       json

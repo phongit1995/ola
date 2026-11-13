@@ -1,7 +1,7 @@
 import { useEffect, useId, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { pawnArt } from '../components/art';
-import { MoneyBadge, UiAvatar, UiButton } from '../components/Ui';
+import { KenBadge, UiAvatar, UiButton } from '../components/Ui';
 import { useDialogFocus } from '../components/useDialogFocus';
 import { formatMoney } from '../helpers/format';
 import { placeLabel, SEAT_SOFT_COLORS, seatColor } from '../helpers/player';
@@ -51,7 +51,7 @@ export function ResultScreen() {
           </p>
           {result.kenDelta != null || result.exp != null ? (
             <p className="ty-result-gain">
-              {result.kenDelta != null ? <MoneyBadge amount={result.kenDelta} signed className={result.kenDelta >= 0 ? 'ty-result-ken-up' : 'ty-result-ken-down'} /> : null}
+              {result.kenDelta != null ? <KenBadge amount={result.kenDelta} signed className={`ui-chip ${result.kenDelta >= 0 ? 'ty-result-ken-up' : 'ty-result-ken-down'}`} /> : null}
               {result.exp != null ? <span className="ui-chip">+{result.exp} EXP</span> : null}
             </p>
           ) : null}
@@ -69,6 +69,7 @@ export function ResultScreen() {
                 {nameOf(row)}
               </span>
               <span className="ty-podium-worth">{row.bankrupt ? 'Phá sản' : formatMoney(row.worth)}</span>
+              {row.kenDelta != null ? <KenBadge amount={row.kenDelta} signed className={`ty-row-ken ${row.kenDelta >= 0 ? 'ty-row-ken-up' : 'ty-row-ken-down'}`} /> : null}
               <span className="ty-podium-block">
                 <b>{row.place}</b>
               </span>
@@ -83,6 +84,7 @@ export function ResultScreen() {
                 <UiAvatar src={players[row.seat]?.avatar} size={22} ring={seatColor(row.seat)} />
                 <span className="ty-result-name">{nameOf(row)}</span>
                 <span className="ty-result-worth">{row.bankrupt ? 'Phá sản' : formatMoney(row.worth)}</span>
+                {row.kenDelta != null ? <KenBadge amount={row.kenDelta} signed className={`ty-row-ken ${row.kenDelta >= 0 ? 'ty-row-ken-up' : 'ty-row-ken-down'}`} /> : null}
               </li>
             ))}
           </ol>

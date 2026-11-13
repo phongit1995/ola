@@ -1,5 +1,5 @@
 import i18n from 'i18next';
-import { CHAT_TYPING_THROTTLE_MS } from '../../constants/chat';
+import { CHAT_TYPING_THROTTLE_MS, MESSAGE_STATUS, MESSAGE_TYPE } from '../../constants/chat';
 import { parseMessageMetadata } from '../../lib/messageMetadata';
 import { randomUuid } from '../../lib/randomUuid';
 import { toast } from '../../lib/toast';
@@ -58,15 +58,15 @@ export function createChatMessageActions(
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
-          type: 'text',
+          type: MESSAGE_TYPE.text,
           content: text,
-          status: 'sending',
+          status: MESSAGE_STATUS.sending,
           ...(reply != null ? { replyTo: replySnapshotOf(reply) } : {}),
         }),
         (id) =>
           MessageService.send({
             conversationId,
-            type: 'text',
+            type: MESSAGE_TYPE.text,
             content: text,
             clientMsgId: id,
             ...(reply != null ? { replyToId: reply.id } : {}),
@@ -85,7 +85,7 @@ export function createChatMessageActions(
       try {
         await MessageService.sendDirect({
           recipientId: draft.id,
-          type: 'text',
+          type: MESSAGE_TYPE.text,
           content: text,
           clientMsgId: randomUuid(),
         });
@@ -111,13 +111,13 @@ export function createChatMessageActions(
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
-          type: 'image',
+          type: MESSAGE_TYPE.image,
           metadata: JSON.stringify({
             url: previewUrl,
             uploadName: nativeFile?.name,
             uploadType: nativeFile?.type,
           }),
-          status: 'uploading',
+          status: MESSAGE_STATUS.uploading,
         }),
         (id) => MessageService.sendImage(conversationId, file, id),
         undefined,
@@ -151,7 +151,7 @@ export function createChatMessageActions(
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
-          type: 'audio',
+          type: MESSAGE_TYPE.audio,
           metadata: JSON.stringify({
             url: previewUrl,
             duration,
@@ -159,7 +159,7 @@ export function createChatMessageActions(
             uploadName: nativeFile?.name,
             uploadType: nativeFile?.type,
           }),
-          status: 'uploading',
+          status: MESSAGE_STATUS.uploading,
           ...(reply != null ? { replyTo: replySnapshotOf(reply) } : {}),
         }),
         (id) =>
@@ -181,10 +181,11 @@ export function createChatMessageActions(
       const conversationId = get().currentConversationId;
       if (conversationId == null) return false;
       const target = get().messages.find((item) => item.id === messageId);
-      if (target == null || target.status !== 'failed') return false;
+      if (target == null || target.status !== MESSAGE_STATUS.failed) return false;
 
       const clientMsgId = target.clientMsgId ?? randomUuid();
-      const sendingStatus = target.type === 'text' ? 'sending' : 'uploading';
+      const sendingStatus =
+        target.type === MESSAGE_TYPE.text ? MESSAGE_STATUS.sending : MESSAGE_STATUS.uploading;
       set((state) => ({
         messages: markById(state.messages, messageId, {
           status: sendingStatus,
@@ -194,10 +195,10 @@ export function createChatMessageActions(
 
       try {
         let saved: Message;
-        if (target.type === 'text') {
+        if (target.type === MESSAGE_TYPE.text) {
           saved = await MessageService.send({
             conversationId,
-            type: 'text',
+            type: MESSAGE_TYPE.text,
             content: target.content,
             clientMsgId,
           });
@@ -205,20 +206,20 @@ export function createChatMessageActions(
           const meta = parseMessageMetadata(target.metadata);
           const previewUrl = meta.url ?? '';
           const fallbackName =
-            target.type === 'audio'
+            target.type === MESSAGE_TYPE.audio
               ? 'voice.m4a'
               : previewUrl.split('/').pop()?.split('?')[0] ?? 'photo.jpg';
           let upload: UploadFile | undefined = nativeUploadFileFromUri(
             previewUrl,
             meta.uploadName ?? fallbackName,
             meta.uploadType ??
-              (target.type === 'audio' ? 'audio/mp4' : 'image/jpeg')
+              (target.type === MESSAGE_TYPE.audio ? 'audio/mp4' : 'image/jpeg')
           );
           if (upload == null) {
             const blob = await (await fetch(previewUrl)).blob();
-            upload = target.type === 'image' ? blobWithType(blob, 'image/jpeg') : blob;
+            upload = target.type === MESSAGE_TYPE.image ? blobWithType(blob, 'image/jpeg') : blob;
           }
-          if (target.type === 'image') {
+          if (target.type === MESSAGE_TYPE.image) {
             saved = await MessageService.sendImage(
               conversationId,
               upload,
@@ -241,17 +242,17 @@ export function createChatMessageActions(
         set((state) => ({
           messages: markByClientMsgId(state.messages, clientMsgId, {
             ...saved,
-            status: 'sent',
+            status: MESSAGE_STATUS.sent,
           }),
         }));
         return true;
       } catch (error) {
         set((state) => ({
           messages: markByClientMsgId(state.messages, clientMsgId, {
-            status: 'failed',
+            status: MESSAGE_STATUS.failed,
           }),
         }));
-        if (!showMessagingPolicyError(error) && target.type === 'audio') {
+        if (!showMessagingPolicyError(error) && target.type === MESSAGE_TYPE.audio) {
           toast.error(i18n.t('chat.voiceSendError'));
         }
         return false;
@@ -311,7 +312,7 @@ export function createChatMessageActions(
         );
         set((state) => ({
           messages: state.messages.map((item) =>
-            item.id === messageId ? { ...updated, status: 'sent' } : item
+            item.id === messageId ? { ...updated, status: MESSAGE_STATUS.sent } : item
           ),
         }));
       } catch (error) {

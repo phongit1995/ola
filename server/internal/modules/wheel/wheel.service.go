@@ -17,9 +17,8 @@ import (
 )
 
 var (
-	ErrWheelNotFound   = errors.New("wheel not found")
-	ErrInsufficientKen = errors.New("insufficient ken balance")
-	ErrWheelEmpty      = errors.New("wheel has no active segments")
+	ErrWheelNotFound = errors.New("wheel not found")
+	ErrWheelEmpty    = errors.New("wheel has no active segments")
 )
 
 type SpinOutcome struct {
@@ -502,7 +501,7 @@ func (s *Service) ListAllSpins(filter AdminSpinFilter, limit, offset int) (*Admi
 		items[i] = AdminSpinView{
 			SpinView: toSpinView(r.WheelSpin),
 			User: SpinUserView{
-				ID:       r.UserID,
+				ID:       r.UserID.String(),
 				Username: r.Username,
 				FullName: r.FullName,
 				Avatar:   r.Avatar,
@@ -563,7 +562,7 @@ func (s *Service) Stats(filter AdminSpinFilter) (*StatsResponse, error) {
 	players := make([]StatsPlayer, len(playerRows))
 	for i, p := range playerRows {
 		players[i] = StatsPlayer{
-			User:     SpinUserView{ID: p.UserID, Username: p.Username, FullName: p.FullName, Avatar: p.Avatar},
+			User:     SpinUserView{ID: p.UserID.String(), Username: p.Username, FullName: p.FullName, Avatar: p.Avatar},
 			Spins:    p.Spins,
 			KenSpent: p.KenSpent,
 		}

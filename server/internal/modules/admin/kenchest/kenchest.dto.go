@@ -62,12 +62,7 @@ type UserStatsItem struct {
 	LastClaimAt string    `json:"lastClaimAt" example:"2026-07-25T15:12:33Z"`
 }
 
-type UserStatsResponse struct {
-	Total  int64           `json:"total" example:"1"`
-	Limit  int             `json:"limit" example:"20"`
-	Offset int             `json:"offset" example:"0"`
-	Items  []UserStatsItem `json:"items"`
-}
+type UserStatsResponse = utils.Page[UserStatsItem]
 
 type StatsSuccessResponse = utils.BaseResponse[StatsResponse]
 type UserStatsSuccessResponse = utils.BaseResponse[UserStatsResponse]

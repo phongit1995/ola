@@ -3,7 +3,6 @@ package adminuser
 import (
 	"net/http"
 	"strings"
-	"time"
 
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
@@ -22,7 +21,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_user_controller]")}
 }
 
-// ListUsers godoc
 // @Summary      List users
 // @Description  List users with pagination and optional search (admin only)
 // @Tags         admin-user
@@ -58,7 +56,7 @@ func (ctrl *Controller) ListUsers(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.List(filter)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -72,7 +70,6 @@ func parseGenderQuery(v string) string {
 	}
 }
 
-// GetUser godoc
 // @Summary      Get user detail
 // @Description  Get a single user by id (admin only)
 // @Tags         admin-user
@@ -92,12 +89,11 @@ func (ctrl *Controller) GetUser(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.GetByID(id)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
 
-// ListUserVips godoc
 // @Summary      List owned VIP icons
 // @Description  List all VIP icons a user currently owns (admin only)
 // @Tags         admin-user
@@ -119,12 +115,11 @@ func (ctrl *Controller) ListUserVips(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.ListVips(id, utils.ParseLimit(c, 60, 200), utils.ParseOffset(c))
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
 
-// ListUserSessions godoc
 // @Summary      List user login sessions
 // @Description  List a user's login sessions/devices, including revoked ones (admin only)
 // @Tags         admin-user
@@ -146,12 +141,11 @@ func (ctrl *Controller) ListUserSessions(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.ListSessions(id, utils.ParseLimit(c, 20, 100), utils.ParseOffset(c))
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
 
-// ListUserViolations godoc
 // @Summary      List user violations
 // @Description  Violation history and active points of a user (admin only)
 // @Tags         admin-user
@@ -174,7 +168,6 @@ func (ctrl *Controller) ListUserViolations(c *gin.Context) (interface{}, error) 
 	return resp, nil
 }
 
-// RevokeUserViolation godoc
 // @Summary      Revoke a user violation
 // @Description  Stop counting a violation; does not unlock the account (admin only)
 // @Tags         admin-user
@@ -206,7 +199,6 @@ func (ctrl *Controller) RevokeUserViolation(c *gin.Context) (interface{}, error)
 	return resp, nil
 }
 
-// ClearUserViolations godoc
 // @Summary      Clear user violation points
 // @Description  Revoke every violation still counting points; does not unlock the account (admin only)
 // @Tags         admin-user
@@ -233,7 +225,6 @@ func (ctrl *Controller) ClearUserViolations(c *gin.Context) (interface{}, error)
 	return resp, nil
 }
 
-// GrantVip godoc
 // @Summary      Grant VIP icon
 // @Description  Grant a VIP icon to a user's collection (admin only)
 // @Tags         admin-user
@@ -254,19 +245,18 @@ func (ctrl *Controller) GrantVip(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req GrantVipRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[GrantVipRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := ctrl.service.GrantVip(id, req.VipTypeID)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
 
-// DeleteVip godoc
 // @Summary      Xoá VIP icon khỏi kho của user
 // @Description  Admin xoá một VIP icon khỏi kho của user. Xoá được cả icon đang khoá; nếu icon đó đang được đeo thì gỡ luôn VIP đang dùng.
 // @Tags         admin-user
@@ -292,12 +282,11 @@ func (ctrl *Controller) DeleteVip(c *gin.Context) (interface{}, error) {
 	}
 
 	if err := ctrl.service.DeleteVip(id, instanceID); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "vip deleted"}, nil
 }
 
-// AddVipDays godoc
 // @Summary      Cộng / trừ ngày VIP cho user
 // @Tags         admin-user
 // @Accept       json
@@ -313,19 +302,18 @@ func (ctrl *Controller) AddVipDays(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req AddVipDaysRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[AddVipDaysRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := ctrl.service.AddVipDays(id, req.Action, req.Days)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
 
-// UpdateStatus godoc
 // @Summary      Ban/unban user
 // @Description  Enable or disable a user account (admin only)
 // @Tags         admin-user
@@ -346,19 +334,18 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req UpdateStatusRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[UpdateStatusRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := ctrl.service.SetStatus(id, *req.IsActive)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
 
-// UpdateUsername godoc
 // @Summary      Update username
 // @Description  Change a user's username (admin only)
 // @Tags         admin-user
@@ -380,9 +367,9 @@ func (ctrl *Controller) UpdateUsername(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req UpdateUsernameRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[UpdateUsernameRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	adminID, ok := middleware.GetAdminID(c)
@@ -392,12 +379,11 @@ func (ctrl *Controller) UpdateUsername(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.UpdateUsername(id, req.Username, adminID)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
 
-// ResetPassword godoc
 // @Summary      Reset user password
 // @Description  Set a new password for a user (admin only)
 // @Tags         admin-user
@@ -418,18 +404,17 @@ func (ctrl *Controller) ResetPassword(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req ResetPasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[ResetPasswordRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	if err := ctrl.service.ResetPassword(id, req.Password); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "password updated"}, nil
 }
 
-// DeleteUser godoc
 // @Summary      Delete user
 // @Description  Soft-delete a user account (admin only)
 // @Tags         admin-user
@@ -448,12 +433,11 @@ func (ctrl *Controller) DeleteUser(c *gin.Context) (interface{}, error) {
 	}
 
 	if err := ctrl.service.Delete(id); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "user deleted"}, nil
 }
 
-// ListUsernameChanges godoc
 // @Summary      Lịch sử đổi nickname
 // @Description  Danh sách các lần đổi username, gồm cả user tự đổi (mất Ken) và admin đổi hộ
 // @Tags         admin-user
@@ -487,24 +471,15 @@ func (ctrl *Controller) ListUsernameChanges(c *gin.Context) (interface{}, error)
 		}
 		f.UserID = &id
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		f.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		f.To = &t
-	}
+	f.From, f.To = from, to
 
 	resp, err := ctrl.service.ListUsernameChanges(f)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }

@@ -4,14 +4,14 @@ import { formatKen, withAlpha } from '@ola/shared/lib';
 import { Dialog } from '@components/ui/Dialog';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { TEXT_SECONDARY } from '@constants';
-import type { PickerItem } from '../types';
 import { VipIconImage } from './VipIconImage';
+import type { VipPickerItem } from '@ola/shared/types';
 
 interface VipPickerDialogProps {
   visible: boolean;
   selectedKey: string;
-  items: PickerItem[];
-  onSelect: (item: PickerItem) => void;
+  items: VipPickerItem[];
+  onSelect: (item: VipPickerItem) => void;
   onClose: () => void;
 }
 

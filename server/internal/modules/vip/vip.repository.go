@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 const (
@@ -22,7 +22,13 @@ const (
 	PurchaseSourceDayTransferOut = "day_transfer_out"
 	PurchaseSourceDayTransferIn  = "day_transfer_in"
 
+	IconSourcePurchase = "purchase"
+	IconSourceGift     = "gift"
+	IconSourceEgg      = "egg"
+	IconSourceWheel    = "wheel"
 	IconSourceGiftCode = "gift_code"
+
+	kenRefTypePurchase = "vip_purchase"
 
 	iconPurchaseNameFormat = "VIP #%d"
 
@@ -442,28 +448,20 @@ func (r *Repository) PurchaseShopItem(userID uuid.UUID, item *models.VipShopItem
 	var updatedUser models.User
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		var u models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+		u, err := ledger.LockUser(tx, userID)
+		if err != nil {
 			return err
 		}
-		if u.Ken < item.KenPrice {
-			return ErrInsufficientKen
+		if err := ledger.EnsureBalance(u, item.KenPrice); err != nil {
+			return err
 		}
 		newKen := u.Ken - item.KenPrice
 
-		if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("ken", newKen).Error; err != nil {
+		created, err := CreateIconTx(tx, userID, item.VipTypeID, IconSourcePurchase)
+		if err != nil {
 			return err
 		}
-
-		icon = models.UserVipIcon{
-			UserID:     userID,
-			VipIconID:  item.VipTypeID,
-			Source:     "purchase",
-			AcquiredAt: time.Now(),
-		}
-		if err := tx.Create(&icon).Error; err != nil {
-			return err
-		}
+		icon = *created
 
 		endAfter := time.Now()
 		if u.VipEndTime != nil {
@@ -482,27 +480,18 @@ func (r *Repository) PurchaseShopItem(userID uuid.UUID, item *models.VipShopItem
 			return err
 		}
 
-		if item.KenPrice > 0 {
-			kenTx := models.KenTransaction{
-				UserID:        userID,
-				Direction:     models.KenDirectionDebit,
-				Type:          models.KenTxTypeVipIcon,
-				Amount:        item.KenPrice,
-				BalanceBefore: u.Ken,
-				BalanceAfter:  newKen,
-				Description:   purchase.PackageName,
-				RefType:       "vip_purchase",
-				RefID:         &purchase.ID,
-				ActorType:     models.KenActorUser,
-				ActorID:       &userID,
-			}
-			if err := tx.Create(&kenTx).Error; err != nil {
-				return err
-			}
+		if _, err := ledger.Debit(tx, u, item.KenPrice, ledger.Entry{
+			Type:        models.KenTxTypeVipIcon,
+			Description: purchase.PackageName,
+			RefType:     kenRefTypePurchase,
+			RefID:       &purchase.ID,
+			ActorType:   models.KenActorUser,
+			ActorID:     &userID,
+		}); err != nil {
+			return err
 		}
 
-		u.Ken = newKen
-		updatedUser = u
+		updatedUser = *u
 		return nil
 	})
 	if err != nil {
@@ -516,39 +505,20 @@ func (r *Repository) GiftShopItem(fromID uuid.UUID, receiver *models.User, item 
 	var giver models.User
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		lockOrder := []uuid.UUID{fromID, receiver.ID}
-		if lockOrder[0].String() > lockOrder[1].String() {
-			lockOrder[0], lockOrder[1] = lockOrder[1], lockOrder[0]
-		}
-		locked := make(map[uuid.UUID]*models.User, 2)
-		for _, id := range lockOrder {
-			var u models.User
-			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", id).Error; err != nil {
-				return err
-			}
-			locked[id] = &u
-		}
-		from := locked[fromID]
-		to := locked[receiver.ID]
-
-		if from.Ken < item.KenPrice {
-			return ErrInsufficientKen
-		}
-		giverAfter := from.Ken - item.KenPrice
-
-		if err := tx.Model(&models.User{}).Where("id = ?", fromID).Update("ken", giverAfter).Error; err != nil {
+		from, to, err := ledger.LockUserPair(tx, fromID, receiver.ID)
+		if err != nil {
 			return err
 		}
 
-		icon = models.UserVipIcon{
-			UserID:     to.ID,
-			VipIconID:  item.VipTypeID,
-			Source:     "gift",
-			AcquiredAt: time.Now(),
-		}
-		if err := tx.Create(&icon).Error; err != nil {
+		if err := ledger.EnsureBalance(from, item.KenPrice); err != nil {
 			return err
 		}
+
+		created, err := CreateIconTx(tx, to.ID, item.VipTypeID, IconSourceGift)
+		if err != nil {
+			return err
+		}
+		icon = *created
 
 		endAfter := time.Now()
 		if to.VipEndTime != nil {
@@ -567,26 +537,17 @@ func (r *Repository) GiftShopItem(fromID uuid.UUID, receiver *models.User, item 
 			return err
 		}
 
-		if item.KenPrice > 0 {
-			kenTx := models.KenTransaction{
-				UserID:        fromID,
-				Direction:     models.KenDirectionDebit,
-				Type:          models.KenTxTypeVipIcon,
-				Amount:        item.KenPrice,
-				BalanceBefore: from.Ken,
-				BalanceAfter:  giverAfter,
-				Description:   fmt.Sprintf("Tặng %s cho @%s", purchase.PackageName, to.Username),
-				RefType:       "vip_purchase",
-				RefID:         &purchase.ID,
-				ActorType:     models.KenActorUser,
-				ActorID:       &fromID,
-			}
-			if err := tx.Create(&kenTx).Error; err != nil {
-				return err
-			}
+		if _, err := ledger.Debit(tx, from, item.KenPrice, ledger.Entry{
+			Type:        models.KenTxTypeVipIcon,
+			Description: fmt.Sprintf("Tặng %s cho @%s", purchase.PackageName, to.Username),
+			RefType:     kenRefTypePurchase,
+			RefID:       &purchase.ID,
+			ActorType:   models.KenActorUser,
+			ActorID:     &fromID,
+		}); err != nil {
+			return err
 		}
 
-		from.Ken = giverAfter
 		giver = *from
 		return nil
 	})
@@ -609,35 +570,17 @@ func (r *Repository) GiftPackage(fromID uuid.UUID, receiver *models.User, pkg *m
 	var giver models.User
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		lockOrder := []uuid.UUID{fromID, receiver.ID}
-		if lockOrder[0].String() > lockOrder[1].String() {
-			lockOrder[0], lockOrder[1] = lockOrder[1], lockOrder[0]
-		}
-		locked := make(map[uuid.UUID]*models.User, 2)
-		for _, id := range lockOrder {
-			var u models.User
-			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", id).Error; err != nil {
-				return err
-			}
-			locked[id] = &u
-		}
-		from := locked[fromID]
-		to := locked[receiver.ID]
-
-		if from.Ken < pkg.KenPrice {
-			return ErrInsufficientKen
-		}
-
-		base := time.Now()
-		if to.VipEndTime != nil && to.VipEndTime.After(base) {
-			base = *to.VipEndTime
-		}
-		newEnd := base.Add(time.Duration(pkg.Days) * 24 * time.Hour)
-		giverAfter := from.Ken - pkg.KenPrice
-
-		if err := tx.Model(&models.User{}).Where("id = ?", fromID).Update("ken", giverAfter).Error; err != nil {
+		from, to, err := ledger.LockUserPair(tx, fromID, receiver.ID)
+		if err != nil {
 			return err
 		}
+
+		if err := ledger.EnsureBalance(from, pkg.KenPrice); err != nil {
+			return err
+		}
+
+		newEnd := ExtendEnd(time.Now(), to.VipEndTime, pkg.Days)
+
 		if err := tx.Model(&models.User{}).Where("id = ?", to.ID).Update("vip_end_time", newEnd).Error; err != nil {
 			return err
 		}
@@ -657,26 +600,17 @@ func (r *Repository) GiftPackage(fromID uuid.UUID, receiver *models.User, pkg *m
 			return err
 		}
 
-		if pkg.KenPrice > 0 {
-			kenTx := models.KenTransaction{
-				UserID:        fromID,
-				Direction:     models.KenDirectionDebit,
-				Type:          models.KenTxTypeVipPackage,
-				Amount:        pkg.KenPrice,
-				BalanceBefore: from.Ken,
-				BalanceAfter:  giverAfter,
-				Description:   fmt.Sprintf("Tặng %s cho @%s", pkg.Name, to.Username),
-				RefType:       "vip_purchase",
-				RefID:         &purchase.ID,
-				ActorType:     models.KenActorUser,
-				ActorID:       &fromID,
-			}
-			if err := tx.Create(&kenTx).Error; err != nil {
-				return err
-			}
+		if _, err := ledger.Debit(tx, from, pkg.KenPrice, ledger.Entry{
+			Type:        models.KenTxTypeVipPackage,
+			Description: fmt.Sprintf("Tặng %s cho @%s", pkg.Name, to.Username),
+			RefType:     kenRefTypePurchase,
+			RefID:       &purchase.ID,
+			ActorType:   models.KenActorUser,
+			ActorID:     &fromID,
+		}); err != nil {
+			return err
 		}
 
-		from.Ken = giverAfter
 		giver = *from
 		return nil
 	})
@@ -695,27 +629,11 @@ type DayTransfer struct {
 	ReceiverDays     int
 }
 
-func lockUserPair(tx *gorm.DB, first, second uuid.UUID) (*models.User, *models.User, error) {
-	order := []uuid.UUID{first, second}
-	if order[0].String() > order[1].String() {
-		order[0], order[1] = order[1], order[0]
-	}
-	locked := make(map[uuid.UUID]*models.User, 2)
-	for _, id := range order {
-		var u models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", id).Error; err != nil {
-			return nil, nil, err
-		}
-		locked[id] = &u
-	}
-	return locked[first], locked[second], nil
-}
-
 func (r *Repository) TransferDays(transfer DayTransfer) (time.Time, error) {
 	var senderEnd time.Time
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		sender, receiver, err := lockUserPair(tx, transfer.SenderID, transfer.ReceiverID)
+		sender, receiver, err := ledger.LockUserPair(tx, transfer.SenderID, transfer.ReceiverID)
 		if err != nil {
 			return err
 		}
@@ -730,11 +648,7 @@ func (r *Repository) TransferDays(transfer DayTransfer) (time.Time, error) {
 		}
 
 		senderEnd = sender.VipEndTime.Add(-time.Duration(transfer.SenderDays) * 24 * time.Hour)
-		receiverBase := now
-		if receiver.VipEndTime != nil && receiver.VipEndTime.After(now) {
-			receiverBase = *receiver.VipEndTime
-		}
-		receiverEnd := receiverBase.Add(time.Duration(transfer.ReceiverDays) * 24 * time.Hour)
+		receiverEnd := ExtendEnd(now, receiver.VipEndTime, transfer.ReceiverDays)
 
 		if err := tx.Model(&models.User{}).Where("id = ?", transfer.SenderID).Update("vip_end_time", senderEnd).Error; err != nil {
 			return err
@@ -774,19 +688,15 @@ func (r *Repository) Purchase(userID uuid.UUID, pkg *models.VipPackage) (*models
 	var updatedUser models.User
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		var u models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+		u, err := ledger.LockUser(tx, userID)
+		if err != nil {
 			return err
 		}
-		if u.Ken < pkg.KenPrice {
-			return ErrInsufficientKen
+		if err := ledger.EnsureBalance(u, pkg.KenPrice); err != nil {
+			return err
 		}
 
-		base := time.Now()
-		if u.VipEndTime != nil && u.VipEndTime.After(base) {
-			base = *u.VipEndTime
-		}
-		newEnd := base.Add(time.Duration(pkg.Days) * 24 * time.Hour)
+		newEnd := ExtendEnd(time.Now(), u.VipEndTime, pkg.Days)
 		newKen := u.Ken - pkg.KenPrice
 
 		if err := tx.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
@@ -812,27 +722,21 @@ func (r *Repository) Purchase(userID uuid.UUID, pkg *models.VipPackage) (*models
 		}
 
 		if pkg.KenPrice > 0 {
-			kenTx := models.KenTransaction{
-				UserID:        userID,
-				Direction:     models.KenDirectionDebit,
-				Type:          models.KenTxTypeVipPackage,
-				Amount:        pkg.KenPrice,
-				BalanceBefore: u.Ken,
-				BalanceAfter:  newKen,
-				Description:   pkg.Name,
-				RefType:       "vip_purchase",
-				RefID:         &purchase.ID,
-				ActorType:     models.KenActorUser,
-				ActorID:       &userID,
-			}
-			if err := tx.Create(&kenTx).Error; err != nil {
+			if _, err := ledger.Record(tx, userID, models.KenDirectionDebit, pkg.KenPrice, u.Ken, newKen, ledger.Entry{
+				Type:        models.KenTxTypeVipPackage,
+				Description: pkg.Name,
+				RefType:     kenRefTypePurchase,
+				RefID:       &purchase.ID,
+				ActorType:   models.KenActorUser,
+				ActorID:     &userID,
+			}); err != nil {
 				return err
 			}
 		}
 
 		u.Ken = newKen
 		u.VipEndTime = &newEnd
-		updatedUser = u
+		updatedUser = *u
 		return nil
 	})
 	if err != nil {
@@ -854,17 +758,34 @@ func (r *Repository) GrantDays(userID uuid.UUID, days int, source, name string) 
 	return purchase, nil
 }
 
+func ExtendEnd(now time.Time, current *time.Time, days int) time.Time {
+	base := now
+	if current != nil && current.After(now) {
+		base = *current
+	}
+	return base.Add(time.Duration(days) * 24 * time.Hour)
+}
+
+func CreateIconTx(tx *gorm.DB, userID uuid.UUID, vipTypeID int16, source string) (*models.UserVipIcon, error) {
+	icon := models.UserVipIcon{
+		UserID:     userID,
+		VipIconID:  vipTypeID,
+		Source:     source,
+		AcquiredAt: time.Now(),
+	}
+	if err := tx.Create(&icon).Error; err != nil {
+		return nil, err
+	}
+	return &icon, nil
+}
+
 func GrantDaysTx(tx *gorm.DB, userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {
-	var u models.User
-	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+	u, err := ledger.LockUser(tx, userID)
+	if err != nil {
 		return nil, err
 	}
 
-	base := time.Now()
-	if u.VipEndTime != nil && u.VipEndTime.After(base) {
-		base = *u.VipEndTime
-	}
-	newEnd := base.Add(time.Duration(days) * 24 * time.Hour)
+	newEnd := ExtendEnd(time.Now(), u.VipEndTime, days)
 
 	if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("vip_end_time", newEnd).Error; err != nil {
 		return nil, err
@@ -886,18 +807,13 @@ func GrantDaysTx(tx *gorm.DB, userID uuid.UUID, days int, source, name string) (
 }
 
 func GrantIconTx(tx *gorm.DB, userID uuid.UUID, vipTypeID int16, iconSource, purchaseSource string) (*models.UserVipIcon, error) {
-	var u models.User
-	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+	u, err := ledger.LockUser(tx, userID)
+	if err != nil {
 		return nil, err
 	}
 
-	icon := models.UserVipIcon{
-		UserID:     userID,
-		VipIconID:  vipTypeID,
-		Source:     iconSource,
-		AcquiredAt: time.Now(),
-	}
-	if err := tx.Create(&icon).Error; err != nil {
+	icon, err := CreateIconTx(tx, userID, vipTypeID, iconSource)
+	if err != nil {
 		return nil, err
 	}
 
@@ -917,15 +833,15 @@ func GrantIconTx(tx *gorm.DB, userID uuid.UUID, vipTypeID int16, iconSource, pur
 	if err := tx.Create(&purchase).Error; err != nil {
 		return nil, err
 	}
-	return &icon, nil
+	return icon, nil
 }
 
 func (r *Repository) DeductDays(userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {
 	var purchase models.VipPurchase
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		var u models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+		u, err := ledger.LockUser(tx, userID)
+		if err != nil {
 			return err
 		}
 

@@ -18,11 +18,11 @@ import {
   playRoomTagSound,
 } from '@lib';
 import { APP_VERSION } from '@/pages/login/constants';
-import { useArcadeOverlayStore } from './store/arcadeOverlayStore';
+import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
 import { useGameOverlayStore } from './store/gameOverlayStore';
 import { useAppOverlayStore } from './store/appOverlayStore';
-import { useSettingsStore } from './store/settingsStore';
-import { useAnnouncementStore } from './store/announcementStore';
+import { useSettingsStore } from '@ola/shared/stores/settingsStore';
+import { useAnnouncementStore } from '@ola/shared/stores/announcementStore';
 import { useStoryOverlayStore } from './store/storyOverlayStore';
 
 configureEnv(webEnv);

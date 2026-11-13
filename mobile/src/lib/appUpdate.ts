@@ -24,7 +24,6 @@ export type StoreCheck = (typeof STORE_CHECK)[keyof typeof STORE_CHECK];
 
 let inAppUpdates: SpInAppUpdates | null | undefined;
 
-// Bản Android lấy native module ngay lúc import; APK chưa build kèm module (vd nhận bundle OTA) mà require là crash.
 function getInAppUpdates(): SpInAppUpdates | null {
   if (inAppUpdates !== undefined) return inAppUpdates;
   inAppUpdates = null;
@@ -38,7 +37,6 @@ function getInAppUpdates(): SpInAppUpdates | null {
   return inAppUpdates;
 }
 
-// Play chỉ trả versionCode nên Android so với build number; app không cài từ Google Play thì Play Core báo lỗi → unknown.
 export async function checkStoreForUpdate(): Promise<StoreCheck> {
   const updates = getInAppUpdates();
   if (updates == null) return STORE_CHECK.unknown;
@@ -57,7 +55,6 @@ export async function checkStoreForUpdate(): Promise<StoreCheck> {
   }
 }
 
-// Không hỏi được server thì trả null để giữ nguyên hộp thoại đang hiện, tránh rớt mạng là thoát được màn bắt buộc.
 export async function fetchUpdateRequired(): Promise<boolean | null> {
   try {
     const result = await SettingsService.appUpdate();

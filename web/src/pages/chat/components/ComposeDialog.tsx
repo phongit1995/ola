@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import { UserListDialog, UserRow } from '@components';
-import { UserService } from '@services';
 import { colorForName, toast } from '@lib';
-import type { UserSearchResult } from '@app-types';
+import {
+  useUserSearch,
+  USER_SEARCH_TYPING_DEBOUNCE_MS,
+} from '@ola/shared/stores/user/useUserSearch';
 
 interface ComposeDialogProps {
   open: boolean;
@@ -14,28 +15,13 @@ interface ComposeDialogProps {
 
 export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
   const { t } = useTranslation();
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
   const keyword = query.trim();
-
-  const runSearch = useDebouncedCallback((value: string) => {
-    if (value === '') {
-      setResults([]);
-      setSearching(false);
-      return;
-    }
-    setSearching(true);
-    UserService.search(value, 30)
-      .then((result) => setResults(result.users))
-      .catch(() => toast.error(t('chat.searchError')))
-      .finally(() => setSearching(false));
-  }, 350);
-
-  function handleQueryChange(value: string) {
-    setQuery(value);
-    runSearch(value.trim());
-  }
+  const { results, searching } = useUserSearch(query, {
+    debounceMs: USER_SEARCH_TYPING_DEBOUNCE_MS,
+    keepPreviousResults: true,
+    onError: () => toast.error(t('chat.searchError')),
+  });
 
   const emptyMessage =
     keyword === '' ? t('chat.addContactHint') : t('chat.composeSearchEmpty');
@@ -47,7 +33,7 @@ export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
       title={t('chat.composeTitle')}
       search={{
         value: query,
-        onChange: handleQueryChange,
+        onChange: setQuery,
         placeholder: t('chat.composeSearchPlaceholder'),
       }}
       loading={searching}

@@ -12,10 +12,6 @@ export const SWIPE_TRIGGER = 56;
 
 export const SWIPE_MAX = 88;
 
-export const KEN_TRANSFER_MIN = 1000;
-
-export const KEN_TRANSFER_MAX = 10_000_000;
-
 export const SUGGESTED_FRIENDS: SuggestedFriend[] = [
   { name: 'anhthu', color: '#ec407a' },
   { name: 'baolong', color: '#26a69a' },

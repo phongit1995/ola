@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { useFriendsStore } from '@store/friendsStore';
+import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { Avatar } from '@components/ui/Avatar';
 

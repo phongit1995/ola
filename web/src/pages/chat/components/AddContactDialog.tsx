@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import { ActionButton, UserListDialog, UserRow } from '@components';
 import { colorForName, toast } from '@lib';
-import { RelationshipService, UserService } from '@services';
+import { RelationshipService } from '@services';
 import type { UserSearchResult } from '@app-types';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import {
+  useUserSearch,
+  USER_SEARCH_TYPING_DEBOUNCE_MS,
+} from '@ola/shared/stores/user/useUserSearch';
 
 interface AddContactDialogProps {
   open: boolean;
@@ -20,29 +23,15 @@ export function AddContactDialog({
 }: AddContactDialogProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
   const [sentIds, setSentIds] = useState<string[]>([]);
   const [acceptedIds, setAcceptedIds] = useState<string[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const runSearch = useDebouncedCallback((value: string) => {
-    if (value === '') {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    UserService.search(value, 30)
-      .then((result) => setResults(result.users))
-      .catch(() => toast.error(t('chat.searchError')))
-      .finally(() => setLoading(false));
-  }, 350);
-
-  function handleQueryChange(value: string) {
-    setQuery(value);
-    runSearch(value.trim());
-  }
+  const { results, searching: loading } = useUserSearch(query, {
+    debounceMs: USER_SEARCH_TYPING_DEBOUNCE_MS,
+    keepPreviousResults: true,
+    onError: () => toast.error(t('chat.searchError')),
+  });
 
   async function sendRequest(user: UserSearchResult) {
     setBusyId(user.id);
@@ -119,7 +108,7 @@ export function AddContactDialog({
       title={t('chat.menuAddContact')}
       search={{
         value: query,
-        onChange: handleQueryChange,
+        onChange: setQuery,
         placeholder: t('chat.addContactSearchPlaceholder'),
       }}
       loading={loading}

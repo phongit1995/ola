@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, Spinner, VipIcon } from '@components';
 import {
@@ -8,45 +8,12 @@ import {
   formatKen,
   isVipDayTransferSource,
   vipName,
+  VIP_HISTORY_TABS,
+  vipHistoryIconTypeId,
+  vipHistorySourceKey,
 } from '@lib';
-import { VipService } from '@services';
-import type {
-  VipPurchaseHistoryItem,
-  VipTransferHistoryItem,
-} from '@app-types';
-import { useAuthStore } from '@/store/authStore';
-
-const PAGE_SIZE = 20;
-const TABS = ['purchases', 'transfers'] as const;
-
-type HistoryTab = (typeof TABS)[number];
-
-const SOURCE_KEYS = [
-  'package',
-  'purchase',
-  'icon',
-  'gift',
-  'email_verify',
-  'egg',
-  'wheel',
-  'admin',
-  'gift_code',
-  'day_transfer_out',
-  'day_transfer_in',
-] as const;
-
-type SourceKey = (typeof SOURCE_KEYS)[number];
-
-function sourceKeyOf(source: string): SourceKey | 'other' {
-  return (SOURCE_KEYS as readonly string[]).includes(source)
-    ? (source as SourceKey)
-    : 'other';
-}
-
-function iconTypeIdOf(packageName: string): number | null {
-  const match = /^VIP #(\d+)$/.exec(packageName);
-  return match ? Number(match[1]) : null;
-}
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useVipHistory } from '@ola/shared/stores/vip/useVipHistory';
 
 interface VipHistoryDialogProps {
   open: boolean;
@@ -56,62 +23,22 @@ interface VipHistoryDialogProps {
 export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
   const { t, i18n } = useTranslation();
   const myId = useAuthStore((s) => s.user?.id);
-  const [tab, setTab] = useState<HistoryTab>('purchases');
-  const [purchases, setPurchases] = useState<VipPurchaseHistoryItem[]>([]);
-  const [transfers, setTransfers] = useState<VipTransferHistoryItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const {
+    tab,
+    setTab,
+    purchases,
+    transfers,
+    items,
+    loading,
+    error,
+    hasMore,
+    loadMore,
+  } = useVipHistory(open);
 
   const formatTime = useMemo(
     () => createTimeFormatter(i18n.language),
     [i18n.language]
   );
-
-  const loadPage = useCallback(async (offset: number, target: HistoryTab) => {
-    setLoading(true);
-    setError(false);
-    if (offset === 0) {
-      setPurchases([]);
-      setTransfers([]);
-      setTotal(0);
-    }
-    try {
-      if (target === 'purchases') {
-        const result = await VipService.getHistory({
-          limit: PAGE_SIZE,
-          offset,
-        });
-        setTotal(result.total);
-        setPurchases((prev) =>
-          offset === 0 ? result.items : [...prev, ...result.items]
-        );
-      } else {
-        const result = await VipService.getTransfers({
-          limit: PAGE_SIZE,
-          offset,
-        });
-        setTotal(result.total);
-        setTransfers((prev) =>
-          offset === 0 ? result.items : [...prev, ...result.items]
-        );
-      }
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mở dialog/đổi tab mới nạp lịch sử; phần lớn setState chạy sau await
-    void loadPage(0, tab);
-  }, [open, tab, loadPage]);
-
-  const items: Array<VipPurchaseHistoryItem | VipTransferHistoryItem> =
-    tab === 'purchases' ? purchases : transfers;
-  const hasMore = items.length < total;
 
   return (
     <Dialog
@@ -125,7 +52,7 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
       }
     >
       <div className="mb-2 flex gap-1.5">
-        {TABS.map((key) => (
+        {VIP_HISTORY_TABS.map((key) => (
           <button
             key={key}
             type="button"
@@ -159,7 +86,7 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
         ) : tab === 'purchases' ? (
           <ul className="divide-y divide-[#eceaea]">
             {purchases.map((item) => {
-              const iconTypeId = iconTypeIdOf(item.packageName);
+              const iconTypeId = vipHistoryIconTypeId(item.packageName);
               return (
                 <li
                   key={item.id}
@@ -181,7 +108,7 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
                       </p>
                       <p className="truncate text-xs text-black/54">
                         {t(
-                          `vip.historyDialog.source.${sourceKeyOf(item.source)}`
+                          `vip.historyDialog.source.${vipHistorySourceKey(item.source)}`
                         )}
                         {item.days > 0 &&
                           !isVipDayTransferSource(item.source) &&
@@ -266,7 +193,7 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
         {hasMore && !error && (
           <button
             type="button"
-            onClick={() => void loadPage(items.length, tab)}
+            onClick={loadMore}
             disabled={loading}
             className="mt-2 w-full rounded-[3px] border border-[#d1cece] bg-[#f6f6f6] py-1.5 text-sm text-[#3a3839] hover:bg-[#efefef] disabled:opacity-50"
           >

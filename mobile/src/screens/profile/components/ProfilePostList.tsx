@@ -7,7 +7,7 @@ import { usePostListActions } from '@ola/shared/stores/feed/usePostListActions';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { useMeLocalStore } from '@store/meLocalStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import { isPostEditExpired } from '@lib/post';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
@@ -19,6 +19,7 @@ import { MeQuickCommentBar } from '@screens/me/components/MeQuickCommentBar';
 import { MeComposerModal } from '@screens/me/components/MeComposerModal';
 import { useQuickComment } from '@screens/me/useQuickComment';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
+import { POST_REACTION } from '@ola/shared/constants';
 
 interface ProfilePostListProps {
   posts: Post[];
@@ -164,8 +165,8 @@ export function ProfilePostList({
             key={post.id}
             post={post}
             timeLabel={formatTime(post.createdAt)}
-            onToggleLike={id => void toggleReaction(id, 'like')}
-            onToggleDislike={id => void toggleReaction(id, 'dislike')}
+            onToggleLike={id => void toggleReaction(id, POST_REACTION.like)}
+            onToggleDislike={id => void toggleReaction(id, POST_REACTION.dislike)}
             onOpenProfile={openProfile}
             onOpenComments={(id, focusInput) => {
               setCommentFocusInput(focusInput === true);
@@ -187,8 +188,8 @@ export function ProfilePostList({
           language={language}
           autoFocusInput={commentFocusInput}
           onClose={() => setCommentPostId(null)}
-          onToggleLike={id => void toggleReaction(id, 'like')}
-          onToggleDislike={id => void toggleReaction(id, 'dislike')}
+          onToggleLike={id => void toggleReaction(id, POST_REACTION.like)}
+          onToggleDislike={id => void toggleReaction(id, POST_REACTION.dislike)}
           onOpenProfile={openProfile}
           onCommentDelta={adjustCommentCount}
         />

@@ -211,7 +211,7 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
                           className="min-w-0 truncate text-sm text-black/87"
                           fullNameClassName="text-black/54"
                         />
-                        {member.role !== 'member' && (
+                        {member.role !== CLAN_ROLE.member && (
                           <img
                             src={CLAN_ROLE_ICONS[member.role]}
                             alt={clanRoleLabel(member.role)}
@@ -226,7 +226,7 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
                     </span>
                   </button>
                   {staff &&
-                    member.role !== 'owner' &&
+                    member.role !== CLAN_ROLE.owner &&
                     (owner || bannable(member)) && (
                       <button
                         type="button"

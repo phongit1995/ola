@@ -5,6 +5,7 @@ import type {
   PenHistorySection,
   PenRowOutcome,
 } from '../types/client/penHistory.type';
+import { PEN_STATUS, PEN_ROW_OUTCOME, PEN_HISTORY_SECTION } from '../constants/pen';
 
 export type {
   PenAllHistoryRowView,
@@ -27,14 +28,16 @@ function formatPenDateTime(iso: string, withSeconds: boolean): { date: string; t
 }
 
 function resolveOutcome(shot: PenShotView, userId?: string): PenRowOutcome {
-  if (shot.status === 'open') return 'pending';
-  if (shot.status === 'cancelled') return 'cancelled';
-  return shot.winnerId != null && shot.winnerId === userId ? 'win' : 'lose';
+  if (shot.status === PEN_STATUS.open) return PEN_ROW_OUTCOME.pending;
+  if (shot.status === PEN_STATUS.cancelled) return PEN_ROW_OUTCOME.cancelled;
+  return shot.winnerId != null && shot.winnerId === userId
+    ? PEN_ROW_OUTCOME.win
+    : PEN_ROW_OUTCOME.lose;
 }
 
 function resolveAmount(shot: PenShotView, outcome: PenRowOutcome): number {
-  if (outcome === 'win') return (shot.payout ?? shot.betAmount * 2) - shot.betAmount;
-  if (outcome === 'lose') return -shot.betAmount;
+  if (outcome === PEN_ROW_OUTCOME.win) return (shot.payout ?? shot.betAmount * 2) - shot.betAmount;
+  if (outcome === PEN_ROW_OUTCOME.lose) return -shot.betAmount;
   return 0;
 }
 
@@ -56,7 +59,7 @@ export function toHistoryRow(
   section: PenHistorySection,
   userId?: string,
 ): PenHistoryRowView {
-  const isShoot = section === 'shoot';
+  const isShoot = section === PEN_HISTORY_SECTION.shoot;
   const outcome = resolveOutcome(shot, userId);
   const { date, time } = formatPenDateTime(shot.createdAt, true);
   return {

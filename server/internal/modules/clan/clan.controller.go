@@ -24,7 +24,6 @@ func parseClanID(c *gin.Context) (uuid.UUID, error) {
 	return utils.ParseUUIDParam(c, "id", "invalid clan id")
 }
 
-// CheckName godoc
 // @Summary      Check if a clan name is available (returns preview when taken)
 // @Tags         clan
 // @Produce      json
@@ -43,7 +42,6 @@ func (ctrl *Controller) CheckName(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Create godoc
 // @Summary      Create a clan (costs Ken)
 // @Tags         clan
 // @Accept       json
@@ -68,7 +66,6 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Mine godoc
 // @Summary      List clans the current user has joined
 // @Tags         clan
 // @Produce      json
@@ -87,7 +84,6 @@ func (ctrl *Controller) Mine(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Top godoc
 // @Summary      Top clans by member count, optionally filtered by handle substring
 // @Tags         clan
 // @Produce      json
@@ -107,7 +103,6 @@ func (ctrl *Controller) Top(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetByID godoc
 // @Summary      Get clan info by id (increments visit count once per viewer per 6h)
 // @Tags         clan
 // @Produce      json
@@ -131,7 +126,6 @@ func (ctrl *Controller) GetByID(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetByHandle godoc
 // @Summary      Get clan info by handle (#name without the #)
 // @Tags         clan
 // @Produce      json
@@ -151,7 +145,6 @@ func (ctrl *Controller) GetByHandle(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Update godoc
 // @Summary      Update clan description/policy (owner only)
 // @Tags         clan
 // @Accept       json
@@ -181,7 +174,6 @@ func (ctrl *Controller) Update(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UploadAvatar godoc
 // @Summary      Upload clan avatar (owner only)
 // @Tags         clan
 // @Accept       multipart/form-data
@@ -195,7 +187,6 @@ func (ctrl *Controller) UploadAvatar(c *gin.Context) (interface{}, error) {
 	return ctrl.uploadImage(c, "avatar")
 }
 
-// UploadCover godoc
 // @Summary      Upload clan cover (owner only)
 // @Tags         clan
 // @Accept       multipart/form-data
@@ -235,7 +226,6 @@ func (ctrl *Controller) uploadImage(c *gin.Context, field string) (interface{}, 
 	return resp, nil
 }
 
-// Join godoc
 // @Summary      Join (follow) a clan
 // @Tags         clan
 // @Produce      json
@@ -259,7 +249,6 @@ func (ctrl *Controller) Join(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Leave godoc
 // @Summary      Leave a clan (owner cannot leave)
 // @Tags         clan
 // @Produce      json
@@ -283,7 +272,6 @@ func (ctrl *Controller) Leave(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Members godoc
 // @Summary      List clan members (staff first)
 // @Tags         clan
 // @Produce      json
@@ -313,7 +301,6 @@ func (ctrl *Controller) Members(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// AssignRole godoc
 // @Summary      Assign deputy/ambassador by username (owner only)
 // @Tags         clan
 // @Accept       json
@@ -343,7 +330,6 @@ func (ctrl *Controller) AssignRole(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// RevokeRole godoc
 // @Summary      Revoke current deputy/ambassador (owner only)
 // @Tags         clan
 // @Produce      json
@@ -368,7 +354,6 @@ func (ctrl *Controller) RevokeRole(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Verify godoc
 // @Summary      Verify a member by username (owner only)
 // @Tags         clan
 // @Accept       json
@@ -382,7 +367,6 @@ func (ctrl *Controller) Verify(c *gin.Context) (interface{}, error) {
 	return ctrl.setVerified(c, true)
 }
 
-// Unverify godoc
 // @Summary      Unverify a member by username (owner only)
 // @Tags         clan
 // @Accept       json
@@ -415,7 +399,6 @@ func (ctrl *Controller) setVerified(c *gin.Context, verified bool) (interface{},
 	return MessageResponse{Message: "ok"}, nil
 }
 
-// Bans godoc
 // @Summary      List banned users (owner/deputy only)
 // @Tags         clan
 // @Produce      json
@@ -443,7 +426,6 @@ func (ctrl *Controller) Bans(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Ban godoc
 // @Summary      Ban a user from the clan by username (owner/deputy only, also kicks)
 // @Tags         clan
 // @Accept       json
@@ -472,7 +454,6 @@ func (ctrl *Controller) Ban(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "ok"}, nil
 }
 
-// Unban godoc
 // @Summary      Unban a user (owner/deputy only)
 // @Tags         clan
 // @Produce      json
@@ -500,7 +481,6 @@ func (ctrl *Controller) Unban(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "ok"}, nil
 }
 
-// Posts godoc
 // @Summary      Clan feed (pinned Me Top separate, keyset cursor)
 // @Tags         clan
 // @Produce      json
@@ -527,7 +507,6 @@ func (ctrl *Controller) Posts(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CreatePost godoc
 // @Summary      Create a Me post inside the clan
 // @Tags         clan
 // @Accept       json
@@ -557,7 +536,6 @@ func (ctrl *Controller) CreatePost(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Pin godoc
 // @Summary      Set a clan post as Me Top (owner/deputy only)
 // @Tags         clan
 // @Accept       json
@@ -590,7 +568,6 @@ func (ctrl *Controller) Pin(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "ok"}, nil
 }
 
-// Unpin godoc
 // @Summary      Remove clan Me Top (owner/deputy only)
 // @Tags         clan
 // @Produce      json
@@ -613,7 +590,6 @@ func (ctrl *Controller) Unpin(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "ok"}, nil
 }
 
-// DeletePost godoc
 // @Summary      Moderation: disable a clan post (owner/deputy only)
 // @Tags         clan
 // @Produce      json
@@ -641,7 +617,6 @@ func (ctrl *Controller) DeletePost(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "ok"}, nil
 }
 
-// DeletePostsByUser godoc
 // @Summary      Moderation: disable all posts by a user in this clan (owner/deputy only)
 // @Tags         clan
 // @Produce      json

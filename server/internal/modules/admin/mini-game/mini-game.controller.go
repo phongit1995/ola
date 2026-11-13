@@ -17,7 +17,6 @@ func NewController(service *minigame.Service, logger *zap.SugaredLogger) *Contro
 	return &Controller{service: service, logger: logger.Named("[admin_mini_game_controller]")}
 }
 
-// List godoc
 // @Summary      Danh sách mini game (admin)
 // @Tags         admin-mini-game
 // @Produce      json
@@ -32,7 +31,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Create godoc
 // @Summary      Tạo mini game (admin)
 // @Tags         admin-mini-game
 // @Accept       json
@@ -53,7 +51,6 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return game, nil
 }
 
-// Update godoc
 // @Summary      Cập nhật mini game (admin)
 // @Tags         admin-mini-game
 // @Accept       json
@@ -80,7 +77,6 @@ func (ctrl *Controller) Update(c *gin.Context) (interface{}, error) {
 	return game, nil
 }
 
-// Delete godoc
 // @Summary      Xoá mini game (admin)
 // @Tags         admin-mini-game
 // @Produce      json
@@ -100,7 +96,6 @@ func (ctrl *Controller) Delete(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "mini game deleted"}, nil
 }
 
-// Reorder godoc
 // @Summary      Lưu thứ tự toàn bộ mini game (admin), gán lại thành 1..N
 // @Tags         admin-mini-game
 // @Accept       json

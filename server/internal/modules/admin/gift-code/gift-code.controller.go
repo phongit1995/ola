@@ -40,7 +40,6 @@ func (ctrl *Controller) attemptFilter(c *gin.Context) AttemptFilter {
 	}
 }
 
-// List godoc
 // @Summary      Danh sách đợt mã quà tặng (admin)
 // @Tags         admin-gift-codes
 // @Produce      json
@@ -66,7 +65,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Get godoc
 // @Summary      Chi tiết đợt mã quà tặng (admin)
 // @Tags         admin-gift-codes
 // @Produce      json
@@ -86,7 +84,6 @@ func (ctrl *Controller) Get(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Create godoc
 // @Summary      Tạo đợt mã quà tặng (admin)
 // @Description  Mã chung: code + totalUses là tổng lượt. Mã riêng: codePrefix + codeLength, totalUses là số mã cần sinh
 // @Tags         admin-gift-codes
@@ -114,7 +111,6 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Update godoc
 // @Summary      Sửa đợt mã quà tặng (admin)
 // @Description  Đã có người nhận thì không đổi được loại mã, dạng mã và quà. Mã riêng thêm mã bằng POST /codes
 // @Tags         admin-gift-codes
@@ -147,7 +143,6 @@ func (ctrl *Controller) Update(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// SetEnabled godoc
 // @Summary      Bật hoặc tắt đợt mã quà tặng (admin)
 // @Tags         admin-gift-codes
 // @Accept       json
@@ -177,7 +172,6 @@ func (ctrl *Controller) SetEnabled(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListCodes godoc
 // @Summary      Danh sách mã của đợt (admin)
 // @Tags         admin-gift-codes
 // @Produce      json
@@ -201,7 +195,6 @@ func (ctrl *Controller) ListCodes(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ExportCodes godoc
 // @Summary      Toàn bộ mã của đợt để xuất CSV (admin)
 // @Tags         admin-gift-codes
 // @Produce      json
@@ -222,7 +215,6 @@ func (ctrl *Controller) ExportCodes(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GenerateCodes godoc
 // @Summary      Sinh thêm mã cho đợt mã riêng (admin)
 // @Tags         admin-gift-codes
 // @Accept       json
@@ -253,7 +245,6 @@ func (ctrl *Controller) GenerateCodes(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// SetCodeLock godoc
 // @Summary      Khoá hoặc mở khoá một mã (admin)
 // @Description  Khoá phải có lý do. Mã đã dùng thì không khoá được
 // @Tags         admin-gift-codes
@@ -291,7 +282,6 @@ func (ctrl *Controller) SetCodeLock(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListRedemptions godoc
 // @Summary      Người đã nhận quà của đợt (admin)
 // @Tags         admin-gift-codes
 // @Produce      json
@@ -315,7 +305,6 @@ func (ctrl *Controller) ListRedemptions(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ExportRedemptions godoc
 // @Summary      Toàn bộ người đã nhận để xuất CSV (admin)
 // @Tags         admin-gift-codes
 // @Produce      json
@@ -335,7 +324,6 @@ func (ctrl *Controller) ExportRedemptions(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// AttemptSummary godoc
 // @Summary      Thống kê nhập mã lỗi (admin)
 // @Tags         admin-gift-codes
 // @Produce      json
@@ -351,7 +339,6 @@ func (ctrl *Controller) AttemptSummary(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// AttemptUsers godoc
 // @Summary      Nhập mã lỗi gom theo người dùng (admin)
 // @Tags         admin-gift-codes
 // @Produce      json
@@ -371,7 +358,6 @@ func (ctrl *Controller) AttemptUsers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// AttemptDevices godoc
 // @Summary      Nhập mã lỗi gom theo thiết bị (admin)
 // @Tags         admin-gift-codes
 // @Produce      json
@@ -390,7 +376,6 @@ func (ctrl *Controller) AttemptDevices(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListAttempts godoc
 // @Summary      Nhật ký từng lượt nhập mã lỗi (admin)
 // @Tags         admin-gift-codes
 // @Produce      json

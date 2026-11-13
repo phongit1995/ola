@@ -13,14 +13,12 @@ import {
   kulToken,
   toast,
 } from '@lib';
-import { useLongPress } from '@hooks';
 import { useAttachPanel } from '../useAttachPanel';
 import {
   SmileyGroupPanel,
   SmileyInput,
   type SmileyInputHandle,
 } from '@components';
-import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
@@ -31,6 +29,7 @@ import {
   type VoiceRecorderControlHandle,
 } from '@components/chat/voice/VoiceRecorderControl';
 import type { RoomAudioSendResult } from '@ola/shared/types';
+import { LikeSendButton } from '@components/chat/LikeSendButton';
 
 export interface RoomComposerHandle {
   focus: () => void;
@@ -82,7 +81,6 @@ export const RoomComposerBar = forwardRef<
   const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
   const mountedRef = useRef(true);
   const draftRef = useRef(draft);
-  const suppressLikeClick = useRef(false);
   const imageIdRef = useRef(0);
   const pendingImagesRef = useRef(pendingImages);
 
@@ -202,11 +200,6 @@ export const RoomComposerBar = forwardRef<
     if (draft.trim() !== '') void sendText(draft);
   }
 
-  const likeLongPress = useLongPress(() => {
-    suppressLikeClick.current = true;
-    void sendText('(Y)');
-  });
-
   const isTyping = draft.trim() !== '';
 
   return (
@@ -316,26 +309,11 @@ export const RoomComposerBar = forwardRef<
               {t('chat.send')}
             </button>
           ) : (
-            <button
-              type="button"
-              aria-label={t('chat.like')}
+            <LikeSendButton
+              onSend={(code) => void sendText(code)}
               disabled={disabled}
-              {...likeLongPress}
-              onPointerDown={(event) => {
-                suppressLikeClick.current = false;
-                likeLongPress.onPointerDown(event);
-              }}
-              onClick={() => {
-                if (suppressLikeClick.current) {
-                  suppressLikeClick.current = false;
-                  return;
-                }
-                void sendText('(y)');
-              }}
-              className="flex h-9 w-9 shrink-0 select-none items-center justify-center disabled:opacity-40"
-            >
-              <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
-            </button>
+              className="shrink-0 disabled:opacity-40"
+            />
           ))}
         {pendingAudio == null && (
           <VoiceRecorderControl

@@ -1,7 +1,7 @@
 import { GAME_ERROR_CODE, type RoomInfo } from '../../src/sdk/protocol';
 import { formatKen } from './format';
 
-export type TycoonRoom = RoomInfo & { allowSpectators?: boolean };
+export type TycoonRoom = RoomInfo;
 
 export type RoomAction = 'join' | 'full' | 'watch' | 'playing';
 
@@ -46,7 +46,7 @@ const ROOM_TOAST_TEXT = new Map<string, string>([
   [GAME_ERROR_CODE.SpectateFull, 'Bàn đã đủ người xem'],
   [GAME_ERROR_CODE.SpectateOwnMatch, 'Bạn đang trong một ván khác'],
   [GAME_ERROR_CODE.MatchNotFound, 'Ván đã kết thúc'],
-  ['SPECTATE_NOT_ALLOWED', 'Bàn này không cho người ngoài xem'],
+  [GAME_ERROR_CODE.SpectateNotAllowed, 'Bàn này không cho người ngoài xem'],
   [GAME_ERROR_CODE.SpectateNotSupported, 'Bàn này chưa xem được'],
   [GAME_ERROR_CODE.SpectateFailed, 'Không vào xem được, vui lòng thử lại'],
 ]);
@@ -64,7 +64,7 @@ export function roomSeatsLabel(room: TycoonRoom): string {
 }
 
 export function roomAction(room: TycoonRoom): RoomAction {
-  if (room.status === 'playing') return room.matchId ? 'watch' : 'playing';
+  if (room.status === 'playing') return room.matchId && (room.allowSpectators ?? !room.locked) ? 'watch' : 'playing';
   return room.full || room.players >= roomMaxPlayers(room) ? 'full' : 'join';
 }
 

@@ -3,6 +3,7 @@ package wordchain
 import (
 	"context"
 	roomEvents "ola-chat-server/internal/domain/room"
+	userModule "ola-chat-server/internal/modules/user"
 	"time"
 )
 
@@ -175,12 +176,7 @@ type LookupResponse struct {
 	Source  string         `json:"source"`
 }
 
-type AdminPlayer struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+type AdminPlayer = userModule.UserBrief
 
 type AdminOverviewResponse struct {
 	State     *StateResponse `json:"state"`

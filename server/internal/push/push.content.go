@@ -27,6 +27,7 @@ type DMPush struct {
 	SenderAvatar     string
 	ConversationName string
 	Preview          string
+	ImageURL         string
 	SentAt           string
 	UnreadCount      int
 	UnreadByUser     map[string]int
@@ -69,6 +70,9 @@ func buildDMContent(in DMPush) Content {
 	}
 	if in.SentAt != "" {
 		data["sentAt"] = in.SentAt
+	}
+	if in.ImageURL != "" {
+		data["imageUrl"] = in.ImageURL
 	}
 	withUnread(data, in.UnreadCount)
 	return Content{

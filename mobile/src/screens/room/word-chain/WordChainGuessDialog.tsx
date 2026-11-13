@@ -14,9 +14,9 @@ import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { WordChainKen } from './WordChainKen';
 import { WORD_CHAIN_ICONS } from './wordChainAssets';
+import { ERROR } from '@constants';
 
 const KEN_PILL = { ken: <WordChainKen /> };
-const ERROR_COLOR = '#e34545';
 
 export function WordChainGuessDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -113,7 +113,7 @@ export function WordChainGuessDialog({ onClose }: { onClose: () => void }) {
         </Text>
         <Text
           className="text-sm leading-relaxed"
-          style={{ color: canAfford ? 'rgba(0,0,0,0.54)' : ERROR_COLOR }}
+          style={{ color: canAfford ? 'rgba(0,0,0,0.54)' : ERROR }}
         >
           {canAfford ? (
             <Trans

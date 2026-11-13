@@ -17,7 +17,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[gift_controller]")}
 }
 
-// Catalog godoc
 // @Summary      Danh sách quà đang bán + cấu hình tặng quà
 // @Tags         gifts
 // @Produce      json
@@ -32,7 +31,6 @@ func (ctrl *Controller) Catalog(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Send godoc
 // @Summary      Tặng quà cho user khác
 // @Description  Trừ KEN người tặng (GIFT_SENT), cộng sức hút + tường quà cho người nhận. source=chat tạo thêm tin nhắn loại gift, source=profile tạo thông báo. clientRequestId chống trừ KEN hai lần khi gửi lại.
 // @Tags         gifts
@@ -62,7 +60,6 @@ func (ctrl *Controller) Send(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Wall godoc
 // @Summary      Tường quà + sức hút của một user
 // @Tags         gifts
 // @Produce      json
@@ -88,7 +85,6 @@ func (ctrl *Controller) Wall(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Received godoc
 // @Summary      Lịch sử quà mình đã nhận
 // @Tags         gifts
 // @Produce      json
@@ -101,7 +97,6 @@ func (ctrl *Controller) Received(c *gin.Context) (interface{}, error) {
 	return ctrl.history(c, HistoryDirectionReceived)
 }
 
-// Sent godoc
 // @Summary      Lịch sử quà mình đã tặng
 // @Tags         gifts
 // @Produce      json
@@ -126,7 +121,6 @@ func (ctrl *Controller) history(c *gin.Context, direction string) (interface{}, 
 	return resp, nil
 }
 
-// Leaderboard godoc
 // @Summary      Bảng xếp hạng quà
 // @Description  type=sender: tổng KEN đã tặng; type=receiver: tổng sức hút nhận được. period theo giờ Việt Nam.
 // @Tags         gifts

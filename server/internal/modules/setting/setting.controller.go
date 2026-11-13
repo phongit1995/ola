@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[setting_controller]")}
 }
 
-// TopupConfig godoc
 // @Summary      Cấu hình nạp KEN (bank nhận tiền VietQR + mệnh giá) cho app
 // @Description  enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi, bị ẩn thì không trả bank. Thiếu X-Platform thì tính là web
 // @Tags         settings
@@ -70,7 +69,6 @@ func (ctrl *Controller) topupConfigFor(client Client) (TopupConfigResponse, erro
 	return resp, nil
 }
 
-// UsernameChangeConfig godoc
 // @Summary      Cấu hình phí đổi username theo độ dài (tính bằng KEN)
 // @Description  enabled và enabledMobile cùng là kết quả bật/tắt cho đúng nền tảng và phiên bản app đang gọi. Thiếu X-Platform thì tính là web
 // @Tags         settings
@@ -102,7 +100,6 @@ func (ctrl *Controller) usernameChangeConfigFor(client Client) (UsernameChangeCo
 	return UsernameChangeConfigResponse{Enabled: enabled, EnabledMobile: enabled, Tiers: cfg.Tiers}, nil
 }
 
-// WordChainConfig godoc
 // @Summary      Cấu hình phòng nối từ (bật/tắt, giá gợi ý và giá mua thêm lượt tính bằng KEN)
 // @Tags         settings
 // @Produce      json
@@ -122,7 +119,6 @@ func (ctrl *Controller) WordChainConfig(c *gin.Context) (interface{}, error) {
 	return cfg, nil
 }
 
-// ChatBotConfig godoc
 // @Summary      Bot nào đang bật và giới hạn lượt chat mỗi ngày (0 = không giới hạn)
 // @Description  enabled của từng bot đã tính theo nền tảng và phiên bản app đang gọi (X-Platform, X-App-Version)
 // @Tags         settings
@@ -157,7 +153,6 @@ func (ctrl *Controller) chatBotConfigFor(client Client) (ChatBotPublicConfig, er
 	return ChatBotPublicConfig{DailyLimit: cfg.DailyLimit, Bots: bots}, nil
 }
 
-// StoryConfig godoc
 // @Summary      Truyện có đang bật cho app đang gọi không
 // @Description  Server đọc nền tảng (web | android | ios) và phiên bản app từ header, so với cấu hình bật/tắt và danh sách bản bị tắt của nền tảng đó. Thiếu X-Platform thì tính là web
 // @Tags         settings
@@ -240,7 +235,6 @@ func (ctrl *Controller) vipDayTransferConfigFor(client Client) (VipDayTransferPu
 	return cfg.PublicFor(client), nil
 }
 
-// AppConfig godoc
 // @Summary      Gộp config hệ thống cho app trong một request
 // @Description  configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment, gift, megaphone, giftCode, vipDayTransfer; nội dung mỗi key giống API riêng /settings/<tên> và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.
 // @Description  Gửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.
@@ -261,7 +255,6 @@ func (ctrl *Controller) AppConfig(c *gin.Context) (interface{}, error) {
 	return collectAppConfig(ctrl.appConfigSources(), ClientFrom(c), parseAppConfigKeys(c.Query("keys")), c.Query("version"), ctrl.logger), nil
 }
 
-// AppUpdate godoc
 // @Summary      Bản app đang gọi có bắt buộc phải cập nhật không (không cần đăng nhập)
 // @Description  required=true khi X-App-Version (so theo tên bản, bỏ build) nằm trong danh sách bản phải cập nhật admin đặt cho nền tảng X-Platform. Web, thiếu header hoặc phiên bản không đọc được luôn trả false.
 // @Tags         settings

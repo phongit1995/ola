@@ -1,39 +1,15 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogButton, Spinner, UserRow, VipIcon } from '@components';
-import { VIP_TRANSFER_BLOCKED_ERROR } from '@constants';
-import { isVipIconTransferable, toApiError, toast, vipName } from '@lib';
-import { VipService } from '@services';
-import type { VipIconInstance } from '@app-types';
-
-interface TradingVipReceiver {
-  id: string;
-  name: string;
-  username?: string;
-  avatar?: string;
-  color: string;
-}
+import { Dialog, DialogButton, Spinner, VipIcon } from '@components';
+import { vipName } from '@lib';
+import { useTradingVip } from '@ola/shared/stores/vip/useTradingVip';
+import type { TransferReceiver } from '../types';
+import { TransferReceiverRow } from './TransferReceiverRow';
 
 interface TradingVipDialogProps {
   open: boolean;
   onClose: () => void;
-  receiver: TradingVipReceiver;
+  receiver: TransferReceiver;
 }
-
-function ReceiverRow({ receiver }: { receiver: TradingVipReceiver }) {
-  return (
-    <div className="mt-2 rounded border border-black/12 px-3">
-      <UserRow
-        name={receiver.name}
-        username={receiver.username}
-        avatar={receiver.avatar}
-        color={receiver.color}
-      />
-    </div>
-  );
-}
-
-const VIP_STORE_LIMIT = 100;
 
 export function TradingVipDialog({
   open,
@@ -41,79 +17,18 @@ export function TradingVipDialog({
   receiver,
 }: TradingVipDialogProps) {
   const { t } = useTranslation();
-  const [step, setStep] = useState<'select' | 'confirm'>('select');
-  const [loading, setLoading] = useState(true);
-  const [vips, setVips] = useState<VipIconInstance[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    VipService.store({ limit: VIP_STORE_LIMIT })
-      .then((res) => {
-        if (active)
-          setVips(
-            res.items.filter(
-              (item) =>
-                !item.isUsing && !item.isLocked && isVipIconTransferable(item)
-            )
-          );
-      })
-      .catch(() => undefined)
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const selected = vips.find((item) => item.instanceId === selectedId) ?? null;
-
-  function pickVip(instanceId: string) {
-    setSelectedId(instanceId);
-    setStep('confirm');
-  }
-
-  async function submitTransfer() {
-    if (selected == null) {
-      toast.error(t('chat.tradingVipErrSelect'));
-      return;
-    }
-    if (password.trim() === '') {
-      toast.error(t('chat.tradingVipErrPassword'));
-      return;
-    }
-    if (receiver.id === '') {
-      toast.error(t('chat.actionError'));
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await VipService.transferIcon(selected.instanceId, {
-        toUserId: receiver.id,
-        password,
-      });
-      toast.success(t('chat.tradingVipSuccess', { name: receiver.name }));
-      onClose();
-    } catch (error) {
-      const apiError = toApiError(error);
-      if (apiError.status === 401) {
-        toast.error(t('chat.tradingVipErrWrongPassword'));
-      } else if (apiError.message === VIP_TRANSFER_BLOCKED_ERROR) {
-        toast.error(t('chat.tradingVipErrBlocked'));
-      } else if (apiError.status === 403) {
-        toast.error(t('chat.tradingVipErrNotAllowed'));
-      } else if (apiError.status === 0) {
-        toast.error(t('chat.tradingVipError'));
-      } else {
-        toast.error(apiError.message);
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const {
+    step,
+    setStep,
+    loading,
+    vips,
+    selected,
+    pickVip,
+    password,
+    setPassword,
+    submitting,
+    submitTransfer,
+  } = useTradingVip({ receiver, enabled: true, onDone: onClose });
 
   const footer =
     step === 'confirm' ? (
@@ -143,7 +58,7 @@ export function TradingVipDialog({
           <span className="text-base text-black/54">
             {t('chat.tradingVipReceiverLabel')}
           </span>
-          <ReceiverRow receiver={receiver} />
+          <TransferReceiverRow receiver={receiver} className="mt-2" />
 
           <span className="mt-4 text-base text-black/87">
             {t('chat.tradingVipSelectLabel')}
@@ -179,7 +94,7 @@ export function TradingVipDialog({
           <span className="text-base text-black/54">
             {t('chat.tradingVipReceiverLabel')}
           </span>
-          <ReceiverRow receiver={receiver} />
+          <TransferReceiverRow receiver={receiver} className="mt-2" />
 
           <span className="mt-4 text-base text-black/54">
             {t('chat.tradingVipSelectLabel')}

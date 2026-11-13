@@ -141,6 +141,18 @@ func (s *S3Service) UploadFile(ctx context.Context, file multipart.File, filenam
 	}, nil
 }
 
+type bytesFile struct {
+	*bytes.Reader
+}
+
+func (bytesFile) Close() error { return nil }
+
+var _ multipart.File = bytesFile{}
+
+func (s *S3Service) UploadNamedBytes(ctx context.Context, data []byte, filename, folder string) (*UploadResult, error) {
+	return s.UploadFile(ctx, bytesFile{Reader: bytes.NewReader(data)}, filename, folder)
+}
+
 func (s *S3Service) DownloadToFile(ctx context.Context, objectName, filePath string) error {
 	if err := s.client.FGetObject(ctx, s.bucket, objectName, filePath, minio.GetObjectOptions{}); err != nil {
 		return fmt.Errorf("failed to download object: %w", err)

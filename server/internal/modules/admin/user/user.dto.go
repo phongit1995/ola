@@ -1,6 +1,10 @@
 package adminuser
 
-import "ola-chat-server/internal/modules/moderation"
+import (
+	"ola-chat-server/internal/modules/moderation"
+
+	userModule "ola-chat-server/internal/modules/user"
+)
 
 type ViolationSummary = moderation.ViolationSummary
 
@@ -133,12 +137,7 @@ type AddVipDaysResponse struct {
 	VipEndTime string `json:"vipEndTime"`
 }
 
-type UsernameChangeUser struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+type UsernameChangeUser = userModule.UserBrief
 
 type UsernameChangeItem struct {
 	ID            string             `json:"id"`

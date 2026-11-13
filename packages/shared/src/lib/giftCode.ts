@@ -11,6 +11,7 @@ import type { GiftCodeReward } from '../types/api/giftCode.type';
 import type { VipIconInstance } from '../types/api/vip.type';
 import { ApiError } from './apiError';
 import { vipName } from './vip';
+import { HTTP_STATUS } from '../constants/http';
 
 export function normalizeGiftCodeInput(value: string): string {
   return value.replace(/\s+/g, '').toUpperCase().slice(0, GIFT_CODE_MAX_LENGTH);
@@ -20,7 +21,7 @@ export function giftCodeErrorText(t: TFunction, error: unknown): string {
   if (error instanceof ApiError) {
     const key = error.code != null ? GIFT_CODE_ERROR_KEYS[error.code] : undefined;
     if (key != null) return t(key);
-    if (error.status === 429) return t('giftCode.errors.rateLimited');
+    if (error.status === HTTP_STATUS.tooManyRequests) return t('giftCode.errors.rateLimited');
   }
   return t('giftCode.errors.failed');
 }

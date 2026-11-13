@@ -1,6 +1,11 @@
 package admintopup
 
-import "time"
+import (
+	"time"
+
+	userModule "ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/utils"
+)
 
 type ListFilter struct {
 	Status string
@@ -10,12 +15,7 @@ type ListFilter struct {
 	To     *time.Time
 }
 
-type UserInfo struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+type UserInfo = userModule.UserBrief
 
 type TransactionItem struct {
 	ID              string    `json:"id"`
@@ -35,12 +35,7 @@ type TransactionItem struct {
 	UpdatedAt       string    `json:"updatedAt"`
 }
 
-type TransactionListResponse struct {
-	Total  int64             `json:"total"`
-	Limit  int               `json:"limit"`
-	Offset int               `json:"offset"`
-	Items  []TransactionItem `json:"items"`
-}
+type TransactionListResponse = utils.Page[TransactionItem]
 
 type ManualCreditRequest struct {
 	Username string `json:"username" binding:"required"`

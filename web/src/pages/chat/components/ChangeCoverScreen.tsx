@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { COVER_ASPECT } from '@constants';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { ChangeUserImageDialog } from './ChangeUserImageDialog';
 
 interface ChangeCoverScreenProps {

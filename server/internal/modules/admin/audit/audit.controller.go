@@ -2,7 +2,6 @@ package adminaudit
 
 import (
 	"net/http"
-	"time"
 
 	"ola-chat-server/internal/utils"
 
@@ -20,7 +19,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_audit_controller]")}
 }
 
-// List godoc
 // @Summary      Nhật ký thao tác admin
 // @Description  Danh sách các thay đổi do admin thực hiện (tự động ghi mọi thao tác POST/PUT/PATCH/DELETE)
 // @Tags         admin-audit
@@ -52,20 +50,11 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 		}
 		f.AdminID = &id
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		f.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		f.To = &t
-	}
+	f.From, f.To = from, to
 
 	resp, err := ctrl.service.List(f)
 	if err != nil {

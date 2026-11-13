@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -10,16 +9,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { ClanService } from '@ola/shared/services';
-import type { Clan, ClanPolicy } from '@ola/shared/types';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { clanErrorText, clanPolicyLabel } from '@ola/shared/lib';
-import { CLAN_ROLE } from '@ola/shared/constants';
+import { clanPolicyLabel } from '@ola/shared/lib';
+import { CLAN_ROLE, CLAN_POLICY_OPTION_ORDER } from '@ola/shared/constants';
+import { useClanManage } from '@ola/shared/stores/clan/useClanManage';
 
 const editIcon = require('@assets/icons/me/ic_action_edit.png');
 
@@ -30,8 +27,6 @@ interface ClanManageScreenProps {
   onOpenBans: (clanId: string) => void;
 }
 
-type RoleKind = 'deputy' | 'ambassador';
-type VerifyKind = 'verify' | 'unverify';
 
 function ManageRow({
   label,
@@ -85,123 +80,32 @@ export function ClanManageScreen({
 }: ClanManageScreenProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const pushToast = useToastStore((s) => s.push);
-  const [clan, setClan] = useState<Clan | null>(null);
-  const [roleDialog, setRoleDialog] = useState<RoleKind | null>(null);
-  const [roleNick, setRoleNick] = useState('');
-  const [revokeRole, setRevokeRole] = useState<{ role: RoleKind; username: string } | null>(null);
-  const [policyOpen, setPolicyOpen] = useState(false);
-  const [publicPostConfirm, setPublicPostConfirm] = useState(false);
-  const [verifyDialog, setVerifyDialog] = useState<VerifyKind | null>(null);
-  const [verifyNick, setVerifyNick] = useState('');
-  const [busy, setBusy] = useState(false);
+  const {
+    clan,
+    busy,
+    roleDialog,
+    setRoleDialog,
+    roleNick,
+    setRoleNick,
+    revokeRole,
+    setRevokeRole,
+    policyOpen,
+    setPolicyOpen,
+    publicPostConfirm,
+    setPublicPostConfirm,
+    verifyDialog,
+    setVerifyDialog,
+    verifyNick,
+    setVerifyNick,
+    openRoleDialog,
+    submitRole,
+    submitRevoke,
+    submitPolicy,
+    submitMemberPublicPost,
+    submitVerify,
+  } = useClanManage(clanId);
 
-  const reload = useCallback(async () => {
-    try {
-      setClan(await ClanService.get(clanId));
-    } catch (error) {
-      pushToast('error', clanErrorText(error));
-    }
-  }, [clanId, pushToast]);
-
-  useEffect(() => {
-    void reload();
-  }, [reload]);
-
-  function openRoleDialog(role: RoleKind) {
-    if (clan == null) return;
-    setRoleNick((role === 'deputy' ? clan.deputy?.username : clan.ambassador?.username) ?? '');
-    setRoleDialog(role);
-  }
-
-  async function submitRole() {
-    if (clan == null || roleDialog == null || busy) return;
-    const nick = roleNick.trim().replace(/^@/, '');
-    const currentHolder =
-      roleDialog === 'deputy' ? clan.deputy?.username : clan.ambassador?.username;
-    if (nick === '') {
-      setRoleDialog(null);
-      if (currentHolder != null && currentHolder !== '') {
-        setRevokeRole({ role: roleDialog, username: currentHolder });
-      }
-      return;
-    }
-    setBusy(true);
-    try {
-      await ClanService.assignRole(clan.id, { username: nick, role: roleDialog });
-      pushToast('success', t('clan.assignSuccess', { username: nick }));
-      setRoleDialog(null);
-      await reload();
-    } catch (error) {
-      pushToast('error', clanErrorText(error));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function submitRevoke() {
-    if (clan == null || revokeRole == null || busy) return;
-    setBusy(true);
-    try {
-      await ClanService.revokeRole(clan.id, revokeRole.role);
-      pushToast('success', t('clan.revokeSuccess'));
-      setRevokeRole(null);
-      await reload();
-    } catch (error) {
-      pushToast('error', clanErrorText(error));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function submitPolicy(policy: ClanPolicy) {
-    if (clan == null || busy || policy === clan.policy) return;
-    setBusy(true);
-    try {
-      setClan(await ClanService.update(clan.id, { policy }));
-    } catch (error) {
-      pushToast('error', clanErrorText(error));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function submitMemberPublicPost(value: boolean) {
-    if (clan == null || busy) return;
-    setBusy(true);
-    try {
-      setClan(await ClanService.update(clan.id, { memberPublicPost: value }));
-    } catch (error) {
-      pushToast('error', clanErrorText(error));
-    } finally {
-      setBusy(false);
-      setPublicPostConfirm(false);
-    }
-  }
-
-  async function submitVerify() {
-    if (clan == null || verifyDialog == null || busy) return;
-    const nick = verifyNick.trim().replace(/^@/, '');
-    if (nick === '') return;
-    setBusy(true);
-    try {
-      if (verifyDialog === 'verify') {
-        await ClanService.verify(clan.id, nick);
-        pushToast('success', t('clan.verifySuccess', { username: nick, name: clan.handle }));
-      } else {
-        await ClanService.unverify(clan.id, nick);
-        pushToast('success', t('clan.unverifySuccess', { username: nick, name: clan.handle }));
-      }
-      setVerifyDialog(null);
-      setVerifyNick('');
-    } catch (error) {
-      pushToast('error', clanErrorText(error));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const policyOptions: ListOption[] = ([0, 1, 2, 4, 3] as ClanPolicy[]).map((policy) => ({
+  const policyOptions: ListOption[] = CLAN_POLICY_OPTION_ORDER.map((policy) => ({
     key: String(policy),
     label: (clan?.policy === policy ? '✓ ' : '') + clanPolicyLabel(policy),
     onSelect: () => void submitPolicy(policy),
@@ -231,7 +135,7 @@ export function ClanManageScreen({
               value={clan.deputy?.username ?? ''}
               emptyText={t('clan.none')}
               editable
-              onEdit={() => openRoleDialog('deputy')}
+              onEdit={() => openRoleDialog(CLAN_ROLE.deputy)}
             />
             {divider}
             <ManageRow
@@ -239,7 +143,7 @@ export function ClanManageScreen({
               value={clan.ambassador?.username ?? ''}
               emptyText={t('clan.none')}
               editable
-              onEdit={() => openRoleDialog('ambassador')}
+              onEdit={() => openRoleDialog(CLAN_ROLE.ambassador)}
             />
             {divider}
             <ManageRow
@@ -326,7 +230,7 @@ export function ClanManageScreen({
       <Dialog
         visible={roleDialog != null}
         onClose={() => setRoleDialog(null)}
-        title={roleDialog === 'deputy' ? t('clan.roleDeputy') : t('clan.roleAmbassador')}
+        title={roleDialog === CLAN_ROLE.deputy ? t('clan.roleDeputy') : t('clan.roleAmbassador')}
         footer={
           <>
             <DialogButton variant="green" onPress={() => void submitRole()} disabled={busy}>

@@ -6,6 +6,7 @@ import {
   KEN_HISTORY_TABS,
   KEN_TX_META,
   KEN_TX_META_FALLBACK,
+  KEN_DIRECTION,
 } from '@ola/shared/constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
@@ -18,7 +19,7 @@ import type { KenHistoryRow, KenHistoryTab } from '@ola/shared/types';
 function TransactionRow({ row }: { row: KenHistoryRow }) {
   const { t } = useTranslation();
   const meta = KEN_TX_META[row.type] ?? KEN_TX_META_FALLBACK;
-  const credit = row.direction === 'credit';
+  const credit = row.direction === KEN_DIRECTION.credit;
   const subtitle =
     row.counterpartyName != null && row.counterpartyName !== ''
       ? t(credit ? 'ken.historyScreen.fromUser' : 'ken.historyScreen.toUser', {

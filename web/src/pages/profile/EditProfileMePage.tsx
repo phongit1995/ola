@@ -10,7 +10,7 @@ import {
   validatedImageObjectUrl,
 } from '@lib';
 import type { Gender, UpdateProfileRequest } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
@@ -202,7 +202,7 @@ function GenderSelect({
   const { t } = useTranslation();
   return (
     <div className="flex gap-2">
-      {(['male', 'female'] as const).map((option) => (
+      {[GENDER.male, GENDER.female].map((option) => (
         <button
           key={option}
           type="button"
@@ -235,7 +235,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
   const [avatar, setAvatar] = useState(user?.avatar ?? '');
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
-  const [gender, setGender] = useState<Gender>(user?.gender ?? 'male');
+  const [gender, setGender] = useState<Gender>(user?.gender ?? GENDER.male);
   const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth ?? '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);

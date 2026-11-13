@@ -6,6 +6,7 @@ import (
 
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
+	userModule "ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -89,15 +90,6 @@ func orderClause(sortBy, sortDir string) string {
 	return clause + ", id DESC"
 }
 
-func (r *Repository) FindByID(id uuid.UUID) (*models.User, error) {
-	var user models.User
-	err := r.db.First(&user, "id = ?", id).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
-
 func (r *Repository) FindByIDUnscoped(id uuid.UUID) (*models.User, error) {
 	var user models.User
 	err := r.db.Unscoped().First(&user, "id = ?", id).Error
@@ -105,14 +97,6 @@ func (r *Repository) FindByIDUnscoped(id uuid.UUID) (*models.User, error) {
 		return nil, err
 	}
 	return &user, nil
-}
-
-func (r *Repository) UsernameTaken(username string, exclude uuid.UUID) (bool, error) {
-	var count int64
-	err := r.db.Unscoped().Model(&models.User{}).
-		Where("LOWER(username) = LOWER(?) AND id <> ?", username, exclude).
-		Count(&count).Error
-	return count > 0, err
 }
 
 func (r *Repository) SetUsername(id uuid.UUID, username string, adminID uuid.UUID) error {
@@ -131,6 +115,9 @@ func (r *Repository) SetUsername(id uuid.UUID, username string, adminID uuid.UUI
 		if err := tx.Unscoped().Model(&models.User{}).
 			Where("id = ?", id).
 			Update("username", username).Error; err != nil {
+			if apperr.IsUniqueViolation(err) {
+				return userModule.ErrUsernameTaken
+			}
 			return err
 		}
 		actorID := adminID
@@ -158,16 +145,6 @@ func (r *Repository) SetActive(id uuid.UUID, active bool) error {
 
 func (r *Repository) SoftDelete(id uuid.UUID) error {
 	return r.db.Delete(&models.User{}, "id = ?", id).Error
-}
-
-func (r *Repository) CountVipIcons(userID uuid.UUID) (int64, error) {
-	var count int64
-	err := r.db.Model(&models.UserVipIcon{}).Where("user_id = ?", userID).Count(&count).Error
-	return count, err
-}
-
-func (r *Repository) CreateVipIcon(icon *models.UserVipIcon) error {
-	return r.db.Create(icon).Error
 }
 
 func (r *Repository) CountSessions(userID uuid.UUID) (int64, error) {

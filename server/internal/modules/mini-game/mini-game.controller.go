@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[mini_game_controller]")}
 }
 
-// List godoc
 // @Summary      Danh sách mini game đang bật
 // @Tags         mini-game
 // @Produce      json

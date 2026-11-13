@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { RoomChatStatus } from '@ola/shared/types';
 import { Spinner } from '@components';
+import { ROOM_CHAT_STATUS } from '@constants';
 
 const PRIMARY_BUTTON_CLASS =
   'rounded-full bg-ola-primary px-6 py-2 text-sm font-medium text-ola-on-primary';
@@ -23,8 +24,8 @@ export function RoomJoiningOverlay({
   onBuyVip,
 }: RoomJoiningOverlayProps) {
   const { t } = useTranslation();
-  const vipRequired = status === 'vipRequired';
-  const isError = status === 'error' || vipRequired;
+  const vipRequired = status === ROOM_CHAT_STATUS.vipRequired;
+  const isError = status === ROOM_CHAT_STATUS.error || vipRequired;
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/25 px-6">

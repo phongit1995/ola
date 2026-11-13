@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"net/http"
 	"ola-chat-server/internal/utils"
 	"strings"
 
@@ -21,7 +20,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	}
 }
 
-// Register godoc
 // @Summary      Register a new user
 // @Description  Register a new user account
 // @Tags         auth
@@ -33,13 +31,13 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Failure      409  {object}  utils.APIError
 // @Router       /auth/register [post]
 func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
-	var req RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	req, err := utils.BindJSON[RegisterRequest](c)
+	if err != nil {
 		ctrl.logger.Warnw("Invalid register request",
 			"error", err.Error(),
 			"ip", c.ClientIP(),
 		)
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		return nil, err
 	}
 
 	ctrl.logger.Infow("User registration attempt",
@@ -47,7 +45,7 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 		"ip", c.ClientIP(),
 	)
 
-	resp, err := ctrl.service.Register(&req, c.ClientIP())
+	resp, err := ctrl.service.Register(req, c.ClientIP())
 	if err != nil {
 		ctrl.logger.Infow("Registration failed",
 			"username", req.Username,
@@ -64,7 +62,6 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ChangePassword godoc
 // @Summary      Change password
 // @Description  Change the authenticated user's password
 // @Tags         auth
@@ -94,7 +91,6 @@ func (ctrl *Controller) ChangePassword(c *gin.Context) (interface{}, error) {
 	return &ChangePasswordResponse{Message: "Password changed successfully"}, nil
 }
 
-// ForgotPasswordSend godoc
 // @Summary      Request a password reset code
 // @Description  Send a 6-digit reset code to the account's verified email. Always returns a generic message so account existence is not revealed.
 // @Tags         auth
@@ -118,7 +114,6 @@ func (ctrl *Controller) ForgotPasswordSend(c *gin.Context) (interface{}, error) 
 	return &ForgotPasswordSendResponse{Message: "If the account has a verified email, a reset code has been sent."}, nil
 }
 
-// ForgotPasswordConfirm godoc
 // @Summary      Confirm password reset
 // @Description  Verify the 6-digit reset code and set a new password. All sessions of the account are revoked.
 // @Tags         auth
@@ -142,7 +137,6 @@ func (ctrl *Controller) ForgotPasswordConfirm(c *gin.Context) (interface{}, erro
 	return &ForgotPasswordConfirmResponse{Message: "Password has been reset. Please login with your new password."}, nil
 }
 
-// SendEmailVerify godoc
 // @Summary      Send email verification code
 // @Description  Send a 6-digit verification code to the given email for the authenticated user
 // @Tags         auth
@@ -175,7 +169,6 @@ func (ctrl *Controller) SendEmailVerify(c *gin.Context) (interface{}, error) {
 	return &SendEmailVerifyResponse{VerifyID: verifyID, Message: "Verification code sent"}, nil
 }
 
-// ConfirmEmailVerify godoc
 // @Summary      Confirm email verification code
 // @Description  Verify the 6-digit code and mark the authenticated user's email as verified
 // @Tags         auth
@@ -207,7 +200,6 @@ func (ctrl *Controller) ConfirmEmailVerify(c *gin.Context) (interface{}, error) 
 	return &ConfirmEmailVerifyResponse{EmailVerified: true, VipRewardDays: rewardDays}, nil
 }
 
-// Login godoc
 // @Summary      Login user
 // @Description  Authenticate user and get access token
 // @Tags         auth
@@ -219,13 +211,13 @@ func (ctrl *Controller) ConfirmEmailVerify(c *gin.Context) (interface{}, error) 
 // @Failure      401  {object}  utils.APIError
 // @Router       /auth/login [post]
 func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
-	var req LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	req, err := utils.BindJSON[LoginRequest](c)
+	if err != nil {
 		ctrl.logger.Warnw("Invalid login request",
 			"error", err.Error(),
 			"ip", c.ClientIP(),
 		)
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		return nil, err
 	}
 
 	ctrl.logger.Infow("User login attempt",
@@ -233,7 +225,7 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 		"ip", c.ClientIP(),
 	)
 
-	resp, err := ctrl.service.Login(&req, c.ClientIP(), c.GetHeader("User-Agent"))
+	resp, err := ctrl.service.Login(req, c.ClientIP(), c.GetHeader("User-Agent"))
 	if err != nil {
 		ctrl.logger.Infow("Login failed",
 			"username", req.Username,
@@ -252,7 +244,6 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Refresh godoc
 // @Summary      Refresh access token
 // @Description  Exchange a valid refresh token for a new access token (rotates the refresh token)
 // @Tags         auth
@@ -278,7 +269,6 @@ func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Logout godoc
 // @Summary      Logout (invalidate token)
 // @Description  Blacklist the caller's JWT so it cannot be used again before its natural expiry
 // @Tags         auth

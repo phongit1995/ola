@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -151,7 +152,7 @@ func (r *Repository) CreateShot(shooterID uuid.UUID, side models.PenSide, bet in
 			return err
 		}
 		if u.Ken < bet {
-			return ErrInsufficientKen
+			return ledger.ErrInsufficientKen
 		}
 
 		shot = models.PenShot{
@@ -166,31 +167,11 @@ func (r *Repository) CreateShot(shooterID uuid.UUID, side models.PenSide, bet in
 
 		before := u.Ken
 		after := before - bet
-		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN — mở lại sau.
-		// shootTx := models.KenTransaction{
-		// 	UserID:        shooterID,
-		// 	Direction:     models.KenDirectionDebit,
-		// 	Type:          models.KenTxTypePenShoot,
-		// 	Amount:        bet,
-		// 	BalanceBefore: before,
-		// 	BalanceAfter:  after,
-		// 	Description:   "PEN đặt cược",
-		// 	RefType:       penRefType,
-		// 	RefID:         &shot.ID,
-		// 	ActorType:     models.KenActorUser,
-		// 	ActorID:       &shooterID,
-		// }
-		// if err := tx.Create(&shootTx).Error; err != nil {
-		// 	return err
-		// }
-		// if err := tx.Model(&models.PenShot{}).Where("id = ?", shot.ID).Update("shoot_tx_id", shootTx.ID).Error; err != nil {
-		// 	return err
-		// }
+		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN, code bật lại ở docs/hidden-features.md
 		if err := tx.Model(&models.User{}).Where("id = ?", shooterID).Update("ken", after).Error; err != nil {
 			return err
 		}
 
-		// shot.ShootTxID = &shootTx.ID
 		newKen = after
 		return nil
 	})
@@ -230,34 +211,16 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 
 		bet := s.BetAmount
 		if keeper.Ken < bet {
-			return ErrInsufficientKen
+			return ledger.ErrInsufficientKen
 		}
 
-		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN — mở lại sau.
+		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN, code bật lại ở docs/hidden-features.md
 		// applyDelta chỉ cập nhật số dư, không còn tạo bản ghi ken_transactions.
 		applyDelta := func(u *models.User, dir models.KenDirection, txType models.KenTxType, amount int, desc string, actor models.KenActorType) error {
 			after := u.Ken + amount
 			if dir == models.KenDirectionDebit {
 				after = u.Ken - amount
 			}
-			// ktx := models.KenTransaction{
-			// 	UserID:        u.ID,
-			// 	Direction:     dir,
-			// 	Type:          txType,
-			// 	Amount:        amount,
-			// 	BalanceBefore: u.Ken,
-			// 	BalanceAfter:  after,
-			// 	Description:   desc,
-			// 	RefType:       penRefType,
-			// 	RefID:         &s.ID,
-			// 	ActorType:     actor,
-			// }
-			// if actor == models.KenActorUser {
-			// 	ktx.ActorID = &u.ID
-			// }
-			// if err := tx.Create(&ktx).Error; err != nil {
-			// 	return err
-			// }
 			u.Ken = after
 			return nil
 		}
@@ -299,9 +262,7 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 			"pot":         pot,
 			"commission":  commission,
 			"payout":      payout,
-			// "catch_tx_id":  catchTx.ID,   // TODO(ken): mở lại khi bật ghi ken_transactions cho PEN
-			// "payout_tx_id": payoutTx.ID,
-			"settled_at": now,
+			"settled_at":  now,
 		}
 		if err := tx.Model(&models.PenShot{}).Where("id = ?", s.ID).Updates(updates).Error; err != nil {
 			return err
@@ -315,8 +276,6 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 		s.Pot = &pot
 		s.Commission = &commission
 		s.Payout = &payout
-		// s.CatchTxID = &catchTx.ID   // TODO(ken): mở lại khi bật ghi ken_transactions cho PEN
-		// s.PayoutTxID = &payoutTx.ID
 		s.SettledAt = &now
 
 		out = s
@@ -353,31 +312,14 @@ func (r *Repository) CancelShot(shooterID, shotID uuid.UUID) (*models.PenShot, i
 
 		before := u.Ken
 		after := before + s.BetAmount
-		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN — mở lại sau.
-		// refundTx := models.KenTransaction{
-		// 	UserID:        shooterID,
-		// 	Direction:     models.KenDirectionCredit,
-		// 	Type:          models.KenTxTypePenRefund,
-		// 	Amount:        s.BetAmount,
-		// 	BalanceBefore: before,
-		// 	BalanceAfter:  after,
-		// 	Description:   "PEN hoàn cược",
-		// 	RefType:       penRefType,
-		// 	RefID:         &s.ID,
-		// 	ActorType:     models.KenActorUser,
-		// 	ActorID:       &shooterID,
-		// }
-		// if err := tx.Create(&refundTx).Error; err != nil {
-		// 	return err
-		// }
+		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN, code bật lại ở docs/hidden-features.md
 		if err := tx.Model(&models.User{}).Where("id = ?", shooterID).Update("ken", after).Error; err != nil {
 			return err
 		}
 
 		now := time.Now()
 		updates := map[string]interface{}{
-			"status": models.PenStatusCancelled,
-			// "refund_tx_id": refundTx.ID,   // TODO(ken): mở lại khi bật ghi ken_transactions cho PEN
+			"status":       models.PenStatusCancelled,
 			"cancelled_at": now,
 		}
 		if err := tx.Model(&models.PenShot{}).Where("id = ?", s.ID).Updates(updates).Error; err != nil {
@@ -385,7 +327,6 @@ func (r *Repository) CancelShot(shooterID, shotID uuid.UUID) (*models.PenShot, i
 		}
 
 		s.Status = models.PenStatusCancelled
-		// s.RefundTxID = &refundTx.ID   // TODO(ken): mở lại khi bật ghi ken_transactions cho PEN
 		s.CancelledAt = &now
 		out = s
 		newKen = after
@@ -457,20 +398,26 @@ func (r *Repository) ListAllShots(f AdminShotFilter, limit, offset int) ([]model
 	return items, total, err
 }
 
+var penStatusArgs = map[string]interface{}{
+	"settled":   string(models.PenStatusSettled),
+	"open":      string(models.PenStatusOpen),
+	"cancelled": string(models.PenStatusCancelled),
+}
+
 func (r *Repository) StatsOverview(f AdminShotFilter) (StatsOverview, error) {
 	var o StatsOverview
 	err := r.db.Model(&models.PenShot{}).Scopes(adminShotScope(f)).
 		Select(`count(*) as total_shots,
-			count(*) filter (where status = 'settled') as settled_shots,
-			count(*) filter (where status = 'open') as open_shots,
-			count(*) filter (where status = 'cancelled') as cancelled_shots,
+			count(*) filter (where status = @settled) as settled_shots,
+			count(*) filter (where status = @open) as open_shots,
+			count(*) filter (where status = @cancelled) as cancelled_shots,
 			count(distinct shooter_id) as unique_shooters,
 			count(distinct keeper_id) as unique_keepers,
-			coalesce(sum(pot) filter (where status = 'settled'),0) as total_volume,
-			coalesce(sum(commission) filter (where status = 'settled'),0) as house_take,
-			coalesce(sum(payout) filter (where status = 'settled'),0) as total_payout,
+			coalesce(sum(pot) filter (where status = @settled),0) as total_volume,
+			coalesce(sum(commission) filter (where status = @settled),0) as house_take,
+			coalesce(sum(payout) filter (where status = @settled),0) as total_payout,
 			count(*) filter (where result = 'saved') as saved_count,
-			count(*) filter (where result = 'goal') as goal_count`).
+			count(*) filter (where result = 'goal') as goal_count`, penStatusArgs).
 		Scan(&o).Error
 	return o, err
 }
@@ -505,9 +452,9 @@ func (r *Repository) StatsTimeseries(f AdminShotFilter, bucket string) ([]StatsT
 	err := r.db.Model(&models.PenShot{}).Scopes(adminShotScope(f)).
 		Select(fmt.Sprintf(`to_char(date_trunc('%s', created_at), '%s') as date,
 			count(*) as shots,
-			count(*) filter (where status = 'settled') as settled,
-			coalesce(sum(pot) filter (where status = 'settled'),0) as volume,
-			coalesce(sum(commission) filter (where status = 'settled'),0) as house_take`, trunc, format)).
+			count(*) filter (where status = @settled) as settled,
+			coalesce(sum(pot) filter (where status = @settled),0) as volume,
+			coalesce(sum(commission) filter (where status = @settled),0) as house_take`, trunc, format), penStatusArgs).
 		Group(fmt.Sprintf("date_trunc('%s', created_at)", trunc)).
 		Order(fmt.Sprintf("date_trunc('%s', created_at) ASC", trunc)).
 		Scan(&rows).Error
@@ -541,17 +488,18 @@ func (r *Repository) Leaderboard(from, to time.Time, limit int) ([]LeaderboardRo
 		SELECT shooter_id AS uid,
 			CASE WHEN winner_id = shooter_id THEN payout - bet_amount ELSE 0 END AS net
 		FROM pen_shots
-		WHERE status = 'settled' AND deleted_at IS NULL
+		WHERE status = ? AND deleted_at IS NULL
 			AND settled_at >= ?::timestamp AND settled_at < ?::timestamp
 		UNION ALL
 		SELECT keeper_id AS uid,
 			CASE WHEN winner_id = keeper_id THEN payout - bet_amount ELSE 0 END AS net
 		FROM pen_shots
-		WHERE status = 'settled' AND keeper_id IS NOT NULL AND deleted_at IS NULL
+		WHERE status = ? AND keeper_id IS NOT NULL AND deleted_at IS NULL
 			AND settled_at >= ?::timestamp AND settled_at < ?::timestamp`
 
+	settled := string(models.PenStatusSettled)
 	var rows []LeaderboardRow
-	err := r.db.Table("(?) as t", gorm.Expr(sub, fromStr, toStr, fromStr, toStr)).
+	err := r.db.Table("(?) as t", gorm.Expr(sub, settled, fromStr, toStr, settled, fromStr, toStr)).
 		Select(`t.uid as user_id, users.username, users.full_name, users.avatar, users.vip_used, users.vip_end_time,
 			coalesce(sum(t.net),0) as profit`).
 		Joins("JOIN users ON users.id = t.uid").

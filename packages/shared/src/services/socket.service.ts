@@ -29,6 +29,7 @@ import type {
   SessionReplacedHandler,
   SessionReplacedData,
 } from '../types/realtime/socket.type';
+import { HTTP_STATUS } from '../constants/http';
 
 export type {
   ConnectionStatus,
@@ -154,7 +155,7 @@ export class SocketService {
       if (this.hasConnected) this.setStatus('reconnecting');
     } catch (error) {
       const sessionDead =
-        (error instanceof ApiError && error.status === 401) ||
+        (error instanceof ApiError && error.status === HTTP_STATUS.unauthorized) ||
         authTokens.getRefreshToken() == null;
       if (sessionDead) {
         authTokens.clear();

@@ -24,7 +24,7 @@ import {
   FLOATING_BUBBLE_SIZE,
   FloatingBubble,
 } from '@components/ui/FloatingBubble';
-import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
+import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
 import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import { mmkvStorage } from '@platform/storage';
 

@@ -106,7 +106,6 @@ export function MeVisitorsScreen() {
                       name={item.username}
                       uri={item.avatar ?? undefined}
                       size={72}
-                      rounded={false}
                       frameId={item.avatarFrameId}
                     />
                   </Pressable>

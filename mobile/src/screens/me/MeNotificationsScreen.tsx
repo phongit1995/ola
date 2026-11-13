@@ -4,14 +4,19 @@ import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
-import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { clearPushNotification, ME_NOTIF_ID } from '@lib/push';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { applyPostReaction, reconcileTopLikers } from '@ola/shared/stores/feed/postHelpers';
 import { selfLiker } from '@ola/shared/stores/feed/selfLiker';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { MeService } from '@ola/shared/services';
-import { ME_ERROR_CODE, ME_NOTIFICATION_LABEL_KEY } from '@ola/shared/constants';
+import {
+  ME_ERROR_CODE,
+  ME_NOTIFICATION_LABEL_KEY,
+  ME_NOTIFICATION_TYPE,
+  POST_REACTION,
+} from '@ola/shared/constants';
 import {
   createTimeFormatter,
   isMomentMediaPurged,
@@ -22,7 +27,7 @@ import {
   toApiError,
 } from '@ola/shared/lib';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
-import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';
+import type { MeNotification, MeNotificationType, Post, PostReaction } from '@ola/shared/types';
 import { REACTION_IMAGE } from '@lib/reactions';
 import { SmileyText } from '@lib/richText';
 import { useMomentOverlays } from '@screens/moment/useMomentOverlays';
@@ -109,7 +114,7 @@ export function MeNotificationsScreen() {
     }
   }
 
-  async function toggleReaction(id: string, type: 'like' | 'dislike') {
+  async function toggleReaction(id: string, type: PostReaction) {
     if (openPost == null) return;
     const active = openPost.myReaction === type;
     const optimistic = applyPostReaction(openPost, active ? null : type, selfLiker());
@@ -171,23 +176,35 @@ export function MeNotificationsScreen() {
                   <View className="min-w-0 flex-1">
                     <Text className="text-sm leading-snug text-ola-ink">
                       <Text className="font-bold">{name}</Text>{' '}
-                      {others > 0 && <Text className="font-bold">{t('me.notifOthers', { count: others })} </Text>}
+                      {others > 0 && (
+                        <Text className="font-bold">{t('me.notifOthers', { count: others })} </Text>
+                      )}
                       {t(ME_NOTIFICATION_LABEL_KEY[item.type])}
                     </Text>
-                    {item.type === 'moment_comment' && item.preview != null && item.preview !== '' && (
-                      <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
-                        <SmileyText text={item.preview} fontSize={PREVIEW_FONT_SIZE} />
-                      </Text>
-                    )}
-                    {(item.type === 'comment' || item.type === 'comment_like') && item.preview != null && item.preview !== '' && (
-                      <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
-                        {item.preview}
-                      </Text>
-                    )}
+                    {item.type === ME_NOTIFICATION_TYPE.momentComment &&
+                      item.preview != null &&
+                      item.preview !== '' && (
+                        <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
+                          <SmileyText text={item.preview} fontSize={PREVIEW_FONT_SIZE} />
+                        </Text>
+                      )}
+                    {(item.type === ME_NOTIFICATION_TYPE.comment ||
+                      item.type === ME_NOTIFICATION_TYPE.commentLike) &&
+                      item.preview != null &&
+                      item.preview !== '' && (
+                        <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
+                          {item.preview}
+                        </Text>
+                      )}
                     <View className="mt-1 flex-row items-center gap-1">
                       <Image
-                        source={(reaction != null ? REACTION_IMAGE[reaction] : null) ?? TYPE_ICON[item.type]}
-                        style={reaction != null ? { width: 20, height: 20 } : { width: 16, height: 16 }}
+                        source={
+                          (reaction != null ? REACTION_IMAGE[reaction] : null) ??
+                          TYPE_ICON[item.type]
+                        }
+                        style={
+                          reaction != null ? { width: 20, height: 20 } : { width: 16, height: 16 }
+                        }
                         resizeMode="contain"
                       />
                       <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.45)' }}>
@@ -207,8 +224,8 @@ export function MeNotificationsScreen() {
             post={openPost}
             language={language}
             onClose={() => setOpenPost(null)}
-            onToggleLike={(id) => toggleReaction(id, 'like')}
-            onToggleDislike={(id) => toggleReaction(id, 'dislike')}
+            onToggleLike={(id) => toggleReaction(id, POST_REACTION.like)}
+            onToggleDislike={(id) => toggleReaction(id, POST_REACTION.dislike)}
             onOpenProfile={openProfile}
             onCommentDelta={adjustCommentCount}
           />

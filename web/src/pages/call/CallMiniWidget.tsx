@@ -6,7 +6,7 @@ import {
   isTrackReference,
   useTracks,
 } from '@livekit/components-react';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import {
   CALL_MINI_BOTTOM_GAP,
   CALL_MINI_EDGE_GAP,

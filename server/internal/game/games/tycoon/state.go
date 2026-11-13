@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+
+	"ola-chat-server/internal/game/splitmix"
 )
 
 type CardRef struct {
@@ -127,14 +129,8 @@ func deckOrder(n int) []int {
 
 func (s *State) rngNext() uint64 {
 	z, _ := strconv.ParseUint(s.Rng, 10, 64)
-	z += 0x9E3779B97F4A7C15
+	v := splitmix.Next(&z)
 	s.Rng = strconv.FormatUint(z, 10)
-	v := z
-	v ^= v >> 30
-	v *= 0xBF58476D1CE4E5B9
-	v ^= v >> 27
-	v *= 0x94D049BB133111EB
-	v ^= v >> 31
 	return v
 }
 

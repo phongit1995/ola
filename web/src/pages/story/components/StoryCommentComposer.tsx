@@ -12,8 +12,7 @@ import { useStoryStore } from '@ola/shared/stores/story/storyStore';
 import { useStoryCommentStore } from '@ola/shared/stores/story/storyCommentStore';
 import type { StoryComment } from '@app-types';
 import type { ReaderPalette } from '../types';
-
-const HTTP_TOO_MANY_REQUESTS = 429;
+import { HTTP_STATUS } from '@constants';
 
 interface StoryCommentComposerProps {
   storyId: string;
@@ -65,7 +64,7 @@ export function StoryCommentComposer({
     } catch (error) {
       toast.error(
         t(
-          toApiError(error).status === HTTP_TOO_MANY_REQUESTS
+          toApiError(error).status === HTTP_STATUS.tooManyRequests
             ? 'story.commentRateLimited'
             : 'story.commentSendError'
         )

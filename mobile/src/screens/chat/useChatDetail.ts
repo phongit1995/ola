@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
   chatFriendActionLabel,
   createDateSeparatorFormatter,
@@ -12,10 +11,11 @@ import {
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useFocusPresence } from './usePresence';
 import { clearPushNotification, dmNotifId } from '@lib/push';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
+import { useChatPeerActions } from '@ola/shared/stores/chat/useChatPeerActions';
 
 export function useChatDetail(conversationId: string | null | undefined) {
   const { t, i18n } = useTranslation();
-  const push = useToastStore((s) => s.push);
 
   const conversations = useChatStore((s) => s.conversations);
   const messages = useChatStore((s) => s.messages);
@@ -35,9 +35,6 @@ export function useChatDetail(conversationId: string | null | undefined) {
   const replyTarget = useChatStore((s) => s.replyTarget);
   const setReplyTarget = useChatStore((s) => s.setReplyTarget);
   const clearReplyTarget = useChatStore((s) => s.clearReplyTarget);
-  const blockPeer = useChatStore((s) => s.blockPeer);
-  const unblockPeer = useChatStore((s) => s.unblockPeer);
-  const friendAction = useChatStore((s) => s.friendAction);
   const peerProfile = useChatStore((s) => s.peerProfile);
   const peerRelationship = useChatStore((s) => s.peerRelationship);
   const peerCardRoll = useChatStore((s) => s.peerCardRoll);
@@ -80,12 +77,7 @@ export function useChatDetail(conversationId: string | null | undefined) {
     (livePresence?.isOnline ?? peerProfile?.isOnline ?? conversation?.otherUser?.isOnline) === true;
   const peerLastActiveAt =
     livePresence?.lastActiveAt ?? peerProfile?.lastActiveAt ?? conversation?.otherUser?.lastActiveAt;
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  const now = useMinuteNow();
 
   const lastActiveTime = formatLastActive(i18n.language, peerLastActiveAt, now);
 
@@ -106,6 +98,7 @@ export function useChatDetail(conversationId: string | null | undefined) {
   const blockedByThem = blockStatus === RELATIONSHIP_STATUS.blockedByThem;
   const blocked = blockedByMe || blockedByThem;
   const friendLabel = chatFriendActionLabel(t, blockStatus);
+  const { handleFriendAction, handleBlock, handleUnblock } = useChatPeerActions(title, blocked);
 
   const lastOwnId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -113,32 +106,6 @@ export function useChatDetail(conversationId: string | null | undefined) {
     }
     return null;
   }, [messages, myId]);
-
-  async function handleFriendAction() {
-    if (blocked) {
-      push('info', t('chat.makeFriendBlocked'));
-      return;
-    }
-    const result = await friendAction();
-    if (result === 'error') {
-      push('error', t('chat.actionError'));
-      return;
-    }
-    if (result === 'request') push('success', t('chat.friendRequestSent'));
-    else if (result === 'cancel') push('success', t('chat.requestCancelled'));
-    else if (result === 'accept') push('success', t('chat.friendAccepted'));
-    else if (result === 'unfriend') push('success', t('chat.unfriendDone'));
-  }
-
-  async function handleBlock() {
-    const ok = await blockPeer();
-    push(ok ? 'success' : 'error', ok ? t('chat.blockDone', { name: title }) : t('chat.actionError'));
-  }
-
-  async function handleUnblock() {
-    const ok = await unblockPeer();
-    push(ok ? 'success' : 'error', ok ? t('chat.unblockDone', { name: title }) : t('chat.actionError'));
-  }
 
   return {
     conversation,

@@ -5,6 +5,7 @@ import {
   EN_TIME_LABELS,
   VI_TIME_LABELS,
 } from './datetime.constants';
+import type { PhotoMonthGroup } from '../types/client/media.type';
 
 dayjs.extend(localizedFormat);
 
@@ -51,7 +52,7 @@ export function formatDateDMY(iso: string): string {
   return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()}`;
 }
 
-export function formatDateSlashDMY(iso: string): string {
+export function formatDateSlashDMY(iso: string | number): string {
   const date = new Date(iso);
   return Number.isNaN(date.getTime()) ? '' : formatSlashDate(date, true);
 }
@@ -200,4 +201,36 @@ export function formatOlaDateSeparator(
 
 export function createDateSeparatorFormatter(locale: string): (iso: string) => string {
   return (iso: string) => formatOlaDateSeparator(iso, locale);
+}
+
+export function formatCountdownMMSS(ms: number): string {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`;
+}
+
+function monthKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}`;
+}
+
+function monthLabel(date: Date, language: string): string {
+  const text = new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(date);
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function groupPhotosByMonth(
+  photos: readonly { url: string; createdAt: string }[],
+  language: string
+): PhotoMonthGroup[] {
+  const groups: PhotoMonthGroup[] = [];
+  photos.forEach((photo, index) => {
+    const date = new Date(photo.createdAt);
+    const key = monthKey(date);
+    let last = groups[groups.length - 1];
+    if (last == null || last.key !== key) {
+      last = { key, label: monthLabel(date, language), items: [] };
+      groups.push(last);
+    }
+    last.items.push({ url: photo.url, index });
+  });
+  return groups;
 }

@@ -8,6 +8,7 @@ import (
 	"ola-chat-server/internal/models"
 	meModule "ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/moderation"
+	userModule "ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -169,7 +170,7 @@ func toListItem(p *models.Me) MeListItem {
 		LikeCount:    p.LikeCount,
 		DislikeCount: p.DislikeCount,
 		CommentCount: p.CommentCount,
-		Author:       toAuthor(p.Author),
+		Author:       userModule.ToUserBrief(p.Author),
 		CreatedAt:    p.CreatedAt.UTC().Format(time.RFC3339),
 	}
 }
@@ -203,7 +204,7 @@ func toDetail(p *models.Me) *MeDetail {
 		LikeCount:    p.LikeCount,
 		DislikeCount: p.DislikeCount,
 		CommentCount: p.CommentCount,
-		Author:       toAuthor(p.Author),
+		Author:       userModule.ToUserBrief(p.Author),
 		CreatedAt:    p.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:    p.UpdatedAt.UTC().Format(time.RFC3339),
 	}
@@ -241,19 +242,7 @@ func toComment(c *models.MeComment) CommentResponse {
 		ID:        c.ID.String(),
 		PostID:    c.PostID.String(),
 		Content:   c.Content,
-		Author:    toAuthor(c.Author),
+		Author:    userModule.ToUserBrief(c.Author),
 		CreatedAt: c.CreatedAt.UTC().Format(time.RFC3339),
-	}
-}
-
-func toAuthor(u *models.User) *AuthorResponse {
-	if u == nil {
-		return nil
-	}
-	return &AuthorResponse{
-		ID:       u.ID.String(),
-		Username: u.Username,
-		FullName: u.FullName,
-		Avatar:   u.Avatar,
 	}
 }

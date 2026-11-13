@@ -37,7 +37,7 @@ import {
   SmileyKulPanel,
   SMILEY_PANEL_MIN_CONTENT_HEIGHT,
 } from './SmileyKulPanel';
-import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
+import { MESSAGE_TYPE, ROOM_MESSAGE_STATUS } from '@ola/shared/constants';
 
 const likeIcon = require('@assets/icons/chat/smiley/smiley_35.png');
 const smileyIcon = require('@assets/icons/chat/ic_smiley.png');
@@ -232,7 +232,7 @@ export const RoomComposerBar = forwardRef<
         .messages.some(
           message =>
             message.type === MESSAGE_TYPE.audio &&
-            message.status === MESSAGE_STATUS.failed &&
+            message.status === ROOM_MESSAGE_STATUS.failed &&
             message.audioUrl === audio.file.uri,
         );
       if (!retryable) void deleteTemporaryVoiceFile(audio.file.uri);

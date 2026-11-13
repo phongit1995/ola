@@ -12,15 +12,30 @@ import (
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 
+	"github.com/gocql/gocql"
 	"go.uber.org/dig"
+	"go.uber.org/zap"
 )
 
 func provideConfig() (*config.Config, error) {
 	return LoadChatConfig()
 }
 
-func NewContainer() (*dig.Container, error) {
-	c := dig.New()
+func provideOptionalScylla(cfg *config.Config, log *zap.SugaredLogger) *gocql.Session {
+	if cfg.ScyllaHost == "" {
+		log.Warn("SCYLLA_HOST not set: conversation member cache misses cannot be backfilled")
+		return nil
+	}
+	session, err := db.NewScyllaDB(cfg, log)
+	if err != nil {
+		log.Errorw("ScyllaDB unavailable: conversation member cache misses cannot be backfilled", "error", err)
+		return nil
+	}
+	return session
+}
+
+func NewContainer(opts ...dig.Option) (*dig.Container, error) {
+	c := dig.New(opts...)
 
 	providers := []interface{}{
 		provideConfig,
@@ -28,6 +43,7 @@ func NewContainer() (*dig.Container, error) {
 		services.NewCacheService,
 		services.NewJWTService,
 		db.NewPostgresDB,
+		provideOptionalScylla,
 		push.NewFCMClient,
 		push.NewSender,
 		setting.NewRepository,

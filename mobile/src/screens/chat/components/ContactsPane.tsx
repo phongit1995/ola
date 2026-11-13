@@ -17,11 +17,11 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useChatBotConfigStore } from '@ola/shared/stores/chat-bot/chatBotConfigStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
+import { activeVipTypeId, colorForName, isVipActive, mapFriendsToContacts } from '@ola/shared/lib';
 import { CHAT_BOT_TYPE } from '@ola/shared/constants';
 import type { ChatStackParamList, RootStackParamList } from '@navigation/types';
 import { CHAT_ROUTES, ROOT_ROUTES } from '@navigation/routes';
-import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';
@@ -30,13 +30,13 @@ import { MessageActionSheet, type MessageSheetAction } from '@screens/room/compo
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
 import { StatusEditDialog } from './StatusEditDialog';
-import { mapFriendsToContacts } from '../utils';
-import type { Contact } from '../types';
 import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { useFriendsWithPresence } from '../usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
 import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
 import { DIVIDER } from '@constants';
+import type { Contact } from '@ola/shared/types';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 const addContactIcon = require('@assets/icons/chat/ic_add_contact_gray.png');
@@ -112,12 +112,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
   const [addOpen, setAddOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  const now = useMinuteNow();
 
   useEffect(() => {
     const store = useFriendsStore.getState();
@@ -303,38 +298,6 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
             <Text className="text-xl text-ola-ink-hint">›</Text>
           </Pressable>
         )}
-
-        {/* TODO: "Có thể bạn muốn làm quen" — tạm ẩn, chờ API gợi ý kết bạn thật
-            (SuggestedFriendsScreen đang chạy trên SUGGESTED_FRIENDS hardcode, nút Kết bạn chỉ toast).
-            Mở lại thì import lại peopleIcon và SUGGESTED_FRIENDS.
-        <Pressable
-          onPress={() => navigation.navigate(ROOT_ROUTES.SuggestedFriends)}
-          className="flex-row items-center gap-3 bg-white px-4 py-2"
-          style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
-        >
-          <View className="h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: '#e0e0e0' }}>
-            <Image source={peopleIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
-          </View>
-          <View className="min-w-0 flex-1">
-            <Text className="text-base text-ola-ink">{t('chat.suggestFriends')}</Text>
-            <View className="mt-1 flex-row items-center gap-2">
-              {SUGGESTED_FRIENDS.slice(0, 3).map((friend) => (
-                <View
-                  key={friend.name}
-                  className="h-7 w-7 items-center justify-center rounded"
-                  style={{ backgroundColor: friend.color }}
-                >
-                  <Text className="text-xs font-semibold text-white">{friend.name.charAt(0).toUpperCase()}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-          <View className="h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1">
-            <Text className="text-[10px] font-bold text-white">{SUGGESTED_FRIENDS.length}</Text>
-          </View>
-          <Text className="text-xl text-ola-ink-hint">›</Text>
-        </Pressable>
-        */}
 
         {enabledBots.length > 0 && <SectionHeader label={t('chat.sectionApps')} />}
         {enabledBots.includes(CHAT_BOT_TYPE.olala) && (

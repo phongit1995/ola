@@ -6,7 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useThemeStore } from '@ola/shared/stores/themeStore';
-import { THEME_OPTIONS } from '@ola/shared/constants';
+import { THEME_OPTIONS, VIP_PRIVACY_DISPLAY, VIP_PRIVACY_KEYS } from '@ola/shared/constants';
 import { UserService, VipService } from '@ola/shared/services';
 import type { GiftWallPrivacy, ThemeId, UserSettings } from '@ola/shared/types';
 import {
@@ -29,8 +29,6 @@ import {
   ToggleSwitch,
 } from './components';
 
-const VIP_PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
-const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'] as const;
 const GIFT_WALL_PRIVACY_OPTIONS = [
   { value: 2, labelKey: 'settings.vipPrivacyMine' },
   { value: 1, labelKey: 'settings.optFriends' },

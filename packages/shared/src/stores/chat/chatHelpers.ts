@@ -10,11 +10,11 @@ export function currentUserId(): string {
 export function previewOf(message: Message): string {
   if (message.type === MESSAGE_TYPE.gift) return giftMessagePreview(message.metadata);
   if (message.content) return message.content;
-  if (message.type === 'image') return '📷';
-  if (message.type === 'file') return '📎';
-  if (message.type === 'video') return '🎬';
-  if (message.type === 'audio') return '🎙️';
-  if (message.type === 'call') return '📞';
+  if (message.type === MESSAGE_TYPE.image) return '📷';
+  if (message.type === MESSAGE_TYPE.file) return '📎';
+  if (message.type === MESSAGE_TYPE.video) return '🎬';
+  if (message.type === MESSAGE_TYPE.audio) return '🎙️';
+  if (message.type === MESSAGE_TYPE.call) return '📞';
   return '';
 }
 

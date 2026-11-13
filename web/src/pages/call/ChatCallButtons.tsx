@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast, withCallPeerFrame } from '@lib';
 import type { CallerBrief, CallType } from '@app-types';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { ChatPhoneIcon, ChatVideoIcon } from './icons';
+import { CALL_MODE, CONVERSATION_KIND, CALL_TYPE } from '@constants';
 
 export function ChatCallButtons() {
   const { t } = useTranslation();
@@ -24,7 +25,9 @@ export function ChatCallButtons() {
   const [preparing, setPreparing] = useState(false);
 
   const otherUser =
-    conversation?.type === 'direct' ? conversation.otherUser : null;
+    conversation?.type === CONVERSATION_KIND.direct
+      ? conversation.otherUser
+      : null;
   const peer: CallerBrief | null =
     otherUser != null
       ? {
@@ -44,7 +47,7 @@ export function ChatCallButtons() {
 
   if (peer == null) return null;
 
-  const busy = mode !== 'idle' || pendingAction != null || preparing;
+  const busy = mode !== CALL_MODE.idle || pendingAction != null || preparing;
 
   const handleCall = async (callType: CallType) => {
     if (busy) return;
@@ -81,7 +84,7 @@ export function ChatCallButtons() {
         type="button"
         aria-label={t('call.voiceCall')}
         disabled={busy}
-        onClick={() => void handleCall('audio')}
+        onClick={() => void handleCall(CALL_TYPE.audio)}
         className="flex h-9 w-9 items-center justify-center rounded-full text-white hover:bg-white/15 disabled:opacity-40"
       >
         <ChatPhoneIcon />
@@ -90,7 +93,7 @@ export function ChatCallButtons() {
         type="button"
         aria-label={t('call.videoCall')}
         disabled={busy}
-        onClick={() => void handleCall('video')}
+        onClick={() => void handleCall(CALL_TYPE.video)}
         className="flex h-9 w-9 items-center justify-center rounded-full text-white hover:bg-white/15 disabled:opacity-40"
       >
         <ChatVideoIcon />

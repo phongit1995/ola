@@ -169,7 +169,6 @@ export function MeVisitorsList({
                   color={colorForName(row.username)}
                   size={72}
                   src={row.avatar}
-                  rounded={false}
                   frameId={row.avatarFrameId}
                 />
               </button>

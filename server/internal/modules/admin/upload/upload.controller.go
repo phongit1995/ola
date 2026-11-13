@@ -23,7 +23,6 @@ type UploadResponse struct {
 	URL string `json:"url"`
 }
 
-// Upload godoc
 // @Summary      Upload an image (admin)
 // @Description  Upload an image to storage and get its URL (jpg, png, gif, webp, ≤5MB)
 // @Tags         admin-upload

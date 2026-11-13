@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
-import { MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
+import { MESSAGE_TYPE, REPORT_TARGET_TYPE, ROOM_CHAT_STATUS } from '@constants';
 import {
   BUBBLE_WALLPAPER,
   buildRoomFeed,
   filterVisibleRoomMessages,
   SmileyText,
   toast,
+  copyToClipboard,
 } from '@lib';
-import { useChatWallpaperStyle, useStickyScroll } from '@hooks';
+import {
+  useChatWallpaperStyle,
+  useStickyScroll,
+  useMessageHighlight,
+} from '@hooks';
 import {
   ConfirmDialog,
   DateSeparator,
@@ -34,6 +39,9 @@ import {
   useRoomFilterStore,
 } from '@ola/shared/stores/room/roomFilterStore';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
+
+const LOAD_OLDER_VIEWPORTS = 1.5;
+const LOAD_OLDER_MIN_DISTANCE = 600;
 
 interface RoomMessagesTabProps {
   currentUserId: string;
@@ -98,9 +106,7 @@ export function RoomMessagesTab({
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(
     null
   );
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const composerRef = useRef<RoomComposerHandle>(null);
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const messageById = useMemo(
     () => new Map(messages.map((item) => [item.id, item])),
@@ -114,16 +120,10 @@ export function RoomMessagesTab({
       loadingMore,
       onLoadMore,
       enabled: active && visible,
-      loadMoreAtTop: 80,
+      loadMoreAtTop: LOAD_OLDER_MIN_DISTANCE,
+      loadMoreViewports: LOAD_OLDER_VIEWPORTS,
       onStickyChange: setPinnedToBottom,
     });
-
-  useEffect(() => {
-    return () => {
-      if (highlightTimerRef.current != null)
-        clearTimeout(highlightTimerRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     scrollToBottomIfPinned();
@@ -151,35 +151,15 @@ export function RoomMessagesTab({
     []
   );
 
-  const scrollToMessage = useCallback(
-    (id: string) => {
-      const element = scrollRef.current?.querySelector(
-        `[data-message-id="${CSS.escape(id)}"]`
-      );
-      if (element == null) {
-        toast.error(t('room.replyNotFound'));
-        return;
-      }
-      unpin();
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setHighlightedId(id);
-      if (highlightTimerRef.current != null)
-        clearTimeout(highlightTimerRef.current);
-      highlightTimerRef.current = setTimeout(
-        () => setHighlightedId(null),
-        1500
-      );
-    },
-    [t, unpin, scrollRef]
-  );
+  const { highlightedId, scrollToMessage } = useMessageHighlight({
+    scrollRef,
+    notFoundText: t('room.replyNotFound'),
+    onBeforeScroll: unpin,
+  });
 
   async function copyMessage(content: string) {
-    try {
-      await navigator.clipboard.writeText(content);
-      toast.success(t('room.copied'));
-    } catch {
-      toast.error(t('common.error'));
-    }
+    if (await copyToClipboard(content)) toast.success(t('room.copied'));
+    else toast.error(t('common.error'));
   }
 
   function sheetActions(message: RoomMessage): MessageSheetAction[] {
@@ -229,9 +209,10 @@ export function RoomMessagesTab({
     () =>
       buildRoomFeed(
         filterVisibleRoomMessages(messages, blockedUserIds),
-        currentUserId
+        currentUserId,
+        { omitLeadingDate: hasMore }
       ),
-    [messages, currentUserId, blockedUserIds]
+    [messages, currentUserId, blockedUserIds, hasMore]
   );
 
   return (
@@ -242,9 +223,11 @@ export function RoomMessagesTab({
     >
       <RoomReactionNotice />
       <RoomReactionBalloons />
-      {status !== 'joined' && (
+      {status !== ROOM_CHAT_STATUS.joined && (
         <div className="bg-black/5 py-1.5 text-center text-sm text-black/54">
-          {status === 'connecting' ? t('room.connecting') : t('room.joinError')}
+          {status === ROOM_CHAT_STATUS.connecting
+            ? t('room.connecting')
+            : t('room.joinError')}
         </div>
       )}
 
@@ -312,7 +295,7 @@ export function RoomMessagesTab({
 
       <RoomComposerBar
         ref={composerRef}
-        disabled={status !== 'joined'}
+        disabled={status !== ROOM_CHAT_STATUS.joined}
         onBeforeSend={pin}
         onSendText={onSend}
         onSendImage={onSendImage}

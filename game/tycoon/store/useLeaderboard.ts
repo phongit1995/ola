@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { LEADERBOARD_CACHE_MS, leaderboardFromServer, leaderboardMatchesTab, type LeaderboardResult, type LeaderboardStatus, type LeaderboardTab } from '../helpers/leaderboard';
+import { createRequestGuard, requestOnce } from '../helpers/requestOnce';
 import { useTycoon } from './useTycoon';
 import { playSound } from '../audio';
 
@@ -24,8 +25,7 @@ function emptyBoards(): Record<LeaderboardTab, LeaderboardBoard> {
   return { day: EMPTY, week: EMPTY, level: EMPTY };
 }
 
-const requestSeq: Record<LeaderboardTab, number> = { day: 0, week: 0, level: 0 };
-const REQUEST_TIMEOUT_MS = 10_000;
+const requestGuards: Record<LeaderboardTab, () => () => boolean> = { day: createRequestGuard(), week: createRequestGuard(), level: createRequestGuard() };
 
 export const useLeaderboard = create<LeaderboardState>((set, get) => ({
   tab: 'day',
@@ -47,10 +47,10 @@ export const useLeaderboard = create<LeaderboardState>((set, get) => ({
     const board = get().boards[tab];
     if (board.status === 'loading') return;
     if (!force && board.status === 'ready' && Date.now() - board.at < LEADERBOARD_CACHE_MS) return;
-    const seq = ++requestSeq[tab];
+    const isCurrent = requestGuards[tab]();
     set((state) => ({ boards: { ...state.boards, [tab]: { ...state.boards[tab], status: 'loading' } } }));
     const fail = () => {
-      if (seq === requestSeq[tab]) set((state) => ({ boards: { ...state.boards, [tab]: { ...state.boards[tab], status: 'error' } } }));
+      if (isCurrent()) set((state) => ({ boards: { ...state.boards, [tab]: { ...state.boards[tab], status: 'error' } } }));
     };
     const tycoon = useTycoon.getState();
     const session = tycoon.session();
@@ -58,27 +58,21 @@ export const useLeaderboard = create<LeaderboardState>((set, get) => ({
       fail();
       return;
     }
-    await new Promise<void>((resolve) => {
-      const timer = setTimeout(() => {
-        off();
-        fail();
-        resolve();
-      }, REQUEST_TIMEOUT_MS);
-      const off = session.onLeaderboard((data) => {
-        if (!leaderboardMatchesTab(tab, data)) return;
-        clearTimeout(timer);
-        off();
-        resolve();
-        if (seq !== requestSeq[tab]) return;
-        if (data.error?.trim()) {
-          fail();
-          return;
-        }
-        const result: LeaderboardResult = leaderboardFromServer(tab, data, useTycoon.getState().profile?.id);
-        set((state) => ({ boards: { ...state.boards, [tab]: { status: 'ready', data: result, at: Date.now() } } }));
-      });
-      if (tab === 'level') session.getLeaderboard('week', 'level');
-      else session.getLeaderboard(tab);
+    const reply = await requestOnce({
+      subscribe: session.onLeaderboard,
+      matches: (data) => leaderboardMatchesTab(tab, data),
+      isCurrent,
+      send: () => {
+        if (tab === 'level') session.getLeaderboard('week', 'level');
+        else session.getLeaderboard(tab);
+      },
     });
+    if (reply.status === 'stale') return;
+    if (reply.status === 'timeout' || reply.data.error?.trim()) {
+      fail();
+      return;
+    }
+    const result: LeaderboardResult = leaderboardFromServer(tab, reply.data, useTycoon.getState().profile?.id);
+    set((state) => ({ boards: { ...state.boards, [tab]: { status: 'ready', data: result, at: Date.now() } } }));
   },
 }));

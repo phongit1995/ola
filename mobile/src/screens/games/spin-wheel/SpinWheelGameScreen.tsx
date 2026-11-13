@@ -28,6 +28,7 @@ import { GiftListDialog } from './GiftListDialog';
 import { WheelActionButton } from './WheelActionButton';
 import { CHIP_TEXT_STYLE, SPIN_TEXT_STYLE, TEXT_SHADOW, TITLE_STYLE } from './spinWheelStyles';
 import { playSpinSound, stopSpinSound } from './spinWheelSound';
+import { KEN_SOCKET_EVENTS } from '@ola/shared/constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.SpinWheel>;
 
@@ -58,7 +59,7 @@ export function SpinWheelGameScreen({ navigation }: Props) {
 
   useEffect(() => {
     useSpinWheelStore.setState({ spinning: false, suppressKenSync: false, pendingResult: null });
-    const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
+    const off = SocketService.on<{ ken?: number }>(KEN_SOCKET_EVENTS.updated, (data) => {
       if (typeof data?.ken === 'number') useSpinWheelStore.getState().syncKen(data.ken);
     });
     return () => {

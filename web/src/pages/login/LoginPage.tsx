@@ -16,12 +16,18 @@ import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { AppDownloadBar, Spinner } from '@components';
 import { AuthService } from '@services';
-import { ApiError, USERNAME_MAX, decodeSecret, toast } from '@lib';
-import { useAuthStore } from '@/store/authStore';
+import {
+  ApiError,
+  USERNAME_MAX,
+  decodeSecret,
+  toast,
+  LOGIN_USERNAME_MIN,
+} from '@lib';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useSavedAccountsStore } from '@ola/shared/stores/savedAccountsStore';
 import type { SavedAccount } from '@ola/shared/types';
 import { SavedAccountGallery } from './SavedAccountGallery';
-import { APP_VERSION, USERNAME_MIN } from './constants';
+import { APP_VERSION } from './constants';
 
 interface LoginForm {
   username: string;
@@ -143,7 +149,7 @@ export function LoginPage() {
               onChange: clearError,
               required: t('login.errUsernameRequired'),
               minLength: {
-                value: USERNAME_MIN,
+                value: LOGIN_USERNAME_MIN,
                 message: t('login.errUsernameLength'),
               },
               maxLength: {

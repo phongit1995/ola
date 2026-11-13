@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useRoomContext } from '@livekit/components-react';
 import { ConnectionState, RoomEvent } from 'livekit-client';
 import { CALL_PEER_LEFT_GRACE_MS } from '@ola/shared/constants';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 
 export function usePeerPresenceWatcher() {
   const room = useRoomContext();

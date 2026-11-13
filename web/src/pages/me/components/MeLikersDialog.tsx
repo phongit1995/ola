@@ -7,6 +7,7 @@ import { RELATIONSHIP_STATUS } from '@constants';
 import { MeService, RelationshipService } from '@services';
 import type { PostAuthor } from '@app-types';
 import { PAGE_SIZE } from '../constants';
+import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
 
 interface MeLikersDialogProps {
   postId: string;
@@ -22,12 +23,6 @@ export function MeLikersDialog({
   onOpenProfile,
 }: MeLikersDialogProps) {
   const { t } = useTranslation();
-  const [likers, setLikers] = useState<PostAuthor[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [reachedEnd, setReachedEnd] = useState(false);
-  const [error, setError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -42,43 +37,16 @@ export function MeLikersDialog({
     [postId, commentId]
   );
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const result = await loadPage(0);
-        if (!active) return;
-        setLikers(result.items);
-        setTotal(result.total);
-        if (result.items.length < PAGE_SIZE) setReachedEnd(true);
-      } catch (err) {
-        console.error('load likers failed', err);
-        if (active) setError(true);
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [loadPage]);
-
-  const hasMore = !reachedEnd && likers.length < total;
-
-  const loadMore = useCallback(async () => {
-    if (loading || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const result = await loadPage(likers.length);
-      setLikers((current) => [...current, ...result.items]);
-      setTotal(result.total);
-      if (result.items.length < PAGE_SIZE) setReachedEnd(true);
-    } catch (err) {
-      console.error('load more likers failed', err);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loadPage, likers.length, loading, loadingMore]);
+  const {
+    items: likers,
+    total,
+    loading,
+    loadingMore,
+    error: loadError,
+    hasMore,
+    loadMore,
+  } = useOffsetPage(loadPage, { pageSize: PAGE_SIZE });
+  const error = loadError != null;
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -163,7 +131,6 @@ export function MeLikersDialog({
                     color={colorForName(user.username)}
                     size={44}
                     src={user.avatar}
-                    rounded={false}
                     frameId={user.avatarFrameId}
                   />
                   <span className="flex min-w-0 flex-1 flex-col">

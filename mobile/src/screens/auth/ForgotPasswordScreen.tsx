@@ -11,12 +11,12 @@ import {
   resolveForgotConfirmError,
   resolveForgotSendError,
   USERNAME_MAX,
+  LOGIN_USERNAME_MIN,
 } from '@ola/shared/lib';
 import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
 import type { AuthStackParamList } from '@navigation/types';
 import { AUTH_ROUTES } from '@navigation/routes';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
-import { USERNAME_MIN } from './constants';
 
 interface UsernameForm {
   username: string;
@@ -144,7 +144,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
             name="username"
             rules={{
               required: t('forgot.errUsernameRequired'),
-              minLength: { value: USERNAME_MIN, message: t('forgot.errUsernameRequired') },
+              minLength: { value: LOGIN_USERNAME_MIN, message: t('forgot.errUsernameRequired') },
               maxLength: { value: USERNAME_MAX, message: t('forgot.errUsernameRequired') },
               pattern: { value: LEGACY_USERNAME_PATTERN, message: t('forgot.errUsernameFormat') },
             }}

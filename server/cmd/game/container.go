@@ -15,8 +15,8 @@ func provideConfig() (*config.Config, error) {
 	return LoadGameConfig()
 }
 
-func NewContainer() (*dig.Container, error) {
-	c := dig.New()
+func NewContainer(opts ...dig.Option) (*dig.Container, error) {
+	c := dig.New(opts...)
 
 	providers := []interface{}{
 		provideConfig,

@@ -9,7 +9,6 @@ type ReplySnapshot struct {
 	ImageURL   string `json:"imageUrl,omitempty"`
 }
 
-// MessageData contains the message and conversation information for events
 type MessageData struct {
 	ID             string         `json:"id"`
 	ConversationID string         `json:"conversationId"`
@@ -28,7 +27,6 @@ type MessageData struct {
 	ClientMsgID    string         `json:"clientMsgId,omitempty"`
 }
 
-// ConversationData contains conversation information for events
 type ConversationData struct {
 	ID               string `json:"id"`
 	Type             string `json:"type"`
@@ -42,7 +40,6 @@ type ConversationData struct {
 	UnreadCount      int    `json:"unreadCount"`
 }
 
-// ConversationMemberData contains conversation member information for events
 type ConversationMemberData struct {
 	UserID         string `json:"userId"`
 	ConversationID string `json:"conversationId"`
@@ -52,26 +49,22 @@ type ConversationMemberData struct {
 	Role           string `json:"role"`
 }
 
-// MessageCreatedEvent represents a message creation event
 type MessageCreatedEvent struct {
 	Conversation *ConversationData `json:"conversation"`
 	Message      *MessageData      `json:"message"`
 	UnreadCounts map[string]int    `json:"unreadCounts,omitempty"`
 }
 
-// MessageDeletedEvent represents a message deletion event
 type MessageDeletedEvent struct {
 	Conversation *ConversationData `json:"conversation"`
 	MessageID    string            `json:"messageId"`
 }
 
-// MessageUpdatedEvent represents a message update event
 type MessageUpdatedEvent struct {
 	Conversation *ConversationData `json:"conversation"`
 	Message      *MessageData      `json:"message"`
 }
 
-// MessageReactionUpdatedEvent — reaction toggle event broadcast over Kafka
 type MessageReactionUpdatedEvent struct {
 	ConversationID string              `json:"conversationId"`
 	MessageID      string              `json:"messageId"`

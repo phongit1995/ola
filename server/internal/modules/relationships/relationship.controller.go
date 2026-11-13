@@ -21,7 +21,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	}
 }
 
-// SendFriendRequest godoc
 // @Summary      Send friend request
 // @Description  Send a friend request to another user
 // @Tags         relationships
@@ -40,13 +39,13 @@ func (ctrl *Controller) SendFriendRequest(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	var req SendFriendRequestRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	req, err := utils.BindJSON[SendFriendRequestRequest](c)
+	if err != nil {
 		ctrl.logger.Warnw("Invalid send friend request",
 			"user_id", userID,
 			"error", err.Error(),
 		)
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		return nil, err
 	}
 
 	addresseeID, err := uuid.Parse(req.UserID)
@@ -77,7 +76,6 @@ func (ctrl *Controller) SendFriendRequest(c *gin.Context) (interface{}, error) {
 	return response, nil
 }
 
-// RespondToFriendRequest godoc
 // @Summary      Respond to friend request
 // @Description  Accept or reject a friend request
 // @Tags         relationships
@@ -137,7 +135,6 @@ func (ctrl *Controller) RespondToFriendRequest(c *gin.Context) (interface{}, err
 	return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid action")
 }
 
-// CancelFriendRequest godoc
 // @Summary      Cancel friend request
 // @Description  Cancel a sent friend request
 // @Tags         relationships
@@ -175,7 +172,6 @@ func (ctrl *Controller) CancelFriendRequest(c *gin.Context) (interface{}, error)
 	return map[string]string{"message": "Friend request cancelled successfully"}, nil
 }
 
-// Unfriend godoc
 // @Summary      Unfriend a user
 // @Description  Remove a friendship with another user
 // @Tags         relationships
@@ -213,7 +209,6 @@ func (ctrl *Controller) Unfriend(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "Unfriended successfully"}, nil
 }
 
-// BlockUser godoc
 // @Summary      Block a user
 // @Description  Block another user
 // @Tags         relationships
@@ -264,7 +259,6 @@ func (ctrl *Controller) BlockUser(c *gin.Context) (interface{}, error) {
 	return response, nil
 }
 
-// UnblockUser godoc
 // @Summary      Unblock a user
 // @Description  Unblock a previously blocked user
 // @Tags         relationships
@@ -302,7 +296,6 @@ func (ctrl *Controller) UnblockUser(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "User unblocked successfully"}, nil
 }
 
-// GetPendingRequests godoc
 // @Summary      Get pending friend requests
 // @Description  Get pending friend requests received by the user (paginated)
 // @Tags         relationships
@@ -334,7 +327,6 @@ func (ctrl *Controller) GetPendingRequests(c *gin.Context) (interface{}, error) 
 	return response, nil
 }
 
-// GetSentRequests godoc
 // @Summary      Get sent friend requests
 // @Description  Get friend requests sent by the user (paginated)
 // @Tags         relationships
@@ -366,7 +358,6 @@ func (ctrl *Controller) GetSentRequests(c *gin.Context) (interface{}, error) {
 	return response, nil
 }
 
-// GetFriends godoc
 // @Summary      Get friends list
 // @Description  Get the full friends list of the user (no pagination)
 // @Tags         relationships
@@ -393,7 +384,6 @@ func (ctrl *Controller) GetFriends(c *gin.Context) (interface{}, error) {
 	return response, nil
 }
 
-// GetBlockedUsers godoc
 // @Summary      Get blocked users
 // @Description  Get users blocked by the user (paginated)
 // @Tags         relationships

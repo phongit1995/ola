@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[wheel_controller]")}
 }
 
-// GetConfig godoc
 // @Summary      Cấu hình vòng quay may mắn cho người chơi
 // @Tags         wheel
 // @Produce      json
@@ -36,7 +35,6 @@ func (ctrl *Controller) GetConfig(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Spin godoc
 // @Summary      Quay vòng quay may mắn
 // @Tags         wheel
 // @Accept       json
@@ -62,7 +60,6 @@ func (ctrl *Controller) Spin(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// ListSpins godoc
 // @Summary      Lịch sử quay của tôi
 // @Tags         wheel
 // @Produce      json

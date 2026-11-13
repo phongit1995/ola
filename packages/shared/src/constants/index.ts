@@ -30,3 +30,7 @@ export * from './gift';
 export * from './megaphone';
 export * from './giftCode';
 export * from './avatarFrame';
+export * from './http';
+export * from './vip';
+export * from './wheel';
+export * from './egg';

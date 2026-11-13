@@ -15,8 +15,7 @@ import (
 )
 
 var (
-	ErrUserNotFound    = apperr.ErrUserNotFound
-	ErrInsufficientKen = errors.New("insufficient ken balance")
+	ErrUserNotFound = apperr.ErrUserNotFound
 )
 
 type Service struct {

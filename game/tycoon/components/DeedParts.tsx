@@ -7,7 +7,7 @@ import { seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
 import { TileMark, type TileMarkName } from './TileMark';
 import { TILE_ART } from './tileArt';
-import { houseArt } from './art';
+import { houseArt, PIXEL_ART } from './art';
 
 const MARK_BY_KIND: Partial<Record<string, TileMarkName>> = { chance: 'chance', chest: 'chest', tax: 'tax', go: 'go' };
 
@@ -113,7 +113,7 @@ export function RentLadder({ view, idx, pick }: { view: ViewState; idx: number; 
         const picked = can && pick?.target === step.houses;
         const body = (
           <>
-            <span className="ty-ladder-icon">{art ? <img src={art} alt="" draggable={false} /> : street ? <i className="ty-ladder-lot" /> : <b>{i + 1}</b>}</span>
+            <span className="ty-ladder-icon">{art ? <img src={art} alt="" draggable={false} /> : street ? <img className="ty-ladder-flag ui-sprite" src={PIXEL_ART.flag} alt="" draggable={false} /> : <b>{i + 1}</b>}</span>
             <span className="ty-ladder-bar">
               <strong>{step.rent}</strong>
             </span>

@@ -15,6 +15,7 @@ import { EggHistoryDialog } from './EggHistoryDialog';
 import { EggGiftDialog } from './EggGiftDialog';
 import { useEggGame } from './useEggGame';
 import { eggAssets } from './eggAssets';
+import { KEN_SOCKET_EVENTS } from '@ola/shared/constants';
 
 const backIcon = require('@assets/icons/ic_back.png');
 
@@ -45,7 +46,7 @@ export function EggGameScreen({ navigation }: Props) {
       winReward: null,
       suppressKenSync: false,
     });
-    const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
+    const off = SocketService.on<{ ken?: number }>(KEN_SOCKET_EVENTS.updated, (data) => {
       if (typeof data?.ken === 'number') useEggGameStore.getState().syncKen(data.ken);
     });
     return () => {

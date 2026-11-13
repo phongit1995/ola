@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import {
   CamIcon,
   CamOffIcon,

@@ -8,12 +8,6 @@ import favoriteIcon from '@/assets/icons/me/header/ic_header_favorite.png';
 import visitorsIcon from '@/assets/icons/me/header/ic_header_visitors.png';
 import clanIcon from '@/assets/icons/me/header/ic_header_clan.png';
 import momentIcon from '@/assets/icons/me/ic_drawer_moment.svg';
-// TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
-// import eggIcon from '@/assets/icons/me/ic_indicate_broken_egg.png';
-// import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
-// import olaIcon from '@/assets/icons/me/ic_indicate_me.png';
-// import funnyIcon from '@/assets/icons/me/ic_indicate_funny.png';
-// import publicIcon from '@/assets/icons/me/ic_indicate_public.png';
 import { CLOSE_ANIMATION_MS } from '../constants';
 
 interface MeLeftDrawerProps {
@@ -90,12 +84,6 @@ export function MeLeftDrawer({
       opticalSize: 28,
       opticalOffsetY: 1,
     },
-    // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
-    // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg') },
-    // { key: 'android', icon: androidIcon, label: '#Android' },
-    // { key: 'ola', icon: olaIcon, label: '#Ola' },
-    // { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny') },
-    // { key: 'public', icon: publicIcon, label: t('me.drawerPublic') },
   ];
 
   function pick(key: string) {

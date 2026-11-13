@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	userModule "ola-chat-server/internal/modules/user"
 )
 
 type CreateChestRequest struct {
@@ -98,12 +100,7 @@ type OpenChestResult struct {
 	KenBalance int       `json:"kenBalance"`
 }
 
-type ClaimUserView struct {
-	ID       uuid.UUID `json:"id"`
-	Username string    `json:"username"`
-	FullName string    `json:"fullName"`
-	Avatar   string    `json:"avatar"`
-}
+type ClaimUserView = userModule.UserSummary
 
 type ClaimView struct {
 	ID        uuid.UUID     `json:"id"`

@@ -21,6 +21,7 @@ import {
   GIFT_TITLE_STYLE,
   TEXT_SHADOW,
 } from './spinWheelStyles';
+import { WHEEL_SEGMENT_KIND } from '@ola/shared/constants';
 
 const GOLD = '#ffd24a';
 
@@ -299,8 +300,8 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
 
   const randomSegments = segments.filter(
     (segment) =>
-      segment.kind === 'ken_random' ||
-      (segment.kind === 'vip_random' && (segment.options?.length ?? 0) > 0)
+      segment.kind === WHEEL_SEGMENT_KIND.kenRandom ||
+      (segment.kind === WHEEL_SEGMENT_KIND.vipRandom && (segment.options?.length ?? 0) > 0)
   );
   const hasOdds = segments.some((segment) => formatOddsPercent(segment.percent) != null);
 
@@ -363,7 +364,7 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
                 indicatorStyle="white"
               >
                 {randomSegments.map((segment) =>
-                  segment.kind === 'ken_random' ? (
+                  segment.kind === WHEEL_SEGMENT_KIND.kenRandom ? (
                     <KenRandomCard key={segment.id} segment={segment} />
                   ) : (
                     <VipRandomSection key={segment.id} segment={segment} />

@@ -19,7 +19,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { toast } from '@ola/shared/lib';
-import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useOverlayBreadcrumb } from '@hooks/useOverlayBreadcrumb';
 import {
   alertPhotoPermissionDenied,

@@ -102,12 +102,12 @@ export function TileSheet({ idx }: { idx: number }) {
         ) : null}
         {canFestivalHere ? (
           <UiButton tone="gold" block disabled={busy} onClick={() => act({ type: 'FESTIVAL', tile: idx })}>
-            Mở Lễ hội · thuê {currentRent({ ...view, festival: idx }, idx)}
+            Mở Lễ hội · thuê {formatMoney(currentRent({ ...view, festival: idx }, idx))}
           </UiButton>
         ) : null}
         {canTravelHere ? (
           <UiButton tone="gold" block disabled={busy} onClick={() => act({ type: 'TRAVEL', tile: idx })}>
-            Bay tới đây{passesGo ? ` · +${GO_SALARY}` : ''}
+            Bay tới đây{passesGo ? ` · +${formatMoney(GO_SALARY)}` : ''}
           </UiButton>
         ) : null}
         {manageAllowed ? (
@@ -154,13 +154,13 @@ export function TileSheet({ idx }: { idx: number }) {
           <p className="ty-deed-facts">
             {street && (owner < 0 || owner === you) ? (
               <>
-                <span>Nâng {houseCost}/cấp</span>
-                <span>Hạ +{Math.floor(houseCost / 2)}/cấp</span>
+                <span>Nâng {formatMoney(houseCost)}/cấp</span>
+                <span>Hạ +{formatMoney(Math.floor(houseCost / 2))}/cấp</span>
               </>
             ) : null}
             {street && owner >= 0 && state.houses < MAX_HOUSES ? (
               <span>
-                {owner === you ? 'Người khác mua lại' : 'Mua lại'} {takeoverPrice(view, idx)}
+                {owner === you ? 'Người khác mua lại' : 'Mua lại'} {formatMoney(takeoverPrice(view, idx))}
               </span>
             ) : null}
             {street && owner >= 0 && state.houses >= MAX_HOUSES ? <span>Khách sạn không mua lại được</span> : null}

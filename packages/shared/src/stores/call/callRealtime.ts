@@ -1,5 +1,5 @@
 import i18n from 'i18next';
-import { ringFallbackMs } from '../../constants/call';
+import { ringFallbackMs, CALL_MODE, CALL_STATUS } from '../../constants/call';
 import { CALL_SOCKET_EVENTS } from '../../constants/socket';
 import { formatCallDuration, peerDisplayName } from '../../lib/callFormat';
 import { toast } from '../../lib/toast';
@@ -54,7 +54,7 @@ function currentCallId(get: CallGet): string | null {
 }
 
 function handleIncoming(set: CallSet, get: CallGet, event: IncomingCallEvent) {
-  if (get().mode !== 'idle' || get().pendingAction != null) {
+  if (get().mode !== CALL_MODE.idle || get().pendingAction != null) {
     void CallService.decline(event.callId).catch(() => {});
     return;
   }
@@ -62,13 +62,13 @@ function handleIncoming(set: CallSet, get: CallGet, event: IncomingCallEvent) {
   const cached = callerFromConversations(event);
   set({
     ...initialCallState,
-    mode: 'incoming',
+    mode: CALL_MODE.incoming,
     incoming: { ...event, caller: cached ?? { id: event.callerId } },
   });
 
   armRingTimeout(() => {
     const { mode, incoming } = get();
-    if (mode !== 'incoming' || incoming?.callId !== event.callId) return;
+    if (mode !== CALL_MODE.incoming || incoming?.callId !== event.callId) return;
     set({ ...initialCallState });
     toast.info(i18n.t('call.missedCall'));
   }, ringFallbackMs(event.ringTimeoutSeconds));
@@ -85,9 +85,9 @@ function handleIncoming(set: CallSet, get: CallGet, event: IncomingCallEvent) {
 
 function handleAccepted(set: CallSet, get: CallGet, event: CallAcceptedEvent) {
   const { active, mode } = get();
-  if (mode !== 'outgoing' || active?.callId !== event.callId) return;
+  if (mode !== CALL_MODE.outgoing || active?.callId !== event.callId) return;
   clearRingTimeout();
-  set({ mode: 'active' });
+  set({ mode: CALL_MODE.active });
 }
 
 function handleDeclined(set: CallSet, get: CallGet, event: CallDeclinedEvent) {
@@ -116,7 +116,7 @@ function handleEnded(set: CallSet, get: CallGet, event: CallEndedEvent) {
   clearRingTimeout();
   set({ ...initialCallState });
 
-  if (event.status === 'missed') {
+  if (event.status === CALL_STATUS.missed) {
     toast.info(i18n.t(wasIncoming ? 'call.missedCall' : 'call.noAnswer'));
     return;
   }
@@ -132,7 +132,7 @@ function handleEnded(set: CallSet, get: CallGet, event: CallEndedEvent) {
 }
 
 function reconcileOngoingCall(set: CallSet, get: CallGet) {
-  if (get().mode === 'idle' || get().pendingAction != null) return;
+  if (get().mode === CALL_MODE.idle || get().pendingAction != null) return;
   const trackedId = currentCallId(get);
   if (trackedId == null) return;
 
@@ -147,9 +147,9 @@ function reconcileOngoingCall(set: CallSet, get: CallGet) {
         toast.info(i18n.t('call.ended'));
         return;
       }
-      if (data.status === 'active' && get().mode === 'outgoing') {
+      if (data.status === CALL_STATUS.active && get().mode === CALL_MODE.outgoing) {
         clearRingTimeout();
-        set({ mode: 'active' });
+        set({ mode: CALL_MODE.active });
       }
     })
     .catch(() => {});

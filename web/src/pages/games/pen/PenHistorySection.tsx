@@ -4,11 +4,12 @@ import { ConfirmDialog, VipBadge } from '@components';
 import { formatVnd, toApiError, toast, toHistoryRow } from '@lib';
 import { PenService } from '@services';
 import type { PenHistoryRowView, PenRowOutcome, PenSide } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
-import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@/store/penHistoryStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@ola/shared/stores/pen/penHistoryStore';
 import type { PenHistorySection as SectionRole } from '@ola/shared/types';
 import { penAssets, penHistoryAssets } from './penAssets';
 import { PenHistoryTable } from './PenHistoryTable';
+import { PEN_ROW_OUTCOME, PEN_HISTORY_SECTION } from '@constants';
 
 const ROW_GRID = 'grid items-center gap-1';
 const GRID_COLS = '1.6fr 1fr 0.8fr 1.7fr';
@@ -68,7 +69,7 @@ function ResultCell({
   onCancel?: () => void;
 }) {
   const { t } = useTranslation();
-  if (outcome === 'pending') {
+  if (outcome === PEN_ROW_OUTCOME.pending) {
     if (onCancel == null) return null;
     return (
       <span className="flex items-center justify-end">
@@ -82,7 +83,7 @@ function ResultCell({
       </span>
     );
   }
-  if (outcome === 'cancelled') {
+  if (outcome === PEN_ROW_OUTCOME.cancelled) {
     return (
       <span className="flex items-center justify-end gap-1 text-[11px] font-semibold text-white/45">
         <BanIcon className="h-4 w-4" />
@@ -90,7 +91,7 @@ function ResultCell({
       </span>
     );
   }
-  const win = outcome === 'win';
+  const win = outcome === PEN_ROW_OUTCOME.win;
   return (
     <span className="flex items-center justify-end">
       <span
@@ -133,7 +134,7 @@ function PenHistoryRow({
               )}
             </span>
           </>
-        ) : row.outcome === 'pending' ? (
+        ) : row.outcome === PEN_ROW_OUTCOME.pending ? (
           <span className="flex items-center gap-1 text-[11px] font-semibold text-[#ffd23f]">
             <img
               src={penHistoryAssets.clockYellow}
@@ -162,7 +163,9 @@ function PenHistoryRow({
           outcome={row.outcome}
           amount={row.amount}
           onCancel={
-            row.outcome === 'pending' ? () => onCancel(row.id) : undefined
+            row.outcome === PEN_ROW_OUTCOME.pending
+              ? () => onCancel(row.id)
+              : undefined
           }
         />
       </span>
@@ -193,10 +196,10 @@ export function PenHistorySection({
     void load(section, 0);
   }, [load, section]);
 
-  const verb = section === 'shoot' ? 'catch' : 'shoot';
+  const verb = section === PEN_HISTORY_SECTION.shoot ? 'catch' : 'shoot';
   const pageCount = Math.max(1, Math.ceil(state.total / PEN_HISTORY_PAGE));
   const emptyText =
-    section === 'shoot'
+    section === PEN_HISTORY_SECTION.shoot
       ? t('penGame.hist.emptyShot')
       : t('penGame.hist.emptyCatch');
 

@@ -5,9 +5,10 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import type { CallerBrief, CallType } from '@ola/shared/types';
 import { withCallPeerFrame } from '@ola/shared/lib';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { ChatPhoneIcon, ChatVideoIcon } from './icons';
+import { CALL_MODE, CONVERSATION_KIND, CALL_TYPE } from '@ola/shared/constants';
 
 export function ChatCallButtons() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export function ChatCallButtons() {
   const push = useToastStore((s) => s.push);
   const [preparing, setPreparing] = useState(false);
 
-  const otherUser = conversation?.type === 'direct' ? conversation.otherUser : null;
+  const otherUser = conversation?.type === CONVERSATION_KIND.direct ? conversation.otherUser : null;
   const peer: CallerBrief | null =
     otherUser != null
       ? {
@@ -42,7 +43,7 @@ export function ChatCallButtons() {
 
   if (peer == null) return null;
 
-  const busy = mode !== 'idle' || pendingAction != null || preparing;
+  const busy = mode !== CALL_MODE.idle || pendingAction != null || preparing;
 
   const handleCall = async (callType: CallType) => {
     if (busy) return;
@@ -70,7 +71,7 @@ export function ChatCallButtons() {
       <Pressable
         accessibilityLabel={t('call.voiceCall')}
         disabled={busy}
-        onPress={() => void handleCall('audio')}
+        onPress={() => void handleCall(CALL_TYPE.audio)}
         className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
         style={{ opacity: busy ? 0.4 : 1 }}
       >
@@ -79,7 +80,7 @@ export function ChatCallButtons() {
       <Pressable
         accessibilityLabel={t('call.videoCall')}
         disabled={busy}
-        onPress={() => void handleCall('video')}
+        onPress={() => void handleCall(CALL_TYPE.video)}
         className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
         style={{ opacity: busy ? 0.4 : 1 }}
       >

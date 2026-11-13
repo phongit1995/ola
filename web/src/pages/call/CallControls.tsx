@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import {
   CamIcon,
   CamOffIcon,

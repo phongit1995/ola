@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -10,13 +10,12 @@ import {
   View,
 } from 'react-native';
 import { KeyboardView } from '@components/KeyboardView';
-import { toast } from '@ola/shared/lib';
-import { UserService } from '@ola/shared/services';
+import { toast, isBlockedRelationship } from '@ola/shared/lib';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import { useUserSearch } from '@ola/shared/stores/user/useUserSearch';
 
 const MESSAGE_LIMIT = 500;
 
@@ -24,10 +23,6 @@ const searchIcon = require('@assets/icons/me/ic_action_search.png');
 
 interface ProposeComposerProps {
   onClose: () => void;
-}
-
-function isBlocked(user: UserSearchResult): boolean {
-  return user.relationship === RELATIONSHIP_STATUS.blockedByMe || user.relationship === RELATIONSHIP_STATUS.blockedByThem;
 }
 
 function UserRowName({ user }: { user: UserSearchResult }) {
@@ -48,37 +43,24 @@ function UserRowName({ user }: { user: UserSearchResult }) {
   );
 }
 
+const PROPOSE_SEARCH_LIMIT = 20;
+
 export function ProposeComposer({ onClose }: ProposeComposerProps) {
   const { t } = useTranslation();
   const propose = useMarriageStore((s) => s.propose);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [selected, setSelected] = useState<UserSearchResult | null>(null);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (selected != null) return;
-    const keyword = query.trim();
-    if (keyword === '') {
-      setResults([]);
-      setSearching(false);
-      return;
-    }
-    const timer = setTimeout(() => {
-      setSearching(true);
-      UserService.search(keyword, 20)
-        .then((result) => setResults(result.users))
-        .catch(() => setResults([]))
-        .finally(() => setSearching(false));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query, selected]);
+  const { results, searching } = useUserSearch(query, {
+    limit: PROPOSE_SEARCH_LIMIT,
+    enabled: selected == null,
+    keepPreviousResults: true,
+  });
 
   function pick(user: UserSearchResult) {
     setSelected(user);
-    setResults([]);
     setQuery('');
   }
 
@@ -229,7 +211,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
                         </View>
                       ) : (
                         results.map((user) => {
-                          const blocked = isBlocked(user);
+                          const blocked = isBlockedRelationship(user.relationship);
                           return (
                             <Pressable
                               key={user.id}

@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	userModule "ola-chat-server/internal/modules/user"
 )
 
 type Service struct {
@@ -21,10 +23,8 @@ func formatTime(t time.Time) string {
 }
 
 func briefFromRow(id uuid.UUID, username, fullName, avatar string) *UserBrief {
-	if username == "" {
-		return &UserBrief{ID: id.String(), Username: id.String()[:8]}
-	}
-	return &UserBrief{ID: id.String(), Username: username, FullName: fullName, Avatar: avatar}
+	brief := userModule.UserBriefOf(id, username, fullName, avatar)
+	return &brief
 }
 
 func matchPlayerCount(row matchRow) int {
@@ -56,7 +56,7 @@ func matchPlayers(row matchRow, seats []matchSeatRow) []MatchPlayer {
 			place = 1
 		}
 		players[i] = MatchPlayer{
-			User:  *briefFromRow(seat.UserID, seat.Username, seat.FullName, seat.Avatar),
+			User:  userModule.UserBriefOf(seat.UserID, seat.Username, seat.FullName, seat.Avatar),
 			Seat:  seat.Seat,
 			Place: place,
 		}
@@ -129,7 +129,7 @@ func statsPlayers(rows []playerAggRow) []StatsPlayer {
 	players := make([]StatsPlayer, len(rows))
 	for i, row := range rows {
 		p := StatsPlayer{
-			User:    *briefFromRow(row.UserID, row.Username, row.FullName, row.Avatar),
+			User:    userModule.UserBriefOf(row.UserID, row.Username, row.FullName, row.Avatar),
 			Matches: row.Matches,
 			Wins:    row.Wins,
 			Losses:  row.Losses,
@@ -212,18 +212,18 @@ func (s *Service) Suspects(f AdminMatchFilter, minMatches, minPairMatches int) (
 	for _, row := range pairRows {
 		ids = append(ids, row.AID, row.BID)
 	}
-	briefs, err := s.repo.UserBriefs(ids)
+	users, err := s.repo.FindUsersByIDs(ids)
 	if err != nil {
 		return nil, err
 	}
 
 	pairs := make([]SuspectPair, len(pairRows))
 	for i, row := range pairRows {
-		a := briefs[row.AID]
-		b := briefs[row.BID]
+		a := users[row.AID]
+		b := users[row.BID]
 		pair := SuspectPair{
-			UserA:    *briefFromRow(row.AID, a.Username, a.FullName, a.Avatar),
-			UserB:    *briefFromRow(row.BID, b.Username, b.FullName, b.Avatar),
+			UserA:    userModule.UserBriefOf(row.AID, a.Username, a.FullName, a.Avatar),
+			UserB:    userModule.UserBriefOf(row.BID, b.Username, b.FullName, b.Avatar),
 			Matches:  row.Matches,
 			Decided:  row.Decided,
 			AWins:    row.AWins,
@@ -257,7 +257,7 @@ func (s *Service) ListLevels(f AdminLevelFilter, limit, offset int) (*LevelListR
 	items := make([]LevelView, len(rows))
 	for i, row := range rows {
 		items[i] = LevelView{
-			User:      *briefFromRow(row.UserID, row.Username, row.FullName, row.Avatar),
+			User:      userModule.UserBriefOf(row.UserID, row.Username, row.FullName, row.Avatar),
 			GameID:    row.GameID,
 			Level:     row.Level,
 			Exp:       row.Exp,

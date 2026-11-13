@@ -44,7 +44,6 @@ func parseDate(c *gin.Context, name string, fallback time.Time) (time.Time, erro
 	return t, nil
 }
 
-// GetOverview godoc
 // @Summary      Thống kê Google Analytics gộp Android, iOS và web (admin)
 // @Tags         admin-analytics
 // @Produce      json
@@ -91,7 +90,6 @@ func (ctrl *Controller) GetOverview(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetRealtime godoc
 // @Summary      Số người đang dùng trong 30 phút gần nhất (admin)
 // @Tags         admin-analytics
 // @Produce      json

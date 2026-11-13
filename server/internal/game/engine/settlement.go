@@ -224,25 +224,10 @@ func (e *Engine) reconcileSettlement() {
 
 func (e *Engine) queuePlayingRestore(snapshot ActiveMatchSnapshot) {
 	jobKey := userKey(snapshot.GameID, snapshot.ID)
-	e.restoreJobsMu.Lock()
-	if _, exists := e.restoreJobs[jobKey]; exists {
-		e.restoreJobsMu.Unlock()
-		return
-	}
-	e.restoreJobs[jobKey] = struct{}{}
-	e.restoreJobsMu.Unlock()
-
-	go func() {
-		defer func() {
-			e.restoreJobsMu.Lock()
-			delete(e.restoreJobs, jobKey)
-			e.restoreJobsMu.Unlock()
-		}()
-
+	e.runUniqueJob(&e.restoreJobsMu, e.restoreJobs, jobKey, func() {
 		retryDelay := settlementRetryDelay
 		for {
-			timer := time.NewTimer(retryDelay)
-			<-timer.C
+			time.Sleep(retryDelay)
 			if snapshot.Bet > 0 && e.currentSettlement() == nil {
 				return
 			}
@@ -250,47 +235,22 @@ func (e *Engine) queuePlayingRestore(snapshot ActiveMatchSnapshot) {
 			if restored || !retry {
 				return
 			}
-			if retryDelay < settlementMaxRetryDelay {
-				retryDelay *= 2
-				if retryDelay > settlementMaxRetryDelay {
-					retryDelay = settlementMaxRetryDelay
-				}
-			}
+			retryDelay = nextBackoff(retryDelay, settlementMaxRetryDelay)
 		}
-	}()
+	})
 }
 
 func (e *Engine) queueFinishedSettlement(snapshot ActiveMatchSnapshot, outcome MatchOutcome) {
 	jobKey := userKey(snapshot.GameID, snapshot.ID)
-	e.settlementJobsMu.Lock()
-	if _, exists := e.settlementJobs[jobKey]; exists {
-		e.settlementJobsMu.Unlock()
-		return
-	}
-	e.settlementJobs[jobKey] = struct{}{}
-	e.settlementJobsMu.Unlock()
-
-	go func() {
-		defer func() {
-			e.settlementJobsMu.Lock()
-			delete(e.settlementJobs, jobKey)
-			e.settlementJobsMu.Unlock()
-		}()
-
+	e.runUniqueJob(&e.settlementJobsMu, e.settlementJobs, jobKey, func() {
 		settled := false
 		roomHandled := false
 		retryDelay := settlementRetryDelay
 		for {
 			settlement := e.currentSettlement()
 			if settlement == nil {
-				timer := time.NewTimer(retryDelay)
-				<-timer.C
-				if retryDelay < settlementMaxRetryDelay {
-					retryDelay *= 2
-					if retryDelay > settlementMaxRetryDelay {
-						retryDelay = settlementMaxRetryDelay
-					}
-				}
+				time.Sleep(retryDelay)
+				retryDelay = nextBackoff(retryDelay, settlementMaxRetryDelay)
 				continue
 			}
 			if !settled {
@@ -314,16 +274,14 @@ func (e *Engine) queueFinishedSettlement(snapshot ActiveMatchSnapshot, outcome M
 					current, exists, err := e.activeStore.Get(snapshot.GameID, snapshot.ID)
 					if err != nil {
 						e.logger.Errorw("Failed to revalidate settled match snapshot; will retry", "match_id", snapshot.ID, "error", err)
-						timer := time.NewTimer(retryDelay)
-						<-timer.C
+						time.Sleep(retryDelay)
 						continue
 					}
 					if exists && current.Status != matchStatusFinished && current.Status != matchStatusPlaying {
 						return
 					}
 					if !e.restoreSnapshotRoom(snapshot) {
-						timer := time.NewTimer(retryDelay)
-						<-timer.C
+						time.Sleep(retryDelay)
 						continue
 					}
 					roomHandled = true
@@ -346,35 +304,15 @@ func (e *Engine) queueFinishedSettlement(snapshot ActiveMatchSnapshot, outcome M
 				}
 			}
 
-			timer := time.NewTimer(retryDelay)
-			<-timer.C
-			if retryDelay < settlementMaxRetryDelay {
-				retryDelay *= 2
-				if retryDelay > settlementMaxRetryDelay {
-					retryDelay = settlementMaxRetryDelay
-				}
-			}
+			time.Sleep(retryDelay)
+			retryDelay = nextBackoff(retryDelay, settlementMaxRetryDelay)
 		}
-	}()
+	})
 }
 
 func (e *Engine) queueAbortSettlement(snapshot ActiveMatchSnapshot) {
 	jobKey := userKey(snapshot.GameID, snapshot.ID)
-	e.abortJobsMu.Lock()
-	if _, exists := e.abortJobs[jobKey]; exists {
-		e.abortJobsMu.Unlock()
-		return
-	}
-	e.abortJobs[jobKey] = struct{}{}
-	e.abortJobsMu.Unlock()
-
-	go func() {
-		defer func() {
-			e.abortJobsMu.Lock()
-			delete(e.abortJobs, jobKey)
-			e.abortJobsMu.Unlock()
-		}()
-
+	e.runUniqueJob(&e.abortJobsMu, e.abortJobs, jobKey, func() {
 		aborted := false
 		roomHandled := false
 		retryDelay := settlementRetryDelay
@@ -398,8 +336,7 @@ func (e *Engine) queueAbortSettlement(snapshot ActiveMatchSnapshot) {
 				current, exists, err := e.activeStore.Get(snapshot.GameID, snapshot.ID)
 				if err != nil {
 					e.logger.Errorw("Failed to revalidate aborted match snapshot; will retry", "match_id", snapshot.ID, "error", err)
-					timer := time.NewTimer(retryDelay)
-					<-timer.C
+					time.Sleep(retryDelay)
 					continue
 				}
 				if exists && current.Status == matchStatusFinished {
@@ -407,14 +344,8 @@ func (e *Engine) queueAbortSettlement(snapshot ActiveMatchSnapshot) {
 				}
 				if !roomHandled {
 					if !e.restoreSnapshotRoom(snapshot) {
-						timer := time.NewTimer(retryDelay)
-						<-timer.C
-						if retryDelay < settlementMaxRetryDelay {
-							retryDelay *= 2
-							if retryDelay > settlementMaxRetryDelay {
-								retryDelay = settlementMaxRetryDelay
-							}
-						}
+						time.Sleep(retryDelay)
+						retryDelay = nextBackoff(retryDelay, settlementMaxRetryDelay)
 						continue
 					}
 					roomHandled = true
@@ -437,16 +368,10 @@ func (e *Engine) queueAbortSettlement(snapshot ActiveMatchSnapshot) {
 				}
 			}
 
-			timer := time.NewTimer(retryDelay)
-			<-timer.C
-			if retryDelay < settlementMaxRetryDelay {
-				retryDelay *= 2
-				if retryDelay > settlementMaxRetryDelay {
-					retryDelay = settlementMaxRetryDelay
-				}
-			}
+			time.Sleep(retryDelay)
+			retryDelay = nextBackoff(retryDelay, settlementMaxRetryDelay)
 		}
-	}()
+	})
 }
 
 func (e *Engine) deleteSnapshotWithStatuses(

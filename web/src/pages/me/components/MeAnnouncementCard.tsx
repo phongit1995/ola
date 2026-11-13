@@ -6,8 +6,8 @@ import { createTimeFormatter } from '@lib';
 import {
   announcementPublishedAt,
   selectFeedAnnouncement,
+  useAnnouncementStore,
 } from '@ola/shared/stores/announcementStore';
-import { useAnnouncementStore } from '@/store/announcementStore';
 import { PostContent } from './PostContent';
 
 export function MeAnnouncementCard() {

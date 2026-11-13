@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	GameID  = "caro"
 	Size    = 20
 	WinLen  = 5
 	noneWin = -1
@@ -32,7 +33,7 @@ func init() {
 	logic.Register(Logic{})
 }
 
-func (Logic) ID() string { return "caro" }
+func (Logic) ID() string { return GameID }
 
 func (Logic) StateVersion() int { return 1 }
 

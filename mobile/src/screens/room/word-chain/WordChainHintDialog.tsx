@@ -17,10 +17,10 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import { WordChainKen } from './WordChainKen';
 import { WORD_CHAIN_ICONS } from './wordChainAssets';
 import { WORD_CHAIN_ROW_DIVIDER } from './WordChainList';
+import { ERROR } from '@constants';
 
 const KEN_PILL = { ken: <WordChainKen /> };
 const SEND_BUTTON_WIDTH = 72;
-const ERROR_COLOR = '#e34545';
 
 export function WordChainHintDialog({
   onClose,
@@ -82,7 +82,7 @@ export function WordChainHintDialog({
       >
         <Text
           className="text-sm leading-relaxed"
-          style={{ color: stale ? ERROR_COLOR : 'rgba(0,0,0,0.54)' }}
+          style={{ color: stale ? ERROR : 'rgba(0,0,0,0.54)' }}
         >
           {stale ? (
             t('wordChain.hintStale')
@@ -169,7 +169,7 @@ export function WordChainHintDialog({
         </Text>
         <Text
           className="text-sm leading-relaxed"
-          style={{ color: canAfford ? 'rgba(0,0,0,0.54)' : ERROR_COLOR }}
+          style={{ color: canAfford ? 'rgba(0,0,0,0.54)' : ERROR }}
         >
           {canAfford ? (
             <Trans

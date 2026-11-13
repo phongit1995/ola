@@ -20,7 +20,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_ken_controller]")}
 }
 
-// Adjust godoc
 // @Summary      Cộng/trừ ken cho user (admin)
 // @Description  Admin tặng (grant) hoặc trừ (deduct) ken; ghi ken_transactions và bắn KEN_UPDATED
 // @Tags         admin-ken
@@ -57,7 +56,6 @@ func (ctrl *Controller) Adjust(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListTransactions godoc
 // @Summary      Lịch sử giao dịch ken của user (admin)
 // @Tags         admin-ken
 // @Produce      json
@@ -124,7 +122,6 @@ func parseTransferFilter(c *gin.Context) (TransferFilter, error) {
 	return f, nil
 }
 
-// ListTransfers godoc
 // @Summary      Lịch sử chuyển ken giữa các user (admin)
 // @Tags         admin-ken
 // @Produce      json
@@ -155,7 +152,6 @@ func (ctrl *Controller) ListTransfers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// TransferUserStats godoc
 // @Summary      Thống kê chuyển/nhận ken theo từng user (admin)
 // @Tags         admin-ken
 // @Produce      json

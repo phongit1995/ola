@@ -16,9 +16,6 @@ export async function ensureCallPermissions(
     push('error', t(callType === CALL_TYPE.video ? 'call.cameraDenied' : 'call.micDenied'));
     return false;
   }
-  // Khác web: web coi 'failed' là qua vì trình duyệt vẫn xin quyền lại lúc
-  // publish. Trên máy thật mở được thiết bị là điều kiện cần, mở không nổi mà
-  // vẫn tạo call thì server có cuộc gọi còn client câm.
   push('error', t('call.startFailed'));
   return false;
 }

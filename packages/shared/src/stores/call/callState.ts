@@ -1,4 +1,5 @@
 import type { CallStateData } from '../../types/client/call.type';
+import { CALL_MODE } from '../../constants/call';
 
 export type {
   CallGet,
@@ -8,7 +9,7 @@ export type {
 } from '../../types/client/call.type';
 
 export const initialCallState: CallStateData = {
-  mode: 'idle',
+  mode: CALL_MODE.idle,
   incoming: null,
   active: null,
   expanded: false,

@@ -51,7 +51,6 @@ func parseListFilter(c *gin.Context, statuses map[string]bool) (ListFilter, erro
 	return f, nil
 }
 
-// GetStats godoc
 // @Summary      Thống kê kết hôn & cầu hôn (admin)
 // @Tags         admin-marriage
 // @Produce      json
@@ -74,7 +73,6 @@ func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListMarriages godoc
 // @Summary      Danh sách cặp đôi kết hôn (admin)
 // @Tags         admin-marriage
 // @Produce      json
@@ -103,7 +101,6 @@ func (ctrl *Controller) ListMarriages(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListProposals godoc
 // @Summary      Danh sách lời cầu hôn (admin)
 // @Tags         admin-marriage
 // @Produce      json

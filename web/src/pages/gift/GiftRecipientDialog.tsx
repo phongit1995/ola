@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, UserSearchPicker, type GiftReceiver } from '@components';
 import { colorForName, toast } from '@lib';
 import type { UserSearchResult } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import giftIcon from '@/assets/icons/apps/gift.webp';
 
 interface GiftRecipientDialogProps {

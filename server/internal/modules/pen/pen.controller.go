@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[pen_controller]")}
 }
 
-// CreateShot godoc
 // @Summary      Tạo lượt sút PEN (đặt cược + chọn hướng)
 // @Tags         pen
 // @Accept       json
@@ -42,7 +41,6 @@ func (ctrl *Controller) CreateShot(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListOpenShots godoc
 // @Summary      Danh sách lượt sút đang chờ (của người khác)
 // @Tags         pen
 // @Produce      json
@@ -75,7 +73,6 @@ func (ctrl *Controller) ListOpenShots(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListMyOpenShots godoc
 // @Summary      Lượt sút đang chờ của tôi (để huỷ)
 // @Tags         pen
 // @Produce      json
@@ -98,7 +95,6 @@ func (ctrl *Controller) ListMyOpenShots(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Catch godoc
 // @Summary      Chụp một lượt PEN (chọn hướng)
 // @Tags         pen
 // @Accept       json
@@ -130,7 +126,6 @@ func (ctrl *Controller) Catch(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(resp, 200), nil
 }
 
-// Cancel godoc
 // @Summary      Huỷ lượt sút của tôi (hoàn cược)
 // @Tags         pen
 // @Produce      json
@@ -156,7 +151,6 @@ func (ctrl *Controller) Cancel(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(resp, 200), nil
 }
 
-// History godoc
 // @Summary      Lịch sử sút/chụp PEN của tôi
 // @Tags         pen
 // @Produce      json
@@ -189,7 +183,6 @@ func (ctrl *Controller) History(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Leaderboard godoc
 // @Summary      Top người chơi PEN lời nhiều nhất (ngày/tuần, GMT+7)
 // @Tags         pen
 // @Produce      json
@@ -212,7 +205,6 @@ func (ctrl *Controller) Leaderboard(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// AllHistory godoc
 // @Summary      Lịch sử các lượt đã xử lý của tất cả mọi người
 // @Tags         pen
 // @Produce      json

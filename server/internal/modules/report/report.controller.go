@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[report_controller]")}
 }
 
-// Create godoc
 // @Summary      Report a user, post, comment or message
 // @Description  targetType: account, post, comment, story_comment, message, room_message, moment. contextId là conversationId (message) hoặc roomId (room_message).
 // @Tags         report

@@ -4,6 +4,9 @@ const (
 	CacheKeyMessage     = "MESSAGE:%s:DETAIL"
 	CacheKeyMessageList = "CONVERSATION:%s:MESSAGES"
 
+	CacheKeyMediaUploadLock = "media-upload:%s:%s"
+	MediaSendLabel          = "media"
+
 	MessageReplyExcerptMaxRunes = 120
 
 	CacheTTLMessage          = 3600

@@ -78,10 +78,6 @@ export function useStickyBottomList<T>(options?: UseStickyBottomListOptions) {
       const viewportShrank =
         nextHeight < previousHeight - VIEWPORT_RESIZE_EPSILON;
 
-      // A smaller viewport needs an explicit correction to keep the newest
-      // message visible. When it grows (for example, while the keyboard is
-      // closing), the native scroll view clamps its offset to the new bottom;
-      // another JS scrollToEnd would land a frame later and cause a visible jump.
       if ((becameVisible || viewportShrank) && shouldPin()) pin();
     },
     [pin, shouldPin]

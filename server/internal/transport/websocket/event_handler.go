@@ -75,12 +75,10 @@ func (h *EventHandler) handleConnection(client *socket.Socket, userID string) {
 }
 
 func (h *EventHandler) registerClientEvents(client *socket.Socket, userID string) {
-	// Disconnect event
 	client.On("disconnect", func(args ...any) {
 		h.handleDisconnect(client, userID)
 	})
 
-	// Heartbeat ping to refresh presence TTL
 	client.On("ping", func(args ...any) {
 		if err := h.presenceService.RefreshPresence(userID); err != nil {
 			h.server.logger.Warnw("Failed to refresh presence on ping", "user_id", userID, "error", err)
@@ -278,15 +276,6 @@ func replyAckError(ack socket.Ack, err error) {
 func (h *EventHandler) handleDisconnect(client *socket.Socket, userID string) {
 	// Giữ chỗ trong phòng ~1h khi disconnect (đăng xuất / mất kết nối): KHÔNG xoá presence
 	// phòng lúc disconnect, để TTL RoomPresenceTTLSeconds tự dọn. Chỉ room:leave mới xoá ngay.
-	// Mở lại đoạn dưới nếu muốn rời khỏi tất cả phòng ngay khi socket disconnect.
-	// if h.server.roomPresence != nil {
-	// 	ctx := context.Background()
-	// 	data := client.Data().(*SocketData)
-	// 	for _, roomID := range data.RoomIDs() {
-	// 		h.leaveRoom(ctx, client, userID, roomID)
-	// 	}
-	// }
-
 	isLastConnection, err := h.presenceService.RemoveConnection(userID)
 	if err != nil {
 		h.server.logger.Errorw("Failed to remove presence", "user_id", userID, "error", err)

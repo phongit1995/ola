@@ -15,7 +15,7 @@ const MARQUEE_SPEED_PX_PER_SECOND = 40;
 const MARQUEE_MIN_DURATION_MS = 8000;
 const MARQUEE_MAX_DURATION_MS = 45000;
 
-const megaphoneIcon = require('../../assets/icons/announcement-megaphone.png');
+const megaphoneIcon = require('@assets/icons/announcement-megaphone.png');
 
 function announcementMarqueeMs(travelPx: number): number {
   return Math.min(

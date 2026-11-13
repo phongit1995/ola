@@ -1,3 +1,4 @@
+import type { WheelSegmentKind } from '../types/api/wheel.type';
 import type {
   SegmentTheme,
   WheelDividerLine,
@@ -8,8 +9,11 @@ import {
   SPIN_TURNS,
   WHEEL_CENTER,
   WHEEL_DIVIDER_INNER_RADIUS,
+  WHEEL_POINTER_MAX_TICK_DEG,
   WHEEL_SLICE_RADIUS,
 } from './spinWheel.constants';
+import { formatKen } from './number';
+import { WHEEL_SEGMENT_KIND } from '../constants/wheel';
 
 export * from './spinWheel.constants';
 export type {
@@ -90,4 +94,31 @@ export function wheelDividerLine(index: number, angle: number): WheelDividerLine
   const inner = wheelPolar(boundary, WHEEL_DIVIDER_INNER_RADIUS);
   const outer = wheelPolar(boundary, WHEEL_SLICE_RADIUS);
   return { x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y };
+}
+
+export function formatRewardKen(amount: number): string {
+  if (amount >= 10000) {
+    const k = amount / 1000;
+    return `${Number.isInteger(k) ? k : k.toFixed(1)}K`;
+  }
+  return formatKen(amount);
+}
+
+export function isKenKind(kind: WheelSegmentKind): boolean {
+  return kind === WHEEL_SEGMENT_KIND.kenFixed || kind === WHEEL_SEGMENT_KIND.kenRandom;
+}
+
+export function isVipDaysKind(kind: WheelSegmentKind): boolean {
+  return kind === WHEEL_SEGMENT_KIND.vipDays;
+}
+
+export function isVipItemKind(kind: WheelSegmentKind): boolean {
+  return kind === WHEEL_SEGMENT_KIND.vipItem || kind === WHEEL_SEGMENT_KIND.vipRandom;
+}
+
+export function pointerTickDeg(wheelAngle: number, angle: number): number {
+  if (angle <= 0) return 0;
+  const phase = (((wheelAngle - angle / 2) % angle) + angle) % angle;
+  const t = phase / angle;
+  return -WHEEL_POINTER_MAX_TICK_DEG * t * t;
 }

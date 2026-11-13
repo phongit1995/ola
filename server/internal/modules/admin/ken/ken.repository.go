@@ -3,12 +3,12 @@ package adminken
 import (
 	"time"
 
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 	admincommon "ola-chat-server/internal/modules/admin/common"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type Repository struct {
@@ -196,43 +196,30 @@ func (r *Repository) Adjust(p AdjustParams) (*models.User, *models.KenTransactio
 	var kenTx models.KenTransaction
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		var u models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", p.UserID).Error; err != nil {
-			return err
-		}
-
-		before := u.Ken
-		after := before + p.Amount
-		if p.Direction == models.KenDirectionDebit {
-			if before < p.Amount {
-				return ErrInsufficientKen
-			}
-			after = before - p.Amount
-		}
-
-		if err := tx.Model(&models.User{}).Where("id = ?", p.UserID).Update("ken", after).Error; err != nil {
+		u, err := ledger.LockUser(tx, p.UserID)
+		if err != nil {
 			return err
 		}
 
 		actorID := p.ActorID
-		kenTx = models.KenTransaction{
-			UserID:        p.UserID,
-			Direction:     p.Direction,
-			Type:          p.Type,
-			Amount:        p.Amount,
-			BalanceBefore: before,
-			BalanceAfter:  after,
-			Description:   p.Description,
-			ActorType:     models.KenActorAdmin,
-			ActorID:       &actorID,
-			Metadata:      p.Metadata,
+		entry := ledger.Entry{
+			Type:        p.Type,
+			Description: p.Description,
+			ActorType:   models.KenActorAdmin,
+			ActorID:     &actorID,
+			Metadata:    p.Metadata,
 		}
-		if err := tx.Create(&kenTx).Error; err != nil {
+		apply := ledger.Credit
+		if p.Direction == models.KenDirectionDebit {
+			apply = ledger.Debit
+		}
+		row, err := apply(tx, u, p.Amount, entry)
+		if err != nil {
 			return err
 		}
 
-		u.Ken = after
-		updatedUser = u
+		kenTx = *row
+		updatedUser = *u
 		return nil
 	})
 	if err != nil {

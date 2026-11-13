@@ -1,7 +1,8 @@
 import { colorForName, postAudio } from '@lib';
 import type { Post, PostReaction } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { MePost } from './types';
+import { POST_REACTION } from '@constants';
 
 export function reconcileMeLikers(server: MePost, fallback: MePost): MePost {
   if (server.topLikers.length === 0 && server.likes > 0) {
@@ -45,7 +46,7 @@ export function applyMeReaction(
   type: PostReaction,
   self?: MeLiker
 ): MePost {
-  if (type === 'like') {
+  if (type === POST_REACTION.like) {
     const topLikers = withSelfLiker(post, !post.liked, self);
     if (post.liked) {
       return {
@@ -109,8 +110,8 @@ export function toMePost(
     checkIn,
     comments: post.commentCount,
     likes: post.likeCount,
-    liked: post.myReaction === 'like',
-    disliked: post.myReaction === 'dislike',
+    liked: post.myReaction === POST_REACTION.like,
+    disliked: post.myReaction === POST_REACTION.dislike,
     mention: (post.mentions?.length ?? 0) > 0,
     pinned: post.isPinned,
     topLikers: (post.topLikers ?? []).map((liker) => ({

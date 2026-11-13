@@ -632,7 +632,15 @@ docker-compose down -v
 - Weighted random pick: `utils.WeightedPick`
 - KEN balance push to a user: `wsServer.EmitKenUpdate(userID, ken)` (safe on a nil server)
 - Image file extension from mime: `media.ImageExtension(mime)` (default `.jpg`), `media.ImageExtensionOrFile(mime, fileName)`
-- Admin: `admincommon.UserBrief` / `admincommon.UserBriefOf`, `admincommon.FindUsersByIDs` (`internal/modules/admin/common`); admin modules reuse the main module's repository (e.g. `meModule.Repository`, `clanModule.Repository`, `vip.Repository`) instead of copying its queries
+- Admin: `admincommon.UserBrief` / `admincommon.UserBriefOf`, `admincommon.FindUsersByIDs` (`internal/modules/admin/common`); admin modules reuse the main module's repository (e.g. `meModule.Repository`, `clanModule.Repository`, `vip.Repository`, `user.Repository`) instead of copying its queries
+- User brief DTOs: `user.UserBrief` (fullName/avatar omitempty) / `user.UserSummary` (always present), mappers `user.ToUserBrief`, `user.UserBriefOf`, `user.UserSummaryOf`
+- Paginated `total/limit/offset/items` response: `utils.Page[T]`
+- KEN balance changes: `internal/ledger` — `ledger.LockUser` / `LockUserPair`, `EnsureBalance`, `Debit` / `Credit` (update ken + write `ken_transactions` in the caller's tx), `Record`, sentinel `ledger.ErrInsufficientKen`
+- VIP: `vip.ExtendEnd(now, current, days)`, `vip.CreateIconTx(tx, userID, vipTypeID, source)`
+- Uploads: `media.ReadImage`, `media.ReadAudio`, `media.ReadAllLimited`, `media.IsAllowedImageMime`, `S3Service.UploadNamedBytes`; message/room media send helpers (idempotency lock, rate limit, cleanup, reaction lock) in `internal/media/mediasend`
+- User access tokens (REST, chat WS, game WS): `services.AuthenticateUserAccessToken`; access vs refresh via `JWTService.VerifyAccessToken` / `VerifyRefreshToken` (`token_use` claim)
+- Goroutines / timer callbacks: `utils.SafeGo`, `utils.SafeCall` (recover + log)
+- Error → HTTP status: `utils.ServiceError` (DB/timeout errors become 500 "internal server error"; never return raw `err.Error()` of infrastructure errors)
 
 ### Cache Keys
 

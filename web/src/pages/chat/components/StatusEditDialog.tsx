@@ -1,12 +1,11 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogButton } from '@components';
+import { Dialog, DialogButton, CloseIcon } from '@components';
 import { UserService } from '@services';
 import { ApiError, compressImageForUpload, imageUploadErrorText, toast } from '@lib';
 import type { UpdateProfileRequest } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
-import { CloseIcon } from './Icons';
 
 interface StatusEditDialogProps {
   open: boolean;

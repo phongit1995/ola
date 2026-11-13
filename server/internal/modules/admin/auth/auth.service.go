@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
 
@@ -108,7 +107,7 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP, userAgent string) (*Re
 		return nil, errors.New("invalid or expired refresh token")
 	}
 
-	adminID, sessionID, err := adminSessionFromClaims(claims.Data, middleware.TokenUseRefresh)
+	adminID, sessionID, err := adminSessionFromClaims(claims.Data, services.TokenUseRefresh)
 	if err != nil {
 		return nil, errors.New("invalid or expired refresh token")
 	}
@@ -250,11 +249,11 @@ func (s *Service) GetByID(adminID uuid.UUID) (*AdminDTO, error) {
 }
 
 func (s *Service) generateAccessToken(admin *models.AdminUser, sessionID uuid.UUID) (string, error) {
-	return s.jwtService.GenerateTokenWithClaims(adminClaims(admin, sessionID, middleware.TokenUseAccess))
+	return s.jwtService.GenerateTokenWithClaims(adminClaims(admin, sessionID, services.TokenUseAccess))
 }
 
 func (s *Service) generateRefreshToken(admin *models.AdminUser, sessionID uuid.UUID) (string, error) {
-	return s.jwtService.GenerateRefreshTokenWithClaims(adminClaims(admin, sessionID, middleware.TokenUseRefresh))
+	return s.jwtService.GenerateRefreshTokenWithClaims(adminClaims(admin, sessionID, services.TokenUseRefresh))
 }
 
 func (s *Service) refreshTokenLifetime() time.Duration {
@@ -333,7 +332,7 @@ func adminClaims(admin *models.AdminUser, sessionID uuid.UUID, tokenUse string) 
 		"id":        admin.ID.String(),
 		"sid":       sessionID.String(),
 		"role":      admin.Role,
-		"type":      middleware.TokenTypeAdmin,
+		"type":      services.TokenTypeAdmin,
 		"token_use": tokenUse,
 		"isAdmin":   true,
 	}
@@ -347,7 +346,7 @@ func adminSessionFromClaims(data interface{}, expectedTokenUse string) (uuid.UUI
 	if isAdmin, _ := dataMap["isAdmin"].(bool); !isAdmin {
 		return uuid.Nil, uuid.Nil, errors.New("invalid admin token")
 	}
-	if tokenType, _ := dataMap["type"].(string); tokenType != middleware.TokenTypeAdmin {
+	if tokenType, _ := dataMap["type"].(string); tokenType != services.TokenTypeAdmin {
 		return uuid.Nil, uuid.Nil, errors.New("invalid admin token")
 	}
 	if tokenUse, _ := dataMap["token_use"].(string); tokenUse != expectedTokenUse {

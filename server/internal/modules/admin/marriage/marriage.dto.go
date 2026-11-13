@@ -3,17 +3,13 @@ package adminmarriage
 import (
 	"time"
 
+	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 )
 
-type UserInfo struct {
-	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username string `json:"username" example:"john_doe"`
-	FullName string `json:"fullName,omitempty" example:"John Doe"`
-	Avatar   string `json:"avatar,omitempty" example:"https://cdn.ola.vn/a.png"`
-}
+type UserInfo = userModule.UserBrief
 
 type StatsFilter struct {
 	From *time.Time
@@ -56,12 +52,7 @@ type MarriageItem struct {
 	DivorcedBy string   `json:"divorcedBy,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
 }
 
-type MarriageListResponse struct {
-	Total  int64          `json:"total" example:"1"`
-	Limit  int            `json:"limit" example:"20"`
-	Offset int            `json:"offset" example:"0"`
-	Items  []MarriageItem `json:"items"`
-}
+type MarriageListResponse = utils.Page[MarriageItem]
 
 type ProposalItem struct {
 	ID          string   `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -73,12 +64,7 @@ type ProposalItem struct {
 	RespondedAt string   `json:"respondedAt,omitempty" example:"2026-07-26T10:05:00Z"`
 }
 
-type ProposalListResponse struct {
-	Total  int64          `json:"total" example:"1"`
-	Limit  int            `json:"limit" example:"20"`
-	Offset int            `json:"offset" example:"0"`
-	Items  []ProposalItem `json:"items"`
-}
+type ProposalListResponse = utils.Page[ProposalItem]
 
 type StatsSuccessResponse = utils.BaseResponse[StatsResponse]
 type MarriageListSuccessResponse = utils.BaseResponse[MarriageListResponse]

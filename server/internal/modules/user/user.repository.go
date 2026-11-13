@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/apperr"
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -15,7 +16,6 @@ import (
 var (
 	ErrUsernameTaken     = errors.New("username already exists")
 	ErrUsernameUnchanged = errors.New("new username must be different")
-	ErrInsufficientKen   = errors.New("insufficient ken balance")
 )
 
 type Repository struct {
@@ -71,8 +71,8 @@ func (r *Repository) ChangeUsername(p ChangeUsernameParams) (*ChangeUsernameResu
 	var result ChangeUsernameResult
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		var user models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&user, "id = ?", p.UserID).Error; err != nil {
+		user, err := ledger.LockUser(tx, p.UserID)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return apperr.ErrUserNotFound
 			}
@@ -81,8 +81,8 @@ func (r *Repository) ChangeUsername(p ChangeUsernameParams) (*ChangeUsernameResu
 		if user.Username == p.NewUsername {
 			return ErrUsernameUnchanged
 		}
-		if user.Ken < p.Cost {
-			return ErrInsufficientKen
+		if err := ledger.EnsureBalance(user, p.Cost); err != nil {
+			return err
 		}
 
 		if err := tx.Model(&models.User{}).Where("id = ?", p.UserID).Update("username", p.NewUsername).Error; err != nil {
@@ -94,29 +94,20 @@ func (r *Repository) ChangeUsername(p ChangeUsernameParams) (*ChangeUsernameResu
 
 		balanceAfter := user.Ken - p.Cost
 		if p.Cost > 0 {
-			if err := tx.Model(&models.User{}).Where("id = ?", p.UserID).Update("ken", balanceAfter).Error; err != nil {
-				return err
-			}
 			actorID := p.UserID
 			refID := p.UserID
-			kenTx := models.KenTransaction{
-				UserID:        p.UserID,
-				Direction:     models.KenDirectionDebit,
-				Type:          models.KenTxTypeUsernameChange,
-				Amount:        p.Cost,
-				BalanceBefore: user.Ken,
-				BalanceAfter:  balanceAfter,
-				Description:   "change username @" + user.Username + " -> @" + p.NewUsername,
-				RefType:       "user",
-				RefID:         &refID,
-				ActorType:     models.KenActorUser,
-				ActorID:       &actorID,
+			if _, err := ledger.Debit(tx, user, p.Cost, ledger.Entry{
+				Type:        models.KenTxTypeUsernameChange,
+				Description: "change username @" + user.Username + " -> @" + p.NewUsername,
+				RefType:     "user",
+				RefID:       &refID,
+				ActorType:   models.KenActorUser,
+				ActorID:     &actorID,
 				Metadata: models.JSONB{
 					"oldUsername": user.Username,
 					"newUsername": p.NewUsername,
 				},
-			}
-			if err := tx.Create(&kenTx).Error; err != nil {
+			}); err != nil {
 				return err
 			}
 		}

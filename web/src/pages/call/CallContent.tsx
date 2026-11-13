@@ -5,7 +5,7 @@ import { Track } from 'livekit-client';
 import { useRoomContext } from '@livekit/components-react';
 import { CALL_MODE, CALL_TYPE } from '@constants';
 import { callPeerNameView, computeCallStatusLabel, peerDisplayName } from '@lib';
-import { useCallStore } from '@/store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { CallControls } from './CallControls';
 import { CallMiniWidget } from './CallMiniWidget';
 import { CallSettingsPanel } from './CallSettingsPanel';

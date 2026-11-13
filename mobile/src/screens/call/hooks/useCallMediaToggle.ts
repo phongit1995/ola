@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocalParticipant } from '@livekit/components-react';
 import { LocalVideoTrack, Track } from 'livekit-client';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { useCallStore } from '@store/callStore';
+import { useCallStore } from '@ola/shared/stores/call/callStore';
 
 type FacingMode = 'user' | 'environment';
 type CallMediaSource = Track.Source.Microphone | Track.Source.Camera;

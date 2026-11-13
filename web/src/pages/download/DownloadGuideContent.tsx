@@ -2,14 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { ROUTES } from '@constants';
-import { toast } from '@lib';
+import { toast, copyToClipboard } from '@lib';
 import { DESKTOP_OS_LIST, useDevicePlatform, type DesktopOs } from '@hooks';
 import { AndroidGuide } from './AndroidGuide';
 import { DesktopGuide } from './DesktopGuide';
 import { IosGuide } from './IosGuide';
 import { DownloadFaq } from './DownloadFaq';
 import { PlatformTabs, type GuidePlatform } from './PlatformTabs';
-import { copyToClipboard } from './copyToClipboard';
 import { CopyIcon, PhoneIcon, ShieldIcon, WarningIcon } from './platformIcons';
 
 function requestedDesktopOs(value: string | null): DesktopOs | null {

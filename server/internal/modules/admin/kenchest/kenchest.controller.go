@@ -37,24 +37,14 @@ func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
 		}
 		f.UserID = &parsed
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		f.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return f, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		f.To = &t
-	}
+	f.From, f.To = from, to
 	return f, nil
 }
 
-// GetStats godoc
 // @Summary      Thống kê rương ken (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -101,7 +91,6 @@ func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
 	}, nil
 }
 
-// GetUserStats godoc
 // @Summary      Thống kê rương ken theo từng user (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -146,7 +135,6 @@ func (ctrl *Controller) GetUserStats(c *gin.Context) (interface{}, error) {
 	return &UserStatsResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
 }
 
-// Create godoc
 // @Summary      Tạo & phát rương ken cho toàn bộ user online (admin)
 // @Tags         admin-ken-chest
 // @Accept       json
@@ -168,7 +156,6 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return chest, nil
 }
 
-// List godoc
 // @Summary      Lịch sử rương ken (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -187,7 +174,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Detail godoc
 // @Summary      Chi tiết rương ken (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -208,7 +194,6 @@ func (ctrl *Controller) Detail(c *gin.Context) (interface{}, error) {
 	return chest, nil
 }
 
-// ListClaims godoc
 // @Summary      Danh sách người đã mở 1 rương ken (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -234,7 +219,6 @@ func (ctrl *Controller) ListClaims(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListAllClaims godoc
 // @Summary      Lịch sử nhận KEN tất cả rương (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -255,7 +239,6 @@ func (ctrl *Controller) ListAllClaims(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Delete godoc
 // @Summary      Huỷ rương ken (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -275,7 +258,6 @@ func (ctrl *Controller) Delete(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "ken chest deleted"}, nil
 }
 
-// ListAutoJobs godoc
 // @Summary      Danh sách lịch rương ken tự động (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -290,7 +272,6 @@ func (ctrl *Controller) ListAutoJobs(c *gin.Context) (interface{}, error) {
 	return items, nil
 }
 
-// CreateAutoJob godoc
 // @Summary      Tạo lịch rương ken tự động (admin)
 // @Tags         admin-ken-chest
 // @Accept       json
@@ -312,7 +293,6 @@ func (ctrl *Controller) CreateAutoJob(c *gin.Context) (interface{}, error) {
 	return job, nil
 }
 
-// UpdateAutoJob godoc
 // @Summary      Sửa lịch rương ken tự động (admin)
 // @Tags         admin-ken-chest
 // @Accept       json
@@ -338,7 +318,6 @@ func (ctrl *Controller) UpdateAutoJob(c *gin.Context) (interface{}, error) {
 	return job, nil
 }
 
-// DeleteAutoJob godoc
 // @Summary      Xoá lịch rương ken tự động (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -357,7 +336,6 @@ func (ctrl *Controller) DeleteAutoJob(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "ken chest auto job deleted"}, nil
 }
 
-// GetAutoSettings godoc
 // @Summary      Trạng thái công tắc tổng rương ken tự động (admin)
 // @Tags         admin-ken-chest
 // @Produce      json
@@ -372,7 +350,6 @@ func (ctrl *Controller) GetAutoSettings(c *gin.Context) (interface{}, error) {
 	return settings, nil
 }
 
-// UpdateAutoSettings godoc
 // @Summary      Bật/tắt tất cả rương ken tự động (admin)
 // @Tags         admin-ken-chest
 // @Accept       json

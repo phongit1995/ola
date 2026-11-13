@@ -8,8 +8,6 @@ interface CallServiceModule {
 const nativeCallService =
   (NativeModules as { OlaCallService?: CallServiceModule }).OlaCallService ?? null;
 
-// Android 14+ cắt mic/camera khi app xuống nền nếu không có foreground service
-// đúng type. iOS lo phần này bằng UIBackgroundModes audio nên không cần gì thêm.
 export async function startCallForegroundService(withVideo: boolean): Promise<void> {
   if (Platform.OS !== 'android') return;
   if (nativeCallService == null) {

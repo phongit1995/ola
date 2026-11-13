@@ -32,13 +32,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { CLAN_ROLE_ICONS } from './constants';
+import { CLAN_ROLE, CLAN_SEARCH_DEBOUNCE_MS } from '@ola/shared/constants';
 
 const addIcon = require('@assets/icons/clan/ic_action_add.png');
 const memberIcon = require('@assets/icons/clan/ic_clan_member.png');
 const visitIcon = require('@assets/icons/clan/ic_clan_visit.png');
 const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
-
-const SEARCH_DEBOUNCE_MS = 300;
 
 interface TopResult {
   q: string;
@@ -184,7 +183,7 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
             if (active) setTop({ q: searchText, items: [], error: clanErrorText(error) });
           });
       },
-      searching ? SEARCH_DEBOUNCE_MS : 0,
+      searching ? CLAN_SEARCH_DEBOUNCE_MS : 0,
     );
     return () => {
       active = false;
@@ -319,7 +318,7 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
               <ClanList
                 clans={myClans}
                 subtitle={(clan) =>
-                  `${clanRoleLabel(clan.myRole ?? 'member')} · ${t('clan.membersCount', {
+                  `${clanRoleLabel(clan.myRole ?? CLAN_ROLE.member)} · ${t('clan.membersCount', {
                     count: clan.memberCount,
                   })}`
                 }

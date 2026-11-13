@@ -16,48 +16,47 @@ import {
   Spinner,
   type SmileyInputHandle,
   type ListOption,
-  GiftPickerDialog,
 } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
-import { GIFT_SOURCE, MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
+import { MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
 import {
   BUBBLE_WALLPAPER,
   chatFriendActionLabel,
   colorForName,
-  compressImageForUpload,
   formatLastActive,
-  imageUploadErrorText,
   isSameDay,
   kulToken,
   parseMessageMetadata,
   SmileyText,
   toast,
+  copyToClipboard,
 } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
-import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import replyActionIcon from '@/assets/icons/chat/ic_menu_reply.svg';
 import editActionIcon from '@/assets/icons/chat/ic_menu_edit.svg';
 import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete_outline.svg';
 import reportActionIcon from '@/assets/icons/chat/ic_menu_report.svg';
 import { useChatStore } from '@/store/chat/chatStore';
-import { useAuthStore } from '@/store/authStore';
-import type { RelationshipStatus } from '@app-types';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import type { RelationshipStatus, ChatTransferKind } from '@app-types';
 import type { ChatMessage } from '../types';
-import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../utils';
-import { usePeerCard } from '../usePeerCard';
+import {
+  chatMessageAbilities,
+  chatQuoteExcerpt,
+  isChatTransferKind,
+  toBubble,
+} from '../utils';
+import { usePeerCard } from '@ola/shared/stores/chat/usePeerCard';
+import { peerCardHiddenStorage } from '../hiddenPeerCards';
 import {
   useChatWallpaperStyle,
-  useLongPress,
   useOutsideClick,
   useStickyScroll,
+  useMessageHighlight,
 } from '@hooks';
 import { ChatReactionBalloons } from './ChatReactionBalloons';
 import { MessageRow } from './MessageRow';
-import { TransferKenDialog } from './TransferKenDialog';
-import { TradingVipDialog } from './TradingVipDialog';
-import { TransferVipDaysDialog } from './TransferVipDaysDialog';
-import { VipDayTransferDialog } from './VipDayTransferDialog';
 import {
   selectVipDayTransferEnabled,
   useVipDayTransferConfigStore,
@@ -71,17 +70,14 @@ import {
 import { ChatCallButtons } from '@/pages/call/ChatCallButtons';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
-import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
-
-const HIGHLIGHT_DURATION_MS = 1500;
-
-interface PendingImage {
-  id: string;
-  file: File;
-  url: string;
-}
+import { ChatTransferDialogs } from './ChatTransferDialogs';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
+import { LikeSendButton } from '@components/chat/LikeSendButton';
+import { useChatPeerActions } from '@ola/shared/stores/chat/useChatPeerActions';
+import { usePendingChatImage } from '../usePendingChatImage';
 
 interface ChatConversationViewProps {
   name: string;
@@ -112,6 +108,8 @@ export function ChatConversationView({
   const blockedByMe = blockStatus === RELATIONSHIP_STATUS.blockedByMe;
   const blockedByThem = blockStatus === RELATIONSHIP_STATUS.blockedByThem;
   const blocked = blockedByMe || blockedByThem;
+  const peerActions = useChatPeerActions(name, blocked);
+  const { handleFriendAction, handleUnblock } = peerActions;
   const canCall = blockStatus === RELATIONSHIP_STATUS.friend;
 
   const myId = useAuthStore((s) => s.user?.id ?? '');
@@ -130,9 +128,6 @@ export function ChatConversationView({
   const replyTarget = useChatStore((s) => s.replyTarget);
   const setReplyTarget = useChatStore((s) => s.setReplyTarget);
   const clearReplyTarget = useChatStore((s) => s.clearReplyTarget);
-  const blockPeer = useChatStore((s) => s.blockPeer);
-  const unblockPeer = useChatStore((s) => s.unblockPeer);
-  const friendAction = useChatStore((s) => s.friendAction);
   const peerProfile = useChatStore((s) => s.peerProfile);
   const peerFrameId =
     peerProfile != null ? peerProfile.avatarFrameId : avatarFrameId;
@@ -154,10 +149,9 @@ export function ChatConversationView({
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [openTab, setOpenTab] = useState<AttachPanelTab | null>(null);
-  const [transferKenOpen, setTransferKenOpen] = useState(false);
-  const [tradingVipOpen, setTradingVipOpen] = useState(false);
-  const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
-  const [vipDayTransferOpen, setVipDayTransferOpen] = useState(false);
+  const [activeTransfer, setActiveTransfer] = useState<ChatTransferKind | null>(
+    null
+  );
   const vipDayTransferEnabled = useVipDayTransferConfigStore(
     selectVipDayTransferEnabled
   );
@@ -166,7 +160,6 @@ export function ChatConversationView({
   useEffect(() => {
     void loadVipDayTransferConfig();
   }, [loadVipDayTransferConfig]);
-  const [giftOpen, setGiftOpen] = useState(false);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
   const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const [pendingAudio, setPendingAudio] = useState<{
@@ -175,7 +168,6 @@ export function ChatConversationView({
     waveform: number[];
   } | null>(null);
   const [voiceRecording, setVoiceRecording] = useState(false);
-  const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: ChatMessage;
     anchor: DOMRect | null;
@@ -183,24 +175,31 @@ export function ChatConversationView({
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
   const [reportTarget, setReportTarget] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const [profileTarget, setProfileTarget] = useState<{
     username: string;
     color: string;
   } | null>(null);
-  const [now, setNow] = useState<number | null>(null);
+  const now = useMinuteNow();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerAreaRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
-  const suppressLikeClick = useRef(false);
-  const imageIdRef = useRef(0);
-  const pendingImageRef = useRef(pendingImage);
-  const likeLongPress = useLongPress(() => {
-    suppressLikeClick.current = true;
-    void sendText('(Y)');
+  const {
+    pendingImage,
+    addImageFile,
+    clearPendingImage,
+    sendPendingImage,
+    handleFileChange,
+  } = usePendingChatImage({
+    sendImage,
+    onBeforeAdd: () => {
+      setOpenTab(null);
+      setEditing(null);
+      setDraft('');
+      composerRef.current?.reset();
+    },
+    onBeforeSend: () => setOpenTab(null),
   });
 
   useOutsideClick(composerAreaRef, openTab != null, () => setOpenTab(null));
@@ -212,29 +211,9 @@ export function ChatConversationView({
     void loadGiftSettings();
   }, [loadGiftSettings]);
 
-  useEffect(() => {
-    const tick = () => setNow(Date.now());
-    const initial = setTimeout(tick, 0);
-    const interval = setInterval(tick, 60_000);
-    return () => {
-      clearTimeout(initial);
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    pendingImageRef.current = pendingImage;
-  }, [pendingImage]);
-  useEffect(
-    () => () => {
-      if (pendingImageRef.current != null)
-        URL.revokeObjectURL(pendingImageRef.current.url);
-    },
-    []
-  );
 
   const lastActiveTime =
-    now != null && !online && !peerTyping
+    !online && !peerTyping
       ? formatLastActive(i18n.language, lastActiveAt, now)
       : undefined;
   const lastActiveText =
@@ -275,7 +254,15 @@ export function ChatConversationView({
     messagesReady: !loadingMessages,
     peerCardRoll,
     lastMessageId: bubbles.at(-1)?.id,
+    hiddenStorage: peerCardHiddenStorage,
   });
+
+  const { highlightedId, scrollToMessage, clearHighlight } =
+    useMessageHighlight({
+      scrollRef,
+      notFoundText: t('chat.replyNotFound'),
+      onBeforeScroll: unpin,
+    });
 
   const lastOwnId = useMemo(() => {
     for (let index = bubbles.length - 1; index >= 0; index -= 1) {
@@ -293,16 +280,9 @@ export function ChatConversationView({
     setVoiceRecording(false);
     setOpenTab(null);
     setEditing(null);
-    setHighlightedId(null);
+    clearHighlight();
     setDraft('');
   }
-
-  useEffect(() => {
-    return () => {
-      if (highlightTimerRef.current != null)
-        clearTimeout(highlightTimerRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     if (replyTarget != null) composerRef.current?.focus();
@@ -366,32 +346,9 @@ export function ChatConversationView({
     setReplyTarget(target);
   }
 
-  function scrollToMessage(id: string) {
-    const element = scrollRef.current?.querySelector(
-      `[data-message-id="${CSS.escape(id)}"]`
-    );
-    if (element == null) {
-      toast.error(t('chat.replyNotFound'));
-      return;
-    }
-    unpin();
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setHighlightedId(id);
-    if (highlightTimerRef.current != null)
-      clearTimeout(highlightTimerRef.current);
-    highlightTimerRef.current = setTimeout(
-      () => setHighlightedId(null),
-      HIGHLIGHT_DURATION_MS
-    );
-  }
-
   async function copyMessage(text: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success(t('chat.copied'));
-    } catch {
-      toast.error(t('common.error'));
-    }
+    if (await copyToClipboard(text)) toast.success(t('chat.copied'));
+    else toast.error(t('common.error'));
   }
 
   function messageSheetActions(message: ChatMessage): MessageSheetAction[] {
@@ -446,49 +403,6 @@ export function ChatConversationView({
     setDraft('');
   }
 
-  async function addImageFile(files: File[]) {
-    const file = files[0];
-    if (file == null) return;
-    setOpenTab(null);
-    setEditing(null);
-    setDraft('');
-    composerRef.current?.reset();
-    try {
-      const prepared = await compressImageForUpload(file);
-      const url = URL.createObjectURL(prepared);
-      imageIdRef.current += 1;
-      const id = String(imageIdRef.current);
-      setPendingImage((current) => {
-        if (current != null) URL.revokeObjectURL(current.url);
-        return { id, file: prepared, url };
-      });
-    } catch (error) {
-      toast.error(imageUploadErrorText(t, error, t('chat.imageError')));
-    }
-  }
-
-  function clearPendingImage() {
-    setPendingImage((current) => {
-      if (current != null) URL.revokeObjectURL(current.url);
-      return null;
-    });
-  }
-
-  async function sendPendingImage() {
-    const image = pendingImage;
-    if (image == null) return;
-    setPendingImage(null);
-    setOpenTab(null);
-    await sendImage(image.file);
-    URL.revokeObjectURL(image.url);
-  }
-
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = '';
-    await addImageFile(files);
-  }
-
   const isTyping = draft.trim() !== '';
 
   const canViewProfile = username != null && username !== '';
@@ -510,33 +424,7 @@ export function ChatConversationView({
 
   async function handleBlock() {
     setBlockOpen(false);
-    const ok = await blockPeer();
-    toast[ok ? 'success' : 'error'](
-      ok ? t('chat.blockDone', { name }) : t('chat.actionError')
-    );
-  }
-
-  async function handleUnblock() {
-    const ok = await unblockPeer();
-    toast[ok ? 'success' : 'error'](
-      ok ? t('chat.unblockDone', { name }) : t('chat.actionError')
-    );
-  }
-
-  async function handleFriendAction() {
-    if (blocked) {
-      toast.info(t('chat.makeFriendBlocked'));
-      return;
-    }
-    const result = await friendAction();
-    if (result === 'error') {
-      toast.error(t('chat.actionError'));
-      return;
-    }
-    if (result === 'request') toast.success(t('chat.friendRequestSent'));
-    else if (result === 'cancel') toast.success(t('chat.requestCancelled'));
-    else if (result === 'accept') toast.success(t('chat.friendAccepted'));
-    else if (result === 'unfriend') toast.success(t('chat.unfriendDone'));
+    await peerActions.handleBlock();
   }
 
   const friendLabel = chatFriendActionLabel(t, blockStatus);
@@ -831,29 +719,7 @@ export function ChatConversationView({
                     {editing != null ? t('chat.actionSave') : t('chat.send')}
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    aria-label={t('chat.like')}
-                    {...likeLongPress}
-                    onPointerDown={(event) => {
-                      suppressLikeClick.current = false;
-                      likeLongPress.onPointerDown(event);
-                    }}
-                    onClick={() => {
-                      if (suppressLikeClick.current) {
-                        suppressLikeClick.current = false;
-                        return;
-                      }
-                      void sendText('(y)');
-                    }}
-                    className="flex h-9 w-9 select-none items-center justify-center"
-                  >
-                    <img
-                      src={likeIcon}
-                      alt=""
-                      className="h-7 w-7 object-contain"
-                    />
-                  </button>
+                  <LikeSendButton onSend={(code) => void sendText(code)} />
                 ))}
             </form>
 
@@ -881,49 +747,13 @@ export function ChatConversationView({
                   setOpenTab(null);
                 }}
                 onSend={(payload) => {
-                  if (payload.kind === 'ken') {
+                  if (isChatTransferKind(payload.kind)) {
                     setOpenTab(null);
                     if (peerId === '') {
                       toast.error(t('chat.actionError'));
                       return;
                     }
-                    setTransferKenOpen(true);
-                    return;
-                  }
-                  if (payload.kind === 'vip') {
-                    setOpenTab(null);
-                    if (peerId === '') {
-                      toast.error(t('chat.actionError'));
-                      return;
-                    }
-                    setTradingVipOpen(true);
-                    return;
-                  }
-                  if (payload.kind === 'gift') {
-                    setOpenTab(null);
-                    if (peerId === '') {
-                      toast.error(t('chat.actionError'));
-                      return;
-                    }
-                    setGiftOpen(true);
-                    return;
-                  }
-                  if (payload.kind === 'vipDays') {
-                    setOpenTab(null);
-                    if (peerId === '') {
-                      toast.error(t('chat.actionError'));
-                      return;
-                    }
-                    setTransferVipDaysOpen(true);
-                    return;
-                  }
-                  if (payload.kind === 'vipDayTransfer') {
-                    setOpenTab(null);
-                    if (peerId === '') {
-                      toast.error(t('chat.actionError'));
-                      return;
-                    }
-                    setVipDayTransferOpen(true);
+                    setActiveTransfer(payload.kind);
                     return;
                   }
                   toast.info(t('chat.comingSoon'));
@@ -992,77 +822,19 @@ export function ChatConversationView({
         />
       )}
 
-      {transferKenOpen && peerId !== '' && (
-        <TransferKenDialog
-          open
-          onClose={() => setTransferKenOpen(false)}
-          receiver={{
-            id: peerId,
-            name,
-            username,
-            avatar: peerProfile?.avatar ?? avatar,
-            color,
-          }}
-        />
-      )}
-
-      {tradingVipOpen && (
-        <TradingVipDialog
-          open
-          onClose={() => setTradingVipOpen(false)}
-          receiver={{
-            id: peerId,
-            name,
-            username,
-            avatar: peerProfile?.avatar ?? avatar,
-            color,
-          }}
-        />
-      )}
-
-      {transferVipDaysOpen && (
-        <TransferVipDaysDialog
-          open
-          onClose={() => setTransferVipDaysOpen(false)}
-          receiver={{
-            id: peerId,
-            name,
-            username,
-            avatar: peerProfile?.avatar ?? avatar,
-            color,
-          }}
-        />
-      )}
-
-      {vipDayTransferOpen && vipDayTransferEnabled && (
-        <VipDayTransferDialog
-          open
-          onClose={() => setVipDayTransferOpen(false)}
-          receiver={{
-            id: peerId,
-            name,
-            username,
-            avatar: peerProfile?.avatar ?? avatar,
-            color,
-          }}
-        />
-      )}
-
-      {peerId !== '' && (
-        <GiftPickerDialog
-          open={giftOpen}
-          source={GIFT_SOURCE.chat}
-          onClose={() => setGiftOpen(false)}
-          receiver={{
-            id: peerId,
-            name,
-            username,
-            avatar: peerProfile?.avatar ?? avatar,
-            avatarFrameId: peerFrameId,
-            color,
-          }}
-        />
-      )}
+      <ChatTransferDialogs
+        active={activeTransfer}
+        receiver={{
+          id: peerId,
+          name,
+          username,
+          avatar: peerProfile?.avatar ?? avatar,
+          color,
+        }}
+        receiverFrameId={peerFrameId}
+        vipDayTransferEnabled={vipDayTransferEnabled}
+        onClose={() => setActiveTransfer(null)}
+      />
 
       {profileTarget != null && (
         <UserProfileView

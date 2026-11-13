@@ -5,7 +5,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
-import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
@@ -13,8 +13,8 @@ import { AuthService, SocketService } from '@ola/shared/services';
 import { createTimeFormatter, filterVisiblePosts } from '@ola/shared/lib';
 import type { Post, PostReaction } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { useMeLocalStore } from '@store/meLocalStore';
-import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
+import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useHorizontalSwipe } from './useHorizontalSwipe';
 import { isPostEditExpired } from '@lib/post';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
@@ -38,6 +38,7 @@ import { useMomentEnabled } from '@ola/shared/stores/moment/momentConfigStore';
 import { useQuickComment } from './useQuickComment';
 import { TAB_FILTER } from './constants';
 import type { MeTab } from './types';
+import { POST_REACTION } from '@ola/shared/constants';
 
 const editIcon = require('@assets/icons/me/ic_action_edit.png');
 
@@ -261,8 +262,8 @@ export function MeFeedScreen() {
               <MePostCard
                 post={item}
                 timeLabel={timeFormatter(item.createdAt)}
-                onToggleLike={(id) => handleReaction(id, 'like')}
-                onToggleDislike={(id) => handleReaction(id, 'dislike')}
+                onToggleLike={(id) => handleReaction(id, POST_REACTION.like)}
+                onToggleDislike={(id) => handleReaction(id, POST_REACTION.dislike)}
                 onOpenProfile={openProfile}
                 onOpenComments={openComments}
                 onQuickComment={(id) => setQuickCommentPostId(id)}
@@ -380,8 +381,8 @@ export function MeFeedScreen() {
           language={i18n.language}
           autoFocusInput={commentFocusInput}
           onClose={() => setCommentPostId(null)}
-          onToggleLike={(id) => handleReaction(id, 'like')}
-          onToggleDislike={(id) => handleReaction(id, 'dislike')}
+          onToggleLike={(id) => handleReaction(id, POST_REACTION.like)}
+          onToggleDislike={(id) => handleReaction(id, POST_REACTION.dislike)}
           onOpenProfile={openProfile}
           onCommentDelta={adjustCommentCount}
         />

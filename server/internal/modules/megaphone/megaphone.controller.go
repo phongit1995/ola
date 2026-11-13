@@ -17,7 +17,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[megaphone_controller]")}
 }
 
-// Config godoc
 // @Summary      Cấu hình phát loa + trạng thái của người gọi
 // @Description  Giá, số ký tự, thời gian hiện, số loa đã phát hôm nay, số giây còn phải chờ và thời gian chờ hàng loa hiện tại.
 // @Tags         megaphones
@@ -37,7 +36,6 @@ func (ctrl *Controller) Config(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// History godoc
 // @Summary      Loa thường đã phát trong 24 giờ gần nhất
 // @Tags         megaphones
 // @Produce      json
@@ -55,7 +53,6 @@ func (ctrl *Controller) History(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Send godoc
 // @Summary      Phát loa tới mọi người
 // @Description  Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.
 // @Tags         megaphones

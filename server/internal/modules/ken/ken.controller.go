@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[ken_controller]")}
 }
 
-// Transfer godoc
 // @Summary      Tặng/chuyển ken cho user khác
 // @Description  Chuyển ken từ user hiện tại sang user khác; ghi 2 ken_transactions (TRANSFER_OUT/IN) và bắn KEN_UPDATED cho cả 2 phía
 // @Tags         ken
@@ -47,7 +46,6 @@ func (ctrl *Controller) Transfer(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// History godoc
 // @Summary      Lịch sử giao dịch ken của user hiện tại
 // @Description  Danh sách ken_transactions của user đang đăng nhập, mới nhất trước; lọc theo direction (credit/debit) và phân trang
 // @Tags         ken

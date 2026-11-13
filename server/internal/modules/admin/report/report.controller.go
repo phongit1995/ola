@@ -42,7 +42,6 @@ var reportTargetTypes = map[string]bool{
 	constants.ReportTargetMegaphone:    true,
 }
 
-// ListReports godoc
 // @Summary      List user reports (admin)
 // @Tags         admin-report
 // @Produce      json
@@ -82,7 +81,6 @@ func (ctrl *Controller) ListReports(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Summary godoc
 // @Summary      Count pending reports (admin)
 // @Tags         admin-report
 // @Produce      json
@@ -97,7 +95,6 @@ func (ctrl *Controller) Summary(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdateStatus godoc
 // @Summary      Resolve or dismiss a report (admin)
 // @Description  Áp dụng cho mọi báo cáo đang chờ xử lý của cùng nội dung bị báo cáo.
 // @Tags         admin-report
@@ -128,7 +125,6 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// TestAlert godoc
 // @Summary      Gửi tin thử tới kênh nhận báo cáo vi phạm (Discord / Telegram) bằng cấu hình đã lưu (admin)
 // @Tags         admin-reports
 // @Accept       json

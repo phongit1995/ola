@@ -47,7 +47,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   sendRoomChat(roomId: string, text: string): void;
   sendReaction(matchId: string, type: GameReactionType): void;
   forfeit(matchId: string, leaveAfter?: boolean): void;
-  createRoom(bet: number, password?: string, maxPlayers?: number): void;
+  createRoom(bet: number, password?: string, maxPlayers?: number, allowSpectators?: boolean): void;
   joinRoom(roomId: string, password?: string): void;
   leaveRoom(roomId?: string): void;
   kickRoomMember(roomId: string, userId: string): void;
@@ -150,7 +150,13 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     sendRoomChat: (roomId, text) => send(C2S.ChatSend, { roomId, text }),
     sendReaction: (matchId, type) => send(C2S.ReactionSend, { matchId, type }),
     forfeit: (matchId, leaveAfter = false) => send(C2S.Forfeit, { matchId, leaveAfter }),
-    createRoom: (bet, password, maxPlayers) => send(C2S.RoomCreate, { bet, password, ...(maxPlayers ? { maxPlayers } : {}) }),
+    createRoom: (bet, password, maxPlayers, allowSpectators) =>
+      send(C2S.RoomCreate, {
+        bet,
+        password,
+        ...(maxPlayers ? { maxPlayers } : {}),
+        ...(allowSpectators === undefined ? {} : { allowSpectators }),
+      }),
     joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
     leaveRoom: (roomId) => send(C2S.RoomLeave, roomId ? { roomId } : undefined),
     kickRoomMember: (roomId, userId) => send(C2S.RoomKick, { roomId, userId }),

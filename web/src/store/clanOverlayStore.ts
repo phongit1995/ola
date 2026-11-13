@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { registerOnLogout } from '@/store/authStore';
+import { registerOnLogout } from '@ola/shared/stores/auth/authStore';
 
 export type ClanOverlayEntry =
   | { kind: 'home' }

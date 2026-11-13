@@ -4,6 +4,7 @@ import { MeService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { toApiError } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
+import { HTTP_STATUS } from '@ola/shared/constants';
 
 export function useQuickComment(
   posts: Post[],
@@ -37,7 +38,7 @@ export function useQuickComment(
     } catch (err) {
       push(
         'error',
-        toApiError(err).status === 403
+        toApiError(err).status === HTTP_STATUS.forbidden
           ? t('me.commentErrFriendsOnly')
           : t('me.commentSendError')
       );

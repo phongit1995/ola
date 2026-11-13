@@ -14,7 +14,6 @@ func NewController(service *Service) *Controller {
 	return &Controller{service: service}
 }
 
-// List godoc
 // @Summary      List my app notifications (friend requests, marriage proposals, ...)
 // @Tags         notifications
 // @Produce      json
@@ -37,7 +36,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UnreadCount godoc
 // @Summary      Count my unread app notifications
 // @Tags         notifications
 // @Produce      json
@@ -56,7 +54,6 @@ func (ctrl *Controller) UnreadCount(c *gin.Context) (interface{}, error) {
 	return map[string]int64{"count": count}, nil
 }
 
-// ReadAll godoc
 // @Summary      Mark all my app notifications as read
 // @Tags         notifications
 // @Produce      json
@@ -74,7 +71,6 @@ func (ctrl *Controller) ReadAll(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "all notifications marked read"}, nil
 }
 
-// Hide godoc
 // @Summary      Hide one of my app notifications
 // @Tags         notifications
 // @Produce      json

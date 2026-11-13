@@ -57,7 +57,9 @@ export function MessageRow({
   const lastInGroup = next == null || next.direction !== message.direction;
   const showTime = lastInGroup || next.time !== message.time;
   const showAvatar = !isOut && firstInGroup;
-  const canAct = message.status !== 'sending' && message.status !== 'failed';
+  const canAct =
+    message.status !== MESSAGE_STATUS.sending &&
+    message.status !== MESSAGE_STATUS.failed;
   const chips = reactionChips(message.reactions);
   const suppressClick = useRef(false);
 
@@ -200,8 +202,8 @@ export function MessageRow({
           )}
           {isOut &&
             isLastOwn &&
-            message.status !== 'sending' &&
-            message.status !== 'failed' && (
+            message.status !== MESSAGE_STATUS.sending &&
+            message.status !== MESSAGE_STATUS.failed && (
               <SeenIndicator
                 seen={seen}
                 name={name}

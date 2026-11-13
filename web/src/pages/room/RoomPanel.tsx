@@ -5,11 +5,12 @@ import { HomeHeader } from '@components/HomeHeader';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
 import { useRoomListStore } from '@ola/shared/stores/room/roomListStore';
-import { useRoomChatStore } from '@/store/roomChatStore';
+import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore';
 import { useWordChainConfigStore } from '@ola/shared/stores/word-chain/wordChainConfigStore';
-import { ROOM_BROWSE_LIMIT, ROOM_CAPACITY, ROOM_COLORS } from './constants';
+import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
 import { useLobbyWallpaperStyle } from '@hooks';
+import { ROOM_BROWSE_LIMIT } from '@constants';
 
 export function RoomPanel() {
   const wallpaperStyle = useLobbyWallpaperStyle();

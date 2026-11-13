@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { OlaModal } from '@components/ui/OlaModal';
 import { useTranslation } from 'react-i18next';
 import {
@@ -74,6 +74,7 @@ const MENU_PADDING_V = 6;
 const MENU_MIN_WIDTH = 168;
 const POPUP_GAP = 8;
 const POPUP_MARGIN = 12;
+const PREVIEW_SLACK = 4;
 
 function MessageActionIcon({ name }: { name: MessageActionIconName }) {
   const paths = {
@@ -276,6 +277,8 @@ function MessengerPopup({
   const insets = useSafeAreaInsets();
   const kbHeight = useKeyboardHeight();
   const { progress, requestClose } = useSheetTransition(onClose);
+  const [previewH, setPreviewH] = useState<number | null>(null);
+  const bubbleH = previewH ?? anchor.height;
 
   const menuH = actions.length > 0 ? MENU_PADDING_V * 2 + actions.length * MENU_ITEM_HEIGHT : 0;
   const barH = showReactions ? BAR_HEIGHT : 0;
@@ -289,20 +292,17 @@ function MessengerPopup({
 
   const anchorY = anchor.y + ANCHOR_TOP_OFFSET;
 
-  // Giữ preview trùng vị trí tin thật. Nếu bên dưới không đủ chỗ cho menu thì
-  // lật menu lên trên (menu trên preview, reaction bar trên menu) thay vì kéo
-  // preview dịch lên — nhờ vậy tin ở sát đáy vẫn không bị lệch.
-  const spaceBelow = usableBottom - bottomInset - (anchorY + anchor.height);
+  const spaceBelow = usableBottom - bottomInset - (anchorY + bubbleH);
   const menuBelow = menuH === 0 || spaceBelow >= menuStack;
 
   const topStack = barStack + (menuBelow ? 0 : menuStack);
   const bottomStack = menuBelow ? menuStack : 0;
   const minBubbleTop = topInset + topStack;
-  const maxBubbleTop = usableBottom - bottomInset - anchor.height - bottomStack;
+  const maxBubbleTop = usableBottom - bottomInset - bubbleH - bottomStack;
   const bubbleTop = clamp(anchorY, minBubbleTop, maxBubbleTop);
 
   const menuTop = menuBelow
-    ? bubbleTop + anchor.height + POPUP_GAP
+    ? bubbleTop + bubbleH + POPUP_GAP
     : bubbleTop - POPUP_GAP - menuH;
   const barTop = (menuBelow ? bubbleTop : menuTop) - POPUP_GAP - BAR_HEIGHT;
 
@@ -338,11 +338,13 @@ function MessengerPopup({
       </Animated.View>
       <Animated.View
         pointerEvents="box-none"
+        onLayout={(event) => setPreviewH(event.nativeEvent.layout.height)}
         style={{
           position: 'absolute',
           top: bubbleTop,
-          left: anchor.x,
-          width: anchor.width,
+          left: anchor.x - PREVIEW_SLACK,
+          width: anchor.width + PREVIEW_SLACK * 2,
+          alignItems: 'center',
           opacity: progress,
         }}
       >

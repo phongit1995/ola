@@ -1,5 +1,6 @@
 import { useId, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react';
-import { formatMoney } from '../helpers/format';
+import kenUrl from '../assets/lobby/ken.png';
+import { formatKen, formatMoney } from '../helpers/format';
 import { TyIcon, type TyIconName } from './TyIcon';
 import { useDialogFocus } from './useDialogFocus';
 
@@ -40,6 +41,17 @@ export function MoneyBadge({ amount, className = '', signed = false }: { amount:
     <span className={`ui-money ${className}`}>
       <i className="ui-coin" aria-hidden="true" />
       {text}
+    </span>
+  );
+}
+
+export function KenBadge({ amount, className = '', signed = false }: { amount: number; className?: string; signed?: boolean }) {
+  const sign = signed && amount > 0 ? '+' : amount < 0 ? '−' : '';
+  const text = `${sign}${formatKen(Math.abs(amount))}`;
+  return (
+    <span className={`ui-money ui-ken ${className}`} aria-label={`${text} KEN`}>
+      {text}
+      <img src={kenUrl} alt="" draggable={false} />
     </span>
   );
 }

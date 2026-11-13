@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatedKen, FullScreenOverlay } from '@components';
 import { SocketService } from '@services';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import { useEggGame } from './useEggGame';
 import { EggStage } from './EggStage';
@@ -10,6 +10,7 @@ import { EggHistoryDialog } from './EggHistoryDialog';
 import { EggGiftDialog } from './EggGiftDialog';
 import { giftIconUrl, historyIconUrl } from './eggAssets';
 import { EGG_START_KEN } from '@lib';
+import { KEN_SOCKET_EVENTS } from '@ola/shared/constants';
 
 function BackIcon() {
   return (
@@ -52,7 +53,7 @@ export function EggGamePage({ onClose }: EggGamePageProps) {
       winReward: null,
       suppressKenSync: false,
     });
-    const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
+    const off = SocketService.on<{ ken?: number }>(KEN_SOCKET_EVENTS.updated, (data) => {
       if (typeof data?.ken === 'number')
         useEggGameStore.getState().syncKen(data.ken);
     });

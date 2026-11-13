@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronIcon } from './platformIcons';
+import { ChevronRightIcon } from '@components';
 
 interface FaqItem {
   question: string;
@@ -37,7 +37,7 @@ export function DownloadFaq() {
               <span className="min-w-0 flex-1 text-[13px] font-semibold text-black/80">
                 {item.question}
               </span>
-              <ChevronIcon
+              <ChevronRightIcon
                 className={`h-4.5 w-4.5 shrink-0 text-black/35 transition-transform ${
                   open ? 'rotate-90' : ''
                 }`}

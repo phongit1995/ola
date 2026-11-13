@@ -28,7 +28,7 @@ import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { ReceiverField } from '@screens/vip/components/ReceiverField';
 import { FRAME_SELECT_AVATAR_SIZE } from './constants';
 import { AvatarFramePickerDialog } from './components/AvatarFramePickerDialog';
-import { useReceiverSearch } from './useReceiverSearch';
+import { useReceiverSearch } from '@ola/shared/stores/user/useReceiverSearch';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.AvatarFrameShop>;
 

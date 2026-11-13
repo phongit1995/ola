@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	userModule "ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
 )
@@ -171,12 +172,7 @@ type SpinListResponse struct {
 	Offset int        `json:"offset"`
 }
 
-type SpinUserView struct {
-	ID       uuid.UUID `json:"id"`
-	Username string    `json:"username"`
-	FullName string    `json:"fullName"`
-	Avatar   string    `json:"avatar"`
-}
+type SpinUserView = userModule.UserSummary
 
 type AdminSpinView struct {
 	SpinView

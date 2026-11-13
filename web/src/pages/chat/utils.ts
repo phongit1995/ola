@@ -2,19 +2,15 @@ import type { TFunction } from 'i18next';
 import type {
   ChatReplySnapshot,
   Conversation,
-  Friend,
   Message,
+  ChatTransferKind,
 } from '@app-types';
-import { MESSAGE_TYPE, normalizeDevice } from '@constants';
+import { MESSAGE_TYPE, CONVERSATION_KIND } from '@constants';
 import {
-  activeVipTypeId,
   colorForName,
   DEFAULT_AVATAR_COLOR,
   formatClockHM,
   formatDuration,
-  formatLastActive,
-  isBirthdayToday,
-  isVipActive,
   isWithinMessageDeleteWindow,
   kulImageForText,
   parseGiftMessageMetadata,
@@ -23,11 +19,10 @@ import {
 import type {
   ChatMessage,
   ChatMessageAbilities,
-  Contact,
-  ContactGroup,
   ConversationView,
 } from './types';
 import { STATUS_MAP } from './constants';
+import type { AttachSendPayload } from '@components';
 
 export function conversationDisplayName(conversation: Conversation): string {
   return (
@@ -65,11 +60,11 @@ export function toConversationView(
     fromMe: conversation.isLastMessageFromMe,
     seen: conversation.seen,
     senderName: conversation.lastMessageSenderName,
-    isGroup: conversation.type === 'group',
+    isGroup: conversation.type === CONVERSATION_KIND.group,
     time: formatTime(conversation.lastMessageAt ?? ''),
     unread: conversation.unreadCount,
     online:
-      conversation.type === 'direct'
+      conversation.type === CONVERSATION_KIND.direct
         ? conversation.otherUser?.isOnline ?? false
         : false,
   };
@@ -147,33 +142,8 @@ export function toBubble(message: Message, myId: string): ChatMessage {
   };
 }
 
-function groupOf(friend: Friend, now: Date): ContactGroup {
-  return isBirthdayToday(friend.dateOfBirth, now) ? 'birthday' : 'friend';
-}
-
-export function mapFriendsToContacts(
-  friends: Friend[],
-  locale: string,
-  now: number
-): Contact[] {
-  const today = new Date(now);
-  return friends.map((friend) => {
-    return {
-      id: friend.id,
-      name: friend.username,
-      fullName: friend.fullName,
-      status: friend.bio,
-      color: colorForName(friend.id),
-      avatar: friend.avatar,
-      vip: isVipActive(friend.vipEndTime),
-      vipTypeId: activeVipTypeId(friend.vipUsed, friend.vipEndTime),
-      online: friend.isOnline,
-      deviceType: normalizeDevice(friend.deviceType),
-      lastActive: friend.isOnline
-        ? undefined
-        : formatLastActive(locale, friend.lastActiveAt, now),
-      statusImage: friend.bioImage ?? undefined,
-      group: groupOf(friend, today),
-    };
-  });
+export function isChatTransferKind(
+  kind: AttachSendPayload['kind']
+): kind is ChatTransferKind {
+  return kind !== 'location';
 }

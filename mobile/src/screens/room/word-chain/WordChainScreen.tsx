@@ -14,7 +14,7 @@ import { FlashList } from '@shopify/flash-list';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect, type CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { WORD_CHAIN_INPUT_LOCK_HINT_KEYS } from '@ola/shared/constants';
+import { WORD_CHAIN_INPUT_LOCK_HINT_KEYS, ROOM_CHAT_STATUS } from '@ola/shared/constants';
 import {
   buildWordChainFeed,
   colorForName,
@@ -38,7 +38,7 @@ import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { CHAT_BG } from '@screens/chat/constants';
 import { useWordChainViewStore, type WordChainScrollAnchor } from '@store/wordChainViewStore';
-import { DIVIDER } from '@constants';
+import { DIVIDER, ERROR } from '@constants';
 import { WordChainComposer } from './WordChainComposer';
 import { WordChainGuessDialog } from './WordChainGuessDialog';
 import { WordChainHintDialog } from './WordChainHintDialog';
@@ -68,7 +68,6 @@ const LOCKED_HINT_KEYS = {
 const backIcon = require('@assets/icons/ic_back.png');
 
 const LOAD_MORE_AT_TOP_PX = 80;
-const ERROR_COLOR = '#e34545';
 
 function findScrollRestore(feed: WordChainFeedItem[]) {
   const anchor = useWordChainViewStore.getState().anchor;
@@ -302,7 +301,7 @@ export function WordChainScreen({ navigation }: Props) {
             <HeaderButton label={t('wordChain.rulesTitle')} onPress={() => setDialog('rules')}>
               <WordChainImage source={WORD_CHAIN_ICONS.rules} size={36} />
             </HeaderButton>
-            {status === 'joined' && (
+            {status === ROOM_CHAT_STATUS.joined && (
               <HeaderButton label={t('wordChain.minimize')} onPress={minimizeRoom}>
                 <WordChainImage source={WORD_CHAIN_ICONS.minimize} size={34} />
               </HeaderButton>
@@ -311,12 +310,12 @@ export function WordChainScreen({ navigation }: Props) {
         </View>
       </View>
 
-      {status === 'error' || status === 'vipRequired' ? (
+      {status === ROOM_CHAT_STATUS.error || status === ROOM_CHAT_STATUS.vipRequired ? (
         <View className="flex-1 items-center justify-center gap-4 px-8">
           <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
-            {t(status === 'vipRequired' ? 'wordChain.vipToView' : 'wordChain.joinError')}
+            {t(status === ROOM_CHAT_STATUS.vipRequired ? 'wordChain.vipToView' : 'wordChain.joinError')}
           </Text>
-          {status === 'vipRequired' && (
+          {status === ROOM_CHAT_STATUS.vipRequired && (
             <Pressable
               onPress={openBuyVip}
               className="rounded-full bg-ola-button px-6 py-2 active:opacity-90"
@@ -331,7 +330,7 @@ export function WordChainScreen({ navigation }: Props) {
             <Text className="text-sm font-medium text-white">{t('chat.back')}</Text>
           </Pressable>
         </View>
-      ) : status !== 'joined' ? (
+      ) : status !== ROOM_CHAT_STATUS.joined ? (
         <View className="flex-1 items-center justify-center gap-3">
           <ActivityIndicator color={colors.primary} size="large" />
           <Text className="text-sm text-ola-ink-soft">{t('wordChain.joining')}</Text>
@@ -396,7 +395,7 @@ export function WordChainScreen({ navigation }: Props) {
             <Text
               className="text-sm"
               style={{
-                color: remaining === 0 ? ERROR_COLOR : 'rgba(0,0,0,0.54)',
+                color: remaining === 0 ? ERROR : 'rgba(0,0,0,0.54)',
                 fontWeight: remaining === 0 ? '500' : '400',
                 fontVariant: ['tabular-nums'],
               }}

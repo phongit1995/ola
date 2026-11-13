@@ -5,6 +5,7 @@ import type {
   PendingMessageGroup,
   RoomFeedItem,
 } from '../types/client/roomFeed.type';
+import { MESSAGE_TYPE } from '../constants/chat';
 
 export type {
   BubblePosition,
@@ -35,15 +36,23 @@ function resolveReplySnapshot(
   reply: RoomReplySnapshot | undefined,
   byId: Map<string, RoomMessage>
 ): RoomReplySnapshot | undefined {
-  if (reply == null || reply.type === 'image') return reply;
+  if (reply == null || reply.type === MESSAGE_TYPE.image) return reply;
   const original = byId.get(reply.messageId);
-  if (original?.type === 'image') {
-    return { ...reply, type: 'image', imageUrl: reply.imageUrl ?? original.imageUrl };
+  if (original?.type === MESSAGE_TYPE.image) {
+    return { ...reply, type: MESSAGE_TYPE.image, imageUrl: reply.imageUrl ?? original.imageUrl };
   }
   return reply;
 }
 
-export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): RoomFeedItem[] {
+export interface BuildRoomFeedOptions {
+  omitLeadingDate?: boolean;
+}
+
+export function buildRoomFeed(
+  messages: RoomMessage[],
+  currentUserId: string,
+  options?: BuildRoomFeedOptions
+): RoomFeedItem[] {
   const byId = new Map(messages.map((message) => [message.id, message]));
   const items: RoomFeedItem[] = [];
   let pending: PendingMessageGroup | null = null;
@@ -97,7 +106,9 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
 
     if (day !== lastDay) {
       flush();
-      items.push({ kind: 'date', key: `date-${day}`, createdAt: message.createdAt });
+      if (lastDay !== '' || options?.omitLeadingDate !== true) {
+        items.push({ kind: 'date', key: `date-${day}`, createdAt: message.createdAt });
+      }
       lastDay = day;
       lastTime = 0;
       lastShownMinute = -1;

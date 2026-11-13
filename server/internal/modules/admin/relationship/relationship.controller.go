@@ -24,7 +24,6 @@ var relationshipStatuses = map[string]bool{
 	string(models.RelationshipStatusBlocked):  true,
 }
 
-// GetStats godoc
 // @Summary      Thống kê quan hệ bạn bè & theo dõi (admin)
 // @Tags         admin-relationship
 // @Produce      json
@@ -47,7 +46,6 @@ func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListRelationships godoc
 // @Summary      Danh sách quan hệ kết bạn/chặn (admin)
 // @Tags         admin-relationship
 // @Produce      json
@@ -91,7 +89,6 @@ func (ctrl *Controller) ListRelationships(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListFollows godoc
 // @Summary      Danh sách theo dõi giữa các user (admin)
 // @Tags         admin-relationship
 // @Produce      json
@@ -142,7 +139,6 @@ func (ctrl *Controller) ListFollows(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UserStats godoc
 // @Summary      Thống kê bạn bè/chặn/theo dõi theo từng user (admin)
 // @Tags         admin-relationship
 // @Produce      json

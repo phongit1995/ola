@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"ola-chat-server/internal/apperr"
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -14,7 +15,6 @@ import (
 var (
 	ErrCannotTransfer  = errors.New("cannot transfer ken to this user")
 	ErrBlockedTransfer = errors.New("cannot transfer ken to a blocked user")
-	ErrInsufficientKen = errors.New("insufficient ken balance")
 	ErrSelfTransfer    = errors.New("cannot transfer ken to yourself")
 	ErrWrongPassword   = errors.New("invalid transfer password")
 )
@@ -132,60 +132,32 @@ func (r *Repository) Transfer(p TransferParams) (*TransferResult, error) {
 		if !receiver.IsActive {
 			return ErrCannotTransfer
 		}
-		if sender.Ken < p.Amount {
-			return ErrInsufficientKen
-		}
-
-		senderBefore := sender.Ken
-		senderAfter := senderBefore - p.Amount
-		receiverBefore := receiver.Ken
-		receiverAfter := receiverBefore + p.Amount
-
-		if err := tx.Model(&models.User{}).Where("id = ?", p.FromID).Update("ken", senderAfter).Error; err != nil {
-			return err
-		}
-		if err := tx.Model(&models.User{}).Where("id = ?", p.ToID).Update("ken", receiverAfter).Error; err != nil {
-			return err
-		}
-
 		actorID := p.FromID
 		toID := p.ToID
 		fromID := p.FromID
-		outTx := models.KenTransaction{
-			UserID:        p.FromID,
-			Direction:     models.KenDirectionDebit,
-			Type:          models.KenTxTypeTransferOut,
-			Amount:        p.Amount,
-			BalanceBefore: senderBefore,
-			BalanceAfter:  senderAfter,
-			Description:   p.Description,
-			RefType:       "user",
-			RefID:         &toID,
-			ActorType:     models.KenActorUser,
-			ActorID:       &actorID,
-		}
-		inTx := models.KenTransaction{
-			UserID:        p.ToID,
-			Direction:     models.KenDirectionCredit,
-			Type:          models.KenTxTypeTransferIn,
-			Amount:        p.Amount,
-			BalanceBefore: receiverBefore,
-			BalanceAfter:  receiverAfter,
-			Description:   p.Description,
-			RefType:       "user",
-			RefID:         &fromID,
-			ActorType:     models.KenActorUser,
-			ActorID:       &actorID,
-		}
-		if err := tx.Create(&outTx).Error; err != nil {
+		if _, err := ledger.Debit(tx, sender, p.Amount, ledger.Entry{
+			Type:        models.KenTxTypeTransferOut,
+			Description: p.Description,
+			RefType:     "user",
+			RefID:       &toID,
+			ActorType:   models.KenActorUser,
+			ActorID:     &actorID,
+		}); err != nil {
 			return err
 		}
-		if err := tx.Create(&inTx).Error; err != nil {
+		if _, err := ledger.Credit(tx, receiver, p.Amount, ledger.Entry{
+			Type:        models.KenTxTypeTransferIn,
+			Description: p.Description,
+			RefType:     "user",
+			RefID:       &fromID,
+			ActorType:   models.KenActorUser,
+			ActorID:     &actorID,
+		}); err != nil {
 			return err
 		}
 
-		result.SenderBalance = senderAfter
-		result.ReceiverBalance = receiverAfter
+		result.SenderBalance = sender.Ken
+		result.ReceiverBalance = receiver.Ken
 		return nil
 	})
 	if err != nil {

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { useAnnouncementStore } from '@/store/announcementStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useAnnouncementStore } from '@ola/shared/stores/announcementStore';
 
 export function useAnnouncementSync() {
   const userId = useAuthStore((s) => s.user?.id);

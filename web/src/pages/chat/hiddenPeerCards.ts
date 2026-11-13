@@ -1,3 +1,5 @@
+import type { PeerCardHiddenStorage } from '@ola/shared/stores/chat/usePeerCard';
+
 const HIDDEN_PEER_CARDS_KEY = 'ola.hiddenPeerCards';
 
 function readHiddenPeerIds(): string[] {
@@ -18,3 +20,8 @@ export function hidePeerCard(peerId: string): void {
   ids.push(peerId);
   localStorage.setItem(HIDDEN_PEER_CARDS_KEY, ids.join(','));
 }
+
+export const peerCardHiddenStorage: PeerCardHiddenStorage = {
+  isHidden: isPeerCardHidden,
+  hide: hidePeerCard,
+};

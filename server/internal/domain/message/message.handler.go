@@ -116,11 +116,8 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 	wrappedData := utils.WrapWebSocketMessage(constants.WebSocketEventNewMessage, payload)
 	h.wsServer.EmitToUsers(userIDs, constants.WebSocketMessageEvent, wrappedData)
 
-	if h.pushSender != nil {
-		preview := event.Conversation.LastMessageText
-		if preview == "" {
-			preview = event.Message.Content
-		}
+	preview, shouldPush := push.DMPreview(event.Message.Type, event.Message.Content, event.Message.Metadata)
+	if h.pushSender != nil && shouldPush {
 		h.pushSender.SendDM(userIDs, push.DMPush{
 			ConversationID:   conversationID,
 			ConversationType: event.Conversation.Type,
@@ -129,7 +126,8 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 			SenderName:       event.Message.SenderName,
 			SenderAvatar:     event.Message.SenderAvatar,
 			ConversationName: event.Conversation.Name,
-			Preview:          preview,
+			Preview:          preview.Text,
+			ImageURL:         preview.ImageURL,
 			SentAt:           event.Message.CreatedAt,
 			UnreadByUser:     event.UnreadCounts,
 		})

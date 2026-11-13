@@ -7,4 +7,6 @@ const (
 	CacheTTLUserProfile = 3600
 
 	UploadFolderAvatar = "avatar"
+
+	unknownUsernameLength = 8
 )

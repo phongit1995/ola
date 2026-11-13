@@ -23,7 +23,6 @@ func NewController(service *egg.Service, repo *Repository, logger *zap.SugaredLo
 	return &Controller{service: service, repo: repo, logger: logger.Named("[admin_egg_controller]")}
 }
 
-// ListPacks godoc
 // @Summary      Danh sách gói đập trứng + cấu hình (admin)
 // @Tags         admin-egg
 // @Produce      json
@@ -38,7 +37,6 @@ func (ctrl *Controller) ListPacks(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CreatePack godoc
 // @Summary      Tạo gói đập trứng (admin)
 // @Tags         admin-egg
 // @Accept       json
@@ -59,7 +57,6 @@ func (ctrl *Controller) CreatePack(c *gin.Context) (interface{}, error) {
 	return pack, nil
 }
 
-// UpdatePack godoc
 // @Summary      Cập nhật gói đập trứng (admin)
 // @Tags         admin-egg
 // @Accept       json
@@ -86,7 +83,6 @@ func (ctrl *Controller) UpdatePack(c *gin.Context) (interface{}, error) {
 	return pack, nil
 }
 
-// DeletePack godoc
 // @Summary      Xoá gói đập trứng (admin)
 // @Tags         admin-egg
 // @Produce      json
@@ -106,7 +102,6 @@ func (ctrl *Controller) DeletePack(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "egg pack deleted"}, nil
 }
 
-// SaveConfig godoc
 // @Summary      Lưu cả cây nhóm + phần thưởng của gói (admin)
 // @Tags         admin-egg
 // @Accept       json
@@ -133,7 +128,6 @@ func (ctrl *Controller) SaveConfig(c *gin.Context) (interface{}, error) {
 	return pack, nil
 }
 
-// ListDraws godoc
 // @Summary      Lịch sử đập trứng toàn hệ thống (admin)
 // @Tags         admin-egg
 // @Produce      json
@@ -167,20 +161,11 @@ func (ctrl *Controller) ListDraws(c *gin.Context) (interface{}, error) {
 	if raw := c.Query("outcome"); raw == "win" || raw == "miss" {
 		filter.Outcome = raw
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		filter.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		filter.To = &t
-	}
+	filter.From, filter.To = from, to
 	limit := utils.ParseLimit(c, 50, 100)
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.ListAllDraws(filter, limit, offset)
@@ -190,7 +175,6 @@ func (ctrl *Controller) ListDraws(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetStats godoc
 // @Summary      Thống kê đập trứng (admin)
 // @Tags         admin-egg
 // @Produce      json
@@ -209,20 +193,11 @@ func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
 		}
 		filter.PackID = &parsed
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		filter.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		filter.To = &t
-	}
+	filter.From, filter.To = from, to
 	resp, err := ctrl.service.Stats(filter)
 	if err != nil {
 		return nil, utils.ServiceError(err)
@@ -246,24 +221,14 @@ func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
 		}
 		f.UserID = &parsed
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		f.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return f, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		f.To = &t
-	}
+	f.From, f.To = from, to
 	return f, nil
 }
 
-// GetUserStats godoc
 // @Summary      Thống kê đập trứng theo từng user (admin)
 // @Tags         admin-egg
 // @Produce      json
@@ -311,7 +276,6 @@ func (ctrl *Controller) GetUserStats(c *gin.Context) (interface{}, error) {
 	return &UserStatsResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
 }
 
-// GetVipStats godoc
 // @Summary      Thống kê đập trứng theo loại VIP (admin)
 // @Tags         admin-egg
 // @Produce      json

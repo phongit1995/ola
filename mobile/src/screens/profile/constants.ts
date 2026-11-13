@@ -26,8 +26,6 @@ export const POSTS_END_DISTANCE_PX = 600;
 
 export const FOLLOWING_PREVIEW_LIMIT = 12;
 
-export const GIFT_WALL_PREVIEW_ROWS = 2;
-
 export const GIFT_WALL_COLUMNS = 4;
 
 export const GIFT_WALL_IMAGE_STYLE = { width: 64, height: 64 };

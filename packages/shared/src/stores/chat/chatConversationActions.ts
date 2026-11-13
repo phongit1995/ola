@@ -1,6 +1,7 @@
 import {
   CHAT_MESSAGE_PAGE_SIZE,
   CHAT_PEER_CARD_LONG_CHAT_SHOW_RATE,
+  MESSAGE_STATUS,
 } from '../../constants/chat';
 import { ConversationService } from '../../services/conversation.service';
 import { MessageService } from '../../services/message.service';
@@ -27,12 +28,6 @@ function currentPeerId(get: ChatGet): string | null {
   return conversation?.otherUser?.id ?? state.draftRecipient?.id ?? null;
 }
 
-// checkDirect and createDirect both answer without otherUser, so a conversation
-// that is not already cached locally (hidden, or a fresh session) would land in
-// the list with no peer at all: openConversation then skips the profile fetch,
-// peerRelationship stays null and every peer-dependent action goes dead. Their
-// `name`/`avatar` already describe the other user, so rebuild the peer from
-// those plus the profile when it happens to be the same person.
 function normalizeDirect(
   state: ChatState,
   conversation: Conversation,
@@ -56,10 +51,6 @@ function normalizeDirect(
   };
 }
 
-// Voice send and call start can both promote the same draft. Without sharing
-// the request the loser finds draftRecipient already cleared and gets null,
-// which the voice path reports as a plain failure after it has thrown the
-// recording away.
 const pendingDirectCreates = new Map<string, Promise<Conversation>>();
 
 function createDirectOnce(peerId: string): Promise<Conversation> {
@@ -110,7 +101,7 @@ export function createChatConversationActions(
         );
         const pending = get().messages.filter(
           (item) =>
-            item.status !== 'sent' &&
+            item.status !== MESSAGE_STATUS.sent &&
             !savedIds.has(item.id) &&
             (item.clientMsgId == null || !savedClientMsgIds.has(item.clientMsgId))
         );

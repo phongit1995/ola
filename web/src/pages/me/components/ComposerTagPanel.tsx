@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Spinner } from '@components';
 import { colorForName } from '@lib';
-import { useFriendsStore } from '@/store/friendsStore';
+import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 
 interface ComposerTagPanelProps {
   onMention: (username: string) => void;

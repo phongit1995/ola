@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MeService, RelationshipService, UserService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { useMeLocalStore } from '@store/meLocalStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import {
   activeVipTypeId,
   appendUniquePosts,
@@ -140,9 +140,7 @@ export function useProfileActions(username: string) {
       setProfile(data);
       setFollowing(data.relationship?.isFollowing ?? false);
       setFans(data.followerCount);
-    } catch {
-      /* ignore */
-    }
+    } catch {}
   }, [username]);
 
   const reloadPosts = useCallback(async () => {

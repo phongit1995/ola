@@ -11,8 +11,8 @@ import {
   imageUploadErrorText,
   toast,
 } from '@lib';
-import { useAuthStore } from '@/store/authStore';
-import { useMeLocalStore } from '@/store/meLocalStore';
+import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import type { PostReaction, PostUploadRef, RelationshipInfo } from '@app-types';
 import {
   applyMeReaction,
@@ -47,6 +47,7 @@ import {
   NO_RELATIONSHIP,
   PROFILE_POSTS_LIMIT,
 } from './constants';
+import { POST_REACTION } from '@constants';
 
 export function useUserProfile(
   username: string,
@@ -184,7 +185,8 @@ export function useUserProfile(
     async (id: string, type: PostReaction) => {
       const current = postsRef.current.find((p) => p.id === id);
       if (current == null) return;
-      const wasActive = type === 'like' ? current.liked : current.disliked;
+      const wasActive =
+        type === POST_REACTION.like ? current.liked : current.disliked;
       const self = meSelfLiker();
       setPost(id, (p) => applyMeReaction(p, type, self));
       try {

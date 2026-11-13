@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	userModule "ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -26,12 +27,7 @@ type PurchaseFilter struct {
 	To     *time.Time
 }
 
-type PurchaseUser struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+type PurchaseUser = userModule.UserBrief
 
 type PurchaseItem struct {
 	ID        string       `json:"id"`

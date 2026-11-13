@@ -5,7 +5,7 @@ import type { PenLeaderboardPeriod } from '@app-types';
 import {
   PEN_LEADERBOARD_PAGE,
   usePenLeaderboardStore,
-} from '@/store/penLeaderboardStore';
+} from '@ola/shared/stores/pen/penLeaderboardStore';
 import { penLeaderboardAssets, penShootAssets } from './penAssets';
 import { bgImage } from './utils';
 import { PenPagination } from './PenPagination';

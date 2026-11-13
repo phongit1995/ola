@@ -34,3 +34,13 @@ export const ME_NOTIFICATION_LABEL_KEY = {
   moment_comment: 'me.notifMomentComment',
   moment_reaction: 'me.notifMomentReaction',
 } as const satisfies Record<MeNotificationType, string>;
+
+export const ME_NOTIFICATION_TYPE = {
+  like: 'like',
+  comment: 'comment',
+  reply: 'reply',
+  mention: 'mention',
+  commentLike: 'comment_like',
+  momentComment: 'moment_comment',
+  momentReaction: 'moment_reaction',
+} as const satisfies Record<string, MeNotificationType>;

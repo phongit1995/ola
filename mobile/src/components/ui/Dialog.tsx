@@ -10,7 +10,7 @@ import {
 import { useThemeColors } from '@hooks/useThemeColors';
 import { AppLockOverlaySlot, useBlockedByAppLock } from '@components/applock/appLockModal';
 import { useTrackOpenModal } from '@store/openModalStore';
-import { KeyboardView } from '../KeyboardView';
+import { KeyboardView } from '@components/KeyboardView';
 import { ToastHost } from './ToastHost';
 
 function noop() {}

@@ -7,12 +7,12 @@ import hahaUrl from '../../caro/assets/reactions/haha.webp';
 import wowUrl from '../../caro/assets/reactions/wow.webp';
 import sadUrl from '../../caro/assets/reactions/sad.webp';
 import angryUrl from '../../caro/assets/reactions/angry.webp';
+import { chatAuthor } from '../helpers/chat';
 import { seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
 import { BottomSheet } from './BottomSheet';
-import { UiIconButton } from './Ui';
+import { ChatInput, ChatLog } from './ChatLog';
 
-const CHAT_MAX_LENGTH = 120;
 const REACTION_COOLDOWN_MS = 1500;
 const BUBBLE_MS = 2200;
 
@@ -31,26 +31,14 @@ export function ChatSheet() {
   const { matchChat, players, you, closeSheet, sendMatchChat, sendReaction } = useTycoon(
     useShallow((s) => ({ matchChat: s.matchChat, players: s.players, you: s.you, closeSheet: s.closeSheet, sendMatchChat: s.sendMatchChat, sendReaction: s.sendReaction })),
   );
-  const [draft, setDraft] = useState('');
   const [cooling, setCooling] = useState(false);
-  const logRef = useRef<HTMLDivElement>(null);
   const meId = players[you]?.id;
-
-  useEffect(() => {
-    logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
-  }, [matchChat]);
 
   useEffect(() => {
     if (!cooling) return;
     const timer = setTimeout(() => setCooling(false), REACTION_COOLDOWN_MS);
     return () => clearTimeout(timer);
   }, [cooling]);
-
-  const send = () => {
-    if (!draft.trim()) return;
-    sendMatchChat(draft);
-    setDraft('');
-  };
 
   const react = (type: GameReactionType) => {
     if (cooling) return;
@@ -69,31 +57,21 @@ export function ChatSheet() {
           </button>
         ))}
       </div>
-      <div ref={logRef} className="ty-chat-log" aria-live="polite">
-        {matchChat.length === 0 ? <p className="ty-sheet-desc">Chưa có tin nhắn nào.</p> : null}
-        {matchChat.map((msg) => {
+      <ChatLog
+        messages={matchChat}
+        className="ty-chat-log"
+        empty={<p className="ty-sheet-desc">Chưa có tin nhắn nào.</p>}
+        renderLine={(msg) => {
           const seat = players.findIndex((p) => p.id === msg.userId);
           return (
-            <p key={`${msg.userId}-${msg.sentAt}`} className="ty-chat-line">
+            <p className="ty-chat-line">
               <i className="ty-seat-badge" style={{ background: seat >= 0 ? seatColor(seat) : undefined }} aria-hidden="true" />
-              <b style={{ color: seat >= 0 ? seatColor(seat) : undefined }}>{msg.userId === meId ? 'Bạn' : `@${msg.name}`}:</b> {msg.text}
+              <b style={{ color: seat >= 0 ? seatColor(seat) : undefined }}>{chatAuthor(msg, meId)}:</b> {msg.text}
             </p>
           );
-        })}
-      </div>
-      <div className="ty-wait-input ty-chat-input">
-        <input
-          value={draft}
-          maxLength={CHAT_MAX_LENGTH}
-          placeholder="Nhập tin nhắn…"
-          aria-label="Tin nhắn"
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') send();
-          }}
-        />
-        <UiIconButton icon="send" tone="gold" size="sm" label="Gửi" disabled={!draft.trim()} onClick={send} />
-      </div>
+        }}
+      />
+      <ChatInput className="ty-wait-input ty-chat-input" onSend={sendMatchChat} />
     </BottomSheet>
   );
 }

@@ -3,7 +3,7 @@ package adminrelationship
 import (
 	"time"
 
-	"github.com/google/uuid"
+	userModule "ola-chat-server/internal/modules/user"
 )
 
 type Service struct {
@@ -12,13 +12,6 @@ type Service struct {
 
 func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
-}
-
-func userInfo(id uuid.UUID, username, fullName, avatar string) UserInfo {
-	if username == "" {
-		return UserInfo{ID: id.String(), Username: id.String()[:8]}
-	}
-	return UserInfo{ID: id.String(), Username: username, FullName: fullName, Avatar: avatar}
 }
 
 func (s *Service) GetStats(f StatsFilter) (*StatsResponse, error) {
@@ -51,8 +44,8 @@ func (s *Service) ListRelationships(f ListFilter, limit, offset int) (*Relations
 	for i, row := range rows {
 		item := RelationshipItem{
 			ID:        row.ID.String(),
-			Requester: userInfo(row.RequesterID, row.RequesterUsername, row.RequesterFullName, row.RequesterAvatar),
-			Addressee: userInfo(row.AddresseeID, row.AddresseeUsername, row.AddresseeFullName, row.AddresseeAvatar),
+			Requester: userModule.UserBriefOf(row.RequesterID, row.RequesterUsername, row.RequesterFullName, row.RequesterAvatar),
+			Addressee: userModule.UserBriefOf(row.AddresseeID, row.AddresseeUsername, row.AddresseeFullName, row.AddresseeAvatar),
 			Status:    row.Status,
 			CreatedAt: row.CreatedAt.UTC().Format(time.RFC3339),
 		}
@@ -73,8 +66,8 @@ func (s *Service) ListFollows(f FollowFilter, limit, offset int) (*FollowListRes
 	for i, row := range rows {
 		items[i] = FollowItem{
 			ID:        row.ID.String(),
-			Follower:  userInfo(row.FollowerID, row.FollowerUsername, row.FollowerFullName, row.FollowerAvatar),
-			Followee:  userInfo(row.FolloweeID, row.FolloweeUsername, row.FolloweeFullName, row.FolloweeAvatar),
+			Follower:  userModule.UserBriefOf(row.FollowerID, row.FollowerUsername, row.FollowerFullName, row.FollowerAvatar),
+			Followee:  userModule.UserBriefOf(row.FolloweeID, row.FolloweeUsername, row.FolloweeFullName, row.FolloweeAvatar),
 			CreatedAt: row.CreatedAt.UTC().Format(time.RFC3339),
 		}
 	}
@@ -89,7 +82,7 @@ func (s *Service) UserStats(f UserStatsFilter, sortBy string, limit, offset int)
 	items := make([]UserStatsItem, len(rows))
 	for i, row := range rows {
 		items[i] = UserStatsItem{
-			User:      userInfo(row.UserID, row.Username, row.FullName, row.Avatar),
+			User:      userModule.UserBriefOf(row.UserID, row.Username, row.FullName, row.Avatar),
 			Friends:   row.Friends,
 			Blocked:   row.Blocked,
 			Followers: row.Followers,

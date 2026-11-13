@@ -1,20 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, View } from 'react-native';
-import { SPIN_DURATION_MS, segmentAngle } from '@ola/shared/lib';
+import { SPIN_DURATION_MS, segmentAngle, pointerTickDeg } from '@ola/shared/lib';
 import type { WheelPlayerSegment } from '@ola/shared/types';
 import { assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets } from './spinWheelAssets';
 import { WheelFace } from './WheelFace';
 import { WheelLabels } from './WheelLabels';
-
-const POINTER_MAX_TICK_DEG = 15;
-
-function pointerTickDeg(wheelAngle: number, angle: number): number {
-  if (angle <= 0) return 0;
-  const phase = (((wheelAngle - angle / 2) % angle) + angle) % angle;
-  const t = phase / angle;
-  return -POINTER_MAX_TICK_DEG * t * t;
-}
 
 interface SpinWheelProps {
   segments: WheelPlayerSegment[];

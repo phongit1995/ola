@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/models"
+	admincommon "ola-chat-server/internal/modules/admin/common"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -280,30 +282,8 @@ func (r *Repository) PairAggregates(f AdminMatchFilter, minPairMatches, limit in
 	return rows, err
 }
 
-type userBriefRow struct {
-	ID       uuid.UUID `gorm:"column:id"`
-	Username string    `gorm:"column:username"`
-	FullName string    `gorm:"column:full_name"`
-	Avatar   string    `gorm:"column:avatar"`
-}
-
-func (r *Repository) UserBriefs(ids []uuid.UUID) (map[uuid.UUID]userBriefRow, error) {
-	out := make(map[uuid.UUID]userBriefRow, len(ids))
-	if len(ids) == 0 {
-		return out, nil
-	}
-	var rows []userBriefRow
-	err := r.db.Table("users").
-		Select("id, username, full_name, avatar").
-		Where("id IN ?", ids).
-		Scan(&rows).Error
-	if err != nil {
-		return nil, err
-	}
-	for _, row := range rows {
-		out[row.ID] = row
-	}
-	return out, nil
+func (r *Repository) FindUsersByIDs(ids []uuid.UUID) (map[uuid.UUID]models.User, error) {
+	return admincommon.FindUsersByIDs(r.db, ids)
 }
 
 type levelRow struct {

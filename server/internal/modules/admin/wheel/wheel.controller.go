@@ -24,7 +24,6 @@ func NewController(service *wheel.Service, repo *Repository, logger *zap.Sugared
 	return &Controller{service: service, repo: repo, logger: logger.Named("[admin_wheel_controller]")}
 }
 
-// ListWheels godoc
 // @Summary      Danh sách vòng quay + cấu hình (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -39,7 +38,6 @@ func (ctrl *Controller) ListWheels(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CreateWheel godoc
 // @Summary      Tạo vòng quay (admin)
 // @Tags         admin-wheel
 // @Accept       json
@@ -60,7 +58,6 @@ func (ctrl *Controller) CreateWheel(c *gin.Context) (interface{}, error) {
 	return view, nil
 }
 
-// UpdateWheel godoc
 // @Summary      Cập nhật vòng quay (admin)
 // @Tags         admin-wheel
 // @Accept       json
@@ -87,7 +84,6 @@ func (ctrl *Controller) UpdateWheel(c *gin.Context) (interface{}, error) {
 	return view, nil
 }
 
-// DeleteWheel godoc
 // @Summary      Xoá vòng quay (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -107,7 +103,6 @@ func (ctrl *Controller) DeleteWheel(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "wheel deleted"}, nil
 }
 
-// SaveConfig godoc
 // @Summary      Lưu cấu hình ô + lựa chọn của vòng quay (admin)
 // @Tags         admin-wheel
 // @Accept       json
@@ -134,7 +129,6 @@ func (ctrl *Controller) SaveConfig(c *gin.Context) (interface{}, error) {
 	return view, nil
 }
 
-// ListSpins godoc
 // @Summary      Lịch sử quay toàn hệ thống (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -170,20 +164,11 @@ func (ctrl *Controller) ListSpins(c *gin.Context) (interface{}, error) {
 		filter.Outcome = raw
 	}
 	filter.Query = strings.TrimSpace(c.Query("q"))
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		filter.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		filter.To = &t
-	}
+	filter.From, filter.To = from, to
 	limit := utils.ParseLimit(c, 50, 100)
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.ListAllSpins(filter, limit, offset)
@@ -193,7 +178,6 @@ func (ctrl *Controller) ListSpins(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetStats godoc
 // @Summary      Thống kê vòng quay (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -212,20 +196,11 @@ func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
 		}
 		filter.WheelID = &parsed
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		filter.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		filter.To = &t
-	}
+	filter.From, filter.To = from, to
 	resp, err := ctrl.service.Stats(filter)
 	if err != nil {
 		return nil, utils.ServiceError(err)
@@ -249,24 +224,14 @@ func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
 		}
 		f.UserID = &parsed
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		f.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return f, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		f.To = &t
-	}
+	f.From, f.To = from, to
 	return f, nil
 }
 
-// GetUserStats godoc
 // @Summary      Thống kê vòng quay theo từng user (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -315,7 +280,6 @@ func (ctrl *Controller) GetUserStats(c *gin.Context) (interface{}, error) {
 	return &UserStatsResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
 }
 
-// GetVipStats godoc
 // @Summary      Thống kê vòng quay theo loại VIP (admin)
 // @Tags         admin-wheel
 // @Produce      json

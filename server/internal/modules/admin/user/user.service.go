@@ -29,6 +29,7 @@ const (
 
 type Service struct {
 	repo       *Repository
+	userRepo   *user.Repository
 	cache      *services.CacheService
 	vipService *vip.Service
 	vipRepo    *vip.Repository
@@ -37,9 +38,10 @@ type Service struct {
 	logger     *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *services.CacheService, vipService *vip.Service, vipRepo *vip.Repository, moderationService *moderation.Service, sessions *session.Service, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, userRepo *user.Repository, cache *services.CacheService, vipService *vip.Service, vipRepo *vip.Repository, moderationService *moderation.Service, sessions *session.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:       repo,
+		userRepo:   userRepo,
 		cache:      cache,
 		vipService: vipService,
 		vipRepo:    vipRepo,
@@ -50,7 +52,7 @@ func NewService(repo *Repository, cache *services.CacheService, vipService *vip.
 }
 
 func (s *Service) Violations(id uuid.UUID) (*ViolationSummary, error) {
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.userRepo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
@@ -67,7 +69,7 @@ func (s *Service) RevokeViolation(adminID, id, violationID uuid.UUID) (*Violatio
 }
 
 func (s *Service) ClearViolations(adminID, id uuid.UUID) (*ViolationSummary, error) {
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.userRepo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
@@ -117,18 +119,18 @@ func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
 }
 
 func (s *Service) GetByID(id uuid.UUID) (*UserDetail, error) {
-	user, err := s.repo.FindByIDUnscoped(id)
+	u, err := s.repo.FindByIDUnscoped(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
 		return nil, err
 	}
-	return toDetail(user), nil
+	return toDetail(u), nil
 }
 
 func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.userRepo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
@@ -145,7 +147,7 @@ func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
 
 	s.logger.Infow("Admin updated user status", "user_id", id, "is_active", active)
 
-	user, err := s.repo.FindByID(id)
+	user, err := s.userRepo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -161,18 +163,15 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string, adminID uuid.UUI
 		return nil, errors.New(user.UsernameFormatMessage)
 	}
 
-	taken, err := s.repo.UsernameTaken(username, id)
+	taken, err := s.userRepo.UsernameTaken(username, id)
 	if err != nil {
 		return nil, err
 	}
 	if taken {
-		return nil, errors.New("username already exists")
+		return nil, user.ErrUsernameTaken
 	}
 
 	if err := s.repo.SetUsername(id, username, adminID); err != nil {
-		if strings.Contains(err.Error(), "users_username_key") {
-			return nil, errors.New("username already exists")
-		}
 		return nil, err
 	}
 
@@ -182,11 +181,11 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string, adminID uuid.UUI
 
 	s.logger.Infow("Admin updated username", "user_id", id, "username", username)
 
-	user, err := s.repo.FindByIDUnscoped(id)
+	u, err := s.repo.FindByIDUnscoped(id)
 	if err != nil {
 		return nil, err
 	}
-	return toDetail(user), nil
+	return toDetail(u), nil
 }
 
 func (s *Service) ResetPassword(id uuid.UUID, password string) error {
@@ -194,7 +193,7 @@ func (s *Service) ResetPassword(id uuid.UUID, password string) error {
 		return fmt.Errorf("password must be between %d and %d characters", passwordMinLen, passwordMaxLen)
 	}
 
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.userRepo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return apperr.ErrUserNotFound
 		}
@@ -215,7 +214,7 @@ func (s *Service) ResetPassword(id uuid.UUID, password string) error {
 }
 
 func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListResponse, error) {
-	user, err := s.repo.FindByID(id)
+	user, err := s.userRepo.FindByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
@@ -223,7 +222,7 @@ func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListRespons
 		return nil, err
 	}
 
-	total, err := s.repo.CountVipIcons(id)
+	total, err := s.vipRepo.CountByUser(id)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +254,7 @@ func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListRespons
 }
 
 func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.userRepo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
@@ -268,7 +267,7 @@ func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
 		Source:     "admin",
 		AcquiredAt: time.Now(),
 	}
-	if err := s.repo.CreateVipIcon(icon); err != nil {
+	if err := s.vipRepo.Create(icon); err != nil {
 		return nil, err
 	}
 
@@ -283,7 +282,7 @@ func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
 }
 
 func (s *Service) DeleteVip(id, instanceID uuid.UUID) error {
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.userRepo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return apperr.ErrUserNotFound
 		}
@@ -304,7 +303,7 @@ func (s *Service) DeleteVip(id, instanceID uuid.UUID) error {
 }
 
 func (s *Service) AddVipDays(id uuid.UUID, action string, days int) (*AddVipDaysResponse, error) {
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.userRepo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
@@ -366,7 +365,7 @@ func (s *Service) ListSessions(id uuid.UUID, limit, offset int) (*SessionListRes
 }
 
 func (s *Service) Delete(id uuid.UUID) error {
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.userRepo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return apperr.ErrUserNotFound
 		}

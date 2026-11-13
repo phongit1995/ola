@@ -44,7 +44,6 @@ func toSessionResponse(s models.UserSession, current uuid.UUID) SessionResponse 
 	}
 }
 
-// List godoc
 // @Summary      List active login sessions
 // @Description  Trả về các phiên đăng nhập đang hoạt động của người dùng hiện tại (đánh dấu phiên hiện tại)
 // @Tags         sessions
@@ -69,7 +68,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return ListSessionsResponse{Sessions: items, Total: len(items)}, nil
 }
 
-// Revoke godoc
 // @Summary      Revoke a specific session
 // @Description  Đăng xuất một thiết bị/phiên cụ thể của chính mình
 // @Tags         sessions
@@ -98,7 +96,6 @@ func (ctrl *Controller) Revoke(c *gin.Context) (interface{}, error) {
 	return RevokeResponse{Message: "session revoked"}, nil
 }
 
-// RevokeOthers godoc
 // @Summary      Revoke all other sessions
 // @Description  Đăng xuất tất cả thiết bị khác, giữ lại phiên hiện tại
 // @Tags         sessions

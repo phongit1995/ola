@@ -1,4 +1,4 @@
-import type { MessageStatus, MessageType } from '../types/api/chat.type';
+import type { ConversationKind, MessageStatus, MessageType } from '../types/api/chat.type';
 
 export const MESSAGE_TYPE = {
   text: 'text',
@@ -32,3 +32,8 @@ export const CHAT_POLICY_ERROR_CODES = {
   recipientUnavailable: 'DIRECT_RECIPIENT_UNAVAILABLE',
   deleteExpired: 'MESSAGE_DELETE_EXPIRED',
 } as const;
+
+export const CONVERSATION_KIND = {
+  direct: 'direct',
+  group: 'group',
+} as const satisfies Record<string, ConversationKind>;

@@ -46,6 +46,8 @@ import { ContactsPane } from './components/ContactsPane';
 import { useConversationsWithPresence, usePresenceListPolling } from './usePresence';
 import { DIVIDER } from '@constants';
 import { SWIPE_MAX, SWIPE_TRIGGER } from './constants';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
+import { CONVERSATION_KIND } from '@ola/shared/constants';
 
 const sentIcon = require('@assets/icons/chat/ic_message_sent.png');
 const kulIcon = require('@assets/icons/chat/ic_kul.png');
@@ -146,9 +148,11 @@ function ConversationRow({
   const isSticker = kulImageForText(lastText) != null;
   const hasPreview = lastText !== '' || isSticker;
   const fromMe = conversation.isLastMessageFromMe;
-  const isGroup = conversation.type === 'group';
+  const isGroup = conversation.type === CONVERSATION_KIND.group;
   const online =
-    conversation.type === 'direct' ? (conversation.otherUser?.isOnline ?? false) : false;
+    conversation.type === CONVERSATION_KIND.direct
+      ? conversation.otherUser?.isOnline ?? false
+      : false;
   const avatarUri = conversation.otherUser?.avatar ?? conversation.avatar;
 
   const prefix = !hasPreview
@@ -347,17 +351,12 @@ export function ChatListScreen() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [coverOpen, setCoverOpen] = useState(false);
   const [logoutAll, setLogoutAll] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
+  const now = useMinuteNow();
   const openSwipeableRef = useRef<SwipeableMethods | null>(null);
 
   useEffect(() => {
     void loadConversations();
   }, [loadConversations]);
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
 
   usePresenceListPolling();
 

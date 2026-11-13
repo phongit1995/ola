@@ -11,6 +11,7 @@ import {
   useKenTreasurePositionStore,
 } from '@ola/shared/stores/ken/kenTreasureStore';
 import type { KenTreasureChest } from '@ola/shared/types';
+import { formatCountdownMMSS } from '@lib';
 
 const goldTextStyle: CSSProperties = {
   color: '#ffe27a',
@@ -31,16 +32,6 @@ interface DragState {
   startY: number;
   baseX: number;
   baseY: number;
-}
-
-function formatCountdown(ms: number): string {
-  const total = Math.max(0, Math.ceil(ms / 1000));
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(
-    2,
-    '0'
-  )}`;
 }
 
 function useRemaining(expiresAt: string | null, onExpire: () => void): number {
@@ -346,7 +337,7 @@ function ClosedChestPanel({
           className="absolute inset-0 flex items-center justify-center pl-[10%] text-xs font-extrabold leading-none"
           style={goldTextStyle}
         >
-          {formatCountdown(remaining)}
+          {formatCountdownMMSS(remaining)}
         </div>
       </div>
 

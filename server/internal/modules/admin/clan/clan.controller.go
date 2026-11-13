@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_clan_controller]")}
 }
 
-// ListClans godoc
 // @Summary      List clans (admin)
 // @Tags         admin-clan
 // @Produce      json
@@ -36,7 +35,6 @@ func (ctrl *Controller) ListClans(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Members godoc
 // @Summary      List clan members (admin)
 // @Tags         admin-clan
 // @Produce      json
@@ -60,7 +58,6 @@ func (ctrl *Controller) Members(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeleteClan godoc
 // @Summary      Delete clan (admin)
 // @Tags         admin-clan
 // @Produce      json

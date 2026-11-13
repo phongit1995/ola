@@ -17,6 +17,7 @@ import { VipBadge } from '@components/ui/VipBadge';
 import { penAssets, penHistoryAssets } from './penAssets';
 import { PenHistoryTable, PenColHeader } from './PenHistoryTable';
 import { PEN_COLORS } from './penUi';
+import { PEN_ROW_OUTCOME, PEN_HISTORY_SECTION } from '@ola/shared/constants';
 
 const COLS = { opponent: 1.6, bet: 1, time: 0.8, result: 1.7 };
 
@@ -54,7 +55,7 @@ function ResultCell({
   onCancel?: () => void;
 }) {
   const { t } = useTranslation();
-  if (outcome === 'pending') {
+  if (outcome === PEN_ROW_OUTCOME.pending) {
     if (onCancel == null) return null;
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
@@ -76,7 +77,7 @@ function ResultCell({
       </View>
     );
   }
-  if (outcome === 'cancelled') {
+  if (outcome === PEN_ROW_OUTCOME.cancelled) {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
         <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>⊘</Text>
@@ -86,7 +87,7 @@ function ResultCell({
       </View>
     );
   }
-  const win = outcome === 'win';
+  const win = outcome === PEN_ROW_OUTCOME.win;
   return (
     <Text
       numberOfLines={1}
@@ -136,7 +137,7 @@ function PenHistoryRow({
               {row.side != null && <DirectionLabel verb={verb} side={row.side} />}
             </View>
           </>
-        ) : row.outcome === 'pending' ? (
+        ) : row.outcome === PEN_ROW_OUTCOME.pending ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Image
               source={penHistoryAssets.clockYellow}
@@ -168,7 +169,7 @@ function PenHistoryRow({
         <ResultCell
           outcome={row.outcome}
           amount={row.amount}
-          onCancel={row.outcome === 'pending' ? () => onCancel(row.id) : undefined}
+          onCancel={row.outcome === PEN_ROW_OUTCOME.pending ? () => onCancel(row.id) : undefined}
         />
       </View>
     </View>
@@ -195,9 +196,12 @@ export function PenHistorySection({ section, opponentLabel, userId }: PenHistory
     void load(section, 0);
   }, [load, section]);
 
-  const verb = section === 'shoot' ? 'catch' : 'shoot';
+  const verb = section === PEN_HISTORY_SECTION.shoot ? 'catch' : 'shoot';
   const pageCount = Math.max(1, Math.ceil(state.total / PEN_HISTORY_PAGE));
-  const emptyText = section === 'shoot' ? t('penGame.hist.emptyShot') : t('penGame.hist.emptyCatch');
+  const emptyText =
+    section === PEN_HISTORY_SECTION.shoot
+      ? t('penGame.hist.emptyShot')
+      : t('penGame.hist.emptyCatch');
 
   const handleCancel = async () => {
     if (cancelId == null || cancelling) return;

@@ -11,8 +11,6 @@ import type {
 } from '@ola/shared/types';
 import type { ReaderPalette } from './types';
 
-export const SEARCH_DEBOUNCE_MS = 300;
-
 export const STORY_SECTION_ART = {
   continueReading: require('@assets/icons/story/illustrated/continue-reading.webp'),
   topViewed: require('@assets/icons/story/illustrated/top-viewed.webp'),
@@ -131,5 +129,3 @@ export const READER_FONTS: Record<
 };
 
 export const ROW_SEPARATOR = 'rgba(0,0,0,0.06)';
-
-export const RATE_LIMITED_STATUS = 429;

@@ -1,23 +1,15 @@
 package moment
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	"io"
 	"mime/multipart"
 	"net/http"
-	"strings"
 	"sync"
 
 	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/utils"
 
-	_ "golang.org/x/image/webp"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -90,11 +82,11 @@ func readUpload(header *multipart.FileHeader, maxSize int64) ([]byte, bool, erro
 		return nil, false, err
 	}
 	defer file.Close()
-	data, err := io.ReadAll(io.LimitReader(file, maxSize+1))
-	if err != nil {
-		return nil, false, err
+	data, err := media.ReadAllLimited(file, maxSize)
+	if errors.Is(err, media.ErrFileTooLarge) {
+		return nil, true, nil
 	}
-	return data, int64(len(data)) > maxSize, nil
+	return data, false, err
 }
 
 func (s *Service) uploadImage(
@@ -104,22 +96,24 @@ func (s *Service) uploadImage(
 	maxSize int64,
 	uploads *uploadTracker,
 ) (*uploadedMedia, error) {
-	data, tooLarge, err := readUpload(header, maxSize)
-	if err != nil {
-		return nil, errImageUnreadable
-	}
-	if tooLarge {
+	if header.Size > maxSize {
 		return nil, errImageTooLarge
 	}
-	mimeType := http.DetectContentType(data)
-	if !allowedImageMime(mimeType) {
-		return nil, errImageUnsupported
-	}
-	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
+	file, err := header.Open()
 	if err != nil {
 		return nil, errImageUnreadable
 	}
-	upload, err := s.s3.UploadBytes(ctx, data, folder, imageExtension(mimeType), mimeType)
+	defer file.Close()
+	img, err := media.ReadImage(file, maxSize)
+	switch {
+	case errors.Is(err, media.ErrFileTooLarge):
+		return nil, errImageTooLarge
+	case errors.Is(err, media.ErrUnsupportedImage):
+		return nil, errImageUnsupported
+	case err != nil:
+		return nil, errImageUnreadable
+	}
+	upload, err := s.s3.UploadBytes(ctx, img.Data, folder, media.ImageExtension(img.Mime), img.Mime)
 	if err != nil {
 		s.logger.Errorw("Failed to upload moment image", "error", err)
 		return nil, errUploadFailed
@@ -128,10 +122,10 @@ func (s *Service) uploadImage(
 	return &uploadedMedia{
 		URL:        upload.URL,
 		ObjectName: upload.PublicID,
-		Width:      cfg.Width,
-		Height:     cfg.Height,
-		Size:       int64(len(data)),
-		MimeType:   mimeType,
+		Width:      img.Width,
+		Height:     img.Height,
+		Size:       int64(len(img.Data)),
+		MimeType:   img.Mime,
 	}, nil
 }
 
@@ -217,15 +211,6 @@ func tooLong(duration float64) bool {
 	return duration > MaxMomentVideoSeconds+MomentVideoDurationTolerance
 }
 
-func allowedImageMime(mimeType string) bool {
-	for _, allowed := range media.AllowedImageMimes {
-		if strings.EqualFold(allowed, mimeType) {
-			return true
-		}
-	}
-	return false
-}
-
 func allowedVideoCodec(codec string) bool {
 	for _, allowed := range AllowedMomentVideoCodecs {
 		if allowed == codec {
@@ -233,17 +218,4 @@ func allowedVideoCodec(codec string) bool {
 		}
 	}
 	return false
-}
-
-func imageExtension(mimeType string) string {
-	switch mimeType {
-	case "image/png":
-		return ".png"
-	case "image/gif":
-		return ".gif"
-	case "image/webp":
-		return ".webp"
-	default:
-		return ".jpg"
-	}
 }

@@ -98,7 +98,7 @@ export function EditProfileScreen({ navigation }: Props) {
   const [avatar, setAvatar] = useState(user?.avatar ?? '');
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
-  const [gender, setGender] = useState<Gender>(user?.gender ?? 'male');
+  const [gender, setGender] = useState<Gender>(user?.gender ?? GENDER.male);
   const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth ?? '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -300,7 +300,7 @@ export function EditProfileScreen({ navigation }: Props) {
 
             <Field label={t('profileEdit.genderLabel')}>
               <View className="flex-row gap-2">
-                {(['male', 'female'] as const).map((option) => {
+                {[GENDER.male, GENDER.female].map((option) => {
                   const activeOpt = gender === option;
                   return (
                     <Pressable

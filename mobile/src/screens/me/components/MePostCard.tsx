@@ -10,7 +10,7 @@ import Animated, {
   runOnJS,
   type SharedValue,
 } from 'react-native-reanimated';
-import { colorForName, formatDuration, postAudio } from '@ola/shared/lib';
+import { colorForName, formatDuration, postAudio, formatLikeCount } from '@ola/shared/lib';
 import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { playLikeMeSound } from '@lib/sound';
@@ -23,6 +23,7 @@ import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { UserName } from '@components/ui/UserName';
+import { POST_REACTION } from '@ola/shared/constants';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -33,10 +34,6 @@ const likeIconActive = require('@assets/icons/me/ic_like_selected.png');
 const likeStickerFly = require('@assets/icons/me/sticker_like.png');
 const checkInIcon = require('@assets/icons/me/ic_check_in.png');
 const pinIcon = require('@assets/icons/me/ic_pin.png');
-
-function formatLikeCount(count: number): string {
-  return count > 9 ? '9+' : String(count);
-}
 
 function LikerStack({ likers }: { likers: PostAuthor[] }) {
   if (likers.length === 0) return null;
@@ -235,8 +232,8 @@ function MePostCardComponent({
 
   const author = post.author?.username ?? '';
   const fullName = post.author?.fullName ?? '';
-  const liked = post.myReaction === 'like';
-  const disliked = post.myReaction === 'dislike';
+  const liked = post.myReaction === POST_REACTION.like;
+  const disliked = post.myReaction === POST_REACTION.dislike;
   const comments = post.commentCount;
   const likes = post.likeCount;
   const topLikers = post.topLikers ?? [];
