@@ -22,6 +22,7 @@ export function ComposeDialog({ onClose, onStart }: ComposeDialogProps) {
   const keyword = query.trim();
   const { results, searching } = useUserSearch(query, {
     debounceMs: USER_SEARCH_TYPING_DEBOUNCE_MS,
+    keepPreviousResults: true,
     onError: () => push('error', t('chat.searchError')),
   });
 

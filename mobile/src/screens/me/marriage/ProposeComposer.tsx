@@ -61,6 +61,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
   const { results, searching } = useUserSearch(query, {
     limit: PROPOSE_SEARCH_LIMIT,
     enabled: selected == null,
+    keepPreviousResults: true,
   });
 
   function pick(user: UserSearchResult) {

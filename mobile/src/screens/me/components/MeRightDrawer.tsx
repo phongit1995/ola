@@ -105,6 +105,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
 
   const { results: foundUsers, searching: loading } = useUserSearch(query, {
     debounceMs: USER_SEARCH_TYPING_DEBOUNCE_MS,
+    keepPreviousResults: true,
     onError: () => push('error', t('me.searchError')),
   });
   const results = useMemo(() => foundUsers.map(viewedProfileFromSearchResult), [foundUsers]);

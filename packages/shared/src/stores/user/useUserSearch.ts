@@ -15,6 +15,7 @@ export interface UserSearchOptions {
   limit?: number;
   debounceMs?: number;
   enabled?: boolean;
+  keepPreviousResults?: boolean;
   onError?: () => void;
 }
 
@@ -24,11 +25,13 @@ export function useUserSearch(
     limit = USER_SEARCH_LIMIT,
     debounceMs = USER_SEARCH_DEBOUNCE_MS,
     enabled = true,
+    keepPreviousResults = false,
     onError,
   }: UserSearchOptions = {}
 ): { results: UserSearchResult[]; searching: boolean } {
   const value = enabled ? query.trim() : '';
   const [answer, setAnswer] = useState<UserSearchAnswer>({ query: '', users: [] });
+  const [requested, setRequested] = useState<string | null>(null);
   const onErrorRef = useRef(onError);
 
   useEffect(() => {
@@ -36,25 +39,33 @@ export function useUserSearch(
   }, [onError]);
 
   useEffect(() => {
-    if (value === '') return;
+    if (value === '' && !keepPreviousResults) return;
     let cancelled = false;
     const timer = setTimeout(() => {
+      if (value === '') {
+        setAnswer({ query: '', users: [] });
+        return;
+      }
+      setRequested(value);
       UserService.search(value, limit)
-        .then((res) => res.users)
-        .catch(() => {
-          if (!cancelled) onErrorRef.current?.();
-          return [] as UserSearchResult[];
+        .then((res) => {
+          if (!cancelled) setAnswer({ query: value, users: res.users });
         })
-        .then((users) => {
-          if (!cancelled) setAnswer({ query: value, users });
+        .catch(() => {
+          if (cancelled) return;
+          onErrorRef.current?.();
+          setAnswer((prev) => ({ query: value, users: keepPreviousResults ? prev.users : [] }));
         });
     }, debounceMs);
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [value, limit, debounceMs]);
+  }, [value, limit, debounceMs, keepPreviousResults]);
 
   const answered = answer.query === value;
+  if (keepPreviousResults) {
+    return { results: answer.users, searching: value !== '' && requested === value && !answered };
+  }
   return { results: answered ? answer.users : [], searching: value !== '' && !answered };
 }

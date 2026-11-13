@@ -26,8 +26,16 @@ function PageHarness({
   return null;
 }
 
-function SearchHarness({ query, onError }: { query: string; onError?: () => void }) {
-  found = useUserSearch(query, { debounceMs: 100, onError });
+function SearchHarness({
+  query,
+  onError,
+  keepPreviousResults,
+}: {
+  query: string;
+  onError?: () => void;
+  keepPreviousResults?: boolean;
+}) {
+  found = useUserSearch(query, { debounceMs: 100, onError, keepPreviousResults });
   return null;
 }
 
@@ -160,5 +168,35 @@ describe('useUserSearch', () => {
     act(() => jest.advanceTimersByTime(500));
     expect(search).not.toHaveBeenCalled();
     expect(found.searching).toBe(false);
+  });
+
+  it('keeps previous results while debouncing and on error when asked', async () => {
+    const onError = jest.fn();
+    search
+      .mockResolvedValueOnce({ users: [{ id: 'a' }] })
+      .mockRejectedValueOnce(new Error('down'));
+    act(() => {
+      renderer = create(<SearchHarness query="a" keepPreviousResults onError={onError} />);
+    });
+    expect(found.searching).toBe(false);
+    act(() => jest.advanceTimersByTime(100));
+    expect(found.searching).toBe(true);
+    await flush();
+    expect(found.results).toEqual([{ id: 'a' }]);
+    expect(found.searching).toBe(false);
+
+    act(() => renderer?.update(<SearchHarness query="ab" keepPreviousResults onError={onError} />));
+    expect(found.results).toEqual([{ id: 'a' }]);
+    expect(found.searching).toBe(false);
+    act(() => jest.advanceTimersByTime(100));
+    await flush();
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(found.results).toEqual([{ id: 'a' }]);
+    expect(found.searching).toBe(false);
+
+    act(() => renderer?.update(<SearchHarness query="" keepPreviousResults onError={onError} />));
+    expect(found.results).toEqual([{ id: 'a' }]);
+    act(() => jest.advanceTimersByTime(100));
+    expect(found.results).toEqual([]);
   });
 });

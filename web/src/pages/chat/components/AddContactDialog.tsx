@@ -29,6 +29,7 @@ export function AddContactDialog({
 
   const { results, searching: loading } = useUserSearch(query, {
     debounceMs: USER_SEARCH_TYPING_DEBOUNCE_MS,
+    keepPreviousResults: true,
     onError: () => toast.error(t('chat.searchError')),
   });
 

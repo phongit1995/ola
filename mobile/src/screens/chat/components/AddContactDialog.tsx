@@ -30,6 +30,7 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
 
   const { results, searching: loading } = useUserSearch(query, {
     debounceMs: USER_SEARCH_TYPING_DEBOUNCE_MS,
+    keepPreviousResults: true,
     onError: () => push('error', t('chat.searchError')),
   });
 
