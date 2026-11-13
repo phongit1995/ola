@@ -56,7 +56,7 @@ export function createChatRelationshipActions(
 
     friendAction: async () => {
       const current = get().peerRelationship;
-      const status = current?.status ?? 'none';
+      const status = current?.status ?? RELATIONSHIP_STATUS.none;
       const requestId = current?.requestId ?? '';
       const base = {
         isFollowing: current?.isFollowing ?? false,

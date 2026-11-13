@@ -104,3 +104,9 @@ export interface TransferReceiver {
   avatar?: string;
   color: string;
 }
+
+export interface PendingImage {
+  id: string;
+  file: File;
+  url: string;
+}

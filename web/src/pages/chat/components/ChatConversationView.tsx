@@ -23,9 +23,7 @@ import {
   BUBBLE_WALLPAPER,
   chatFriendActionLabel,
   colorForName,
-  compressImageForUpload,
   formatLastActive,
-  imageUploadErrorText,
   isSameDay,
   kulToken,
   parseMessageMetadata,
@@ -78,13 +76,8 @@ import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import { ChatTransferDialogs } from './ChatTransferDialogs';
 import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 import { LikeSendButton } from '@components/chat/LikeSendButton';
-
-
-interface PendingImage {
-  id: string;
-  file: File;
-  url: string;
-}
+import { useChatPeerActions } from '@ola/shared/stores/chat/useChatPeerActions';
+import { usePendingChatImage } from '../usePendingChatImage';
 
 interface ChatConversationViewProps {
   name: string;
@@ -115,6 +108,8 @@ export function ChatConversationView({
   const blockedByMe = blockStatus === RELATIONSHIP_STATUS.blockedByMe;
   const blockedByThem = blockStatus === RELATIONSHIP_STATUS.blockedByThem;
   const blocked = blockedByMe || blockedByThem;
+  const peerActions = useChatPeerActions(name, blocked);
+  const { handleFriendAction, handleUnblock } = peerActions;
   const canCall = blockStatus === RELATIONSHIP_STATUS.friend;
 
   const myId = useAuthStore((s) => s.user?.id ?? '');
@@ -133,9 +128,6 @@ export function ChatConversationView({
   const replyTarget = useChatStore((s) => s.replyTarget);
   const setReplyTarget = useChatStore((s) => s.setReplyTarget);
   const clearReplyTarget = useChatStore((s) => s.clearReplyTarget);
-  const blockPeer = useChatStore((s) => s.blockPeer);
-  const unblockPeer = useChatStore((s) => s.unblockPeer);
-  const friendAction = useChatStore((s) => s.friendAction);
   const peerProfile = useChatStore((s) => s.peerProfile);
   const peerFrameId =
     peerProfile != null ? peerProfile.avatarFrameId : avatarFrameId;
@@ -176,7 +168,6 @@ export function ChatConversationView({
     waveform: number[];
   } | null>(null);
   const [voiceRecording, setVoiceRecording] = useState(false);
-  const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: ChatMessage;
     anchor: DOMRect | null;
@@ -194,8 +185,22 @@ export function ChatConversationView({
   const composerAreaRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
-  const imageIdRef = useRef(0);
-  const pendingImageRef = useRef(pendingImage);
+  const {
+    pendingImage,
+    addImageFile,
+    clearPendingImage,
+    sendPendingImage,
+    handleFileChange,
+  } = usePendingChatImage({
+    sendImage,
+    onBeforeAdd: () => {
+      setOpenTab(null);
+      setEditing(null);
+      setDraft('');
+      composerRef.current?.reset();
+    },
+    onBeforeSend: () => setOpenTab(null),
+  });
 
   useOutsideClick(composerAreaRef, openTab != null, () => setOpenTab(null));
 
@@ -206,16 +211,6 @@ export function ChatConversationView({
     void loadGiftSettings();
   }, [loadGiftSettings]);
 
-  useEffect(() => {
-    pendingImageRef.current = pendingImage;
-  }, [pendingImage]);
-  useEffect(
-    () => () => {
-      if (pendingImageRef.current != null)
-        URL.revokeObjectURL(pendingImageRef.current.url);
-    },
-    []
-  );
 
   const lastActiveTime =
     !online && !peerTyping
@@ -408,49 +403,6 @@ export function ChatConversationView({
     setDraft('');
   }
 
-  async function addImageFile(files: File[]) {
-    const file = files[0];
-    if (file == null) return;
-    setOpenTab(null);
-    setEditing(null);
-    setDraft('');
-    composerRef.current?.reset();
-    try {
-      const prepared = await compressImageForUpload(file);
-      const url = URL.createObjectURL(prepared);
-      imageIdRef.current += 1;
-      const id = String(imageIdRef.current);
-      setPendingImage((current) => {
-        if (current != null) URL.revokeObjectURL(current.url);
-        return { id, file: prepared, url };
-      });
-    } catch (error) {
-      toast.error(imageUploadErrorText(t, error, t('chat.imageError')));
-    }
-  }
-
-  function clearPendingImage() {
-    setPendingImage((current) => {
-      if (current != null) URL.revokeObjectURL(current.url);
-      return null;
-    });
-  }
-
-  async function sendPendingImage() {
-    const image = pendingImage;
-    if (image == null) return;
-    setPendingImage(null);
-    setOpenTab(null);
-    await sendImage(image.file);
-    URL.revokeObjectURL(image.url);
-  }
-
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = '';
-    await addImageFile(files);
-  }
-
   const isTyping = draft.trim() !== '';
 
   const canViewProfile = username != null && username !== '';
@@ -472,33 +424,7 @@ export function ChatConversationView({
 
   async function handleBlock() {
     setBlockOpen(false);
-    const ok = await blockPeer();
-    toast[ok ? 'success' : 'error'](
-      ok ? t('chat.blockDone', { name }) : t('chat.actionError')
-    );
-  }
-
-  async function handleUnblock() {
-    const ok = await unblockPeer();
-    toast[ok ? 'success' : 'error'](
-      ok ? t('chat.unblockDone', { name }) : t('chat.actionError')
-    );
-  }
-
-  async function handleFriendAction() {
-    if (blocked) {
-      toast.info(t('chat.makeFriendBlocked'));
-      return;
-    }
-    const result = await friendAction();
-    if (result === 'error') {
-      toast.error(t('chat.actionError'));
-      return;
-    }
-    if (result === 'request') toast.success(t('chat.friendRequestSent'));
-    else if (result === 'cancel') toast.success(t('chat.requestCancelled'));
-    else if (result === 'accept') toast.success(t('chat.friendAccepted'));
-    else if (result === 'unfriend') toast.success(t('chat.unfriendDone'));
+    await peerActions.handleBlock();
   }
 
   const friendLabel = chatFriendActionLabel(t, blockStatus);
