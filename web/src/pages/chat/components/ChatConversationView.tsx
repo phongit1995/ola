@@ -34,7 +34,6 @@ import {
   copyToClipboard,
 } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
-import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import replyActionIcon from '@/assets/icons/chat/ic_menu_reply.svg';
 import editActionIcon from '@/assets/icons/chat/ic_menu_edit.svg';
 import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
@@ -54,7 +53,6 @@ import { usePeerCard } from '@ola/shared/stores/chat/usePeerCard';
 import { peerCardHiddenStorage } from '../hiddenPeerCards';
 import {
   useChatWallpaperStyle,
-  useLongPress,
   useOutsideClick,
   useStickyScroll,
   useMessageHighlight,
@@ -79,6 +77,7 @@ import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import { ChatTransferDialogs } from './ChatTransferDialogs';
 import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
+import { LikeSendButton } from '@components/chat/LikeSendButton';
 
 
 interface PendingImage {
@@ -195,13 +194,8 @@ export function ChatConversationView({
   const composerAreaRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
-  const suppressLikeClick = useRef(false);
   const imageIdRef = useRef(0);
   const pendingImageRef = useRef(pendingImage);
-  const likeLongPress = useLongPress(() => {
-    suppressLikeClick.current = true;
-    void sendText('(Y)');
-  });
 
   useOutsideClick(composerAreaRef, openTab != null, () => setOpenTab(null));
 
@@ -799,29 +793,7 @@ export function ChatConversationView({
                     {editing != null ? t('chat.actionSave') : t('chat.send')}
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    aria-label={t('chat.like')}
-                    {...likeLongPress}
-                    onPointerDown={(event) => {
-                      suppressLikeClick.current = false;
-                      likeLongPress.onPointerDown(event);
-                    }}
-                    onClick={() => {
-                      if (suppressLikeClick.current) {
-                        suppressLikeClick.current = false;
-                        return;
-                      }
-                      void sendText('(y)');
-                    }}
-                    className="flex h-9 w-9 select-none items-center justify-center"
-                  >
-                    <img
-                      src={likeIcon}
-                      alt=""
-                      className="h-7 w-7 object-contain"
-                    />
-                  </button>
+                  <LikeSendButton onSend={(code) => void sendText(code)} />
                 ))}
             </form>
 
