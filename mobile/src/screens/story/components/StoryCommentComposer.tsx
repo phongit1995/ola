@@ -2,7 +2,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Keyboard, Pressable, Text, View } from 'react-native';
 import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
-import { DIVIDER } from '@constants';
+import { DIVIDER, TEXT_SECONDARY } from '@constants';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { useThemeColors } from '@hooks/useThemeColors';
 import {
@@ -14,7 +14,6 @@ import { useStoryTextSize } from '../useStoryTextSize';
 const smileyIcon = require('@assets/icons/chat/ic_smiley.png');
 const smileyIconActive = require('@assets/icons/chat/ic_smiley_selected.png');
 
-const MUTED = 'rgba(0,0,0,0.54)';
 const SEND_MIN_WIDTH = 64;
 const SMILEY_ICON_SIZE = 24;
 const SMILEY_PANEL_TAB_HEIGHT = 44;
@@ -81,7 +80,7 @@ export const StoryCommentComposer = forwardRef<StoryCommentComposerHandle, Story
             <Text
               numberOfLines={1}
               className="min-w-0 flex-1"
-              style={[textSize(12, 16), { color: MUTED }]}
+              style={[textSize(12, 16), { color: TEXT_SECONDARY }]}
             >
               {t('story.commentReplyingTo', { name: replyingTo })}
             </Text>
@@ -94,7 +93,7 @@ export const StoryCommentComposer = forwardRef<StoryCommentComposerHandle, Story
         )}
         {unlockMinChars != null && (
           <View className="flex-row items-start gap-2 px-4 pt-2">
-            <Text className="min-w-0 flex-1" style={[textSize(12, 20), { color: MUTED }]}>
+            <Text className="min-w-0 flex-1" style={[textSize(12, 20), { color: TEXT_SECONDARY }]}>
               {t('story.commentUnlockHint', { count: unlockMinChars })}
             </Text>
             <Text
@@ -102,7 +101,7 @@ export const StoryCommentComposer = forwardRef<StoryCommentComposerHandle, Story
               style={[
                 textSize(12, 20),
                 {
-                  color: unlockReached ? colors.primaryInk : MUTED,
+                  color: unlockReached ? colors.primaryInk : TEXT_SECONDARY,
                   fontVariant: ['tabular-nums'],
                 },
               ]}

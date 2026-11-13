@@ -15,3 +15,7 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   giftWallPrivacy: 0,
   avatarFrameStorePrivacy: 0,
 };
+
+export const VIP_PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
+
+export const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'] as const;

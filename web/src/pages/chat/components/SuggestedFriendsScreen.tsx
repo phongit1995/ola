@@ -5,11 +5,11 @@ import {
   Avatar,
   FullScreenOverlay,
   ScreenHeader,
+  CloseIcon,
 } from '@components';
 import { toast } from '@lib';
 import { SUGGESTED_FRIENDS } from '../constants';
 import type { SuggestedFriend } from '../types';
-import { CloseIcon } from './Icons';
 
 interface SuggestedFriendsScreenProps {
   onClose: () => void;

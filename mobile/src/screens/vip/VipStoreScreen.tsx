@@ -10,11 +10,11 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
-import { PRIVACY_KEYS } from './constants';
 import { useVipStoreScreen } from './useVipStoreScreen';
 import { VipHistoryDialog } from './components/VipHistoryDialog';
 import { VipIconImage } from './components/VipIconImage';
 import { VipRow } from './components/VipRow';
+import { VIP_PRIVACY_KEYS } from '@ola/shared/constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.VipStore>;
 
@@ -62,7 +62,7 @@ export function VipStoreScreen({ navigation }: Props) {
           {t('vip.whoCanSee')}
         </Text>
         <Text className="mx-2 text-xs" style={{ color: TEXT_SECONDARY }}>
-          {t(`vip.${PRIVACY_KEYS[vm.privacy]}`)}
+          {t(`vip.${VIP_PRIVACY_KEYS[vm.privacy]}`)}
         </Text>
         <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.4)' }}>›</Text>
       </Pressable>

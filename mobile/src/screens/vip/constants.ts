@@ -12,8 +12,6 @@ export const RECEIVER_SEARCH_LIMIT = 30;
 
 export const MODE_ORDER: BuyVipMode[] = ['buy', 'give', 'giveDays', 'transferDays', 'extend'];
 
-export const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
-
 export const MODE_TITLE = {
   buy: 'vip.buy.titleBuy',
   give: 'vip.buy.titleGive',

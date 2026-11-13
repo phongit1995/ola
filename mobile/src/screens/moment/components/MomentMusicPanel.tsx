@@ -42,6 +42,7 @@ import {
   MomentPlayIcon,
   MomentTrashIcon,
 } from './MomentIcons';
+import { ERROR } from '@constants';
 
 const MS_PER_SECOND = 1000;
 const HIDDEN_PLAYER = { width: 0, height: 0 };
@@ -49,7 +50,6 @@ const TRIM_BAR_COUNT = 56;
 const TRIM_BAR_MAX_PERCENT = 70;
 const TRIM_BAR_IDLE = 'rgba(0,0,0,0.15)';
 const SURFACE = '#f3f3f3';
-const ERROR_COLOR = '#e34545';
 const NOTICE_BACKGROUND = '#fff4e0';
 const NOTICE_TEXT = '#e65100';
 const TEXT_PRIMARY = 'rgba(0,0,0,0.85)';
@@ -391,7 +391,7 @@ export function MomentMusicPanel({ initial, onApply, onClose }: MomentMusicPanel
                   className="active:opacity-70"
                   style={styles.removeButton}
                 >
-                  <MomentTrashIcon size={20} color={ERROR_COLOR} />
+                  <MomentTrashIcon size={20} color={ERROR} />
                 </Pressable>
               </View>
 

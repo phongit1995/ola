@@ -1,5 +1,6 @@
 import { penHistoryAssets } from './penAssets';
 import { bgImage } from './utils';
+import { ChevronRightIcon } from '@components';
 
 function PageNav({
   dir,
@@ -19,14 +20,9 @@ function PageNav({
       style={bgImage(penHistoryAssets.pageNext)}
       className="flex h-9 w-9 items-center justify-center bg-no-repeat text-white transition active:scale-95 disabled:opacity-30"
     >
-      <svg
-        viewBox="0 0 24 24"
+      <ChevronRightIcon
         className={`h-3.5 w-3.5 ${dir === 'prev' ? 'rotate-180' : ''}`}
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-      </svg>
+      />
     </button>
   );
 }

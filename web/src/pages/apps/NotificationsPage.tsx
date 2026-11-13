@@ -23,6 +23,7 @@ import {
   Spinner,
   ConfirmDialog,
   UserName,
+  CloseIcon,
 } from '@components';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { APP_NOTIFICATION_TYPE, isSystemNotice } from '@constants';
@@ -334,16 +335,7 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
                         title={t('notify.hide')}
                         className="-mt-2 -mr-2 ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-black/54 transition-colors hover:bg-black/5"
                       >
-                        <svg
-                          viewBox="0 0 24 24"
-                          className="h-3.5 w-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          aria-hidden="true"
-                        >
-                          <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                        </svg>
+                        <CloseIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
                       </button>
                     )}
                   </div>

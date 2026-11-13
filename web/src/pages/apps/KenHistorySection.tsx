@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatKen } from '@lib';
-import { Spinner } from '@components';
+import { Spinner, ChevronRightIcon } from '@components';
 import {
   KEN_HISTORY_TABS,
   KEN_TX_META,
@@ -121,14 +121,7 @@ export function KenHistorySection() {
                 onClick={() => load(tab, section.page - 1)}
                 className="flex h-8 w-8 items-center justify-center rounded-sm border border-black/12 bg-white text-black/70 disabled:opacity-40"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4 rotate-180"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-                </svg>
+                <ChevronRightIcon className="h-4 w-4 rotate-180" />
               </button>
               <span className="text-sm text-black/54">
                 {section.page + 1}/{pageCount}
@@ -140,14 +133,7 @@ export function KenHistorySection() {
                 onClick={() => load(tab, section.page + 1)}
                 className="flex h-8 w-8 items-center justify-center rounded-sm border border-black/12 bg-white text-black/70 disabled:opacity-40"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-                </svg>
+                <ChevronRightIcon className="h-4 w-4" />
               </button>
             </div>
           )}

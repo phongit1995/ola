@@ -39,9 +39,9 @@ import { StoryIcon } from './components/StoryIcons';
 import { StoryRow } from './components/StoryRow';
 import { StoryStateMessage } from './components/StoryStateMessage';
 import { useStoryTextSize } from './useStoryTextSize';
+import { TEXT_SECONDARY } from '@constants';
 
 const CHIP_BORDER = '#d5d5d5';
-const MUTED = 'rgba(0,0,0,0.54)';
 const FILTER_ICON_MUTED = 'rgba(0,0,0,0.45)';
 const SMALL_ICON_SIZE = 16;
 const HEADER_ART_SIZE = 32;
@@ -238,7 +238,7 @@ export function StoryListScreen() {
               onPress={() => setClearRecentOpen(true)}
               className="rounded-full px-2 py-1 active:bg-black/5"
             >
-              <Text style={[textSize(13, 18), { color: MUTED }]}>{t('story.clearRecent')}</Text>
+              <Text style={[textSize(13, 18), { color: TEXT_SECONDARY }]}>{t('story.clearRecent')}</Text>
             </Pressable>
           }
         >
@@ -299,7 +299,7 @@ export function StoryListScreen() {
         >
           {SORT_OPTIONS.map((option) => {
             const active = filter.sort === option.value;
-            const color = active ? colors.primaryInk : MUTED;
+            const color = active ? colors.primaryInk : TEXT_SECONDARY;
             return (
               <Pressable
                 key={option.value}

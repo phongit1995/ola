@@ -6,7 +6,13 @@ import {
   ImageCropOverlay,
   ScreenHeader,
 } from '@components';
-import { MIN_IMAGE_SOURCE, THEME_OPTIONS, WALLPAPER_ASPECT } from '@constants';
+import {
+  MIN_IMAGE_SOURCE,
+  THEME_OPTIONS,
+  WALLPAPER_ASPECT,
+  VIP_PRIVACY_DISPLAY,
+  VIP_PRIVACY_KEYS,
+} from '@constants';
 import { compressImageForUpload, imageUploadErrorText, toast, validatedImageObjectUrl } from '@lib';
 import { UserService, VipService } from '@services';
 import type { GiftWallPrivacy, ThemeId, UserSettings } from '@app-types';
@@ -17,16 +23,6 @@ import iconPrivacy from '@/assets/icons/settings/icon-privacy.webp';
 import iconNotification from '@/assets/icons/settings/icon-notification.webp';
 import iconAppearance from '@/assets/icons/settings/icon-appearance.webp';
 
-const VIP_PRIVACY_KEYS = [
-  'privacyPublic',
-  'privacyFriends',
-  'privacyPrivate',
-] as const;
-const VIP_PRIVACY_DISPLAY = [
-  'privacyPrivate',
-  'privacyFriends',
-  'privacyPublic',
-] as const;
 
 const GIFT_WALL_PRIVACY_OPTIONS = [
   { value: 2, labelKey: 'settings.vipPrivacyMine' },

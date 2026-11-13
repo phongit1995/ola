@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { toast } from '@lib';
-import { ScreenHeader, FullScreenOverlay } from '@components';
+import { ScreenHeader, FullScreenOverlay, ChevronRightIcon } from '@components';
 import { MOCK_VENUES } from './constants';
 
 export interface Venue {
@@ -10,19 +10,6 @@ export interface Venue {
   visits: number;
   address: string;
   cover: string;
-}
-
-function ArrowIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-6 w-6 text-black/30"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-    </svg>
-  );
 }
 
 export function NearbyPlacesPage({ onClose }: { onClose: () => void }) {
@@ -67,7 +54,7 @@ export function NearbyPlacesPage({ onClose }: { onClose: () => void }) {
                   </span>
                 </span>
                 <span className="flex shrink-0 items-center">
-                  <ArrowIcon />
+                  <ChevronRightIcon className="h-6 w-6 text-black/30" />
                 </span>
               </button>
             </li>

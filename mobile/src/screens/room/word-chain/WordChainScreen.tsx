@@ -38,7 +38,7 @@ import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { CHAT_BG } from '@screens/chat/constants';
 import { useWordChainViewStore, type WordChainScrollAnchor } from '@store/wordChainViewStore';
-import { DIVIDER } from '@constants';
+import { DIVIDER, ERROR } from '@constants';
 import { WordChainComposer } from './WordChainComposer';
 import { WordChainGuessDialog } from './WordChainGuessDialog';
 import { WordChainHintDialog } from './WordChainHintDialog';
@@ -68,7 +68,6 @@ const LOCKED_HINT_KEYS = {
 const backIcon = require('@assets/icons/ic_back.png');
 
 const LOAD_MORE_AT_TOP_PX = 80;
-const ERROR_COLOR = '#e34545';
 
 function findScrollRestore(feed: WordChainFeedItem[]) {
   const anchor = useWordChainViewStore.getState().anchor;
@@ -396,7 +395,7 @@ export function WordChainScreen({ navigation }: Props) {
             <Text
               className="text-sm"
               style={{
-                color: remaining === 0 ? ERROR_COLOR : 'rgba(0,0,0,0.54)',
+                color: remaining === 0 ? ERROR : 'rgba(0,0,0,0.54)',
                 fontWeight: remaining === 0 ? '500' : '400',
                 fontVariant: ['tabular-nums'],
               }}

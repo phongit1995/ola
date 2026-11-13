@@ -3,8 +3,8 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { STORY_STATE_ART, type StoryStateKind } from '../constants';
 import { useStoryTextSize } from '../useStoryTextSize';
+import { TEXT_SECONDARY } from '@constants';
 
-const MUTED = 'rgba(0,0,0,0.54)';
 const ART_SIZE = 96;
 
 interface StoryStateMessageProps {
@@ -33,7 +33,7 @@ export function StoryStateMessage({
         style={{ width: ART_SIZE, height: ART_SIZE }}
         resizeMode="contain"
       />
-      <Text className="text-center" style={[textSize(14, 20), { color: MUTED }]}>
+      <Text className="text-center" style={[textSize(14, 20), { color: TEXT_SECONDARY }]}>
         {text}
       </Text>
       {onRetry && (

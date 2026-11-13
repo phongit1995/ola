@@ -16,6 +16,7 @@ import { useStoryTextSize } from '../useStoryTextSize';
 import { StoryCover } from './StoryCover';
 import { StoryIcon } from './StoryIcons';
 import { UserName } from '@components/ui/UserName';
+import { TEXT_SECONDARY } from '@constants';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -27,7 +28,6 @@ const VIP_BADGE_SIZE = 16;
 const ACTION_ICON_SIZE = 20;
 const MORE_ICON_STYLE = { width: 16, height: 16 };
 const CONTENT_FONT_SIZE = 14;
-const MUTED = 'rgba(0,0,0,0.54)';
 const STORY_CHIP_BACKGROUND = READER_PALETTES.light.panel;
 const STORY_CHIP_COVER_WIDTH = 24;
 const STORY_CHIP_ICON_SIZE = 16;
@@ -71,7 +71,7 @@ function StoryCommentItemComponent({
         },
       ]
     : [{ key: 'report', label: t('report.comment'), onSelect: () => setReportOpen(true) }];
-  const actionText = [textSize(12, 16), { color: MUTED }];
+  const actionText = [textSize(12, 16), { color: TEXT_SECONDARY }];
   const actionIconStyle = { width: ACTION_ICON_SIZE, height: ACTION_ICON_SIZE };
 
   return (
@@ -95,9 +95,9 @@ function StoryCommentItemComponent({
             className="min-w-0 shrink font-semibold text-ola-ink"
             fullNameClassName="font-normal"
             style={textSize(14, 20)}
-            fullNameStyle={{ color: MUTED }}
+            fullNameStyle={{ color: TEXT_SECONDARY }}
           />
-          <Text className="ml-1" style={[textSize(12, 16), { color: MUTED }]}>
+          <Text className="ml-1" style={[textSize(12, 16), { color: TEXT_SECONDARY }]}>
             {time}
           </Text>
           <Pressable
@@ -115,7 +115,7 @@ function StoryCommentItemComponent({
             className="mt-1 pl-2"
             style={{ borderLeftWidth: 2, borderLeftColor: colors.primary }}
           >
-            <Text numberOfLines={2} style={[textSize(12, 20), { color: MUTED }]}>
+            <Text numberOfLines={2} style={[textSize(12, 20), { color: TEXT_SECONDARY }]}>
               <Text className="font-semibold">{replyTo.authorName}</Text>
               {`: ${replyTo.excerpt}`}
             </Text>
@@ -149,7 +149,7 @@ function StoryCommentItemComponent({
             >
               {story.title}
             </Text>
-            <StoryIcon name="chevronRight" size={STORY_CHIP_ICON_SIZE} color={MUTED} />
+            <StoryIcon name="chevronRight" size={STORY_CHIP_ICON_SIZE} color={TEXT_SECONDARY} />
           </Pressable>
         )}
         <View className="mt-1.5 flex-row items-center gap-4">

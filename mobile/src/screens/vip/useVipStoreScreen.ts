@@ -7,7 +7,8 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import type { VipIconInstance, VipStoreResult } from '@ola/shared/types';
 import type { ListOption } from '@components/ui/ListOptionDialog';
-import { PRIVACY_KEYS, VIP_PAGE_SIZE } from './constants';
+import { VIP_PAGE_SIZE } from './constants';
+import { VIP_PRIVACY_KEYS } from '@ola/shared/constants';
 
 function buildDurationText(
   t: TFunction,
@@ -205,7 +206,7 @@ export function useVipStoreScreen() {
   }
 
   function changePrivacyOptions(): ListOption[] {
-    return PRIVACY_KEYS.map((key, index) => ({
+    return VIP_PRIVACY_KEYS.map((key, index) => ({
       key,
       label: t(`vip.${key}`),
       onSelect: () => changePrivacy(index as 0 | 1 | 2),

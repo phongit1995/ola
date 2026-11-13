@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { CloseIcon } from '@components';
 
 interface MediaViewerProps {
   photos: string[];
@@ -136,16 +137,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
           onClick={onClose}
           className="rounded-full bg-black/50 p-2 hover:bg-black/70"
         >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-          </svg>
+          <CloseIcon className="h-[22px] w-[22px]" />
         </button>
       </div>
 

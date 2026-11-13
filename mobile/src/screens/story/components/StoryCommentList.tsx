@@ -11,9 +11,9 @@ import { useStoryTextSize } from '../useStoryTextSize';
 import { useStoryCommentListActions } from '../useStoryCommentActions';
 import { StoryCommentItem } from './StoryCommentItem';
 import { StoryStateMessage } from './StoryStateMessage';
+import { TEXT_SECONDARY } from '@constants';
 
 const EMPTY_COMMENTS: StoryComment[] = [];
-const MUTED = 'rgba(0,0,0,0.54)';
 const LOAD_MORE_MIN_WIDTH = 144;
 
 interface StoryCommentListProps {
@@ -70,7 +70,7 @@ export function StoryCommentList({
     }
     if (status === 'ready') {
       return (
-        <Text className="px-6 py-10 text-center" style={[textSize(14, 20), { color: MUTED }]}>
+        <Text className="px-6 py-10 text-center" style={[textSize(14, 20), { color: TEXT_SECONDARY }]}>
           {emptyText}
         </Text>
       );

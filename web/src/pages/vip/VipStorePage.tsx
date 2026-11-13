@@ -9,18 +9,15 @@ import {
   ScreenHeader,
   VipIcon,
   type ListOption,
+  ChevronRightIcon,
 } from '@components';
 import { formatDateDMY, isVipIconTransferable, vipName } from '@lib';
 import { VipService } from '@services';
 import type { VipIconInstance, VipStoreResult } from '@app-types';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { VipHistoryDialog } from './VipHistoryDialog';
+import { VIP_PRIVACY_KEYS } from '@constants';
 
-const PRIVACY_KEYS = [
-  'privacyPublic',
-  'privacyFriends',
-  'privacyPrivate',
-] as const;
 const VIP_PAGE_SIZE = 100;
 
 interface VipRowProps {
@@ -318,7 +315,7 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
     return options;
   }
 
-  const privacyOptions: ListOption[] = PRIVACY_KEYS.map((key, index) => ({
+  const privacyOptions: ListOption[] = VIP_PRIVACY_KEYS.map((key, index) => ({
     key,
     label: t(`vip.${key}`),
     onSelect: () => changePrivacy(index as 0 | 1 | 2),
@@ -380,16 +377,9 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
               {t('vip.whoCanSee')}
             </span>
             <span className="mx-2 text-xs text-black/54">
-              {t(`vip.${PRIVACY_KEYS[privacy]}`)}
+              {t(`vip.${VIP_PRIVACY_KEYS[privacy]}`)}
             </span>
-            <svg
-              viewBox="0 0 24 24"
-              className="h-5 w-5 text-black/40"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-            </svg>
+            <ChevronRightIcon className="h-5 w-5 text-black/40" />
           </button>
           <div className="mx-4 h-px bg-black/12" />
 
