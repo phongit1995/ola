@@ -38,19 +38,15 @@ func (ctrl *Controller) GetOverview(c *gin.Context) (interface{}, error) {
 		To:   now,
 	}
 
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		q.From = t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		q.To = t
+	if from != nil {
+		q.From = *from
+	}
+	if to != nil {
+		q.To = *to
 	}
 	if q.To.Before(q.From) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "to must be after from")

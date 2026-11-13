@@ -170,20 +170,11 @@ func (ctrl *Controller) ListSpins(c *gin.Context) (interface{}, error) {
 		filter.Outcome = raw
 	}
 	filter.Query = strings.TrimSpace(c.Query("q"))
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		filter.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		filter.To = &t
-	}
+	filter.From, filter.To = from, to
 	limit := utils.ParseLimit(c, 50, 100)
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.ListAllSpins(filter, limit, offset)
@@ -212,20 +203,11 @@ func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
 		}
 		filter.WheelID = &parsed
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		filter.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		filter.To = &t
-	}
+	filter.From, filter.To = from, to
 	resp, err := ctrl.service.Stats(filter)
 	if err != nil {
 		return nil, utils.ServiceError(err)
@@ -249,20 +231,11 @@ func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
 		}
 		f.UserID = &parsed
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		f.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return f, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		f.To = &t
-	}
+	f.From, f.To = from, to
 	return f, nil
 }
 

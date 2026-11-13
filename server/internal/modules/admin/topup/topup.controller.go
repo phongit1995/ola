@@ -26,20 +26,11 @@ func parseListFilter(c *gin.Context) (ListFilter, error) {
 		Type:   c.Query("type"),
 		Search: c.Query("search"),
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		f.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return f, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		f.To = &t
-	}
+	f.From, f.To = from, to
 	return f, nil
 }
 
@@ -56,19 +47,15 @@ func (ctrl *Controller) Stats(c *gin.Context) (interface{}, error) {
 	now := time.Now()
 	from := now.AddDate(0, 0, -29).Truncate(24 * time.Hour)
 	to := now
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		from = t
+	fromQuery, toQuery, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		to = t
+	if fromQuery != nil {
+		from = *fromQuery
+	}
+	if toQuery != nil {
+		to = *toQuery
 	}
 	if to.Before(from) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "to must be after from")

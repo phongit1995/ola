@@ -2,7 +2,6 @@ package adminaudit
 
 import (
 	"net/http"
-	"time"
 
 	"ola-chat-server/internal/utils"
 
@@ -52,20 +51,11 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 		}
 		f.AdminID = &id
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		f.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		f.To = &t
-	}
+	f.From, f.To = from, to
 
 	resp, err := ctrl.service.List(f)
 	if err != nil {
