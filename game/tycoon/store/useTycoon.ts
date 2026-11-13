@@ -237,7 +237,6 @@ interface TycoonState {
 const SOUND_KEY = 'ola:tycoon:sound';
 const SPEED_KEY = 'ola:tycoon:speed';
 const AUTO_END_KEY = 'ola:tycoon:auto-end';
-const BOT_TEMPO = 1.8;
 const SKIP_TEMPO = 8;
 const CATCHUP_TEMPO = 4;
 const TOAST_MS = 2400;
@@ -844,7 +843,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       const stale = () => epoch !== refs.replayEpoch;
       const behind = () => refs.queuedStates > 0;
       refs.incoming = next;
-      setTempo(behind() ? CATCHUP_TEMPO : (get().players[data.lastBy]?.bot ? BOT_TEMPO : 1) * get().speed);
+      setTempo(behind() ? CATCHUP_TEMPO : get().speed);
       set({ deadline: 0, timerLeftMs: 0, turnExpired: false });
       const openCard = data.lastMove?.type === 'CARD_ACK' ? get().cardFx : null;
       if (openCard) {

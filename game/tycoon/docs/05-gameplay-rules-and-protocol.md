@@ -390,7 +390,7 @@ Kết quả đo (1v1, 1.000 ván mỗi cặp, luân phiên đi trước): Khó �
 - **Mức độ chỉ đổi cách quyết định.** Xúc xắc, thẻ, giá, luật và thời gian như nhau cho mọi ghế. Không chỉnh xúc xắc hay bộ thẻ cho máy, kể cả để máy Dễ thua.
 - **Máy chỉ dùng thông tin người chơi nhìn thấy:** vị trí, tiền, đất, nhà, vòng, lễ hội, thẻ ra tù đang giữ. Không đọc `state.rng`, thứ tự `chanceDeck`/`chestDeck` hoặc mô phỏng trước kết quả xúc xắc thật.
 - Phần ngẫu nhiên của máy (máy Dễ, mô phỏng của máy Khó) dùng RNG riêng, **không rút từ `state.rng`**: chuỗi xúc xắc của ván không đổi theo mức độ và test lặp lại được. `GameState` không giữ seed ban đầu, nên store lưu seed khi `beginGame` rồi tạo RNG từ seed + ghế + số nước máy đó đã đi.
-- Mọi mức nghĩ `BOT_THINK_MS` (650 ms) trước mỗi nước; máy Khó tính thêm tối đa 50 ms mỗi quyết định trên máy tầm trung. `botMove` trả `null` thì dùng `moveOnTimeout` như hiện tại.
+- Mọi mức chờ trước mỗi nước theo `BOT_DELAY_MS` ở `practice.ts`: gieo 750 ms, quản lý/kết thúc lượt 650 ms, quyết định (mua, xây, trả nợ…) 950 ms, thẻ 1.300 ms; tốc độ ×2 chia đôi. Animation lượt của máy chạy cùng nhịp với lượt người chơi (không tua nhanh). Máy Khó tính thêm tối đa 50 ms mỗi quyết định trên máy tầm trung. `botMove` trả `null` thì dùng `moveOnTimeout` như hiện tại.
 - Code: `logic/bot.ts` đổi thành `botMove(s, seat, level = 'normal')`, `level: 'easy' | 'normal' | 'hard'`. Nhánh `normal` giữ nguyên logic hiện có để không đổi cân bằng đã đo ở [09](./09-economy.md). Các câu "Bot …" ở §4 là cách chơi mức Thường.
 
 ### 12.2 Quyết định theo mức

@@ -12,7 +12,7 @@ const YOU = 0;
 const TURN_MS = TURN_SECONDS * 1000;
 const BOT_REPLY_TIMEOUT_MS = 8000;
 let practiceMatchSeq = 0;
-export const BOT_DELAY_MS = { card: 950, quick: 150, think: 360 };
+export const BOT_DELAY_MS = { roll: 750, manage: 650, think: 950, card: 1300 };
 
 export interface BotWorkerLike {
   postMessage(request: BotRequest): void;
@@ -60,7 +60,8 @@ function defaultBotWorker(): BotWorkerLike | null {
 
 function botDelay(state: GameState): number {
   if (state.phase === 'card') return BOT_DELAY_MS.card;
-  if (state.phase === 'manage' || state.phase === 'roll') return BOT_DELAY_MS.quick;
+  if (state.phase === 'roll') return BOT_DELAY_MS.roll;
+  if (state.phase === 'manage') return BOT_DELAY_MS.manage;
   return BOT_DELAY_MS.think;
 }
 
