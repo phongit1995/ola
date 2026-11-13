@@ -8,13 +8,13 @@ import (
 )
 
 var (
-	ErrFileTooLarge         = errors.New("file too large")
-	ErrRateLimit            = errors.New("upload rate limit exceeded")
-	ErrMessageInProgress    = errors.New("message upload already in progress")
+	ErrFileTooLarge         = media.ErrFileTooLarge
+	ErrRateLimit            = media.ErrUploadRateLimit
+	ErrMessageInProgress    = media.ErrUploadInProgress
 	ErrMediaRequiresUpload  = errors.New("media messages must use an upload endpoint")
 	ErrNotMember            = errors.New("user is not a member of this conversation")
-	ErrUnsupportedImage     = errors.New("unsupported image type")
-	ErrDecodeImage          = errors.New("failed to decode image")
+	ErrUnsupportedImage     = media.ErrUnsupportedImage
+	ErrDecodeImage          = media.ErrDecodeImage
 	ErrInvalidMetadata      = errors.New("invalid message metadata")
 	ErrMaxReactions         = errors.New("max reaction types per user reached")
 	ErrReplyNotFound        = errors.New("replied message not found")

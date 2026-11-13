@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"path/filepath"
 	"strings"
@@ -157,6 +158,24 @@ func ValidateMeasuredDuration(data []byte, mime string, reported, maximum float6
 		return fmt.Errorf("%w: duration does not match audio", ErrInvalidAudio)
 	}
 	return nil
+}
+
+func ReadAudio(r io.Reader, declaredMime string, duration, maxDuration float64) ([]byte, string, error) {
+	data, err := ReadAllLimited(r, MaxAudioUploadSize)
+	if err != nil {
+		return nil, "", err
+	}
+	mime, err := DetectAudioMime(data, declaredMime)
+	if err != nil {
+		return nil, "", err
+	}
+	if err := ValidatePayloadSize(int64(len(data)), duration); err != nil {
+		return nil, "", err
+	}
+	if err := ValidateMeasuredDuration(data, mime, duration, maxDuration); err != nil {
+		return nil, "", err
+	}
+	return data, mime, nil
 }
 
 func measureAudioDuration(data []byte, mime string) (float64, bool) {

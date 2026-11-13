@@ -1,31 +1,24 @@
 package room
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	"io"
 	"mime/multipart"
 	"net/http"
 	"ola-chat-server/internal/constants"
 	roomEvents "ola-chat-server/internal/domain/room"
 	"ola-chat-server/internal/media"
+	"ola-chat-server/internal/media/mediasend"
 	"ola-chat-server/internal/models"
 	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
-	"strings"
+	"slices"
 	"time"
-
-	_ "golang.org/x/image/webp"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -33,11 +26,12 @@ import (
 )
 
 var (
-	ErrRoomFileTooLarge      = errors.New("file too large")
-	ErrRoomUploadRateLimit   = errors.New("upload rate limit exceeded")
-	ErrRoomUnsupportedImage  = errors.New("unsupported image type")
-	ErrRoomDecodeImage       = errors.New("failed to decode image")
-	ErrRoomMessageInProgress = errors.New("message upload already in progress")
+	ErrRoomFileTooLarge      = media.ErrFileTooLarge
+	ErrRoomUploadRateLimit   = media.ErrUploadRateLimit
+	ErrRoomUnsupportedImage  = media.ErrUnsupportedImage
+	ErrRoomDecodeImage       = media.ErrDecodeImage
+	ErrRoomMessageInProgress = media.ErrUploadInProgress
+	errRoomTooManyRequests   = errors.New("too many requests")
 	ErrRoomClientMessageUsed = errors.New("client message ID already used")
 	ErrRoomBlockSelf         = errors.New("cannot block yourself")
 	ErrRoomBlockUserNotFound = errors.New("user not found")
@@ -90,38 +84,18 @@ func (s *Service) cachedRoomMediaMessage(ctx context.Context, userID, roomID uui
 	return toRoomMessageResponse(stored, sender), nil
 }
 
+func (s *Service) mediaSender() mediasend.Helper {
+	return mediasend.Helper{Cache: s.cache, S3: s.s3, Logger: s.logger, Label: RoomMediaSendLabel}
+}
+
 func (s *Service) acquireRoomMediaUpload(ctx context.Context, userID, roomID uuid.UUID, messageType, clientMsgID string) (*RoomMessageResponse, func(), error) {
-	noRelease := func() {}
-	existing, err := s.cachedRoomMediaMessage(ctx, userID, roomID, messageType, clientMsgID)
-	if err != nil || existing != nil || clientMsgID == "" {
-		return existing, noRelease, err
+	if clientMsgID == "" {
+		return nil, func() {}, nil
 	}
-
 	lockKey := fmt.Sprintf(CacheKeyRoomMediaUploadLock, roomID.String(), userID.String(), clientMsgID)
-	lockToken := uuid.NewString()
-	acquired, err := s.cache.SetNX(lockKey, lockToken, constants.CacheTTLMediaUploadLock*time.Second)
-	if err != nil {
-		return nil, noRelease, fmt.Errorf("failed to acquire room media upload lock: %w", err)
-	}
-	if !acquired {
-		existing, existingErr := s.cachedRoomMediaMessage(ctx, userID, roomID, messageType, clientMsgID)
-		if existingErr != nil || existing != nil {
-			return existing, noRelease, existingErr
-		}
-		return nil, noRelease, ErrRoomMessageInProgress
-	}
-
-	release := func() {
-		if _, err := s.cache.DeleteIfValue(lockKey, lockToken); err != nil {
-			s.logger.Warnw("Failed to release room media upload lock", "key", lockKey, "error", err)
-		}
-	}
-	existing, err = s.cachedRoomMediaMessage(ctx, userID, roomID, messageType, clientMsgID)
-	if err != nil || existing != nil {
-		release()
-		return existing, noRelease, err
-	}
-	return nil, release, nil
+	return mediasend.AcquireUpload(s.mediaSender(), lockKey, func() (*RoomMessageResponse, error) {
+		return s.cachedRoomMediaMessage(ctx, userID, roomID, messageType, clientMsgID)
+	})
 }
 
 func (s *Service) Create(adminID uuid.UUID, req *CreateRoomRequest) (*RoomResponse, error) {
@@ -431,16 +405,16 @@ func (s *Service) SendImageMessage(ctx context.Context, userID, roomID uuid.UUID
 	}
 	data, err := json.Marshal(stored)
 	if err != nil {
-		s.cleanupRoomUpload(imageUpload.ObjectName)
+		s.mediaSender().Cleanup(imageUpload.ObjectName)
 		return nil, err
 	}
 	persistedID, err := s.redisMsg.AppendIdempotent(ctx, roomID.String(), userID.String(), clientMsgID, msgID, createdAt, data)
 	if err != nil {
-		s.cleanupRoomUpload(imageUpload.ObjectName)
+		s.mediaSender().Cleanup(imageUpload.ObjectName)
 		return nil, err
 	}
 	if persistedID != msgID {
-		s.cleanupRoomUpload(imageUpload.ObjectName)
+		s.mediaSender().Cleanup(imageUpload.ObjectName)
 		existing, err := s.cachedRoomMediaMessage(ctx, userID, roomID, constants.MessageTypeImage, clientMsgID)
 		if err != nil {
 			return nil, err
@@ -541,16 +515,16 @@ func (s *Service) SendAudioMessage(ctx context.Context, userID, roomID uuid.UUID
 	}
 	data, err := json.Marshal(stored)
 	if err != nil {
-		s.cleanupRoomUpload(audio.ObjectName)
+		s.mediaSender().Cleanup(audio.ObjectName)
 		return nil, err
 	}
 	persistedID, err := s.redisMsg.AppendIdempotent(ctx, roomID.String(), userID.String(), clientMsgID, msgID, createdAt, data)
 	if err != nil {
-		s.cleanupRoomUpload(audio.ObjectName)
+		s.mediaSender().Cleanup(audio.ObjectName)
 		return nil, err
 	}
 	if persistedID != msgID {
-		s.cleanupRoomUpload(audio.ObjectName)
+		s.mediaSender().Cleanup(audio.ObjectName)
 		existing, err := s.cachedRoomMediaMessage(ctx, userID, roomID, constants.MessageTypeAudio, clientMsgID)
 		if err != nil {
 			return nil, err
@@ -608,9 +582,7 @@ func (s *Service) uploadRoomAudio(ctx context.Context, userID, roomID uuid.UUID,
 	if fileHeader.Size > media.MaxAudioUploadSize {
 		return nil, ErrRoomFileTooLarge
 	}
-
-	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
-	if err := s.checkRateLimit(rateKey, constants.RateLimitUploadWindowSeconds, constants.RateLimitUploadMaxRequests); err != nil {
+	if !s.mediaSender().AllowUpload(userID) {
 		return nil, ErrRoomUploadRateLimit
 	}
 
@@ -620,29 +592,14 @@ func (s *Service) uploadRoomAudio(ctx context.Context, userID, roomID uuid.UUID,
 	}
 	defer file.Close()
 
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
-	}
-	if int64(len(data)) > media.MaxAudioUploadSize {
-		return nil, ErrRoomFileTooLarge
-	}
-
-	mimeType, err := media.DetectAudioMime(data, fileHeader.Header.Get("Content-Type"))
+	data, mimeType, err := media.ReadAudio(file, fileHeader.Header.Get("Content-Type"), duration, MaxRoomAudioDurationSeconds)
 	if err != nil {
 		return nil, err
 	}
-	if err := media.ValidatePayloadSize(int64(len(data)), duration); err != nil {
-		return nil, err
-	}
-	if err := media.ValidateMeasuredDuration(data, mimeType, duration, MaxRoomAudioDurationSeconds); err != nil {
-		return nil, err
-	}
 
-	safeName := fmt.Sprintf("audio%s", media.PickAudioExtension(mimeType, fileHeader.Filename))
+	safeName := "audio" + media.PickAudioExtension(mimeType, fileHeader.Filename)
 	folder := fmt.Sprintf("%s/%s", UploadFolderRooms, time.Now().Format(media.UploadDateLayoutDay))
-
-	upload, err := s.s3.UploadFile(ctx, &roomFileReader{Reader: bytes.NewReader(data), size: int64(len(data))}, safeName, folder)
+	upload, err := s.s3.UploadNamedBytes(ctx, data, safeName, folder)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload to storage: %w", err)
 	}
@@ -654,24 +611,11 @@ func (s *Service) uploadRoomAudio(ctx context.Context, userID, roomID uuid.UUID,
 	}, nil
 }
 
-func (s *Service) cleanupRoomUpload(objectName string) {
-	if objectName == "" || s.s3 == nil {
-		return
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := s.s3.DeleteFile(ctx, objectName); err != nil {
-		s.logger.Warnw("Failed to clean up uploaded room media", "object", objectName, "error", err)
-	}
-}
-
 func (s *Service) uploadRoomImage(ctx context.Context, userID, roomID uuid.UUID, fileHeader *multipart.FileHeader) (*roomImageUpload, error) {
 	if fileHeader.Size > media.MaxImageUploadSize {
 		return nil, ErrRoomFileTooLarge
 	}
-
-	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
-	if err := s.checkRateLimit(rateKey, constants.RateLimitUploadWindowSeconds, constants.RateLimitUploadMaxRequests); err != nil {
+	if !s.mediaSender().AllowUpload(userID) {
 		return nil, ErrRoomUploadRateLimit
 	}
 
@@ -681,55 +625,19 @@ func (s *Service) uploadRoomImage(ctx context.Context, userID, roomID uuid.UUID,
 	}
 	defer file.Close()
 
-	head := make([]byte, 512)
-	n, _ := io.ReadFull(file, head)
-	head = head[:n]
-	detectedMime := http.DetectContentType(head)
-	if !isAllowedRoomImageMime(detectedMime) {
-		return nil, fmt.Errorf("%w: %s", ErrRoomUnsupportedImage, detectedMime)
-	}
-
-	rest, err := io.ReadAll(file)
+	img, err := media.ReadImage(file, media.MaxImageUploadSize)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
-	}
-	fullData := append(head, rest...)
-	if int64(len(fullData)) > media.MaxImageUploadSize {
-		return nil, ErrRoomFileTooLarge
+		return nil, err
 	}
 
-	if _, _, err := image.DecodeConfig(bytes.NewReader(fullData)); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrRoomDecodeImage, err)
-	}
-
-	ext := media.ImageExtensionOrFile(detectedMime, fileHeader.Filename)
-	safeName := fmt.Sprintf("image%s", ext)
+	safeName := "image" + media.ImageExtensionOrFile(img.Mime, fileHeader.Filename)
 	folder := fmt.Sprintf("%s/%s", UploadFolderRooms, time.Now().Format(media.UploadDateLayoutDay))
-
-	upload, err := s.s3.UploadFile(ctx, &roomFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
+	upload, err := s.s3.UploadNamedBytes(ctx, img.Data, safeName, folder)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload to storage: %w", err)
 	}
 	return &roomImageUpload{URL: upload.URL, ObjectName: upload.PublicID}, nil
 }
-
-func isAllowedRoomImageMime(mime string) bool {
-	for _, m := range media.AllowedImageMimes {
-		if strings.EqualFold(m, mime) {
-			return true
-		}
-	}
-	return false
-}
-
-type roomFileReader struct {
-	*bytes.Reader
-	size int64
-}
-
-func (r *roomFileReader) Close() error { return nil }
-
-var _ multipart.File = (*roomFileReader)(nil)
 
 func (s *Service) DeleteMessage(ctx context.Context, userID, roomID uuid.UUID, messageID string) error {
 	if _, err := s.getRoom(roomID); err != nil {
@@ -851,7 +759,7 @@ func (s *Service) fetchMessages(ctx context.Context, roomID uuid.UUID, limit int
 }
 
 func (s *Service) ToggleReaction(ctx context.Context, userID, roomID uuid.UUID, messageID, reactionType string) (*RoomMessageResponse, error) {
-	if !isAllowedRoomReactionType(reactionType) {
+	if !slices.Contains(constants.AllowedReactionTypes, reactionType) {
 		return nil, fmt.Errorf("invalid reaction type: %s", reactionType)
 	}
 	if _, err := uuid.Parse(messageID); err != nil {
@@ -874,9 +782,9 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, roomID uuid.UUID, 
 		return nil, errors.New("not a room member")
 	}
 
-	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitReaction, userID.String())
-	if err := s.checkRateLimit(rateKey, constants.RateLimitReactionWindowSeconds, constants.RateLimitReactionMaxRequests); err != nil {
-		return nil, err
+	sender := s.mediaSender()
+	if !sender.AllowReaction(userID) {
+		return nil, errRoomTooManyRequests
 	}
 	actor, _ := s.userCache.GetUserCache(userID, true)
 	actorUsername := ""
@@ -884,21 +792,10 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, roomID uuid.UUID, 
 		actorUsername = actor.Username
 	}
 
-	lockKey := fmt.Sprintf(constants.CacheKeyReactionLock, messageID)
 	lockToken := uuid.NewString()
-	acquired, lockErr := s.cache.SetNX(lockKey, lockToken, time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
-	if lockErr != nil {
-		s.logger.Warnw("Room reaction lock SetNX failed", "message_id", messageID, "error", lockErr)
-	}
-	if !acquired {
-		time.Sleep(time.Duration(constants.ReactionLockRetryMs) * time.Millisecond)
-		acquired, lockErr = s.cache.SetNX(lockKey, lockToken, time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
-		if lockErr != nil {
-			s.logger.Warnw("Room reaction lock SetNX retry failed", "message_id", messageID, "error", lockErr)
-		}
-		if !acquired {
-			return nil, errors.New("reaction in progress, please retry")
-		}
+	lockKey, err := sender.LockReaction(messageID, lockToken)
+	if err != nil {
+		return nil, err
 	}
 	lockReleased := false
 	releaseLock := func() {
@@ -987,24 +884,6 @@ func (s *Service) resolveReplySnapshot(ctx context.Context, roomID, replyToID st
 	return snapshot
 }
 
-func (s *Service) checkRateLimit(key string, windowSecs, maxReqs int) error {
-	count, err := s.cache.Increment(key)
-	if err != nil {
-		s.logger.Errorw("Rate limit Redis failure, failing closed", "key", key, "error", err)
-		return errors.New("too many requests")
-	}
-	if count == 1 {
-		if expErr := s.cache.SetExpire(key, time.Duration(windowSecs)*time.Second); expErr != nil {
-			s.logger.Warnw("Failed to set rate limit expiry, deleting key to prevent permanent block", "key", key, "error", expErr)
-			s.cache.Delete(key)
-		}
-	}
-	if count > int64(maxReqs) {
-		return errors.New("too many requests")
-	}
-	return nil
-}
-
 func applyRoomReactionReplace(reactions map[string][]RoomReactor, reactionType string, reactor RoomReactor) string {
 	hadSameType := false
 	for t, users := range reactions {
@@ -1029,15 +908,6 @@ func applyRoomReactionReplace(reactions map[string][]RoomReactor, reactionType s
 	}
 	reactions[reactionType] = append(reactions[reactionType], reactor)
 	return constants.ReactionActionAdded
-}
-
-func isAllowedRoomReactionType(t string) bool {
-	for _, v := range constants.AllowedReactionTypes {
-		if v == t {
-			return true
-		}
-	}
-	return false
 }
 
 func toEventReplySnapshot(snapshot *RoomReplySnapshot) *roomEvents.RoomReplySnapshot {

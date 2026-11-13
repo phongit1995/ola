@@ -11,6 +11,8 @@ const (
 	CacheKeyRoomImagePurgeLock  = "LOCK:ROOM_IMAGE_PURGE"
 	AdvisoryLockRoomImagePurge  = "room_image_purge"
 
+	RoomMediaSendLabel = "room media"
+
 	RoomReplyExcerptMaxRunes = 120
 	RoomMaxBlockedUsers      = 500
 

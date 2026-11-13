@@ -1,22 +1,13 @@
 package clan
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	"io"
 	"mime/multipart"
-	"net/http"
 	"regexp"
 	"strings"
 	"time"
-
-	_ "golang.org/x/image/webp"
 
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/media"
@@ -603,37 +594,22 @@ func (s *Service) uploadClanImage(ctx context.Context, userID, clanID uuid.UUID,
 		return nil, errClanImageMissing
 	}
 	if fileHeader.Size > media.MaxImageUploadSize {
-		return nil, errors.New("image too large")
+		return nil, media.ErrImageTooLarge
 	}
 
 	file, err := fileHeader.Open()
 	if err != nil {
-		return nil, errors.New("failed to open image")
+		return nil, media.ErrOpenImage
 	}
 	defer file.Close()
 
-	head := make([]byte, 512)
-	n, _ := io.ReadFull(file, head)
-	head = head[:n]
-	mimeType := http.DetectContentType(head)
-	if !isAllowedImageMime(mimeType) {
-		return nil, errors.New("unsupported image type")
-	}
-
-	rest, err := io.ReadAll(file)
+	img, err := media.ReadImage(file, media.MaxImageUploadSize)
 	if err != nil {
-		return nil, errors.New("failed to read image")
-	}
-	data := append(head, rest...)
-	if int64(len(data)) > media.MaxImageUploadSize {
-		return nil, errors.New("image too large")
-	}
-	if _, _, err := image.DecodeConfig(bytes.NewReader(data)); err != nil {
-		return nil, errors.New("failed to decode image")
+		return nil, media.PlainImageError(err)
 	}
 
 	folder := fmt.Sprintf("%s/%s", UploadFolderClans, time.Now().Format(media.UploadDateLayout))
-	upload, err := s.s3.UploadFile(ctx, &clanFileReader{Reader: bytes.NewReader(data)}, field+media.ImageExtension(mimeType), folder)
+	upload, err := s.s3.UploadNamedBytes(ctx, img.Data, field+media.ImageExtension(img.Mime), folder)
 	if err != nil {
 		s.logger.Errorw("Failed to upload clan image", "clan_id", clan.ID, "field", field, "error", err)
 		return nil, errors.New("failed to upload image")
@@ -745,20 +721,3 @@ func toClanUserResponse(u *models.User) *ClanUserResponse {
 		AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 	}
 }
-
-func isAllowedImageMime(mime string) bool {
-	for _, m := range media.AllowedImageMimes {
-		if strings.EqualFold(m, mime) {
-			return true
-		}
-	}
-	return false
-}
-
-type clanFileReader struct {
-	*bytes.Reader
-}
-
-func (r *clanFileReader) Close() error { return nil }
-
-var _ multipart.File = (*clanFileReader)(nil)

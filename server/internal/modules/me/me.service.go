@@ -1,23 +1,15 @@
 package me
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	"io"
 	"mime/multipart"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
-
-	_ "golang.org/x/image/webp"
 
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
@@ -981,28 +973,21 @@ func (s *Service) UploadAudio(
 	}
 	defer file.Close()
 
-	data, err := io.ReadAll(io.LimitReader(file, media.MaxAudioUploadSize+1))
-	if err != nil {
-		return nil, errors.New("failed to read audio")
-	}
-	if int64(len(data)) > media.MaxAudioUploadSize {
+	data, mimeType, err := media.ReadAudio(file, fileHeader.Header.Get("Content-Type"), duration, MaxPostAudioDurationSeconds)
+	switch {
+	case errors.Is(err, media.ErrFileTooLarge):
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "audio too large")
-	}
-
-	mimeType, err := media.DetectAudioMime(data, fileHeader.Header.Get("Content-Type"))
-	if err != nil {
+	case errors.Is(err, media.ErrUnsupportedAudio):
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "unsupported audio type")
-	}
-	if err := media.ValidatePayloadSize(int64(len(data)), duration); err != nil {
+	case errors.Is(err, media.ErrInvalidAudio):
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	if err := media.ValidateMeasuredDuration(data, mimeType, duration, MaxPostAudioDurationSeconds); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	case err != nil:
+		return nil, errors.New("failed to read audio")
 	}
 
 	folder := postUploadPrefix(userID) + time.Now().Format(media.UploadDateLayout)
 	safeName := "audio" + media.PickAudioExtension(mimeType, fileHeader.Filename)
-	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, safeName, folder)
+	upload, err := s.s3.UploadNamedBytes(ctx, data, safeName, folder)
 	if err != nil {
 		s.logger.Errorw("Failed to upload post audio", "error", err)
 		return nil, errors.New("failed to upload audio")
@@ -1025,38 +1010,21 @@ func (s *Service) UploadAudio(
 
 func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *multipart.FileHeader) (*UploadedImage, error) {
 	if fileHeader.Size > media.MaxImageUploadSize {
-		return nil, errors.New("image too large")
+		return nil, media.ErrImageTooLarge
 	}
 
 	file, err := fileHeader.Open()
 	if err != nil {
-		return nil, errors.New("failed to open image")
+		return nil, media.ErrOpenImage
 	}
 	defer file.Close()
 
-	head := make([]byte, 512)
-	n, _ := io.ReadFull(file, head)
-	head = head[:n]
-	mimeType := http.DetectContentType(head)
-	if !isAllowedImageMime(mimeType) {
-		return nil, errors.New("unsupported image type")
-	}
-
-	rest, err := io.ReadAll(file)
+	img, err := media.ReadImage(file, media.MaxImageUploadSize)
 	if err != nil {
-		return nil, errors.New("failed to read image")
-	}
-	data := append(head, rest...)
-	if int64(len(data)) > media.MaxImageUploadSize {
-		return nil, errors.New("image too large")
+		return nil, media.PlainImageError(err)
 	}
 
-	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
-	if err != nil {
-		return nil, errors.New("failed to decode image")
-	}
-
-	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, "image"+media.ImageExtension(mimeType), folder)
+	upload, err := s.s3.UploadNamedBytes(ctx, img.Data, "image"+media.ImageExtension(img.Mime), folder)
 	if err != nil {
 		s.logger.Errorw("Failed to upload post image", "error", err)
 		return nil, errors.New("failed to upload image")
@@ -1065,9 +1033,9 @@ func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *mu
 	return &UploadedImage{
 		URL:        upload.URL,
 		ObjectName: upload.PublicID,
-		Width:      cfg.Width,
-		Height:     cfg.Height,
-		MimeType:   mimeType,
+		Width:      img.Width,
+		Height:     img.Height,
+		MimeType:   img.Mime,
 	}, nil
 }
 
@@ -1675,20 +1643,3 @@ func replySnapshotFrom(parent *models.MeComment) *CommentReplySnapshot {
 		Excerpt:    excerptText(parent.Content),
 	}
 }
-
-func isAllowedImageMime(mime string) bool {
-	for _, m := range media.AllowedImageMimes {
-		if strings.EqualFold(m, mime) {
-			return true
-		}
-	}
-	return false
-}
-
-type postFileReader struct {
-	*bytes.Reader
-}
-
-func (r *postFileReader) Close() error { return nil }
-
-var _ multipart.File = (*postFileReader)(nil)

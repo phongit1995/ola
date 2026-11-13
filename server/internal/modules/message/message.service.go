@@ -1,22 +1,16 @@
 package message
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
-	"io"
 	"mime/multipart"
-	"net/http"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	messageEvents "ola-chat-server/internal/domain/message"
 	"ola-chat-server/internal/media"
+	"ola-chat-server/internal/media/mediasend"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/relationships"
@@ -26,11 +20,10 @@ import (
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/utils"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
-
-	_ "golang.org/x/image/webp"
 
 	"github.com/gocql/gocql"
 	"github.com/google/uuid"
@@ -103,49 +96,18 @@ func (s *Service) cachedIdempotentMessage(senderID, conversationID uuid.UUID, me
 	return existing, nil
 }
 
-func (s *Service) acquireMediaUpload(senderID, conversationID uuid.UUID, messageType, clientMsgID string) (*MessageResponse, func(), error) {
-	noRelease := func() {}
-	existing, err := s.cachedIdempotentMessage(senderID, conversationID, messageType, clientMsgID)
-	if err != nil || existing != nil || clientMsgID == "" {
-		return existing, noRelease, err
-	}
-
-	lockKey := fmt.Sprintf("media-upload:%s:%s", senderID.String(), clientMsgID)
-	lockToken := uuid.NewString()
-	acquired, err := s.redis.SetNX(lockKey, lockToken, constants.CacheTTLMediaUploadLock*time.Second)
-	if err != nil {
-		return nil, noRelease, fmt.Errorf("failed to acquire media upload lock: %w", err)
-	}
-	if !acquired {
-		existing, existingErr := s.cachedIdempotentMessage(senderID, conversationID, messageType, clientMsgID)
-		if existingErr != nil || existing != nil {
-			return existing, noRelease, existingErr
-		}
-		return nil, noRelease, ErrMessageInProgress
-	}
-
-	release := func() {
-		if _, err := s.redis.DeleteIfValue(lockKey, lockToken); err != nil {
-			s.logger.Warnw("Failed to release media upload lock", "key", lockKey, "error", err)
-		}
-	}
-	existing, err = s.cachedIdempotentMessage(senderID, conversationID, messageType, clientMsgID)
-	if err != nil || existing != nil {
-		release()
-		return existing, noRelease, err
-	}
-	return nil, release, nil
+func (s *Service) mediaSender() mediasend.Helper {
+	return mediasend.Helper{Cache: s.redis, S3: s.s3, Logger: s.logger, Label: MediaSendLabel}
 }
 
-func (s *Service) cleanupUploadedObject(objectName string) {
-	if objectName == "" || s.s3 == nil {
-		return
+func (s *Service) acquireMediaUpload(senderID, conversationID uuid.UUID, messageType, clientMsgID string) (*MessageResponse, func(), error) {
+	if clientMsgID == "" {
+		return nil, func() {}, nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := s.s3.DeleteFile(ctx, objectName); err != nil {
-		s.logger.Warnw("Failed to clean up uploaded media", "object", objectName, "error", err)
-	}
+	lockKey := fmt.Sprintf(CacheKeyMediaUploadLock, senderID.String(), clientMsgID)
+	return mediasend.AcquireUpload(s.mediaSender(), lockKey, func() (*MessageResponse, error) {
+		return s.cachedIdempotentMessage(senderID, conversationID, messageType, clientMsgID)
+	})
 }
 
 func (s *Service) SendImageMessage(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, clientMsgID string) (*MessageResponse, error) {
@@ -167,16 +129,16 @@ func (s *Service) SendImageMessage(ctx context.Context, userID, conversationID u
 	}
 	metaJSON, err := json.Marshal(meta)
 	if err != nil {
-		s.cleanupUploadedObject(objectName)
+		s.mediaSender().Cleanup(objectName)
 		return nil, fmt.Errorf("failed to marshal image metadata: %w", err)
 	}
 	response, err := s.SendMessage(userID, conversationID, constants.MessageTypeImage, "", string(metaJSON), nil, clientMsgID)
 	if err != nil {
-		s.cleanupUploadedObject(objectName)
+		s.mediaSender().Cleanup(objectName)
 		return nil, err
 	}
 	if response.Metadata != string(metaJSON) {
-		s.cleanupUploadedObject(objectName)
+		s.mediaSender().Cleanup(objectName)
 	}
 	return response, nil
 }
@@ -185,10 +147,8 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 	if fileHeader.Size > media.MaxImageUploadSize {
 		return nil, "", fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, media.MaxImageUploadSize)
 	}
-
-	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
-	if err := s.checkRateLimit(rateKey, constants.RateLimitUploadWindowSeconds, constants.RateLimitUploadMaxRequests); err != nil {
-		return nil, "", err
+	if !s.mediaSender().AllowUpload(userID) {
+		return nil, "", ErrRateLimit
 	}
 
 	file, err := fileHeader.Open()
@@ -197,54 +157,26 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 	}
 	defer file.Close()
 
-	head := make([]byte, 512)
-	n, _ := io.ReadFull(file, head)
-	head = head[:n]
-	detectedMime := http.DetectContentType(head)
-	if !isAllowedImageMime(detectedMime) {
-		return nil, "", fmt.Errorf("%w: %s", ErrUnsupportedImage, detectedMime)
-	}
-
-	rest, err := io.ReadAll(file)
+	img, err := media.ReadImage(file, media.MaxImageUploadSize)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to read file: %w", err)
-	}
-	fullData := append(head, rest...)
-	if int64(len(fullData)) > media.MaxImageUploadSize {
-		return nil, "", ErrFileTooLarge
+		return nil, "", err
 	}
 
-	cfg, _, err := image.DecodeConfig(bytes.NewReader(fullData))
-	if err != nil {
-		return nil, "", fmt.Errorf("%w: %v", ErrDecodeImage, err)
-	}
-
-	ext := media.ImageExtensionOrFile(detectedMime, fileHeader.Filename)
-	safeName := fmt.Sprintf("image%s", ext)
+	safeName := "image" + media.ImageExtensionOrFile(img.Mime, fileHeader.Filename)
 	folder := fmt.Sprintf("%s/%s/%s", UploadFolderMessages, conversationID.String(), time.Now().Format(media.UploadDateLayout))
-
-	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
+	upload, err := s.s3.UploadNamedBytes(ctx, img.Data, safeName, folder)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to upload to storage: %w", err)
 	}
 
 	return &ImageMetadata{
 		URL:      upload.URL,
-		MimeType: detectedMime,
-		Size:     int64(len(fullData)),
-		Width:    cfg.Width,
-		Height:   cfg.Height,
+		MimeType: img.Mime,
+		Size:     int64(len(img.Data)),
+		Width:    img.Width,
+		Height:   img.Height,
 		FileName: filepath.Base(fileHeader.Filename),
 	}, upload.PublicID, nil
-}
-
-func isAllowedImageMime(mime string) bool {
-	for _, m := range media.AllowedImageMimes {
-		if strings.EqualFold(m, mime) {
-			return true
-		}
-	}
-	return false
 }
 
 func (s *Service) SendAudioMessage(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, duration float64, waveform []float64, replyToID *uuid.UUID, clientMsgID string) (*MessageResponse, error) {
@@ -275,16 +207,16 @@ func (s *Service) SendAudioMessage(ctx context.Context, userID, conversationID u
 	}
 	metaJSON, err := json.Marshal(meta)
 	if err != nil {
-		s.cleanupUploadedObject(objectName)
+		s.mediaSender().Cleanup(objectName)
 		return nil, fmt.Errorf("failed to marshal audio metadata: %w", err)
 	}
 	response, err := s.SendMessage(userID, conversationID, constants.MessageTypeAudio, "", string(metaJSON), replyToID, clientMsgID)
 	if err != nil {
-		s.cleanupUploadedObject(objectName)
+		s.mediaSender().Cleanup(objectName)
 		return nil, err
 	}
 	if response.Metadata != string(metaJSON) {
-		s.cleanupUploadedObject(objectName)
+		s.mediaSender().Cleanup(objectName)
 	}
 	return response, nil
 }
@@ -293,10 +225,8 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 	if fileHeader.Size > media.MaxAudioUploadSize {
 		return nil, "", fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, media.MaxAudioUploadSize)
 	}
-
-	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
-	if err := s.checkRateLimit(rateKey, constants.RateLimitUploadWindowSeconds, constants.RateLimitUploadMaxRequests); err != nil {
-		return nil, "", err
+	if !s.mediaSender().AllowUpload(userID) {
+		return nil, "", ErrRateLimit
 	}
 
 	file, err := fileHeader.Open()
@@ -305,31 +235,14 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 	}
 	defer file.Close()
 
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return nil, "", fmt.Errorf("failed to read file: %w", err)
-	}
-	if int64(len(data)) > media.MaxAudioUploadSize {
-		return nil, "", ErrFileTooLarge
-	}
-
-	declaredMime := fileHeader.Header.Get("Content-Type")
-	finalMime, err := media.DetectAudioMime(data, declaredMime)
+	data, finalMime, err := media.ReadAudio(file, fileHeader.Header.Get("Content-Type"), duration, MaxAudioDurationSeconds)
 	if err != nil {
 		return nil, "", err
 	}
-	if err := media.ValidatePayloadSize(int64(len(data)), duration); err != nil {
-		return nil, "", err
-	}
-	if err := media.ValidateMeasuredDuration(data, finalMime, duration, MaxAudioDurationSeconds); err != nil {
-		return nil, "", err
-	}
 
-	ext := media.PickAudioExtension(finalMime, fileHeader.Filename)
-	safeName := fmt.Sprintf("audio%s", ext)
+	safeName := "audio" + media.PickAudioExtension(finalMime, fileHeader.Filename)
 	folder := fmt.Sprintf("%s/%s/%s", UploadFolderMessages, conversationID.String(), time.Now().Format(media.UploadDateLayout))
-
-	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(data), size: int64(len(data))}, safeName, folder)
+	upload, err := s.s3.UploadNamedBytes(ctx, data, safeName, folder)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to upload to storage: %w", err)
 	}
@@ -372,15 +285,6 @@ func validateAudioMetadata(metadata string, isManagedURL func(string) bool) erro
 	return nil
 }
 
-type multipartFileReader struct {
-	*bytes.Reader
-	size int64
-}
-
-func (r *multipartFileReader) Close() error { return nil }
-
-var _ multipart.File = (*multipartFileReader)(nil)
-
 func validateImageMetadata(metadata string, isManagedURL func(string) bool) error {
 	if strings.TrimSpace(metadata) == "" {
 		return fmt.Errorf("%w: required", ErrInvalidMetadata)
@@ -395,7 +299,7 @@ func validateImageMetadata(metadata string, isManagedURL func(string) bool) erro
 	if isManagedURL == nil || !isManagedURL(meta.URL) {
 		return fmt.Errorf("%w: image URL is not managed storage", ErrInvalidMetadata)
 	}
-	if !isAllowedImageMime(meta.MimeType) {
+	if !media.IsAllowedImageMime(meta.MimeType) {
 		return fmt.Errorf("%w: mimeType %s", ErrInvalidMetadata, meta.MimeType)
 	}
 	return nil
@@ -457,35 +361,8 @@ func applyReactionToggle(reactions map[string][]string, reactionType, userIDStr 
 	return constants.ReactionActionAdded, nil
 }
 
-func isAllowedReactionType(t string) bool {
-	for _, v := range constants.AllowedReactionTypes {
-		if v == t {
-			return true
-		}
-	}
-	return false
-}
-
 func isActiveMember(members []conversation.ConversationMember, userID uuid.UUID) bool {
 	return conversation.IsActiveMember(members, userID)
-}
-
-func (s *Service) checkRateLimit(key string, windowSecs, maxReqs int) error {
-	count, err := s.redis.Increment(key)
-	if err != nil {
-		s.logger.Errorw("Rate limit Redis failure, failing closed", "key", key, "error", err)
-		return ErrRateLimit
-	}
-	if count == 1 {
-		if expErr := s.redis.SetExpire(key, time.Duration(windowSecs)*time.Second); expErr != nil {
-			s.logger.Warnw("Failed to set rate limit expiry, deleting key to prevent permanent block", "key", key, "error", expErr)
-			s.redis.Delete(key)
-		}
-	}
-	if count > int64(maxReqs) {
-		return ErrRateLimit
-	}
-	return nil
 }
 
 func isMember(members []conversation.ConversationMember, userID uuid.UUID) bool {
@@ -1706,7 +1583,7 @@ func (s *Service) resolveDirectOther(conversationID, selfID uuid.UUID) (*models.
 }
 
 func (s *Service) ToggleReaction(ctx context.Context, userID, conversationID uuid.UUID, messageIDStr, reactionType string) (*MessageResponse, error) {
-	if !isAllowedReactionType(reactionType) {
+	if !slices.Contains(constants.AllowedReactionTypes, reactionType) {
 		return nil, fmt.Errorf("%w: %s", ErrInvalidMetadata, reactionType)
 	}
 
@@ -1730,25 +1607,14 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, conversationID uui
 		return nil, err
 	}
 
-	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitReaction, userID.String())
-	if err := s.checkRateLimit(rateKey, constants.RateLimitReactionWindowSeconds, constants.RateLimitReactionMaxRequests); err != nil {
-		return nil, err
+	sender := s.mediaSender()
+	if !sender.AllowReaction(userID) {
+		return nil, ErrRateLimit
 	}
 
-	lockKey := fmt.Sprintf(constants.CacheKeyReactionLock, messageIDStr)
-	acquired, lockErr := s.redis.SetNX(lockKey, "1", time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
-	if lockErr != nil {
-		s.logger.Warnw("Reaction lock SetNX failed", "message_id", messageIDStr, "error", lockErr)
-	}
-	if !acquired {
-		time.Sleep(time.Duration(constants.ReactionLockRetryMs) * time.Millisecond)
-		acquired, lockErr = s.redis.SetNX(lockKey, "1", time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
-		if lockErr != nil {
-			s.logger.Warnw("Reaction lock SetNX retry failed", "message_id", messageIDStr, "error", lockErr)
-		}
-		if !acquired {
-			return nil, fmt.Errorf("reaction in progress, please retry")
-		}
+	lockKey, err := sender.LockReaction(messageIDStr, "1")
+	if err != nil {
+		return nil, err
 	}
 	defer s.redis.Delete(lockKey)
 
