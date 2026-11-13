@@ -24,7 +24,6 @@ func NewController(service *wheel.Service, repo *Repository, logger *zap.Sugared
 	return &Controller{service: service, repo: repo, logger: logger.Named("[admin_wheel_controller]")}
 }
 
-// ListWheels godoc
 // @Summary      Danh sách vòng quay + cấu hình (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -39,7 +38,6 @@ func (ctrl *Controller) ListWheels(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CreateWheel godoc
 // @Summary      Tạo vòng quay (admin)
 // @Tags         admin-wheel
 // @Accept       json
@@ -60,7 +58,6 @@ func (ctrl *Controller) CreateWheel(c *gin.Context) (interface{}, error) {
 	return view, nil
 }
 
-// UpdateWheel godoc
 // @Summary      Cập nhật vòng quay (admin)
 // @Tags         admin-wheel
 // @Accept       json
@@ -87,7 +84,6 @@ func (ctrl *Controller) UpdateWheel(c *gin.Context) (interface{}, error) {
 	return view, nil
 }
 
-// DeleteWheel godoc
 // @Summary      Xoá vòng quay (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -107,7 +103,6 @@ func (ctrl *Controller) DeleteWheel(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "wheel deleted"}, nil
 }
 
-// SaveConfig godoc
 // @Summary      Lưu cấu hình ô + lựa chọn của vòng quay (admin)
 // @Tags         admin-wheel
 // @Accept       json
@@ -134,7 +129,6 @@ func (ctrl *Controller) SaveConfig(c *gin.Context) (interface{}, error) {
 	return view, nil
 }
 
-// ListSpins godoc
 // @Summary      Lịch sử quay toàn hệ thống (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -184,7 +178,6 @@ func (ctrl *Controller) ListSpins(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetStats godoc
 // @Summary      Thống kê vòng quay (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -239,7 +232,6 @@ func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
 	return f, nil
 }
 
-// GetUserStats godoc
 // @Summary      Thống kê vòng quay theo từng user (admin)
 // @Tags         admin-wheel
 // @Produce      json
@@ -288,7 +280,6 @@ func (ctrl *Controller) GetUserStats(c *gin.Context) (interface{}, error) {
 	return &UserStatsResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
 }
 
-// GetVipStats godoc
 // @Summary      Thống kê vòng quay theo loại VIP (admin)
 // @Tags         admin-wheel
 // @Produce      json

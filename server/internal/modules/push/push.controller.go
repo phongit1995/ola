@@ -20,7 +20,6 @@ func NewController(service *Service) *Controller {
 	return &Controller{service: service}
 }
 
-// RegisterToken godoc
 // @Summary      Register the current device's push notification token
 // @Tags         push
 // @Accept       json

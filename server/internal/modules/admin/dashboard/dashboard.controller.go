@@ -19,7 +19,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_dashboard_controller]")}
 }
 
-// GetOverview godoc
 // @Summary      Thống kê tổng quan (admin)
 // @Description  Số liệu tổng quan cho dashboard: người dùng, doanh thu KEN/VIP, tương tác, xã hội, game và chuỗi thời gian
 // @Tags         admin-dashboard

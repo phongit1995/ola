@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[announcement_controller]")}
 }
 
-// Latest godoc
 // @Summary      Thông báo đang hoạt động mới nhất
 // @Tags         announcement
 // @Produce      json

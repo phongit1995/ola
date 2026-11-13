@@ -48,7 +48,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[room_controller]")}
 }
 
-// BrowseRooms godoc
 // @Summary      Browse public rooms (memberCount = online members)
 // @Tags         room
 // @Produce      json
@@ -68,7 +67,6 @@ func (ctrl *Controller) BrowseRooms(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetRoom godoc
 // @Summary      Get room detail
 // @Tags         room
 // @Produce      json
@@ -88,7 +86,6 @@ func (ctrl *Controller) GetRoom(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// RoomMembers godoc
 // @Summary      List online members of a room
 // @Tags         room
 // @Produce      json
@@ -108,7 +105,6 @@ func (ctrl *Controller) RoomMembers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// JoinRoom godoc
 // @Summary      Request to join a room (returns a short-lived ticket)
 // @Description  Checks capacity; if not full, returns a single-use ticket (TTL 5s) to send with the socket room:join event
 // @Tags         room
@@ -133,7 +129,6 @@ func (ctrl *Controller) JoinRoom(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// SendRoomMessage godoc
 // @Summary      Send a message to a room (must have joined via socket)
 // @Tags         room
 // @Accept       json
@@ -163,7 +158,6 @@ func (ctrl *Controller) SendRoomMessage(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// SendRoomImageMessage godoc
 // @Summary      Send an image message to a room (must have joined via socket)
 // @Description  Upload an image and create a message of type=image in one call (≤3MB jpeg/png/gif/webp)
 // @Tags         room
@@ -211,7 +205,6 @@ func (ctrl *Controller) SendRoomImageMessage(c *gin.Context) (interface{}, error
 	return resp, nil
 }
 
-// SendRoomAudioMessage godoc
 // @Summary      Send a voice message to a room (must have joined via socket)
 // @Description  Upload a voice recording and create a message of type=audio in one call (≤60s)
 // @Tags         room
@@ -281,7 +274,6 @@ func (ctrl *Controller) SendRoomAudioMessage(c *gin.Context) (interface{}, error
 	return resp, nil
 }
 
-// DeleteRoomMessage godoc
 // @Summary      Delete own room message (hard delete, sender only)
 // @Tags         room
 // @Produce      json
@@ -309,7 +301,6 @@ func (ctrl *Controller) DeleteRoomMessage(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "message deleted"}, nil
 }
 
-// ToggleRoomMessageReaction godoc
 // @Summary      Toggle reaction on a room message (one reaction per user, new type replaces old)
 // @Tags         room
 // @Accept       json
@@ -344,7 +335,6 @@ func (ctrl *Controller) ToggleRoomMessageReaction(c *gin.Context) (interface{}, 
 	return resp, nil
 }
 
-// RoomMessages godoc
 // @Summary      Get room message history
 // @Tags         room
 // @Produce      json
@@ -377,7 +367,6 @@ func roomBlockHTTPError(err error) error {
 	return utils.ServiceError(err)
 }
 
-// ListBlockedUsers godoc
 // @Summary      List user IDs whose room messages the current user has hidden
 // @Tags         room
 // @Produce      json
@@ -396,7 +385,6 @@ func (ctrl *Controller) ListBlockedUsers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// BlockUser godoc
 // @Summary      Hide a user's room messages for the current user
 // @Tags         room
 // @Accept       json
@@ -425,7 +413,6 @@ func (ctrl *Controller) BlockUser(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UnblockUser godoc
 // @Summary      Stop hiding a user's room messages for the current user
 // @Tags         room
 // @Produce      json

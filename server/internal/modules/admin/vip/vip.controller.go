@@ -23,7 +23,6 @@ func NewController(service *vip.Service, adminService *Service, logger *zap.Suga
 	return &Controller{service: service, adminService: adminService, logger: logger.Named("[admin_vip_controller]")}
 }
 
-// ListPurchases godoc
 // @Summary      Lịch sử mua gói ngày VIP + icon VIP toàn hệ thống, gồm cả quà tặng (admin)
 // @Tags         admin-vip
 // @Produce      json
@@ -73,7 +72,6 @@ func (ctrl *Controller) ListDayTransfers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// PurchaseStats godoc
 // @Summary      Thống kê doanh thu mua VIP (gói ngày + icon) theo ngày/tháng (admin)
 // @Tags         admin-vip
 // @Produce      json
@@ -107,7 +105,6 @@ func (ctrl *Controller) PurchaseStats(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CreatePackage godoc
 // @Summary      Tạo gói VIP (admin)
 // @Tags         admin-vip
 // @Accept       json
@@ -128,7 +125,6 @@ func (ctrl *Controller) CreatePackage(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// ListPackages godoc
 // @Summary      Danh sách gói VIP (admin, gồm cả gói tắt)
 // @Tags         admin-vip
 // @Produce      json
@@ -147,7 +143,6 @@ func (ctrl *Controller) ListPackages(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdatePackage godoc
 // @Summary      Cập nhật gói VIP (admin)
 // @Tags         admin-vip
 // @Accept       json
@@ -174,7 +169,6 @@ func (ctrl *Controller) UpdatePackage(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// DeletePackage godoc
 // @Summary      Xoá gói VIP (admin)
 // @Tags         admin-vip
 // @Produce      json
@@ -194,7 +188,6 @@ func (ctrl *Controller) DeletePackage(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "package deleted"}, nil
 }
 
-// ListHistory godoc
 // @Summary      Lịch sử mua gói VIP toàn hệ thống (admin)
 // @Tags         admin-vip
 // @Produce      json
@@ -224,7 +217,6 @@ func (ctrl *Controller) ListHistory(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListTransfers godoc
 // @Summary      Lịch sử chuyển icon VIP toàn hệ thống (admin)
 // @Tags         admin-vip
 // @Produce      json
@@ -256,7 +248,6 @@ func (ctrl *Controller) ListTransfers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListShopItems godoc
 // @Summary      Danh sách VIP trong shop (admin, gồm cả mục tắt)
 // @Tags         admin-vip
 // @Produce      json
@@ -271,7 +262,6 @@ func (ctrl *Controller) ListShopItems(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CreateShopItem godoc
 // @Summary      Thêm VIP vào shop để bán (admin)
 // @Tags         admin-vip
 // @Accept       json
@@ -293,7 +283,6 @@ func (ctrl *Controller) CreateShopItem(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// UpdateShopItem godoc
 // @Summary      Cập nhật giá / trạng thái VIP trong shop (admin)
 // @Tags         admin-vip
 // @Accept       json
@@ -320,7 +309,6 @@ func (ctrl *Controller) UpdateShopItem(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// DeleteShopItem godoc
 // @Summary      Xoá VIP khỏi shop (admin)
 // @Tags         admin-vip
 // @Produce      json
@@ -340,7 +328,6 @@ func (ctrl *Controller) DeleteShopItem(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "shop item deleted"}, nil
 }
 
-// ReorderPackages godoc
 // @Summary      Lưu thứ tự toàn bộ gói VIP (admin), gán lại thành 1..N
 // @Tags         admin-vip
 // @Accept       json
@@ -361,7 +348,6 @@ func (ctrl *Controller) ReorderPackages(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "order updated"}, nil
 }
 
-// ReorderShopItems godoc
 // @Summary      Lưu thứ tự toàn bộ VIP trong shop (admin), gán lại thành 1..N
 // @Tags         admin-vip
 // @Accept       json

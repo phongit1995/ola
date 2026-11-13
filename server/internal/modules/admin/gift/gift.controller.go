@@ -14,7 +14,6 @@ func NewController(service *Service) *Controller {
 	return &Controller{service: service}
 }
 
-// List godoc
 // @Summary      Danh sách quà (admin, gồm cả quà tắt)
 // @Tags         admin-gifts
 // @Produce      json
@@ -29,7 +28,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Create godoc
 // @Summary      Thêm quà (admin)
 // @Tags         admin-gifts
 // @Accept       json
@@ -51,7 +49,6 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// Update godoc
 // @Summary      Sửa quà (admin)
 // @Tags         admin-gifts
 // @Accept       json
@@ -78,7 +75,6 @@ func (ctrl *Controller) Update(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// Reorder godoc
 // @Summary      Lưu thứ tự toàn bộ quà (admin), gán lại thành 1..N theo danh sách gửi lên
 // @Tags         admin-gifts
 // @Accept       json
@@ -99,7 +95,6 @@ func (ctrl *Controller) Reorder(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "order updated"}, nil
 }
 
-// Delete godoc
 // @Summary      Xoá quà (admin, xoá mềm — tường quà và lịch sử vẫn giữ)
 // @Tags         admin-gifts
 // @Produce      json
@@ -119,7 +114,6 @@ func (ctrl *Controller) Delete(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "gift deleted"}, nil
 }
 
-// ListTransactions godoc
 // @Summary      Sổ quà đã tặng (admin)
 // @Tags         admin-gifts
 // @Produce      json

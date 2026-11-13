@@ -21,7 +21,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_user_controller]")}
 }
 
-// ListUsers godoc
 // @Summary      List users
 // @Description  List users with pagination and optional search (admin only)
 // @Tags         admin-user
@@ -71,7 +70,6 @@ func parseGenderQuery(v string) string {
 	}
 }
 
-// GetUser godoc
 // @Summary      Get user detail
 // @Description  Get a single user by id (admin only)
 // @Tags         admin-user
@@ -96,7 +94,6 @@ func (ctrl *Controller) GetUser(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListUserVips godoc
 // @Summary      List owned VIP icons
 // @Description  List all VIP icons a user currently owns (admin only)
 // @Tags         admin-user
@@ -123,7 +120,6 @@ func (ctrl *Controller) ListUserVips(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListUserSessions godoc
 // @Summary      List user login sessions
 // @Description  List a user's login sessions/devices, including revoked ones (admin only)
 // @Tags         admin-user
@@ -150,7 +146,6 @@ func (ctrl *Controller) ListUserSessions(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListUserViolations godoc
 // @Summary      List user violations
 // @Description  Violation history and active points of a user (admin only)
 // @Tags         admin-user
@@ -173,7 +168,6 @@ func (ctrl *Controller) ListUserViolations(c *gin.Context) (interface{}, error) 
 	return resp, nil
 }
 
-// RevokeUserViolation godoc
 // @Summary      Revoke a user violation
 // @Description  Stop counting a violation; does not unlock the account (admin only)
 // @Tags         admin-user
@@ -205,7 +199,6 @@ func (ctrl *Controller) RevokeUserViolation(c *gin.Context) (interface{}, error)
 	return resp, nil
 }
 
-// ClearUserViolations godoc
 // @Summary      Clear user violation points
 // @Description  Revoke every violation still counting points; does not unlock the account (admin only)
 // @Tags         admin-user
@@ -232,7 +225,6 @@ func (ctrl *Controller) ClearUserViolations(c *gin.Context) (interface{}, error)
 	return resp, nil
 }
 
-// GrantVip godoc
 // @Summary      Grant VIP icon
 // @Description  Grant a VIP icon to a user's collection (admin only)
 // @Tags         admin-user
@@ -265,7 +257,6 @@ func (ctrl *Controller) GrantVip(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeleteVip godoc
 // @Summary      Xoá VIP icon khỏi kho của user
 // @Description  Admin xoá một VIP icon khỏi kho của user. Xoá được cả icon đang khoá; nếu icon đó đang được đeo thì gỡ luôn VIP đang dùng.
 // @Tags         admin-user
@@ -296,7 +287,6 @@ func (ctrl *Controller) DeleteVip(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "vip deleted"}, nil
 }
 
-// AddVipDays godoc
 // @Summary      Cộng / trừ ngày VIP cho user
 // @Tags         admin-user
 // @Accept       json
@@ -324,7 +314,6 @@ func (ctrl *Controller) AddVipDays(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdateStatus godoc
 // @Summary      Ban/unban user
 // @Description  Enable or disable a user account (admin only)
 // @Tags         admin-user
@@ -357,7 +346,6 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdateUsername godoc
 // @Summary      Update username
 // @Description  Change a user's username (admin only)
 // @Tags         admin-user
@@ -396,7 +384,6 @@ func (ctrl *Controller) UpdateUsername(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ResetPassword godoc
 // @Summary      Reset user password
 // @Description  Set a new password for a user (admin only)
 // @Tags         admin-user
@@ -428,7 +415,6 @@ func (ctrl *Controller) ResetPassword(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "password updated"}, nil
 }
 
-// DeleteUser godoc
 // @Summary      Delete user
 // @Description  Soft-delete a user account (admin only)
 // @Tags         admin-user
@@ -452,7 +438,6 @@ func (ctrl *Controller) DeleteUser(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "user deleted"}, nil
 }
 
-// ListUsernameChanges godoc
 // @Summary      Lịch sử đổi nickname
 // @Description  Danh sách các lần đổi username, gồm cả user tự đổi (mất Ken) và admin đổi hộ
 // @Tags         admin-user

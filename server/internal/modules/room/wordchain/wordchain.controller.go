@@ -14,7 +14,6 @@ func NewController(service *Service) *Controller {
 	return &Controller{service: service}
 }
 
-// Overview godoc
 // @Summary      Get the word chain room, current session state and my points
 // @Tags         word-chain
 // @Produce      json
@@ -33,7 +32,6 @@ func (ctrl *Controller) Overview(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Messages godoc
 // @Summary      List messages of the current session (newest first)
 // @Tags         word-chain
 // @Produce      json
@@ -55,7 +53,6 @@ func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Move godoc
 // @Summary      Play a word in the word chain room
 // @Tags         word-chain
 // @Accept       json
@@ -82,7 +79,6 @@ func (ctrl *Controller) Move(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Hint godoc
 // @Summary      Buy hints for the current word (costs KEN once per word, nothing is charged when no hint is found)
 // @Description  Buying again for the same word returns the same hints with charged=false; 409 WORD_CHAIN_WORD_CHANGED when the word changed before payment
 // @Tags         word-chain
@@ -103,7 +99,6 @@ func (ctrl *Controller) Hint(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// BuyGuesses godoc
 // @Summary      Buy more guesses for the current word after running out (costs KEN each time)
 // @Description  Only allowed with no guesses left; the bought guesses are valid for this word only and reset when the word changes. price must equal the configured price the user confirmed. 409 WORD_CHAIN_WORD_CHANGED when sessionId/turn no longer match, 409 WORD_CHAIN_GUESSES_LEFT while guesses remain, 409 WORD_CHAIN_PRICE_CHANGED when the price differs, 400 WORD_CHAIN_INSUFFICIENT_KEN when the balance is too low
 // @Tags         word-chain
@@ -131,7 +126,6 @@ func (ctrl *Controller) BuyGuesses(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Leaderboard godoc
 // @Summary      Word chain leaderboard (top 10 by points or wins, all time or current day/week/month in GMT+7)
 // @Tags         word-chain
 // @Produce      json
@@ -152,7 +146,6 @@ func (ctrl *Controller) Leaderboard(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Wins godoc
 // @Summary      Word chain win history (newest first)
 // @Tags         word-chain
 // @Produce      json
@@ -175,7 +168,6 @@ func (ctrl *Controller) Wins(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Lookup godoc
 // @Summary      Look up a Vietnamese word (dict.minhqnd.com)
 // @Tags         word-chain
 // @Produce      json

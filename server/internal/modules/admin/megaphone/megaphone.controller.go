@@ -30,7 +30,6 @@ var megaphoneStatuses = map[string]bool{
 	models.MegaphoneStatusRemoved: true,
 }
 
-// List godoc
 // @Summary      Danh sách loa đã phát (admin)
 // @Tags         admin-megaphones
 // @Produce      json
@@ -71,7 +70,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Remove godoc
 // @Summary      Gỡ một loa (admin)
 // @Description  Loa biến mất trên mọi máy, không hoàn KEN. Có penalty thì tính điểm vi phạm cho người phát.
 // @Tags         admin-megaphones
@@ -103,7 +101,6 @@ func (ctrl *Controller) Remove(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CheckContent godoc
 // @Summary      Thử một câu với bộ lọc nội dung (admin)
 // @Tags         admin-megaphones
 // @Accept       json

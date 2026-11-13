@@ -23,7 +23,6 @@ func NewController(service *pen.Service, repo *Repository, logger *zap.SugaredLo
 	return &Controller{service: service, repo: repo, logger: logger.Named("[admin_pen_controller]")}
 }
 
-// ListShots godoc
 // @Summary      Danh sách lượt PEN toàn hệ thống (admin)
 // @Tags         admin-pen
 // @Produce      json
@@ -85,7 +84,6 @@ func (ctrl *Controller) ListShots(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetStats godoc
 // @Summary      Thống kê PEN (admin)
 // @Tags         admin-pen
 // @Produce      json
@@ -136,7 +134,6 @@ func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
 	return f, nil
 }
 
-// GetUserStats godoc
 // @Summary      Thống kê PEN theo từng user, gộp cả vai sút và chụp (admin)
 // @Tags         admin-pen
 // @Produce      json
@@ -190,7 +187,6 @@ func (ctrl *Controller) GetUserStats(c *gin.Context) (interface{}, error) {
 	return &UserStatsResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
 }
 
-// GetSideStats godoc
 // @Summary      Phân bố hướng sút/chụp trái-phải (admin)
 // @Tags         admin-pen
 // @Produce      json

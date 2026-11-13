@@ -20,7 +20,6 @@ func NewController(service *wordchain.Service, purchases *PurchaseRepository) *C
 	return &Controller{service: service, purchases: purchases}
 }
 
-// Overview godoc
 // @Summary      Word chain room overview (admin): current word, words of the current game, player counts
 // @Tags         admin-word-chain
 // @Produce      json
@@ -35,7 +34,6 @@ func (ctrl *Controller) Overview(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Messages godoc
 // @Summary      Word chain message history (admin, newest first)
 // @Tags         admin-word-chain
 // @Produce      json
@@ -53,7 +51,6 @@ func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Wins godoc
 // @Summary      Word chain win history (admin, newest first)
 // @Tags         admin-word-chain
 // @Produce      json
@@ -80,7 +77,6 @@ func (ctrl *Controller) Wins(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Purchases godoc
 // @Summary      Lịch sử mua gợi ý và mua lượt nối từ (admin, mới nhất trước)
 // @Description  summary là tổng số giao dịch và KEN theo từng loại, tính trên cùng bộ lọc
 // @Tags         admin-word-chain

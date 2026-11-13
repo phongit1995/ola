@@ -23,7 +23,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	}
 }
 
-// StartCall godoc
 // @Summary      Start a call
 // @Description  Create a LiveKit room and notify other participants
 // @Tags         calls
@@ -60,7 +59,6 @@ func (ctrl *Controller) StartCall(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// AnswerCall godoc
 // @Summary      Answer a call
 // @Tags         calls
 // @Produce      json
@@ -84,7 +82,6 @@ func (ctrl *Controller) AnswerCall(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeclineCall godoc
 // @Summary      Decline a call
 // @Tags         calls
 // @Produce      json
@@ -107,7 +104,6 @@ func (ctrl *Controller) DeclineCall(c *gin.Context) (interface{}, error) {
 	return SimpleSuccessResponse{Success: true, Message: "call declined"}, nil
 }
 
-// EndCall godoc
 // @Summary      End a call
 // @Tags         calls
 // @Produce      json
@@ -130,7 +126,6 @@ func (ctrl *Controller) EndCall(c *gin.Context) (interface{}, error) {
 	return SimpleSuccessResponse{Success: true, Message: "call ended"}, nil
 }
 
-// GetOngoingCall godoc
 // @Summary      Get the caller's ongoing call
 // @Description  Returns the ringing or active call the user belongs to, with a fresh LiveKit token
 // @Tags         calls

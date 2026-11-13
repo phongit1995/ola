@@ -20,7 +20,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_me_controller]")}
 }
 
-// ListPosts godoc
 // @Summary      List posts (admin, all visibilities)
 // @Tags         admin-me
 // @Produce      json
@@ -74,7 +73,6 @@ func parseVisibilityQuery(v string) string {
 	}
 }
 
-// GetPost godoc
 // @Summary      Get post detail (admin)
 // @Tags         admin-me
 // @Produce      json
@@ -94,7 +92,6 @@ func (ctrl *Controller) GetPost(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdateStatus godoc
 // @Summary      Enable/disable a post (admin)
 // @Tags         admin-me
 // @Accept       json
@@ -124,7 +121,6 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListComments godoc
 // @Summary      List comments of a post (admin)
 // @Tags         admin-me
 // @Produce      json
@@ -148,7 +144,6 @@ func (ctrl *Controller) ListComments(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeleteComment godoc
 // @Summary      Delete a comment (admin)
 // @Tags         admin-me
 // @Produce      json

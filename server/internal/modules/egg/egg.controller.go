@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[egg_controller]")}
 }
 
-// ListPacks godoc
 // @Summary      Danh sách gói đập trứng đang bật
 // @Tags         egg
 // @Produce      json
@@ -31,7 +30,6 @@ func (ctrl *Controller) ListPacks(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListGifts godoc
 // @Summary      Danh sách quà của một gói đập trứng
 // @Tags         egg
 // @Produce      json
@@ -52,7 +50,6 @@ func (ctrl *Controller) ListGifts(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Draw godoc
 // @Summary      Đập một quả trứng trong gói
 // @Tags         egg
 // @Accept       json
@@ -83,7 +80,6 @@ func (ctrl *Controller) Draw(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// ListDraws godoc
 // @Summary      Lịch sử đập trứng của tôi
 // @Tags         egg
 // @Produce      json

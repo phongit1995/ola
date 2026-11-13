@@ -36,7 +36,6 @@ func conversationPolicyHTTPError(err error) *utils.HTTPError {
 	}
 }
 
-// CreateDirectConversation godoc
 // @Summary      Create direct conversation
 // @Description  Create or get existing direct conversation between two users
 // @Tags         conversations
@@ -77,7 +76,6 @@ func (ctrl *Controller) CreateDirectConversation(c *gin.Context) (interface{}, e
 	return conversation, nil
 }
 
-// CheckDirectConversation godoc
 // @Summary      Check direct conversation
 // @Description  Check if direct conversation exists without creating it
 // @Tags         conversations
@@ -113,7 +111,6 @@ func (ctrl *Controller) CheckDirectConversation(c *gin.Context) (interface{}, er
 	return conversation, nil
 }
 
-// CreateGroupConversation godoc
 // @Summary      Create group conversation
 // @Description  Create a new group conversation with multiple participants
 // @Tags         conversations
@@ -154,7 +151,6 @@ func (ctrl *Controller) CreateGroupConversation(c *gin.Context) (interface{}, er
 	return conversation, nil
 }
 
-// GetUserConversations godoc
 // @Summary      Get user conversations
 // @Description  Get all conversations for the authenticated user
 // @Tags         conversations
@@ -181,7 +177,6 @@ func (ctrl *Controller) GetUserConversations(c *gin.Context) (interface{}, error
 	return conversations, nil
 }
 
-// GetConversationDetail godoc
 // @Summary      Get conversation detail
 // @Description  Get full detail of a conversation including other-user info and presence (direct only)
 // @Tags         conversations
@@ -213,7 +208,6 @@ func (ctrl *Controller) GetConversationDetail(c *gin.Context) (interface{}, erro
 	return detail, nil
 }
 
-// MarkConversationAsRead godoc
 // @Summary      Mark conversation as read
 // @Description  Mark all messages in a conversation as read for the authenticated user
 // @Tags         conversations
@@ -244,7 +238,6 @@ func (ctrl *Controller) MarkConversationAsRead(c *gin.Context) (interface{}, err
 	return map[string]string{"message": "Conversation marked as read successfully"}, nil
 }
 
-// HideConversation godoc
 // @Summary      Hide conversation
 // @Description  Hide a conversation from the user's inbox. It will reappear when a new message arrives. Optionally clears message history on the caller's side only.
 // @Tags         conversations
@@ -283,7 +276,6 @@ func (ctrl *Controller) HideConversation(c *gin.Context) (interface{}, error) {
 	}, nil
 }
 
-// MuteConversation godoc
 // @Summary      Mute conversation
 // @Description  Mute notifications for a conversation
 // @Tags         conversations
@@ -299,7 +291,6 @@ func (ctrl *Controller) MuteConversation(c *gin.Context) (interface{}, error) {
 	return ctrl.setMute(c, true, "Conversation muted")
 }
 
-// UnmuteConversation godoc
 // @Summary      Unmute conversation
 // @Description  Re-enable notifications for a conversation
 // @Tags         conversations
@@ -330,7 +321,6 @@ func (ctrl *Controller) setMute(c *gin.Context, muted bool, msg string) (interfa
 	return &SimpleSuccessResponse{Success: true, Message: msg}, nil
 }
 
-// UnhideConversation godoc
 // @Summary      Unhide conversation
 // @Description  Manually unhide a previously hidden conversation
 // @Tags         conversations
@@ -364,7 +354,6 @@ func (ctrl *Controller) UnhideConversation(c *gin.Context) (interface{}, error) 
 	}, nil
 }
 
-// SendTypingIndicator godoc
 // @Summary      Send typing indicator
 // @Description  Send typing indicator to conversation members (rate limited to 5s)
 // @Tags         conversations

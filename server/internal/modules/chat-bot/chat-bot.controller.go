@@ -53,7 +53,6 @@ func httpStatusForError(err error) (int, string) {
 	}
 }
 
-// Chat godoc
 // @Summary      Chat với bot
 // @Description  Body gồm `messages`, `type` và `stream`. Tính cách của bot do server tự gắn theo `type` (OLALA mặc định, OLAVI là thầy tử vi); client không gửi được message `system`.
 // @Description  `stream=false` (mặc định) trả JSON đầy đủ theo schema dưới đây.

@@ -34,7 +34,6 @@ func parseListFilter(c *gin.Context) (ListFilter, error) {
 	return f, nil
 }
 
-// Stats godoc
 // @Summary      Thống kê tiền nạp KEN theo ngày/tháng (admin)
 // @Tags         admin-topup
 // @Produce      json
@@ -68,7 +67,6 @@ func (ctrl *Controller) Stats(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// List godoc
 // @Summary      Lịch sử giao dịch nạp KEN qua webhook ngân hàng (admin)
 // @Tags         admin-topup
 // @Produce      json
@@ -97,7 +95,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ManualCredit godoc
 // @Summary      Cộng KEN thủ công cho giao dịch nạp chưa khớp user (admin)
 // @Tags         admin-topup
 // @Accept       json

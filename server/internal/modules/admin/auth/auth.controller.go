@@ -22,7 +22,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	}
 }
 
-// Login godoc
 // @Summary      Admin login
 // @Description  Authenticate an admin account and return access + refresh tokens
 // @Tags         admin-auth
@@ -47,7 +46,6 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
 
-// Refresh godoc
 // @Summary      Refresh admin token
 // @Description  Exchange a valid admin refresh token for a new token pair
 // @Tags         admin-auth
@@ -72,7 +70,6 @@ func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
 
-// Logout godoc
 // @Summary      Admin logout
 // @Description  Revoke the authenticated admin session
 // @Tags         admin-auth
@@ -98,7 +95,6 @@ func (ctrl *Controller) Logout(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "logged out successfully"}, nil
 }
 
-// ChangePassword godoc
 // @Summary      Change admin password
 // @Description  Change the authenticated admin's password; revokes existing sessions
 // @Tags         admin-auth
@@ -128,7 +124,6 @@ func (ctrl *Controller) ChangePassword(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "password changed successfully"}, nil
 }
 
-// Me godoc
 // @Summary      Current admin profile
 // @Description  Return the authenticated admin's profile
 // @Tags         admin-auth

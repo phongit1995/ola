@@ -16,7 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[ken_chest_controller]")}
 }
 
-// Open godoc
 // @Summary      Mở rương ken
 // @Tags         ken-chest
 // @Produce      json

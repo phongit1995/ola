@@ -33,7 +33,6 @@ func NewController(service *avatarframe.Service, logger *zap.SugaredLogger) *Con
 	return &Controller{service: service, logger: logger.Named("[admin_avatar_frame_controller]")}
 }
 
-// ListShopItems godoc
 // @Summary      Khung avatar trong cửa hàng, gồm cả khung đang tắt (admin)
 // @Tags         admin-avatar-frame
 // @Produce      json
@@ -48,7 +47,6 @@ func (ctrl *Controller) ListShopItems(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CreateShopItems godoc
 // @Summary      Thêm một hoặc nhiều khung vào cửa hàng cùng một giá (admin)
 // @Tags         admin-avatar-frame
 // @Accept       json
@@ -69,7 +67,6 @@ func (ctrl *Controller) CreateShopItems(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdateShopItem godoc
 // @Summary      Sửa giá, bật tắt, thứ tự một khung trong cửa hàng (admin)
 // @Tags         admin-avatar-frame
 // @Accept       json
@@ -95,7 +92,6 @@ func (ctrl *Controller) UpdateShopItem(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeleteShopItem godoc
 // @Summary      Gỡ một khung khỏi cửa hàng, khung user đã có vẫn giữ (admin)
 // @Tags         admin-avatar-frame
 // @Produce      json
@@ -114,7 +110,6 @@ func (ctrl *Controller) DeleteShopItem(c *gin.Context) (interface{}, error) {
 	return avatarframe.MessageResponse{Message: "shop item deleted"}, nil
 }
 
-// ListPurchases godoc
 // @Summary      Lịch sử mua và tặng khung avatar toàn hệ thống (admin)
 // @Tags         admin-avatar-frame
 // @Produce      json
@@ -155,7 +150,6 @@ func (ctrl *Controller) ListPurchases(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// PurchaseStats godoc
 // @Summary      Thống kê bán khung avatar: hôm nay, tháng này, khoảng chọn, khung bán chạy (admin)
 // @Tags         admin-avatar-frame
 // @Produce      json
@@ -206,7 +200,6 @@ func (ctrl *Controller) PurchaseStats(c *gin.Context) (interface{}, error) {
 	return StatsResponse{Today: today, ThisMonth: month, Range: inRange, TopFrames: top}, nil
 }
 
-// ListTransfers godoc
 // @Summary      Lịch sử chuyển khung avatar toàn hệ thống (admin)
 // @Tags         admin-avatar-frame
 // @Produce      json
@@ -229,7 +222,6 @@ func (ctrl *Controller) ListTransfers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ReorderShopItems godoc
 // @Summary      Lưu thứ tự toàn bộ khung trong cửa hàng (admin), gán lại thành 1..N
 // @Tags         admin-avatar-frame
 // @Accept       json
@@ -250,7 +242,6 @@ func (ctrl *Controller) ReorderShopItems(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "order updated"}, nil
 }
 
-// ListUserFrames godoc
 // @Summary      Kho khung avatar của một user, kể cả khi user để riêng tư (admin)
 // @Tags         admin-avatar-frame
 // @Produce      json
@@ -273,7 +264,6 @@ func (ctrl *Controller) ListUserFrames(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GrantUserFrame godoc
 // @Summary      Tặng một khung avatar vào kho của user (admin)
 // @Tags         admin-avatar-frame
 // @Accept       json
@@ -301,7 +291,6 @@ func (ctrl *Controller) GrantUserFrame(c *gin.Context) (interface{}, error) {
 	return map[string]string{"frameId": strings.TrimSpace(req.FrameID)}, nil
 }
 
-// RevokeUserFrame godoc
 // @Summary      Thu hồi một khung avatar khỏi kho của user, tự gỡ nếu đang đeo (admin)
 // @Tags         admin-avatar-frame
 // @Produce      json

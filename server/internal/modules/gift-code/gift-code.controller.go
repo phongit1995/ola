@@ -16,7 +16,6 @@ func NewController(service *Service) *Controller {
 	return &Controller{service: service}
 }
 
-// Redeem godoc
 // @Summary      Nhập mã quà tặng
 // @Description  Mỗi người nhận 1 lần mỗi đợt. Nhập sai mã 5 lần trong 1 phút thì bị chặn 15 phút (GIFT_CODE_TOO_MANY_ATTEMPTS)
 // @Tags         gift-codes

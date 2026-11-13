@@ -35,7 +35,6 @@ func firstFile(files []*multipart.FileHeader) *multipart.FileHeader {
 	return files[0]
 }
 
-// Create godoc
 // @Summary      Post moments (24h): up to 3 slides (color or image background), or 1 video ≤20s
 // @Description  multipart: type (text|image|video), visibility (friend|public), items = JSON [{type?, background?, overlays}] where type (text|image) defaults to the post type, images[] + thumbs[] in the order of image items, video + thumb (video)
 // @Tags         moment
@@ -84,7 +83,6 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Tray godoc
 // @Summary      Moment tray: my active moments (first page only) + unseen moments grouped by author, newest author first
 // @Tags         moment
 // @Produce      json
@@ -104,7 +102,6 @@ func (ctrl *Controller) Tray(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Mine godoc
 // @Summary      My active moments with viewer counts (poll while a video is processing)
 // @Tags         moment
 // @Produce      json
@@ -123,7 +120,6 @@ func (ctrl *Controller) Mine(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// History godoc
 // @Summary      All my moments including expired ones, newest first
 // @Tags         moment
 // @Produce      json
@@ -146,7 +142,6 @@ func (ctrl *Controller) History(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// MarkSeen godoc
 // @Summary      Mark moments as seen (hidden from tray afterwards)
 // @Tags         moment
 // @Accept       json
@@ -171,7 +166,6 @@ func (ctrl *Controller) MarkSeen(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// React godoc
 // @Summary      React to a moment of a friend or followee, taps add up per reaction type (max 99 each)
 // @Tags         moment
 // @Accept       json
@@ -201,7 +195,6 @@ func (ctrl *Controller) React(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Viewers godoc
 // @Summary      Who viewed my moment (author only)
 // @Tags         moment
 // @Produce      json
@@ -228,7 +221,6 @@ func (ctrl *Controller) Viewers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Reactors godoc
 // @Summary      Who reacted to my moment and how many times per reaction (author only)
 // @Tags         moment
 // @Produce      json
@@ -255,7 +247,6 @@ func (ctrl *Controller) Reactors(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Comment godoc
 // @Summary      Comment on a moment of a friend or followee, once per moment (cannot be edited or deleted, 409 MOMENT_COMMENT_EXISTS on a second try)
 // @Tags         moment
 // @Accept       json
@@ -285,7 +276,6 @@ func (ctrl *Controller) Comment(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Comments godoc
 // @Summary      Comments on my moment, newest first (author only, also after the moment expired)
 // @Tags         moment
 // @Produce      json
@@ -312,7 +302,6 @@ func (ctrl *Controller) Comments(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Get godoc
 // @Summary      Get one of my moments with its stats (also after it expired)
 // @Tags         moment
 // @Produce      json
@@ -336,7 +325,6 @@ func (ctrl *Controller) Get(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// SetHidden godoc
 // @Summary      Hide or show my active moment (hidden moments leave friends' trays)
 // @Tags         moment
 // @Accept       json
@@ -366,7 +354,6 @@ func (ctrl *Controller) SetHidden(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Delete godoc
 // @Summary      Delete my moment (hidden now, files removed by the cleanup job)
 // @Tags         moment
 // @Produce      json

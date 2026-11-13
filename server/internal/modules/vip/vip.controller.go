@@ -29,7 +29,6 @@ func parseStoreQuery(c *gin.Context) (int, int, error) {
 	return q.Limit, q.Offset, nil
 }
 
-// GetMyStore godoc
 // @Summary      Kho VIP của tôi
 // @Tags         vip
 // @Produce      json
@@ -52,7 +51,6 @@ func (ctrl *Controller) GetMyStore(c *gin.Context) (interface{}, error) {
 	return store, nil
 }
 
-// GetUserStore godoc
 // @Summary      Kho VIP của người khác (theo quyền xem)
 // @Tags         vip
 // @Produce      json
@@ -93,7 +91,6 @@ func (ctrl *Controller) instanceParam(c *gin.Context) (uuid.UUID, uuid.UUID, err
 	return userID, instanceID, nil
 }
 
-// Use godoc
 // @Summary      Dùng (đeo) một VIP, tốn 1 ngày VIP
 // @Tags         vip
 // @Produce      json
@@ -112,7 +109,6 @@ func (ctrl *Controller) Use(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "vip activated"}, nil
 }
 
-// Lock godoc
 // @Summary      Khoá một VIP
 // @Tags         vip
 // @Produce      json
@@ -131,7 +127,6 @@ func (ctrl *Controller) Lock(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "vip locked"}, nil
 }
 
-// Unlock godoc
 // @Summary      Mở khoá một VIP
 // @Tags         vip
 // @Produce      json
@@ -150,7 +145,6 @@ func (ctrl *Controller) Unlock(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "vip unlocked"}, nil
 }
 
-// Delete godoc
 // @Summary      Xoá một VIP (chặn nếu đang khoá)
 // @Tags         vip
 // @Produce      json
@@ -170,7 +164,6 @@ func (ctrl *Controller) Delete(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "vip deleted"}, nil
 }
 
-// BatchDelete godoc
 // @Summary      Xoá nhiều VIP cùng lúc (nguyên tử; chặn nếu có cái đang khoá hoặc đang dùng)
 // @Tags         vip
 // @Accept       json
@@ -209,7 +202,6 @@ func (ctrl *Controller) BatchDelete(c *gin.Context) (interface{}, error) {
 	return BatchDeleteResponse{Deleted: deleted}, nil
 }
 
-// Transfer godoc
 // @Summary      Tặng/chuyển một VIP cho người khác (cần mật khẩu; chặn nếu đang dùng hoặc đã khoá)
 // @Tags         vip
 // @Accept       json
@@ -240,7 +232,6 @@ func (ctrl *Controller) Transfer(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "vip transferred"}, nil
 }
 
-// Buy godoc
 // @Summary      Thêm một VIP vào kho
 // @Tags         vip
 // @Accept       json
@@ -269,7 +260,6 @@ func (ctrl *Controller) Buy(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// IconCatalog godoc
 // @Summary      Danh sách VIP đang bán trong shop
 // @Tags         vip
 // @Produce      json
@@ -284,7 +274,6 @@ func (ctrl *Controller) IconCatalog(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListPackages godoc
 // @Summary      Danh sách gói ngày VIP đang bán
 // @Tags         vip
 // @Produce      json
@@ -307,7 +296,6 @@ func (ctrl *Controller) ListPackages(c *gin.Context) (interface{}, error) {
 	}, nil
 }
 
-// BuyPackage godoc
 // @Summary      Mua gói ngày VIP (trừ KEN, cộng ngày vào thời hạn)
 // @Tags         vip
 // @Produce      json
@@ -389,7 +377,6 @@ func (ctrl *Controller) GiftIcon(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetHistory godoc
 // @Summary      Lịch sử mua gói VIP của tôi
 // @Tags         vip
 // @Produce      json
@@ -412,7 +399,6 @@ func (ctrl *Controller) GetHistory(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetTransfers godoc
 // @Summary      Lịch sử chuyển/nhận icon VIP của tôi
 // @Tags         vip
 // @Produce      json
@@ -435,7 +421,6 @@ func (ctrl *Controller) GetTransfers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// SetPrivacy godoc
 // @Summary      Đổi quyền xem kho VIP (0 public, 1 friends, 2 private)
 // @Tags         vip
 // @Accept       json

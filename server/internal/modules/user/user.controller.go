@@ -22,7 +22,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	}
 }
 
-// GetUserInfo godoc
 // @Summary      Get user public info
 // @Description  Get public profile by user ID (UUID) or username, including online status and relationship
 // @Tags         user
@@ -55,7 +54,6 @@ func (ctrl *Controller) GetUserInfo(c *gin.Context) (interface{}, error) {
 	return profile, nil
 }
 
-// RecordProfileView godoc
 // @Summary      Record a profile view
 // @Description  Record that the authenticated user opened another user's profile
 // @Tags         user
@@ -86,7 +84,6 @@ func (ctrl *Controller) RecordProfileView(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// Kiss godoc
 // @Summary      Send a kiss to a user
 // @Description  Increment the target user's kiss count by one and return the new total
 // @Tags         user
@@ -117,7 +114,6 @@ func (ctrl *Controller) Kiss(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// Follow godoc
 // @Summary      Follow a user
 // @Description  Follow the target user (idempotent) and return the new follower count
 // @Tags         user
@@ -148,7 +144,6 @@ func (ctrl *Controller) Follow(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// Unfollow godoc
 // @Summary      Unfollow a user
 // @Description  Stop following the target user (idempotent) and return the new follower count
 // @Tags         user
@@ -178,7 +173,6 @@ func (ctrl *Controller) Unfollow(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// GetFollowers godoc
 // @Summary      List a user's followers
 // @Description  Paginated list of users that follow the target user
 // @Tags         user
@@ -218,7 +212,6 @@ func (ctrl *Controller) GetFollowers(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// GetFollowing godoc
 // @Summary      List users a user is following
 // @Description  Paginated list of users that the target user follows
 // @Tags         user
@@ -258,7 +251,6 @@ func (ctrl *Controller) GetFollowing(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// GetMyVisitors godoc
 // @Summary      List users who viewed my profile
 // @Description  Paginated list of users who recently viewed the authenticated user's profile, most recent first
 // @Tags         user
@@ -287,7 +279,6 @@ func (ctrl *Controller) GetMyVisitors(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// GetPresenceBatch godoc
 // @Summary      Get presence status for multiple users
 // @Description  Returns online status and last active time for the given user IDs (reads from Redis cache, no DB hit)
 // @Tags         user
@@ -312,7 +303,6 @@ func (ctrl *Controller) GetPresenceBatch(c *gin.Context) (interface{}, error) {
 	return ctrl.service.GetPresenceBatch(req.UserIds), nil
 }
 
-// GetProfile godoc
 // @Summary      Get user profile
 // @Description  Get authenticated user's profile information
 // @Tags         user
@@ -355,7 +345,6 @@ func (ctrl *Controller) GetProfile(c *gin.Context) (interface{}, error) {
 	return profile, nil
 }
 
-// UpdateProfile godoc
 // @Summary      Update user profile
 // @Description  Update authenticated user's profile information
 // @Tags         user
@@ -409,7 +398,6 @@ func (ctrl *Controller) UpdateProfile(c *gin.Context) (interface{}, error) {
 	return profile, nil
 }
 
-// CheckUsername godoc
 // @Summary      Check username availability and change cost
 // @Description  Check whether a username can be claimed by the authenticated user and how much KEN it costs
 // @Tags         user
@@ -438,7 +426,6 @@ func (ctrl *Controller) CheckUsername(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ChangeUsername godoc
 // @Summary      Change username (costs KEN, revokes all sessions)
 // @Description  Change the authenticated user's username; the fee depends on the new username length and every session is logged out on success
 // @Tags         user
@@ -477,7 +464,6 @@ func (ctrl *Controller) ChangeUsername(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// SearchUsers godoc
 // @Summary      Search users
 // @Description  Search users by username or full name
 // @Tags         user
@@ -532,7 +518,6 @@ func (ctrl *Controller) SearchUsers(c *gin.Context) (interface{}, error) {
 	return results, nil
 }
 
-// Upload godoc
 // @Summary      Upload image
 // @Description  Upload image to S3 and get URL (does not update user profile)
 // @Tags         upload

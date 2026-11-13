@@ -67,7 +67,6 @@ func validSettingKey(key string) bool {
 
 type ChatBotDefaultsSuccessResponse = utils.BaseResponse[map[string]setting.ChatBotPrompt]
 
-// ChatBotDefaults godoc
 // @Summary      Câu lệnh hướng dẫn mặc định (trong code) của từng chat-bot (admin)
 // @Tags         admin-settings
 // @Produce      json
@@ -85,7 +84,6 @@ type SettingListResponse struct {
 type SettingListSuccessResponse = utils.BaseResponse[SettingListResponse]
 type SettingItemSuccessResponse = utils.BaseResponse[models.AppSetting]
 
-// List godoc
 // @Summary      Danh sách cấu hình hệ thống (admin)
 // @Tags         admin-settings
 // @Produce      json
@@ -115,7 +113,6 @@ func maskSensitiveSetting(item models.AppSetting) models.AppSetting {
 	return item
 }
 
-// Put godoc
 // @Summary      Tạo/cập nhật một cấu hình hệ thống theo key (admin)
 // @Tags         admin-settings
 // @Accept       json
@@ -155,7 +152,6 @@ func (ctrl *Controller) Put(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// PutMany godoc
 // @Summary      Cập nhật nhiều cấu hình hệ thống trong một transaction (admin)
 // @Description  Mọi key được validate trước, sau đó ghi tất cả hoặc không ghi gì
 // @Tags         admin-settings
@@ -338,7 +334,6 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 	return value, nil
 }
 
-// TestMail godoc
 // @Summary      Gửi email thử bằng cấu hình email đang dùng (admin)
 // @Tags         admin-settings
 // @Accept       json

@@ -26,7 +26,6 @@ func parseID(c *gin.Context) (uuid.UUID, error) {
 	return utils.ParseUUIDParam(c, "id", "invalid post id")
 }
 
-// UploadImages godoc
 // @Summary      Upload post images (max 5)
 // @Tags         me
 // @Accept       multipart/form-data
@@ -51,7 +50,6 @@ func (ctrl *Controller) UploadImages(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UploadAudio godoc
 // @Summary      Upload a post voice recording (≤10MB, ≤300s)
 // @Tags         me
 // @Accept       multipart/form-data
@@ -88,7 +86,6 @@ func (ctrl *Controller) UploadAudio(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CleanupImages godoc
 // @Summary      Clean up newly uploaded post images
 // @Tags         me
 // @Accept       json
@@ -115,7 +112,6 @@ func (ctrl *Controller) CleanupImages(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "images cleaned up"}, nil
 }
 
-// Create godoc
 // @Summary      Create a post
 // @Tags         me
 // @Accept       json
@@ -140,7 +136,6 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Feed godoc
 // @Summary      Feed: public posts + own posts + friends' friend-only posts (keyset cursor)
 // @Tags         me
 // @Produce      json
@@ -166,7 +161,6 @@ func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListMine godoc
 // @Summary      List my own posts (public + private)
 // @Tags         me
 // @Produce      json
@@ -189,7 +183,6 @@ func (ctrl *Controller) ListMine(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListMyPhotos godoc
 // @Summary      List all images from my own posts (newest first)
 // @Tags         me
 // @Produce      json
@@ -212,7 +205,6 @@ func (ctrl *Controller) ListMyPhotos(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListLiked godoc
 // @Summary      List posts the current user has liked (most recently liked first)
 // @Tags         me
 // @Produce      json
@@ -235,7 +227,6 @@ func (ctrl *Controller) ListLiked(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListByUser godoc
 // @Summary      List a user's posts (visibility-aware)
 // @Tags         me
 // @Produce      json
@@ -266,7 +257,6 @@ func (ctrl *Controller) ListByUser(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// GetPost godoc
 // @Summary      Get post detail
 // @Tags         me
 // @Produce      json
@@ -290,7 +280,6 @@ func (ctrl *Controller) GetPost(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdatePost godoc
 // @Summary      Update own post
 // @Tags         me
 // @Accept       json
@@ -320,7 +309,6 @@ func (ctrl *Controller) UpdatePost(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeletePost godoc
 // @Summary      Delete own post (hide via enabled flag)
 // @Tags         me
 // @Produce      json
@@ -343,7 +331,6 @@ func (ctrl *Controller) DeletePost(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "post deleted"}, nil
 }
 
-// Pin godoc
 // @Summary      Pin own post (only one pinned post per user; pinning replaces the previous one)
 // @Tags         me
 // @Produce      json
@@ -367,7 +354,6 @@ func (ctrl *Controller) Pin(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Unpin godoc
 // @Summary      Unpin own post
 // @Tags         me
 // @Produce      json
@@ -391,7 +377,6 @@ func (ctrl *Controller) Unpin(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// AddComment godoc
 // @Summary      Add a comment to a post
 // @Tags         me
 // @Accept       json
@@ -424,7 +409,6 @@ func (ctrl *Controller) AddComment(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListComments godoc
 // @Summary      List comments of a post
 // @Tags         me
 // @Produce      json
@@ -452,7 +436,6 @@ func (ctrl *Controller) ListComments(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeleteComment godoc
 // @Summary      Delete a comment (comment author or post author)
 // @Tags         me
 // @Produce      json
@@ -480,7 +463,6 @@ func (ctrl *Controller) DeleteComment(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "comment deleted"}, nil
 }
 
-// LikeComment godoc
 // @Summary      Toggle like on a comment (same call again removes it)
 // @Tags         me
 // @Produce      json
@@ -509,7 +491,6 @@ func (ctrl *Controller) LikeComment(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CommentLikers godoc
 // @Summary      List users who liked a comment
 // @Tags         me
 // @Produce      json
@@ -542,7 +523,6 @@ func (ctrl *Controller) CommentLikers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// React godoc
 // @Summary      Like or dislike a post (same reaction again removes it)
 // @Tags         me
 // @Accept       json
@@ -572,7 +552,6 @@ func (ctrl *Controller) React(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
 
-// RemoveReaction godoc
 // @Summary      Remove your reaction from a post
 // @Tags         me
 // @Produce      json
@@ -596,7 +575,6 @@ func (ctrl *Controller) RemoveReaction(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
 
-// Likers godoc
 // @Summary      List users who liked a post
 // @Tags         me
 // @Produce      json
@@ -624,7 +602,6 @@ func (ctrl *Controller) Likers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListNotifications godoc
 // @Summary      List my ME notifications (like/comment on my posts)
 // @Tags         me
 // @Produce      json
@@ -647,7 +624,6 @@ func (ctrl *Controller) ListNotifications(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UnreadNotificationCount godoc
 // @Summary      Count my unread ME notifications
 // @Tags         me
 // @Produce      json
@@ -666,7 +642,6 @@ func (ctrl *Controller) UnreadNotificationCount(c *gin.Context) (interface{}, er
 	return map[string]int64{"count": count}, nil
 }
 
-// ReadAllNotifications godoc
 // @Summary      Mark all my ME notifications as read
 // @Tags         me
 // @Produce      json

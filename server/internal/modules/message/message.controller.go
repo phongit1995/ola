@@ -60,7 +60,6 @@ func (ctrl *Controller) messageHTTPError(err error, fallback, logMessage string)
 	return utils.NewHTTPError(status, message)
 }
 
-// SendMessage godoc
 // @Summary      Send message
 // @Description  Send a message in a conversation
 // @Tags         messages
@@ -110,7 +109,6 @@ func (ctrl *Controller) SendMessage(c *gin.Context) (interface{}, error) {
 	return message, nil
 }
 
-// SendDirectMessage godoc
 // @Summary      Send direct message
 // @Description  Send a message directly to a user (creates conversation if not exists)
 // @Tags         messages
@@ -154,7 +152,6 @@ func (ctrl *Controller) SendDirectMessage(c *gin.Context) (interface{}, error) {
 	return message, nil
 }
 
-// GetMessages godoc
 // @Summary      Get messages
 // @Description  Get messages from a conversation with pagination
 // @Tags         messages
@@ -196,7 +193,6 @@ func (ctrl *Controller) GetMessages(c *gin.Context) (interface{}, error) {
 	return messages, nil
 }
 
-// UpdateMessage godoc
 // @Summary      Update message
 // @Description  Update message content (edit message)
 // @Tags         messages
@@ -234,7 +230,6 @@ func (ctrl *Controller) UpdateMessage(c *gin.Context) (interface{}, error) {
 	return message, nil
 }
 
-// SendImageMessage godoc
 // @Summary      Send image message
 // @Description  Upload an image and create a message of type=image in one call (≤3MB jpeg/png/gif/webp)
 // @Tags         messages
@@ -280,7 +275,6 @@ func (ctrl *Controller) SendImageMessage(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// SendAudioMessage godoc
 // @Summary      Send audio message
 // @Description  Upload voice recording and create a message of type=audio (≤10MB, ≤300s)
 // @Tags         messages
@@ -357,7 +351,6 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// ToggleReaction godoc
 // @Summary      Toggle reaction
 // @Description  Toggle a reaction (LIKE/LOVE/HAHA/WOW/SAD/ANGRY) on a message. Idempotent per (user, message, type).
 // @Tags         messages
@@ -397,7 +390,6 @@ func (ctrl *Controller) ToggleReaction(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// DeleteMessage godoc
 // @Summary      Delete message
 // @Description  Delete a message (soft delete)
 // @Tags         messages

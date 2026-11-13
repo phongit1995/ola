@@ -20,7 +20,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[admin_moment_controller]")}
 }
 
-// ListMoments godoc
 // @Summary      List moments (admin, includes expired and deleted)
 // @Tags         admin-moment
 // @Produce      json
@@ -88,7 +87,6 @@ func parseState(value string) string {
 	)
 }
 
-// GetMoment godoc
 // @Summary      Get moment detail (admin)
 // @Tags         admin-moment
 // @Produce      json
@@ -108,7 +106,6 @@ func (ctrl *Controller) GetMoment(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// UpdateStatus godoc
 // @Summary      Show/hide a moment (admin)
 // @Tags         admin-moment
 // @Accept       json
@@ -134,7 +131,6 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// PurgeMedia godoc
 // @Summary      Delete image/video files of a moment from storage, keep the record (admin)
 // @Tags         admin-moment
 // @Produce      json
@@ -154,7 +150,6 @@ func (ctrl *Controller) PurgeMedia(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// RemoveMusic godoc
 // @Summary      Remove music from a moment; with block, also bans the file and removes it from every moment using it
 // @Tags         admin-moment
 // @Accept       json
@@ -180,7 +175,6 @@ func (ctrl *Controller) RemoveMusic(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListViewers godoc
 // @Summary      List viewers of a moment (admin)
 // @Tags         admin-moment
 // @Produce      json
@@ -204,7 +198,6 @@ func (ctrl *Controller) ListViewers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListComments godoc
 // @Summary      List comments on a moment, newest first (admin)
 // @Tags         admin-moment
 // @Produce      json
@@ -227,7 +220,6 @@ func (ctrl *Controller) ListComments(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// MediaPurgeLogs godoc
 // @Summary      Moment media auto-purge run logs of the last 30 days (admin)
 // @Tags         admin-moment
 // @Produce      json
@@ -245,7 +237,6 @@ func (ctrl *Controller) MediaPurgeLogs(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// RunMediaPurge godoc
 // @Summary      Start a moment media purge run now, in the background (admin)
 // @Tags         admin-moment
 // @Produce      json

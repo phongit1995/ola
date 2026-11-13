@@ -15,7 +15,6 @@ func NewController(service *Service) *Controller {
 	return &Controller{service: service}
 }
 
-// HealthCheck godoc
 // @Summary      Health check
 // @Description  Check the health status of the API and database
 // @Tags         health

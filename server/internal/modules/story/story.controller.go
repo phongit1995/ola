@@ -14,7 +14,6 @@ func NewController(service *Service) *Controller {
 	return &Controller{service: service}
 }
 
-// List godoc
 // @Summary      Danh sách truyện
 // @Tags         story
 // @Produce      json
@@ -42,7 +41,6 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Genres godoc
 // @Summary      Thể loại truyện và số truyện mỗi thể loại
 // @Tags         story
 // @Produce      json
@@ -57,7 +55,6 @@ func (ctrl *Controller) Genres(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Detail godoc
 // @Summary      Thông tin một truyện
 // @Tags         story
 // @Produce      json
@@ -77,7 +74,6 @@ func (ctrl *Controller) Detail(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Chapters godoc
 // @Summary      Danh sách chương của truyện, theo thứ tự
 // @Tags         story
 // @Produce      json
@@ -93,7 +89,6 @@ func (ctrl *Controller) Chapters(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Chapter godoc
 // @Summary      Nội dung một chương
 // @Tags         story
 // @Produce      json
@@ -115,7 +110,6 @@ func (ctrl *Controller) Chapter(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// RecentComments godoc
 // @Summary      Bình luận mới nhất của mọi truyện đang hiển thị, kèm tên và bìa truyện
 // @Tags         story
 // @Produce      json
@@ -137,7 +131,6 @@ func (ctrl *Controller) RecentComments(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// Comments godoc
 // @Summary      Bình luận của truyện, mới nhất trước
 // @Tags         story
 // @Produce      json
@@ -160,7 +153,6 @@ func (ctrl *Controller) Comments(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// CreateComment godoc
 // @Summary      Bình luận vào truyện; đủ số ký tự tối thiểu thì mở khoá đọc miễn phí truyện đó
 // @Tags         story
 // @Accept       json
@@ -186,7 +178,6 @@ func (ctrl *Controller) CreateComment(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// DeleteComment godoc
 // @Summary      Xoá bình luận của mình
 // @Tags         story
 // @Produce      json
@@ -207,7 +198,6 @@ func (ctrl *Controller) DeleteComment(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// LikeComment godoc
 // @Summary      Thích hoặc bỏ thích bình luận
 // @Tags         story
 // @Produce      json

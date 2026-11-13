@@ -19,7 +19,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	}
 }
 
-// GetSettings godoc
 // @Summary      Get user settings
 // @Description  Get the authenticated user's settings (returns defaults if not set yet)
 // @Tags         user-settings
@@ -46,7 +45,6 @@ func (ctrl *Controller) GetSettings(c *gin.Context) (interface{}, error) {
 	return settings, nil
 }
 
-// UpdateSettings godoc
 // @Summary      Update user settings
 // @Description  Partially update the authenticated user's settings (upsert)
 // @Tags         user-settings
