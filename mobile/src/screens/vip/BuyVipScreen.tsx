@@ -7,17 +7,17 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { KeyboardView } from '@components/KeyboardView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
-import { ListOptionDialog } from '@components/ui/ListOptionDialog';
+import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
-import { MODE_ACTION, MODE_TAB, MODE_TITLE } from './constants';
-import { useBuyVip } from './useBuyVip';
 import { ReceiverField } from './components/ReceiverField';
 import { VipDayTransferFields } from './components/VipDayTransferFields';
 import { VipDayTransferSummary } from './components/VipDayTransferSummary';
 import { VipIconImage } from './components/VipIconImage';
 import { VipPickerDialog } from './components/VipPickerDialog';
+import { useBuyVip } from '@ola/shared/stores/vip/useBuyVip';
+import { BUY_VIP_MODE_ACTION, BUY_VIP_MODE_TAB, BUY_VIP_MODE_TITLE } from '@ola/shared/constants';
 
 export type { BuyVipMode };
 
@@ -27,10 +27,15 @@ export function BuyVipScreen({ navigation, route }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const vm = useBuyVip(route.params?.mode, () => navigation.goBack());
+  const packageOptions: ListOption[] = vm.packages.map((pkg) => ({
+    key: pkg.id,
+    label: vipPackageLabel(t, pkg),
+    onSelect: () => vm.selectPackage(pkg.id),
+  }));
 
   return (
     <KeyboardView className="flex-1" style={{ backgroundColor: '#ececec' }}>
-      <ScreenHeader title={t(MODE_TITLE[vm.mode])} onBack={() => navigation.goBack()} />
+      <ScreenHeader title={t(BUY_VIP_MODE_TITLE[vm.mode])} onBack={() => navigation.goBack()} />
 
       <ScrollView
         className="flex-1"
@@ -52,7 +57,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
                   className="text-xs font-medium"
                   style={{ color: activeTab ? '#ffffff' : 'rgba(0,0,0,0.6)' }}
                 >
-                  {t(MODE_TAB[item])}
+                  {t(BUY_VIP_MODE_TAB[item])}
                 </Text>
               </Pressable>
             );
@@ -159,7 +164,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
             {vm.purchasing && (
               <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />
             )}
-            <Text className="text-sm font-medium text-white">{t(MODE_ACTION[vm.mode])}</Text>
+            <Text className="text-sm font-medium text-white">{t(BUY_VIP_MODE_ACTION[vm.mode])}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -175,13 +180,13 @@ export function BuyVipScreen({ navigation, route }: Props) {
       <ListOptionDialog
         visible={vm.packagePickerOpen}
         title={t('vip.buy.pickPackageTitle')}
-        options={vm.packageOptions}
+        options={packageOptions}
         onClose={() => vm.setPackagePickerOpen(false)}
       />
 
       <ConfirmDialog
         visible={vm.confirmOpen}
-        title={t(MODE_TITLE[vm.mode])}
+        title={t(BUY_VIP_MODE_TITLE[vm.mode])}
         message={
           vm.isTransferDays ? (
             <VipDayTransferSummary
@@ -194,7 +199,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
             vm.confirmText
           )
         }
-        confirmLabel={t(MODE_ACTION[vm.mode])}
+        confirmLabel={t(BUY_VIP_MODE_ACTION[vm.mode])}
         cancelLabel={t('vip.buy.cancel')}
         onConfirm={() => void vm.confirmPurchase()}
         onCancel={() => vm.setConfirmOpen(false)}

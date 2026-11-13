@@ -1,54 +1,40 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { UserService, VipService } from '@ola/shared/services';
-import {
-  vipBuyErrorText,
-  vipById,
-  vipConfirmMessage,
-  vipName,
-  vipPackageLabel,
-} from '@ola/shared/lib';
-import type { BuyVipMode } from '@ola/shared/types';
-import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { useVipDayTransferForm } from '@ola/shared/stores/vip/useVipDayTransferForm';
+import i18n from 'i18next';
+import { BUY_VIP_DEFAULT_TYPE_ID, BUY_VIP_MODE_ORDER } from '../../constants/vip';
+import { toast } from '../../lib/toast';
+import { vipById, vipName } from '../../lib/vip';
+import { vipBuyErrorText, vipConfirmMessage } from '../../lib/vipPurchase';
+import { VipService } from '../../services/vip.service';
+import type { VipIconCatalogItem, VipPackageItem } from '../../types/api/vip.type';
+import type { BuyVipMode, VipPickerItem } from '../../types/client/vipPurchase.type';
+import { useAuthStore } from '../auth/authStore';
+import { useReceiverSearch } from '../user/useReceiverSearch';
+import { useVipDayTransferForm } from './useVipDayTransferForm';
 import {
   selectVipDayTransferEnabled,
   useVipDayTransferConfigStore,
-} from '@ola/shared/stores/vip/vipDayTransferConfigStore';
-import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/shared/types';
-import type { ListOption } from '@components/ui/ListOptionDialog';
-import {
-  DEFAULT_VIP_ID,
-  MODE_ORDER,
-  RECEIVER_SEARCH_DEBOUNCE_MS,
-  RECEIVER_SEARCH_LIMIT,
-} from './constants';
-import type { PickerItem } from './types';
+} from './vipDayTransferConfigStore';
 
 export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => void) {
-  const { t } = useTranslation();
+  const t = i18n.t;
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const refreshUser = useAuthStore((s) => s.refreshUser);
-  const push = useToastStore((s) => s.push);
 
   const [selectedMode, setMode] = useState<BuyVipMode>(initialMode ?? 'buy');
   const dayTransferEnabled = useVipDayTransferConfigStore(selectVipDayTransferEnabled);
   const dayTransfer = useVipDayTransferForm(t);
   const mode: BuyVipMode =
     selectedMode === 'transferDays' && !dayTransferEnabled ? 'buy' : selectedMode;
-  const visibleModes = MODE_ORDER.filter(
-    (item) => item !== 'transferDays' || dayTransferEnabled,
+  const visibleModes = BUY_VIP_MODE_ORDER.filter(
+    (item) => item !== 'transferDays' || dayTransferEnabled
   );
-  const [selectedVipId, setSelectedVipId] = useState(DEFAULT_VIP_ID);
+  const [selectedVipId, setSelectedVipId] = useState(BUY_VIP_DEFAULT_TYPE_ID);
   const [selectedShopId, setSelectedShopId] = useState('');
   const [selectedPackageId, setSelectedPackageId] = useState('');
-  const [receiver, setReceiver] = useState('');
-  const [receiverUser, setReceiverUser] = useState<UserSearchResult | null>(null);
-  const [receiverQuery, setReceiverQuery] = useState('');
-  const [receiverResults, setReceiverResults] = useState<UserSearchResult[]>([]);
-  const [receiverSearching, setReceiverSearching] = useState(false);
+  const receiverSearch = useReceiverSearch();
+  const { receiverUser } = receiverSearch;
+  const receiver = receiverUser?.username ?? '';
   const [vipPickerOpen, setVipPickerOpen] = useState(false);
   const [packagePickerOpen, setPackagePickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -90,23 +76,6 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
     };
   }, []);
 
-  useEffect(() => {
-    const value = receiverQuery.trim();
-    const timer = setTimeout(() => {
-      if (value === '') {
-        setReceiverResults([]);
-        setReceiverSearching(false);
-        return;
-      }
-      setReceiverSearching(true);
-      UserService.search(value, RECEIVER_SEARCH_LIMIT)
-        .then((res) => setReceiverResults(res.users))
-        .catch(() => setReceiverResults([]))
-        .finally(() => setReceiverSearching(false));
-    }, RECEIVER_SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [receiverQuery]);
-
   const isBuyIcon = mode === 'buy';
   const isExtend = mode === 'extend';
   const isGiftIcon = mode === 'give';
@@ -116,7 +85,7 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
   const showVipSelect = isBuyIcon || isGiftIcon;
   const showPackage = isExtend || isGiftDays;
 
-  const pickerItems: PickerItem[] = useMemo(
+  const pickerItems: VipPickerItem[] = useMemo(
     () =>
       catalog.map((c) => ({
         key: c.id,
@@ -124,7 +93,7 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
         name: vipName(c.vipTypeId),
         price: c.kenPrice,
       })),
-    [catalog],
+    [catalog]
   );
 
   const selectedShopItem = catalog.find((c) => c.id === selectedShopId);
@@ -133,31 +102,15 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
   const selectedPackage = packages.find((p) => p.id === selectedPackageId) ?? null;
   const kenBalance = user?.ken ?? 0;
 
-  function handlePickVip(item: PickerItem) {
+  function handlePickVip(item: VipPickerItem) {
     setSelectedVipId(item.typeId);
     setSelectedShopId(item.key);
   }
 
-  function pickReceiver(picked: UserSearchResult) {
-    setReceiverUser(picked);
-    setReceiver(picked.username);
-    setReceiverQuery('');
-    setReceiverResults([]);
-  }
-
   function clearReceiver() {
-    setReceiverUser(null);
-    setReceiver('');
-    setReceiverQuery('');
-    setReceiverResults([]);
+    receiverSearch.clearReceiver();
     setGiftPassword('');
   }
-
-  const packageOptions: ListOption[] = packages.map((pkg) => ({
-    key: pkg.id,
-    label: vipPackageLabel(t, pkg),
-    onSelect: () => setSelectedPackageId(pkg.id),
-  }));
 
   function changeMode(next: BuyVipMode) {
     setMode(next);
@@ -167,26 +120,26 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
 
   function startPurchase() {
     if (showReceiver && receiver.trim().length === 0) {
-      push('info', t('vip.buy.needReceiver'));
+      toast.info(t('vip.buy.needReceiver'));
       return;
     }
     if (showVipSelect && selectedShopId === '') {
-      push('info', t('vip.buy.needVip'));
+      toast.info(t('vip.buy.needVip'));
       return;
     }
     if (showPackage && selectedPackageId === '') {
-      push('info', t('vip.buy.needPackage'));
+      toast.info(t('vip.buy.needPackage'));
       return;
     }
     if (isTransferDays) {
       const inputError = dayTransfer.inputError();
       if (inputError != null) {
-        push('info', inputError);
+        toast.info(inputError);
         return;
       }
     }
     if (showReceiver && giftPassword.trim() === '') {
-      push('info', t('vip.buy.needPassword'));
+      toast.info(t('vip.buy.needPassword'));
       return;
     }
     setConfirmOpen(true);
@@ -194,7 +147,7 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
 
   async function runPurchase<T extends { kenBalance: number }>(
     action: () => Promise<T>,
-    successText: (result: T) => string,
+    successText: (result: T) => string
   ) {
     setPurchasing(true);
     try {
@@ -202,58 +155,55 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
       if (user != null) setUser({ ...user, ken: result.kenBalance });
       await refreshUser();
       setConfirmOpen(false);
-      push('success', successText(result));
+      toast.success(successText(result));
       onDone();
     } catch (error) {
-      push('info', vipBuyErrorText(t, error));
+      toast.info(vipBuyErrorText(t, error));
     } finally {
       setPurchasing(false);
     }
   }
 
+  function requireSelection(selected: string, missingKey: 'vip.buy.needVip' | 'vip.buy.needPackage') {
+    if (selected !== '') return true;
+    setConfirmOpen(false);
+    toast.info(t(missingKey));
+    return false;
+  }
+
+  function requirePassword() {
+    if (giftPassword.trim() !== '') return true;
+    toast.info(t('vip.buy.needPassword'));
+    return false;
+  }
+
   async function confirmPurchase() {
     if (purchasing) return;
     if (isBuyIcon) {
-      if (selectedShopId === '') {
-        setConfirmOpen(false);
-        push('info', t('vip.buy.needVip'));
-        return;
-      }
+      if (!requireSelection(selectedShopId, 'vip.buy.needVip')) return;
       await runPurchase(
         () => VipService.buyIcon(selectedShopId),
-        () => t('vip.buy.bought', { name: selectedVip?.name ?? '' }),
+        () => t('vip.buy.bought', { name: selectedVip?.name ?? '' })
       );
       return;
     }
     if (isExtend) {
-      if (selectedPackageId === '') {
-        setConfirmOpen(false);
-        push('info', t('vip.buy.needPackage'));
-        return;
-      }
+      if (!requireSelection(selectedPackageId, 'vip.buy.needPackage')) return;
       await runPurchase(
         () => VipService.buyPackage(selectedPackageId),
-        (result) => t('vip.buy.extended', { days: result.days }),
+        (result) => t('vip.buy.extended', { days: result.days })
       );
       return;
     }
     if (isGiftIcon) {
-      if (selectedShopId === '') {
-        setConfirmOpen(false);
-        push('info', t('vip.buy.needVip'));
-        return;
-      }
-      if (giftPassword.trim() === '') {
-        push('info', t('vip.buy.needPassword'));
-        return;
-      }
+      if (!requireSelection(selectedShopId, 'vip.buy.needVip') || !requirePassword()) return;
       await runPurchase(
         () => VipService.giftIcon(selectedShopId, receiver.trim(), giftPassword),
         (result) =>
           t('vip.buy.giftedVip', {
             name: selectedVip?.name ?? '',
             receiver: result.receiverUsername,
-          }),
+          })
       );
       return;
     }
@@ -264,23 +214,17 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
       return;
     }
     if (isGiftDays) {
-      if (selectedPackageId === '') {
-        setConfirmOpen(false);
-        push('info', t('vip.buy.needPackage'));
-        return;
-      }
-      if (giftPassword.trim() === '') {
-        push('info', t('vip.buy.needPassword'));
+      if (!requireSelection(selectedPackageId, 'vip.buy.needPackage') || !requirePassword()) {
         return;
       }
       await runPurchase(
         () => VipService.giftPackage(selectedPackageId, receiver.trim(), giftPassword),
-        (result) => t('vip.buy.gifted', { days: result.days, name: result.receiverUsername }),
+        (result) => t('vip.buy.gifted', { days: result.days, name: result.receiverUsername })
       );
       return;
     }
     setConfirmOpen(false);
-    push('info', t('vip.comingSoon'));
+    toast.info(t('vip.comingSoon'));
   }
 
   const confirmText = vipConfirmMessage(t, {
@@ -303,19 +247,20 @@ export function useBuyVip(initialMode: BuyVipMode | undefined, onDone: () => voi
     showVipSelect,
     showPackage,
     receiverUser,
-    receiverQuery,
-    setReceiverQuery,
-    receiverResults,
-    receiverSearching,
-    pickReceiver,
+    receiverQuery: receiverSearch.receiverQuery,
+    setReceiverQuery: receiverSearch.setReceiverQuery,
+    receiverResults: receiverSearch.receiverResults,
+    receiverSearching: receiverSearch.receiverSearching,
+    pickReceiver: receiverSearch.pickReceiver,
     clearReceiver,
     pickerItems,
     selectedShopId,
     selectedShopItem,
     displayVipId,
     selectedVip,
+    packages,
     selectedPackage,
-    packageOptions,
+    selectPackage: setSelectedPackageId,
     vipPickerOpen,
     setVipPickerOpen,
     packagePickerOpen,

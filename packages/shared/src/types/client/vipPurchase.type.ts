@@ -15,3 +15,10 @@ export interface VipConfirmInput {
   shopItemKenPrice: number;
   receiver: string;
 }
+
+export interface VipPickerItem {
+  key: string;
+  typeId: number;
+  name: string;
+  price?: number;
+}
