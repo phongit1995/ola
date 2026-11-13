@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"ola-chat-server/internal/config"
@@ -127,22 +128,20 @@ func NewServer(
 			return
 		}
 
-		userID, err := jwtService.GetUserIDFromToken(token)
+		identity, err := services.AuthenticateUserAccessToken(jwtService, server.cache, token)
 		if err != nil {
-			server.logger.Warnw("Invalid WebSocket token", "error", err)
-			next(socket.NewExtendedError("Unauthorized", nil))
-			return
-		}
-
-		sessionID := ""
-		if sid, sidErr := jwtService.GetSessionIDFromToken(token); sidErr == nil && sid != uuid.Nil {
-			sessionID = sid.String()
-			revokedKey := fmt.Sprintf(constants.CacheKeySessionRevoked, sessionID)
-			if revoked, _ := server.cache.Exists(revokedKey); revoked {
-				server.logger.Warnw("WebSocket rejected: session revoked", "user_id", userID, "session_id", sid)
+			server.logger.Warnw("WebSocket rejected", "error", err)
+			if errors.Is(err, services.ErrAccessSessionRevoked) {
 				next(socket.NewExtendedError("session revoked", nil))
 				return
 			}
+			next(socket.NewExtendedError("Unauthorized", nil))
+			return
+		}
+		userID := identity.UserID
+		sessionID := ""
+		if identity.SessionID != uuid.Nil {
+			sessionID = identity.SessionID.String()
 		}
 
 		// TEMP: tạm tắt check timestamp + chữ ký lúc handshake, bỏ comment để bật lại

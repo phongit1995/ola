@@ -3,6 +3,8 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 	"strings"
 
@@ -31,7 +33,7 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := m.jwtService.VerifyToken(token)
+		claims, err := m.jwtService.VerifyAccessToken(token)
 		if err != nil {
 			utils.RespondError(c, http.StatusUnauthorized, "invalid or expired token")
 			c.Abort()
@@ -39,8 +41,15 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 		}
 
 		if claims.ID != "" {
-			key := fmt.Sprintf(CacheKeyTokenBlacklist, claims.ID)
-			if exists, _ := m.cache.Exists(key); exists {
+			key := fmt.Sprintf(constants.CacheKeyTokenBlacklist, claims.ID)
+			exists, err := m.cache.Exists(key)
+			if err != nil {
+				m.logger.Errorw("Failed to check admin token revocation", "error", err.Error())
+				utils.RespondError(c, http.StatusServiceUnavailable, "authentication service unavailable")
+				c.Abort()
+				return
+			}
+			if exists {
 				utils.RespondError(c, http.StatusUnauthorized, "token has been revoked")
 				c.Abort()
 				return
@@ -54,14 +63,14 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 			return
 		}
 
-		isAdmin, _ := dataMap["isAdmin"].(bool)
-		tokenType, _ := dataMap["type"].(string)
-		if !isAdmin || tokenType != TokenTypeAdmin {
+		isAdmin, _ := dataMap[services.ClaimIsAdmin].(bool)
+		tokenType, _ := dataMap[services.ClaimType].(string)
+		if !isAdmin || tokenType != services.TokenTypeAdmin {
 			utils.RespondError(c, http.StatusForbidden, "admin access required")
 			c.Abort()
 			return
 		}
-		if tokenUse, _ := dataMap["token_use"].(string); tokenUse != TokenUseAccess {
+		if tokenUse, _ := dataMap[services.ClaimTokenUse].(string); tokenUse != services.TokenUseAccess {
 			utils.RespondError(c, http.StatusUnauthorized, "invalid token type")
 			c.Abort()
 			return

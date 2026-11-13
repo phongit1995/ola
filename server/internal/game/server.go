@@ -110,13 +110,13 @@ func NewServer(
 			return
 		}
 
-		uid, err := jwtService.GetUserIDFromToken(token)
+		identity, err := services.AuthenticateUserAccessToken(jwtService, cache, token)
 		if err != nil {
 			server.logger.Warnw("Invalid game socket token", "error", err)
 			next(socket.NewExtendedError("Unauthorized", map[string]string{"code": "AUTH_EXPIRED"}))
 			return
 		}
-		userID := uid.String()
+		userID := identity.UserID.String()
 		name, _ := auth["name"].(string)
 		if name == "" {
 			name = userID[:8]

@@ -1,0 +1,82 @@
+package services
+
+import (
+	"errors"
+	"fmt"
+
+	"ola-chat-server/internal/constants"
+
+	"github.com/google/uuid"
+)
+
+var (
+	ErrAccessTokenInvalid   = errors.New("invalid or expired token")
+	ErrAccessTokenRevoked   = errors.New("token has been revoked")
+	ErrAccessTokenPayload   = errors.New("invalid token payload")
+	ErrAccessTokenAdmin     = errors.New("invalid token")
+	ErrAccessTokenUserID    = errors.New("invalid id in token")
+	ErrAccessSessionRevoked = errors.New("session revoked")
+	ErrAuthUnavailable      = errors.New("authentication service unavailable")
+)
+
+type AccessIdentity struct {
+	UserID    uuid.UUID
+	SessionID uuid.UUID
+	Claims    *TokenClaims
+}
+
+func AuthenticateUserAccessToken(jwtService *JWTService, cache *CacheService, token string) (*AccessIdentity, error) {
+	claims, err := jwtService.VerifyAccessToken(token)
+	if err != nil {
+		return nil, ErrAccessTokenInvalid
+	}
+
+	if claims.ID != "" {
+		revoked, err := keyExists(cache, fmt.Sprintf(constants.CacheKeyTokenBlacklist, claims.ID))
+		if err != nil {
+			return nil, ErrAuthUnavailable
+		}
+		if revoked {
+			return nil, ErrAccessTokenRevoked
+		}
+	}
+
+	data, ok := claims.Data.(map[string]interface{})
+	if !ok {
+		return nil, ErrAccessTokenPayload
+	}
+	if isAdmin, _ := data[ClaimIsAdmin].(bool); isAdmin {
+		return nil, ErrAccessTokenAdmin
+	}
+	if tokenType, _ := data[ClaimType].(string); tokenType == TokenTypeAdmin {
+		return nil, ErrAccessTokenAdmin
+	}
+
+	userIDStr, _ := data[ClaimUserID].(string)
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return nil, ErrAccessTokenUserID
+	}
+
+	identity := &AccessIdentity{UserID: userID, Claims: claims}
+	if sidStr, _ := data[ClaimSessionID].(string); sidStr != "" {
+		if sessionID, err := uuid.Parse(sidStr); err == nil {
+			revoked, err := keyExists(cache, fmt.Sprintf(constants.CacheKeySessionRevoked, sessionID.String()))
+			if err != nil {
+				return nil, ErrAuthUnavailable
+			}
+			if revoked {
+				return nil, ErrAccessSessionRevoked
+			}
+			identity.SessionID = sessionID
+		}
+	}
+	return identity, nil
+}
+
+func keyExists(cache *CacheService, key string) (bool, error) {
+	if cache == nil {
+		return false, nil
+	}
+	return cache.Exists(key)
+}

@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
@@ -66,66 +65,22 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := m.jwtService.VerifyToken(token)
+		identity, err := services.AuthenticateUserAccessToken(m.jwtService, m.cache, token)
 		if err != nil {
-			utils.RespondError(c, http.StatusUnauthorized, "invalid or expired token")
-			c.Abort()
-			return
-		}
-
-		if claims.ID != "" {
-			key := fmt.Sprintf(CacheKeyTokenBlacklist, claims.ID)
-			if exists, _ := m.cache.Exists(key); exists {
-				utils.RespondError(c, http.StatusUnauthorized, "token has been revoked")
-				c.Abort()
-				return
+			status := http.StatusUnauthorized
+			if errors.Is(err, services.ErrAuthUnavailable) {
+				m.logger.Errorw("Failed to check token revocation", "error", err.Error())
+				status = http.StatusServiceUnavailable
 			}
-		}
-
-		dataMap, ok := claims.Data.(map[string]interface{})
-		if !ok {
-			utils.RespondError(c, http.StatusUnauthorized, "invalid token payload")
+			utils.RespondError(c, status, err.Error())
 			c.Abort()
 			return
 		}
 
-		if isAdmin, _ := dataMap["isAdmin"].(bool); isAdmin {
-			utils.RespondError(c, http.StatusUnauthorized, "invalid token")
-			c.Abort()
-			return
+		if identity.SessionID != uuid.Nil {
+			c.Set("session_id", identity.SessionID)
 		}
-		if tokenType, _ := dataMap["type"].(string); tokenType == "admin" {
-			utils.RespondError(c, http.StatusUnauthorized, "invalid token")
-			c.Abort()
-			return
-		}
-
-		userIDStr, ok := dataMap["id"].(string)
-		if !ok {
-			utils.RespondError(c, http.StatusUnauthorized, "id missing from token")
-			c.Abort()
-			return
-		}
-		userID, err := uuid.Parse(userIDStr)
-		if err != nil {
-			utils.RespondError(c, http.StatusUnauthorized, "invalid id in token")
-			c.Abort()
-			return
-		}
-
-		if sidStr, ok := dataMap["sid"].(string); ok && sidStr != "" {
-			if sessionID, err := uuid.Parse(sidStr); err == nil {
-				revokedKey := fmt.Sprintf(constants.CacheKeySessionRevoked, sessionID.String())
-				if exists, _ := m.cache.Exists(revokedKey); exists {
-					utils.RespondError(c, http.StatusUnauthorized, "session revoked")
-					c.Abort()
-					return
-				}
-				c.Set("session_id", sessionID)
-			}
-		}
-
-		c.Set("user_id", userID)
+		c.Set("user_id", identity.UserID)
 		c.Next()
 	}
 }
