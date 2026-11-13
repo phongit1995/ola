@@ -7,12 +7,14 @@ import (
 )
 
 func SafeGo(logger *zap.SugaredLogger, fn func()) {
-	go func() {
-		defer func() {
-			if r := recover(); r != nil && logger != nil {
-				logger.Errorw("recovered from panic in goroutine", "panic", r, "stack", string(debug.Stack()))
-			}
-		}()
-		fn()
+	go SafeCall(logger, fn)
+}
+
+func SafeCall(logger *zap.SugaredLogger, fn func()) {
+	defer func() {
+		if r := recover(); r != nil && logger != nil {
+			logger.Errorw("recovered from panic in goroutine", "panic", r, "stack", string(debug.Stack()))
+		}
 	}()
+	fn()
 }

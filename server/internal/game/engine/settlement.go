@@ -10,6 +10,7 @@ import (
 	"ola-chat-server/internal/game/logic"
 	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/game/protocol"
+	"ola-chat-server/internal/utils"
 )
 
 const (
@@ -117,7 +118,7 @@ func (e *Engine) maybeStartSettlementMaintenance() {
 		return
 	}
 	e.maintenanceOnce.Do(func() {
-		go e.runSettlementMaintenance()
+		utils.SafeGo(e.logger, e.runSettlementMaintenance)
 	})
 }
 
@@ -232,7 +233,7 @@ func (e *Engine) queuePlayingRestore(snapshot ActiveMatchSnapshot) {
 	e.restoreJobs[jobKey] = struct{}{}
 	e.restoreJobsMu.Unlock()
 
-	go func() {
+	utils.SafeGo(e.logger, func() {
 		defer func() {
 			e.restoreJobsMu.Lock()
 			delete(e.restoreJobs, jobKey)
@@ -257,7 +258,7 @@ func (e *Engine) queuePlayingRestore(snapshot ActiveMatchSnapshot) {
 				}
 			}
 		}
-	}()
+	})
 }
 
 func (e *Engine) queueFinishedSettlement(snapshot ActiveMatchSnapshot, outcome MatchOutcome) {
@@ -270,7 +271,7 @@ func (e *Engine) queueFinishedSettlement(snapshot ActiveMatchSnapshot, outcome M
 	e.settlementJobs[jobKey] = struct{}{}
 	e.settlementJobsMu.Unlock()
 
-	go func() {
+	utils.SafeGo(e.logger, func() {
 		defer func() {
 			e.settlementJobsMu.Lock()
 			delete(e.settlementJobs, jobKey)
@@ -355,7 +356,7 @@ func (e *Engine) queueFinishedSettlement(snapshot ActiveMatchSnapshot, outcome M
 				}
 			}
 		}
-	}()
+	})
 }
 
 func (e *Engine) queueAbortSettlement(snapshot ActiveMatchSnapshot) {
@@ -368,7 +369,7 @@ func (e *Engine) queueAbortSettlement(snapshot ActiveMatchSnapshot) {
 	e.abortJobs[jobKey] = struct{}{}
 	e.abortJobsMu.Unlock()
 
-	go func() {
+	utils.SafeGo(e.logger, func() {
 		defer func() {
 			e.abortJobsMu.Lock()
 			delete(e.abortJobs, jobKey)
@@ -446,7 +447,7 @@ func (e *Engine) queueAbortSettlement(snapshot ActiveMatchSnapshot) {
 				}
 			}
 		}
-	}()
+	})
 }
 
 func (e *Engine) deleteSnapshotWithStatuses(
@@ -502,7 +503,8 @@ func (e *Engine) emitSettledBalances(balances []SettledBalance, fallbackGameID s
 		}
 		e.toUser(gameID, balance.UserID, protocol.OutEnvelope{Type: protocol.S2CUserInfo, Data: balance.Info})
 		// Async so callers holding engine locks never contend with roomMu here.
-		go e.applySettledLevel(gameID, balance.UserID, balance.Info.Level)
+		userID, level := balance.UserID, balance.Info.Level
+		utils.SafeGo(e.logger, func() { e.applySettledLevel(gameID, userID, level) })
 	}
 }
 

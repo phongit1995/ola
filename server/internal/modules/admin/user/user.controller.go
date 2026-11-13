@@ -58,7 +58,7 @@ func (ctrl *Controller) ListUsers(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.List(filter)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -92,7 +92,7 @@ func (ctrl *Controller) GetUser(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.GetByID(id)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -119,7 +119,7 @@ func (ctrl *Controller) ListUserVips(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.ListVips(id, utils.ParseLimit(c, 60, 200), utils.ParseOffset(c))
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -146,7 +146,7 @@ func (ctrl *Controller) ListUserSessions(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.ListSessions(id, utils.ParseLimit(c, 20, 100), utils.ParseOffset(c))
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -261,7 +261,7 @@ func (ctrl *Controller) GrantVip(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.GrantVip(id, req.VipTypeID)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -292,7 +292,7 @@ func (ctrl *Controller) DeleteVip(c *gin.Context) (interface{}, error) {
 	}
 
 	if err := ctrl.service.DeleteVip(id, instanceID); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "vip deleted"}, nil
 }
@@ -320,7 +320,7 @@ func (ctrl *Controller) AddVipDays(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.AddVipDays(id, req.Action, req.Days)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -353,7 +353,7 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.SetStatus(id, *req.IsActive)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -392,7 +392,7 @@ func (ctrl *Controller) UpdateUsername(c *gin.Context) (interface{}, error) {
 
 	resp, err := ctrl.service.UpdateUsername(id, req.Username, adminID)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -424,7 +424,7 @@ func (ctrl *Controller) ResetPassword(c *gin.Context) (interface{}, error) {
 	}
 
 	if err := ctrl.service.ResetPassword(id, req.Password); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "password updated"}, nil
 }
@@ -448,7 +448,7 @@ func (ctrl *Controller) DeleteUser(c *gin.Context) (interface{}, error) {
 	}
 
 	if err := ctrl.service.Delete(id); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "user deleted"}, nil
 }
@@ -504,7 +504,7 @@ func (ctrl *Controller) ListUsernameChanges(c *gin.Context) (interface{}, error)
 
 	resp, err := ctrl.service.ListUsernameChanges(f)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }

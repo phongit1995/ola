@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	conversationEvents "ola-chat-server/internal/domain/conversation"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gocql/gocql"
@@ -138,14 +139,7 @@ type Conversation struct {
 	ParticipantCount int
 }
 
-type ConversationMember struct {
-	ConversationID uuid.UUID
-	UserID         uuid.UUID
-	JoinedAt       time.Time
-	LeftAt         *time.Time
-	IsActive       bool
-	Role           string
-}
+type ConversationMember = conversationEvents.ConversationMember
 
 type ConversationByUser struct {
 	UserID             gocql.UUID

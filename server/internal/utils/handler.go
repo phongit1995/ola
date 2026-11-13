@@ -4,8 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"ola-chat-server/internal/apperr"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -44,14 +42,12 @@ func ServiceError(err error) error {
 	if errors.As(err, &httpErr) {
 		return httpErr
 	}
-	if status, known := KnownHTTPStatusFromMessage(err.Error()); known {
-		return NewHTTPError(status, err.Error())
+	status := HTTPStatusFromError(err)
+	switch {
+	case status == http.StatusInternalServerError:
+		return NewHTTPError(status, "internal server error")
+	case status == http.StatusNotFound && errors.Is(err, gorm.ErrRecordNotFound):
+		return NewHTTPError(status, "resource not found")
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return NewHTTPError(http.StatusNotFound, "resource not found")
-	}
-	if apperr.IsDatabaseError(err) {
-		return NewHTTPError(http.StatusInternalServerError, "internal server error")
-	}
-	return NewHTTPError(http.StatusBadRequest, err.Error())
+	return NewHTTPError(status, err.Error())
 }

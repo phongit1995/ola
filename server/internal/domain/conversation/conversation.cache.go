@@ -6,9 +6,9 @@ import (
 	"ola-chat-server/internal/utils"
 	"time"
 
+	"github.com/gocql/gocql"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type ConversationMember struct {
@@ -51,16 +51,16 @@ func (c *ConversationCache) SetConversationMembers(conversationID uuid.UUID, mem
 }
 
 type ConversationCacheAdapter struct {
-	cache  *ConversationCache
-	db     *gorm.DB
-	logger *zap.SugaredLogger
+	cache   *ConversationCache
+	session *gocql.Session
+	logger  *zap.SugaredLogger
 }
 
-func NewConversationCacheAdapter(cache *ConversationCache, db *gorm.DB, logger *zap.SugaredLogger) *ConversationCacheAdapter {
+func NewConversationCacheAdapter(cache *ConversationCache, session *gocql.Session, logger *zap.SugaredLogger) *ConversationCacheAdapter {
 	return &ConversationCacheAdapter{
-		cache:  cache,
-		db:     db,
-		logger: logger.Named("[conv_cache_adapter]"),
+		cache:   cache,
+		session: session,
+		logger:  logger.Named("[conv_cache_adapter]"),
 	}
 }
 
@@ -70,51 +70,57 @@ func (a *ConversationCacheAdapter) GetConversationMembers(conversationID string)
 		return nil, err
 	}
 
-	// Try cache first
 	members, err := a.cache.GetConversationMembers(convID)
-	if err == nil && len(members) > 0 {
-		userIDs := make([]string, 0, len(members))
-		for _, member := range members {
-			if member.IsActive {
-				userIDs = append(userIDs, member.UserID.String())
-			}
+	if err != nil || len(members) == 0 {
+		members, err = a.loadMembers(convID)
+		if err != nil {
+			a.logger.Errorw("Failed to load conversation members", "conversation_id", conversationID, "error", err)
+			return nil, err
 		}
-		return userIDs, nil
+		loaded := members
+		utils.SafeGo(a.logger, func() {
+			if err := a.cache.SetConversationMembers(convID, loaded); err != nil {
+				a.logger.Warnw("Failed to backfill members cache", "conversation_id", conversationID, "error", err)
+			}
+		})
 	}
 
-	// Cache miss — fallback to Postgres
-	a.logger.Debugw("Cache miss for members, querying Postgres", "conversation_id", conversationID)
-	var rows []struct {
-		UserID   uuid.UUID
-		IsActive bool
+	userIDs := make([]string, 0, len(members))
+	for _, member := range members {
+		if member.IsActive {
+			userIDs = append(userIDs, member.UserID.String())
+		}
 	}
-	if err := a.db.Raw(
-		"SELECT user_id, is_active FROM conversation_members WHERE conversation_id = ? AND is_active = true",
-		convID,
-	).Scan(&rows).Error; err != nil {
-		a.logger.Errorw("Failed to query members from Postgres", "conversation_id", conversationID, "error", err)
+	return userIDs, nil
+}
+
+func (a *ConversationCacheAdapter) loadMembers(convID uuid.UUID) ([]ConversationMember, error) {
+	iter := a.session.Query(
+		`SELECT user_id, joined_at, left_at, is_active, role FROM conversation_members_by_conversation WHERE conversation_id = ?`,
+		gocql.UUID(convID),
+	).Iter()
+
+	var members []ConversationMember
+	var (
+		userID   gocql.UUID
+		joinedAt time.Time
+		leftAt   *time.Time
+		isActive bool
+		role     string
+	)
+	for iter.Scan(&userID, &joinedAt, &leftAt, &isActive, &role) {
+		members = append(members, ConversationMember{
+			ConversationID: convID,
+			UserID:         uuid.UUID(userID),
+			JoinedAt:       joinedAt,
+			LeftAt:         leftAt,
+			IsActive:       isActive,
+			Role:           role,
+		})
+		leftAt = nil
+	}
+	if err := iter.Close(); err != nil {
 		return nil, err
 	}
-
-	userIDs := make([]string, 0, len(rows))
-	for _, row := range rows {
-		userIDs = append(userIDs, row.UserID.String())
-	}
-
-	utils.SafeGo(a.logger, func() {
-		cacheMembers := make([]ConversationMember, 0, len(rows))
-		for _, row := range rows {
-			cacheMembers = append(cacheMembers, ConversationMember{
-				ConversationID: convID,
-				UserID:         row.UserID,
-				JoinedAt:       time.Now(),
-				IsActive:       true,
-			})
-		}
-		if err := a.cache.SetConversationMembers(convID, cacheMembers); err != nil {
-			a.logger.Warnw("Failed to backfill members cache", "conversation_id", conversationID, "error", err)
-		}
-	})
-
-	return userIDs, nil
+	return members, nil
 }

@@ -15,6 +15,7 @@ import (
 
 	"ola-chat-server/internal/game/logic"
 	"ola-chat-server/internal/game/protocol"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -1492,7 +1493,7 @@ func (e *Engine) armGraceTimer(m *Match, wait time.Duration) {
 	m.graceDeadline = time.Now().Add(wait)
 	matchID := m.ID
 	m.graceTimer = time.AfterFunc(time.Until(m.graceDeadline), func() {
-		e.onGraceExpire(matchID, gen)
+		utils.SafeCall(e.logger, func() { e.onGraceExpire(matchID, gen) })
 	})
 }
 
@@ -1664,14 +1665,7 @@ func (e *Engine) eliminatePlayer(m *Match, idx int, handler logic.QuitHandler, c
 	delete(m.disconnectedAt, idx)
 	handler.OnPlayerQuit(m.state, idx)
 
-	if over, winnerIdx := m.logic.Result(m.state); over {
-		winnerID := ""
-		reason := "win"
-		if winnerIdx >= 0 && winnerIdx < len(m.players) {
-			winnerID = m.players[winnerIdx].ID
-		} else {
-			reason = "draw"
-		}
+	if over, winnerID, reason := e.matchResult(m, m.logic); over {
 		e.finishMatch(m, winnerID, reason)
 		return
 	}
@@ -1752,14 +1746,7 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 	previousTimeoutRuns := append([]int(nil), m.timeoutRuns...)
 	m.state = state
 
-	if over, winnerIdx := m.logic.Result(m.state); over {
-		winnerID := ""
-		reason := "win"
-		if winnerIdx >= 0 {
-			winnerID = m.players[winnerIdx].ID
-		} else {
-			reason = "draw"
-		}
+	if over, winnerID, reason := e.matchResult(m, m.logic); over {
 		e.finishMatch(m, winnerID, reason)
 		return
 	}
@@ -2200,17 +2187,21 @@ func (e *Engine) startMatchWithRoom(
 	e.sendMatchFound(m, false)
 	e.emitSettledBalances(startBalances, gameID)
 	e.logger.Infow("Match started", "match_id", m.ID, "game_id", gameID, "players", matchPlayerIDs(m))
-	if over, winnerIdx := gameLogic.Result(m.state); over {
-		winnerID := ""
-		reason := "win"
-		if winnerIdx >= 0 && winnerIdx < len(m.players) {
-			winnerID = m.players[winnerIdx].ID
-		} else {
-			reason = "draw"
-		}
+	if over, winnerID, reason := e.matchResult(m, gameLogic); over {
 		e.finishMatch(m, winnerID, reason)
 	}
 	return nil
+}
+
+func (e *Engine) matchResult(m *Match, gameLogic logic.GameLogic) (bool, string, string) {
+	over, winnerIdx := gameLogic.Result(m.state)
+	if !over {
+		return false, "", ""
+	}
+	if winnerIdx >= 0 && winnerIdx < len(m.players) {
+		return true, m.players[winnerIdx].ID, "win"
+	}
+	return true, "", "draw"
 }
 
 func matchPlayerIDs(m *Match) []string {
@@ -2317,7 +2308,7 @@ func (e *Engine) scheduleTurnTimerIn(m *Match, d time.Duration) {
 	turnAtArm := m.turnIdx
 	genAtArm := m.turnGen
 	m.timer = time.AfterFunc(d, func() {
-		e.onTimeout(matchID, turnAtArm, genAtArm)
+		utils.SafeCall(e.logger, func() { e.onTimeout(matchID, turnAtArm, genAtArm) })
 	})
 }
 
@@ -2389,14 +2380,7 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 	if handler, ok := m.logic.(logic.TurnSkipHandler); ok {
 		handler.OnTurnSkipped(m.state, timedOut)
 	}
-	if over, winnerIdx := m.logic.Result(m.state); over {
-		winnerID := ""
-		reason := "win"
-		if winnerIdx >= 0 && winnerIdx < len(m.players) {
-			winnerID = m.players[winnerIdx].ID
-		} else {
-			reason = "draw"
-		}
+	if over, winnerID, reason := e.matchResult(m, m.logic); over {
 		e.finishMatch(m, winnerID, reason)
 		return
 	}
@@ -2469,14 +2453,7 @@ func (e *Engine) applyTimeoutMove(m *Match, mover logic.TimeoutMover, playerIdx 
 	previousPausedRemain := m.pausedRemain
 	m.state = state
 
-	if over, winnerIdx := m.logic.Result(m.state); over {
-		winnerID := ""
-		reason := "win"
-		if winnerIdx >= 0 {
-			winnerID = m.players[winnerIdx].ID
-		} else {
-			reason = "draw"
-		}
+	if over, winnerID, reason := e.matchResult(m, m.logic); over {
 		e.clearTimeoutMove(m)
 		e.finishMatch(m, winnerID, reason)
 		return timeoutMovePlayed
@@ -3150,8 +3127,9 @@ func (e *Engine) restoreTimersLocked(m *Match) {
 		m.graceDeadline = time.Now().Add(time.Duration(e.graceSeconds) * time.Second)
 	}
 	gen := m.graceGen
+	matchID := m.ID
 	m.graceTimer = time.AfterFunc(time.Until(m.graceDeadline), func() {
-		e.onGraceExpire(m.ID, gen)
+		utils.SafeCall(e.logger, func() { e.onGraceExpire(matchID, gen) })
 	})
 }
 
