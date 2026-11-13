@@ -11,6 +11,7 @@ import type {
   ChatBotPromptMessage,
   ChatBotType,
 } from '../types/client/chatBot.type';
+import { HTTP_STATUS } from '../constants/http';
 
 export const CHAT_BOT_PATH = '/chat-bot';
 export const CHAT_BOT_HISTORY_TURNS = 40;
@@ -104,8 +105,14 @@ export function parseChatBotFrames(buffer: string): ParsedChatBotFrames {
 export function chatBotErrorForStatus(status: number, code?: string): ChatBotErrorCode {
   if (code === CHAT_BOT_API_ERROR_CODE.disabled) return 'disabled';
   if (code === CHAT_BOT_API_ERROR_CODE.dailyLimit) return 'dailyLimit';
-  if (status === 401 || status === 403 || status === 423) return 'auth';
-  if (status === 429) return 'rateLimited';
+  if (
+    status === HTTP_STATUS.unauthorized ||
+    status === HTTP_STATUS.forbidden ||
+    status === HTTP_STATUS.locked
+  ) {
+    return 'auth';
+  }
+  if (status === HTTP_STATUS.tooManyRequests) return 'rateLimited';
   return 'upstream';
 }
 

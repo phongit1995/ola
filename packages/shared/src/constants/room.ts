@@ -1,4 +1,5 @@
 import type { RoomFilters } from '../types/api/room.type';
+import type { RoomChatStatus } from '../types/client/roomChat.type';
 
 export const DEFAULT_ROOM_FILTERS: RoomFilters = {
   showAll: true,
@@ -16,3 +17,10 @@ export const ROOM_ERROR_CODE = {
   vipRequired: 'ROOM_VIP_REQUIRED',
 } as const;
 export const ROOM_MESSAGE_GROUP_GAP_MS = 5 * 60 * 1_000;
+
+export const ROOM_CHAT_STATUS = {
+  connecting: 'connecting',
+  joined: 'joined',
+  error: 'error',
+  vipRequired: 'vipRequired',
+} as const satisfies Record<string, RoomChatStatus>;

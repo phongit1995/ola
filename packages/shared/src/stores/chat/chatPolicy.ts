@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import { CHAT_POLICY_ERROR_CODES } from '../../constants/chat';
 import { toApiError } from '../../lib/apiError';
 import { toast } from '../../lib/toast';
+import { HTTP_STATUS } from '../../constants/http';
 
 export function showMessageDeleteError(error: unknown): void {
   const expired =
@@ -29,7 +30,7 @@ export function showMessagingPolicyError(error: unknown): boolean {
 
 export function showDirectMessagingError(error: unknown): boolean {
   if (showMessagingPolicyError(error)) return true;
-  if (toApiError(error).status === 403) {
+  if (toApiError(error).status === HTTP_STATUS.forbidden) {
     toast.error(i18n.t('chat.sendErrFriendsOnly'));
     return true;
   }

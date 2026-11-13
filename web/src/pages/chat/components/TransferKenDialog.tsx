@@ -7,6 +7,7 @@ import type { UserSearchResult } from '@app-types';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import { KEN_TRANSFER_MAX, KEN_TRANSFER_MIN } from '../constants';
+import { HTTP_STATUS } from '@constants';
 
 interface TransferKenReceiver {
   id: string;
@@ -127,9 +128,9 @@ export function TransferKenDialog({
       const apiError = toApiError(error);
       if (apiError.status === 0) {
         toast.error(t('chat.transferKenError'));
-      } else if (apiError.status === 401) {
+      } else if (apiError.status === HTTP_STATUS.unauthorized) {
         toast.error(t('chat.transferKenErrPassword'));
-      } else if (apiError.status === 403) {
+      } else if (apiError.status === HTTP_STATUS.forbidden) {
         toast.error(t('chat.transferKenErrBlocked'));
       } else {
         toast.error(apiError.message);

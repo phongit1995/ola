@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
-import { MESSAGE_TYPE, REPORT_TARGET_TYPE } from '@constants';
+import { MESSAGE_TYPE, REPORT_TARGET_TYPE, ROOM_CHAT_STATUS } from '@constants';
 import {
   BUBBLE_WALLPAPER,
   buildRoomFeed,
@@ -247,9 +247,11 @@ export function RoomMessagesTab({
     >
       <RoomReactionNotice />
       <RoomReactionBalloons />
-      {status !== 'joined' && (
+      {status !== ROOM_CHAT_STATUS.joined && (
         <div className="bg-black/5 py-1.5 text-center text-sm text-black/54">
-          {status === 'connecting' ? t('room.connecting') : t('room.joinError')}
+          {status === ROOM_CHAT_STATUS.connecting
+            ? t('room.connecting')
+            : t('room.joinError')}
         </div>
       )}
 
@@ -317,7 +319,7 @@ export function RoomMessagesTab({
 
       <RoomComposerBar
         ref={composerRef}
-        disabled={status !== 'joined'}
+        disabled={status !== ROOM_CHAT_STATUS.joined}
         onBeforeSend={pin}
         onSendText={onSend}
         onSendImage={onSendImage}

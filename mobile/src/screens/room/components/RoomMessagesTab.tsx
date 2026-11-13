@@ -27,7 +27,7 @@ import {
   createDateSeparatorFormatter,
   filterVisibleRoomMessages,
 } from '@ola/shared/lib';
-import { REPORT_TARGET_TYPE } from '@ola/shared/constants';
+import { REPORT_TARGET_TYPE, ROOM_CHAT_STATUS } from '@ola/shared/constants';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import {
   RoomBlockLimitError,
@@ -159,7 +159,7 @@ export function RoomMessagesTab({
   const wasStuckBeforeBackgroundRef = useRef(true);
   const [foregroundEpoch, setForegroundEpoch] = useState(0);
 
-  const canSend = status === 'joined';
+  const canSend = status === ROOM_CHAT_STATUS.joined;
   const dateFormatter = useMemo(
     () => createDateSeparatorFormatter(language),
     [language],
@@ -406,10 +406,10 @@ export function RoomMessagesTab({
       <ChatWallpaper />
       <RoomReactionNotice />
       <RoomReactionBalloons />
-      {status !== 'joined' && (
+      {status !== ROOM_CHAT_STATUS.joined && (
         <View className="bg-black/5 py-1.5">
           <Text className="text-center text-sm text-ola-ink-soft">
-            {status === 'connecting'
+            {status === ROOM_CHAT_STATUS.connecting
               ? t('room.connecting')
               : t('room.joinError')}
           </Text>

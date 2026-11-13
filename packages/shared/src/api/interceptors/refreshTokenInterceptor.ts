@@ -13,6 +13,7 @@ import {
   setRefreshHttpInstance,
   setUnauthorizedHandler,
 } from './refreshToken.state';
+import { HTTP_STATUS } from '../../constants/http';
 
 export function setOnUnauthorized(handler: (() => void) | null): void {
   setUnauthorizedHandler(handler);
@@ -58,7 +59,7 @@ export function handleAuthExpired(): void {
 }
 
 function isAuthRejection(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 401;
+  return error instanceof ApiError && error.status === HTTP_STATUS.unauthorized;
 }
 
 export async function ensureFreshToken(): Promise<string> {
@@ -91,7 +92,7 @@ export function registerRefreshTokenInterceptor(http: AxiosInstance): void {
       const status = error.response?.status;
 
       const canRefresh =
-        status === 401 &&
+        status === HTTP_STATUS.unauthorized &&
         config != null &&
         !config.retried &&
         !config.skipAuthRefresh &&
@@ -99,7 +100,7 @@ export function registerRefreshTokenInterceptor(http: AxiosInstance): void {
 
       if (!canRefresh || config == null) {
         const sessionDead =
-          status === 401 &&
+          status === HTTP_STATUS.unauthorized &&
           config != null &&
           !config.skipAuth &&
           !config.skipAuthRefresh &&

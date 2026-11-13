@@ -4,6 +4,7 @@ import { Dialog, VipIcon } from '@components';
 import { ApiError, vipName } from '@lib';
 import { VipService } from '@services';
 import type { VipIconInstance } from '@app-types';
+import { HTTP_STATUS } from '@constants';
 
 interface PeerVipStoreDialogProps {
   userId: string;
@@ -38,7 +39,9 @@ export function PeerVipStoreDialog({
       .catch((err) => {
         if (!active) return;
         setState(
-          err instanceof ApiError && err.status === 403 ? 'private' : 'error'
+          err instanceof ApiError && err.status === HTTP_STATUS.forbidden
+            ? 'private'
+            : 'error'
         );
       });
     return () => {

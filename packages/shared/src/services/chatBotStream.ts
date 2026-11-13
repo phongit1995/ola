@@ -9,6 +9,7 @@ import {
   parseChatBotFrames,
 } from './chatBot.service';
 import { ChatBotStreamError, type ChatBotStreamResponse, type ChatBotTransport } from './chatBotTransport';
+import { HTTP_STATUS } from '../constants/http';
 
 export * from './chatBotTransport';
 
@@ -29,7 +30,7 @@ async function openStream(
     buildChatBotRequest(messages, bot, language, accessToken),
     signal
   );
-  if (response == null || response.status !== 401) return response;
+  if (response == null || response.status !== HTTP_STATUS.unauthorized) return response;
 
   let refreshed: string;
   try {

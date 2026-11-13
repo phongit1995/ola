@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthService } from '@ola/shared/services';
 import { ApiError, resolveAuthError, toast, USERNAME_MAX, USERNAME_PATTERN } from '@ola/shared/lib';
-import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
+import { PASSWORD_MAX, PASSWORD_MIN, HTTP_STATUS } from '@ola/shared/constants';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { TextField } from '@components/form/TextField';
 import type { AuthStackParamList } from '@navigation/types';
@@ -57,7 +57,7 @@ export function RegisterScreen({ navigation }: Props) {
       setSuccess(true);
       setTimeout(() => navigation.navigate(AUTH_ROUTES.Login), 800);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
+      if (err instanceof ApiError && err.status === HTTP_STATUS.conflict) {
         const message = t('register.errUsernameTaken');
         setError('username', { message });
         setSubmitError(message);

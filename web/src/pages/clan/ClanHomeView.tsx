@@ -26,6 +26,7 @@ import { CLAN_ROLE_ICONS } from './constants';
 import addIcon from '@/assets/icons/clan/ic_action_add.png';
 import memberIcon from '@/assets/icons/clan/ic_clan_member.png';
 import visitIcon from '@/assets/icons/clan/ic_clan_visit.png';
+import { CLAN_ROLE } from '@constants';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -280,7 +281,7 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
               <ClanList
                 clans={myClans}
                 subtitle={(clan) =>
-                  `${clanRoleLabel(clan.myRole ?? 'member')} · ${t(
+                  `${clanRoleLabel(clan.myRole ?? CLAN_ROLE.member)} · ${t(
                     'clan.membersCount',
                     { count: clan.memberCount }
                   )}`

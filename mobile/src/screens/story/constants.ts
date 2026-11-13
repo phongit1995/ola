@@ -131,5 +131,3 @@ export const READER_FONTS: Record<
 };
 
 export const ROW_SEPARATOR = 'rgba(0,0,0,0.06)';
-
-export const RATE_LIMITED_STATUS = 429;

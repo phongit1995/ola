@@ -20,9 +20,7 @@ import type {
 } from '../types/client/wordChain.type';
 import { toApiError } from './apiError';
 import { messageDayKey } from './messageGroups';
-
-const HTTP_CONFLICT = 409;
-const HTTP_TOO_MANY_REQUESTS = 429;
+import { HTTP_STATUS } from '../constants/http';
 
 const REPLYING_TYPES = new Set<WordChainMessageType>([
   WORD_CHAIN_MESSAGE_TYPE.win,
@@ -169,8 +167,8 @@ export function wordChainMoveErrorText(t: TFunction, error: unknown): string {
   const apiError = toApiError(error);
   const common = wordChainCommonErrorText(t, apiError.code);
   if (common != null) return common;
-  if (apiError.status === HTTP_CONFLICT) return t('wordChain.busy');
-  if (apiError.status === HTTP_TOO_MANY_REQUESTS) return t('wordChain.tooFast');
+  if (apiError.status === HTTP_STATUS.conflict) return t('wordChain.busy');
+  if (apiError.status === HTTP_STATUS.tooManyRequests) return t('wordChain.tooFast');
   return t('wordChain.sendError');
 }
 
@@ -180,8 +178,8 @@ export function wordChainHintErrorText(t: TFunction, error: unknown): string {
   if (apiError.code === WORD_CHAIN_ERROR_CODE.noHint) return t('wordChain.hintNone');
   const common = wordChainCommonErrorText(t, apiError.code);
   if (common != null) return common;
-  if (apiError.status === HTTP_CONFLICT) return t('wordChain.busy');
-  if (apiError.status === HTTP_TOO_MANY_REQUESTS) return t('wordChain.tooFast');
+  if (apiError.status === HTTP_STATUS.conflict) return t('wordChain.busy');
+  if (apiError.status === HTTP_STATUS.tooManyRequests) return t('wordChain.tooFast');
   return t('wordChain.hintError');
 }
 
@@ -192,8 +190,8 @@ export function wordChainGuessErrorText(t: TFunction, error: unknown): string {
   if (apiError.code === WORD_CHAIN_ERROR_CODE.priceChanged) return t('wordChain.guessPriceChanged');
   const common = wordChainCommonErrorText(t, apiError.code);
   if (common != null) return common;
-  if (apiError.status === HTTP_CONFLICT) return t('wordChain.busy');
-  if (apiError.status === HTTP_TOO_MANY_REQUESTS) return t('wordChain.tooFast');
+  if (apiError.status === HTTP_STATUS.conflict) return t('wordChain.busy');
+  if (apiError.status === HTTP_STATUS.tooManyRequests) return t('wordChain.tooFast');
   return t('wordChain.guessBuyError');
 }
 

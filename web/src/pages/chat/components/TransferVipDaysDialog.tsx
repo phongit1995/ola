@@ -6,6 +6,7 @@ import { VipService } from '@services';
 import type { VipPackageItem } from '@app-types';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import vipIcon from '@/assets/icons/apps/vip.png';
+import { HTTP_STATUS } from '@constants';
 
 interface TransferVipDaysReceiver {
   id: string;
@@ -114,9 +115,9 @@ export function TransferVipDaysDialog({
       const apiError = toApiError(error);
       if (apiError.status === 0) {
         toast.error(t('chat.transferVipDaysError'));
-      } else if (apiError.status === 401) {
+      } else if (apiError.status === HTTP_STATUS.unauthorized) {
         toast.error(t('chat.transferVipDaysErrWrongPassword'));
-      } else if (apiError.status === 403) {
+      } else if (apiError.status === HTTP_STATUS.forbidden) {
         toast.error(t('chat.transferKenErrBlocked'));
       } else {
         toast.error(apiError.message);

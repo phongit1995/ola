@@ -5,6 +5,7 @@ import {
   ROOM_JOIN_ACK_TIMEOUT_MS,
   ROOM_MESSAGE_CACHE_LIMIT,
   ROOM_MESSAGE_PAGE_SIZE,
+  ROOM_CHAT_STATUS,
 } from '../../constants/room';
 import { ROOM_SOCKET_EVENTS } from '../../constants/socket';
 import { RoomService } from '../../services/room.service';
@@ -23,7 +24,9 @@ import {
 } from './roomChatState';
 
 function joinErrorStatus(error: unknown): RoomChatStatus {
-  return toApiError(error).code === ROOM_ERROR_CODE.vipRequired ? 'vipRequired' : 'error';
+  return toApiError(error).code === ROOM_ERROR_CODE.vipRequired
+    ? ROOM_CHAT_STATUS.vipRequired
+    : ROOM_CHAT_STATUS.error;
 }
 
 export function createRoomLifecycleActions(
@@ -42,7 +45,7 @@ export function createRoomLifecycleActions(
     );
     if (get().activeRoom?.id !== roomId) return;
     if (!ack?.ok) {
-      set({ status: 'error' });
+      set({ status: ROOM_CHAT_STATUS.error });
       return;
     }
 
@@ -58,7 +61,7 @@ export function createRoomLifecycleActions(
         state.pinnedToBottom
       );
       return {
-        status: 'joined',
+        status: ROOM_CHAT_STATUS.joined,
         ...patch,
         members: withVipTypeId(membersResult.items),
         memberCount: membersResult.total,

@@ -6,6 +6,7 @@ import { toast } from '../../lib/toast';
 import { MeService } from '../../services/me.service';
 import type { PostAuthor, PostComment } from '../../types/api/me.type';
 import { selfLiker } from './selfLiker';
+import { HTTP_STATUS } from '../../constants/http';
 
 function selfCommentLiker(): PostAuthor | undefined {
   const self = selfLiker();
@@ -73,7 +74,7 @@ export function useMeComments(
         toast.success(i18n.t('me.commentSent'));
         return true;
       } catch (err) {
-        if (toApiError(err).status === 403) {
+        if (toApiError(err).status === HTTP_STATUS.forbidden) {
           toast.error(i18n.t('me.commentErrFriendsOnly'));
           return false;
         }

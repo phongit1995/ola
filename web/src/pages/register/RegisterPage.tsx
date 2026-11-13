@@ -8,6 +8,7 @@ import {
   PASSWORD_MAX,
   PASSWORD_MIN,
   ROUTES,
+  HTTP_STATUS,
 } from '@constants';
 import { trackEvent } from '@config';
 import olaLogo from '@/assets/images/ola-logo.png';
@@ -67,7 +68,7 @@ export function RegisterPage() {
       toast.success(t('register.success'));
       navigate(ROUTES.login);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
+      if (err instanceof ApiError && err.status === HTTP_STATUS.conflict) {
         const message = t('register.errUsernameTaken');
         setError('username', { message });
         setSubmitError(message);

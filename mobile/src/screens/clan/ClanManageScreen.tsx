@@ -30,7 +30,7 @@ interface ClanManageScreenProps {
   onOpenBans: (clanId: string) => void;
 }
 
-type RoleKind = 'deputy' | 'ambassador';
+type RoleKind = typeof CLAN_ROLE.deputy | typeof CLAN_ROLE.ambassador;
 type VerifyKind = 'verify' | 'unverify';
 
 function ManageRow({
@@ -110,7 +110,9 @@ export function ClanManageScreen({
 
   function openRoleDialog(role: RoleKind) {
     if (clan == null) return;
-    setRoleNick((role === 'deputy' ? clan.deputy?.username : clan.ambassador?.username) ?? '');
+    setRoleNick(
+      (role === CLAN_ROLE.deputy ? clan.deputy?.username : clan.ambassador?.username) ?? '',
+    );
     setRoleDialog(role);
   }
 
@@ -118,7 +120,7 @@ export function ClanManageScreen({
     if (clan == null || roleDialog == null || busy) return;
     const nick = roleNick.trim().replace(/^@/, '');
     const currentHolder =
-      roleDialog === 'deputy' ? clan.deputy?.username : clan.ambassador?.username;
+      roleDialog === CLAN_ROLE.deputy ? clan.deputy?.username : clan.ambassador?.username;
     if (nick === '') {
       setRoleDialog(null);
       if (currentHolder != null && currentHolder !== '') {
@@ -231,7 +233,7 @@ export function ClanManageScreen({
               value={clan.deputy?.username ?? ''}
               emptyText={t('clan.none')}
               editable
-              onEdit={() => openRoleDialog('deputy')}
+              onEdit={() => openRoleDialog(CLAN_ROLE.deputy)}
             />
             {divider}
             <ManageRow
@@ -239,7 +241,7 @@ export function ClanManageScreen({
               value={clan.ambassador?.username ?? ''}
               emptyText={t('clan.none')}
               editable
-              onEdit={() => openRoleDialog('ambassador')}
+              onEdit={() => openRoleDialog(CLAN_ROLE.ambassador)}
             />
             {divider}
             <ManageRow
@@ -326,7 +328,7 @@ export function ClanManageScreen({
       <Dialog
         visible={roleDialog != null}
         onClose={() => setRoleDialog(null)}
-        title={roleDialog === 'deputy' ? t('clan.roleDeputy') : t('clan.roleAmbassador')}
+        title={roleDialog === CLAN_ROLE.deputy ? t('clan.roleDeputy') : t('clan.roleAmbassador')}
         footer={
           <>
             <DialogButton variant="green" onPress={() => void submitRole()} disabled={busy}>

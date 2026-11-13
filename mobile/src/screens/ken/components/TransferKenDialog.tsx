@@ -15,6 +15,7 @@ import { UserSearchPicker } from '@components/user/UserSearchPicker';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
+import { HTTP_STATUS } from '@ola/shared/constants';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
 
@@ -112,9 +113,9 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
       const apiError = toApiError(error);
       if (apiError.status === 0) {
         push('error', t('chat.transferKenError'));
-      } else if (apiError.status === 401) {
+      } else if (apiError.status === HTTP_STATUS.unauthorized) {
         push('error', t('chat.transferKenErrPassword'));
-      } else if (apiError.status === 403) {
+      } else if (apiError.status === HTTP_STATUS.forbidden) {
         push('error', t('chat.transferKenErrBlocked'));
       } else {
         push('error', apiError.message);

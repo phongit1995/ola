@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, Spinner, UserRow, VipIcon } from '@components';
-import { VIP_TRANSFER_BLOCKED_ERROR } from '@constants';
+import { VIP_TRANSFER_BLOCKED_ERROR, HTTP_STATUS } from '@constants';
 import { isVipIconTransferable, toApiError, toast, vipName } from '@lib';
 import { VipService } from '@services';
 import type { VipIconInstance } from '@app-types';
@@ -99,11 +99,11 @@ export function TradingVipDialog({
       onClose();
     } catch (error) {
       const apiError = toApiError(error);
-      if (apiError.status === 401) {
+      if (apiError.status === HTTP_STATUS.unauthorized) {
         toast.error(t('chat.tradingVipErrWrongPassword'));
       } else if (apiError.message === VIP_TRANSFER_BLOCKED_ERROR) {
         toast.error(t('chat.tradingVipErrBlocked'));
-      } else if (apiError.status === 403) {
+      } else if (apiError.status === HTTP_STATUS.forbidden) {
         toast.error(t('chat.tradingVipErrNotAllowed'));
       } else if (apiError.status === 0) {
         toast.error(t('chat.tradingVipError'));

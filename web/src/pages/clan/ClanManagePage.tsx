@@ -14,6 +14,7 @@ import { clanErrorText, clanPolicyLabel, toast } from '@lib';
 import { ClanService } from '@services';
 import type { Clan, ClanPolicy } from '@app-types';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
+import { CLAN_ROLE } from '@constants';
 
 interface ClanManagePageProps {
   clanId: string;
@@ -22,7 +23,7 @@ interface ClanManagePageProps {
   onOpenBans: (clanId: string) => void;
 }
 
-type RoleKind = 'deputy' | 'ambassador';
+type RoleKind = typeof CLAN_ROLE.deputy | typeof CLAN_ROLE.ambassador;
 type VerifyKind = 'verify' | 'unverify';
 
 interface ManageRowProps {
@@ -120,8 +121,9 @@ export function ClanManagePage({
   function openRoleDialog(role: RoleKind) {
     if (clan == null) return;
     setRoleNick(
-      (role === 'deputy' ? clan.deputy?.username : clan.ambassador?.username) ??
-        ''
+      (role === CLAN_ROLE.deputy
+        ? clan.deputy?.username
+        : clan.ambassador?.username) ?? ''
     );
     setRoleDialog(role);
   }
@@ -130,7 +132,7 @@ export function ClanManagePage({
     if (clan == null || roleDialog == null || busy) return;
     const nick = roleNick.trim().replace(/^@/, '');
     const currentHolder =
-      roleDialog === 'deputy'
+      roleDialog === CLAN_ROLE.deputy
         ? clan.deputy?.username
         : clan.ambassador?.username;
     if (nick === '') {
@@ -255,7 +257,7 @@ export function ClanManagePage({
               value={clan.deputy?.username ?? ''}
               emptyText={t('clan.none')}
               editable
-              onEdit={() => openRoleDialog('deputy')}
+              onEdit={() => openRoleDialog(CLAN_ROLE.deputy)}
             />
             <div className="h-px bg-black/12" />
             <ManageRow
@@ -263,7 +265,7 @@ export function ClanManagePage({
               value={clan.ambassador?.username ?? ''}
               emptyText={t('clan.none')}
               editable
-              onEdit={() => openRoleDialog('ambassador')}
+              onEdit={() => openRoleDialog(CLAN_ROLE.ambassador)}
             />
             <div className="h-px bg-black/12" />
             <ManageRow
@@ -353,7 +355,7 @@ export function ClanManagePage({
         open={roleDialog != null}
         onClose={() => setRoleDialog(null)}
         title={
-          roleDialog === 'deputy'
+          roleDialog === CLAN_ROLE.deputy
             ? t('clan.roleDeputy')
             : t('clan.roleAmbassador')
         }
@@ -387,7 +389,7 @@ export function ClanManagePage({
         message={
           revokeRole == null
             ? ''
-            : revokeRole.role === 'deputy'
+            : revokeRole.role === CLAN_ROLE.deputy
             ? t('clan.revokeConfirmDeputy', { username: revokeRole.username })
             : t('clan.revokeConfirmAmbassador', {
                 username: revokeRole.username,

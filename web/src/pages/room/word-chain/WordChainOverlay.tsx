@@ -3,6 +3,7 @@ import { useWordChainStore } from '@ola/shared/stores/word-chain/wordChainStore'
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { RoomJoiningOverlay } from '../components/RoomJoiningOverlay';
 import { WordChainView } from './components/WordChainView';
+import { ROOM_CHAT_STATUS } from '@constants';
 
 export function WordChainOverlay({ visible }: { visible: boolean }) {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export function WordChainOverlay({ visible }: { visible: boolean }) {
 
   return (
     <div className={shown ? '' : 'hidden'}>
-      {status === 'joined' ? (
+      {status === ROOM_CHAT_STATUS.joined ? (
         <WordChainView visible={shown} onClose={close} />
       ) : (
         <RoomJoiningOverlay

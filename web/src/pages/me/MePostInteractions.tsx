@@ -19,6 +19,7 @@ import { MeLikersDialog } from './components/MeLikersDialog';
 import { UserProfileView } from '../profile/UserProfileView';
 import { EDIT_WINDOW_MS } from './constants';
 import type { MePost } from './types';
+import { HTTP_STATUS } from '@constants';
 
 export interface MePostSource {
   posts: MePost[];
@@ -252,7 +253,7 @@ export function MePostInteractions({
         toast.success(t('me.commentSent'));
         return true;
       } catch (err) {
-        if (toApiError(err).status === 403) {
+        if (toApiError(err).status === HTTP_STATUS.forbidden) {
           toast.error(t('me.commentErrFriendsOnly'));
           return false;
         }

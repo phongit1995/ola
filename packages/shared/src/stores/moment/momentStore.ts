@@ -16,6 +16,7 @@ import { MomentService, type CreateMomentsInput } from '../../services/moment.se
 import type { ReactionType } from '../../types/api/chat.type';
 import type { Moment, MomentMyComment, MomentTrayGroup } from '../../types/api/moment.type';
 import { registerOnLogout, useAuthStore } from '../auth/authStore';
+import { HTTP_STATUS } from '../../constants/http';
 
 type Timer = ReturnType<typeof setTimeout>;
 
@@ -52,8 +53,6 @@ interface MomentState {
   reset: () => void;
 }
 
-const SERVER_ERROR_STATUS = 500;
-const TOO_MANY_REQUESTS_STATUS = 429;
 const EARLIER_COMMENT: MomentMyComment = { id: '', content: '', createdAt: '' };
 
 function initialState() {
@@ -166,7 +165,9 @@ function stopPagingRetry() {
 
 function isRetryable(error: unknown): boolean {
   const status = toApiError(error).status;
-  return status === 0 || status === TOO_MANY_REQUESTS_STATUS || status >= SERVER_ERROR_STATUS;
+  return (
+    status === 0 || status === HTTP_STATUS.tooManyRequests || status >= HTTP_STATUS.serverError
+  );
 }
 
 function retryDelayMs(failures: number): number {

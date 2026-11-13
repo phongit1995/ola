@@ -9,6 +9,7 @@ import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { PEER_VIP_PAGE_SIZE } from '../constants';
+import { HTTP_STATUS } from '@ola/shared/constants';
 
 type LoadState = 'loading' | 'private' | 'error' | 'ready';
 
@@ -37,7 +38,9 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
       })
       .catch((err) => {
         if (!active) return;
-        setState(err instanceof ApiError && err.status === 403 ? 'private' : 'error');
+        setState(
+          err instanceof ApiError && err.status === HTTP_STATUS.forbidden ? 'private' : 'error',
+        );
       });
     return () => {
       active = false;

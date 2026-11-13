@@ -39,12 +39,13 @@ import {
   toWordChainState,
   withLatestPage,
 } from './wordChainHelpers';
+import { ROOM_CHAT_STATUS } from '../../constants/room';
 
 const initialWordChainState: WordChainStoreData = {
   opened: false,
   minimized: false,
   notify: false,
-  status: 'connecting',
+  status: ROOM_CHAT_STATUS.connecting,
   state: null,
   hintPrice: 0,
   guessPrice: 0,
@@ -160,7 +161,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     set((store) => {
       const sessionId = store.state?.sessionId;
       return {
-        status: 'joined',
+        status: ROOM_CHAT_STATUS.joined,
         hintPrice: overview.hintPrice,
         guessPrice: overview.guessPrice,
         guessPackSize: overview.guessPackSize,
@@ -183,10 +184,10 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
       }
       if (code === WORD_CHAIN_ERROR_CODE.vipToView) {
         SocketService.connect().emit(WORD_CHAIN_SOCKET_EVENTS.leave);
-        set({ status: 'vipRequired' });
+        set({ status: ROOM_CHAT_STATUS.vipRequired });
         return;
       }
-      set({ status: 'error' });
+      set({ status: ROOM_CHAT_STATUS.error });
     });
   }
 
@@ -199,7 +200,7 @@ function createWordChainSync(set: WordChainSet, get: WordChainGet) {
     } else if (code === WORD_CHAIN_ERROR_CODE.vipToView) {
       if (get().opened) {
         SocketService.connect().emit(WORD_CHAIN_SOCKET_EVENTS.leave);
-        set({ status: 'vipRequired' });
+        set({ status: ROOM_CHAT_STATUS.vipRequired });
       }
     } else if (
       (code === WORD_CHAIN_ERROR_CODE.wordChanged ||
@@ -457,10 +458,10 @@ export const useWordChainStore = create<WordChainStoreState>((set, get) => {
     refreshAccess: () => {
       const { opened, status, needsVipToPlay } = get();
       if (!opened) return;
-      if (status === 'vipRequired') {
-        set({ status: 'connecting' });
+      if (status === ROOM_CHAT_STATUS.vipRequired) {
+        set({ status: ROOM_CHAT_STATUS.connecting });
         sync.rejoin();
-      } else if (status === 'joined' && needsVipToPlay) {
+      } else if (status === ROOM_CHAT_STATUS.joined && needsVipToPlay) {
         void sync.refreshOverview().catch(() => undefined);
       }
     },

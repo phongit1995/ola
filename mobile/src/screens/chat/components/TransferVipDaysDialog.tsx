@@ -14,6 +14,7 @@ import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
+import { HTTP_STATUS } from '@ola/shared/constants';
 
 const vipIcon = require('@assets/icons/apps/vip.png');
 
@@ -91,9 +92,9 @@ export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVi
       const apiError = toApiError(error);
       if (apiError.status === 0) {
         push('error', t('chat.transferVipDaysError'));
-      } else if (apiError.status === 401) {
+      } else if (apiError.status === HTTP_STATUS.unauthorized) {
         push('error', t('chat.transferVipDaysErrWrongPassword'));
-      } else if (apiError.status === 403) {
+      } else if (apiError.status === HTTP_STATUS.forbidden) {
         push('error', t('chat.transferKenErrBlocked'));
       } else {
         push('error', apiError.message);
