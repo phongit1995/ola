@@ -458,20 +458,26 @@ func (r *Repository) ListAllShots(f AdminShotFilter, limit, offset int) ([]model
 	return items, total, err
 }
 
+var penStatusArgs = map[string]interface{}{
+	"settled":   string(models.PenStatusSettled),
+	"open":      string(models.PenStatusOpen),
+	"cancelled": string(models.PenStatusCancelled),
+}
+
 func (r *Repository) StatsOverview(f AdminShotFilter) (StatsOverview, error) {
 	var o StatsOverview
 	err := r.db.Model(&models.PenShot{}).Scopes(adminShotScope(f)).
 		Select(`count(*) as total_shots,
-			count(*) filter (where status = 'settled') as settled_shots,
-			count(*) filter (where status = 'open') as open_shots,
-			count(*) filter (where status = 'cancelled') as cancelled_shots,
+			count(*) filter (where status = @settled) as settled_shots,
+			count(*) filter (where status = @open) as open_shots,
+			count(*) filter (where status = @cancelled) as cancelled_shots,
 			count(distinct shooter_id) as unique_shooters,
 			count(distinct keeper_id) as unique_keepers,
-			coalesce(sum(pot) filter (where status = 'settled'),0) as total_volume,
-			coalesce(sum(commission) filter (where status = 'settled'),0) as house_take,
-			coalesce(sum(payout) filter (where status = 'settled'),0) as total_payout,
+			coalesce(sum(pot) filter (where status = @settled),0) as total_volume,
+			coalesce(sum(commission) filter (where status = @settled),0) as house_take,
+			coalesce(sum(payout) filter (where status = @settled),0) as total_payout,
 			count(*) filter (where result = 'saved') as saved_count,
-			count(*) filter (where result = 'goal') as goal_count`).
+			count(*) filter (where result = 'goal') as goal_count`, penStatusArgs).
 		Scan(&o).Error
 	return o, err
 }
@@ -506,9 +512,9 @@ func (r *Repository) StatsTimeseries(f AdminShotFilter, bucket string) ([]StatsT
 	err := r.db.Model(&models.PenShot{}).Scopes(adminShotScope(f)).
 		Select(fmt.Sprintf(`to_char(date_trunc('%s', created_at), '%s') as date,
 			count(*) as shots,
-			count(*) filter (where status = 'settled') as settled,
-			coalesce(sum(pot) filter (where status = 'settled'),0) as volume,
-			coalesce(sum(commission) filter (where status = 'settled'),0) as house_take`, trunc, format)).
+			count(*) filter (where status = @settled) as settled,
+			coalesce(sum(pot) filter (where status = @settled),0) as volume,
+			coalesce(sum(commission) filter (where status = @settled),0) as house_take`, trunc, format), penStatusArgs).
 		Group(fmt.Sprintf("date_trunc('%s', created_at)", trunc)).
 		Order(fmt.Sprintf("date_trunc('%s', created_at) ASC", trunc)).
 		Scan(&rows).Error
@@ -542,17 +548,18 @@ func (r *Repository) Leaderboard(from, to time.Time, limit int) ([]LeaderboardRo
 		SELECT shooter_id AS uid,
 			CASE WHEN winner_id = shooter_id THEN payout - bet_amount ELSE 0 END AS net
 		FROM pen_shots
-		WHERE status = 'settled' AND deleted_at IS NULL
+		WHERE status = ? AND deleted_at IS NULL
 			AND settled_at >= ?::timestamp AND settled_at < ?::timestamp
 		UNION ALL
 		SELECT keeper_id AS uid,
 			CASE WHEN winner_id = keeper_id THEN payout - bet_amount ELSE 0 END AS net
 		FROM pen_shots
-		WHERE status = 'settled' AND keeper_id IS NOT NULL AND deleted_at IS NULL
+		WHERE status = ? AND keeper_id IS NOT NULL AND deleted_at IS NULL
 			AND settled_at >= ?::timestamp AND settled_at < ?::timestamp`
 
+	settled := string(models.PenStatusSettled)
 	var rows []LeaderboardRow
-	err := r.db.Table("(?) as t", gorm.Expr(sub, fromStr, toStr, fromStr, toStr)).
+	err := r.db.Table("(?) as t", gorm.Expr(sub, settled, fromStr, toStr, settled, fromStr, toStr)).
 		Select(`t.uid as user_id, users.username, users.full_name, users.avatar, users.vip_used, users.vip_end_time,
 			coalesce(sum(t.net),0) as profit`).
 		Joins("JOIN users ON users.id = t.uid").

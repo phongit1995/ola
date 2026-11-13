@@ -32,7 +32,6 @@ type Service struct {
 	s3Service      *services.S3Service
 	cacheService   *services.CacheService
 	presence       *websocket.PresenceService
-	db             *gorm.DB
 	logger         *zap.SugaredLogger
 }
 
@@ -46,7 +45,6 @@ func NewService(
 	s3Service *services.S3Service,
 	cacheService *services.CacheService,
 	presence *websocket.PresenceService,
-	db *gorm.DB,
 	logger *zap.SugaredLogger,
 ) *Service {
 	return &Service{
@@ -59,7 +57,6 @@ func NewService(
 		s3Service:      s3Service,
 		cacheService:   cacheService,
 		presence:       presence,
-		db:             db,
 		logger:         logger.Named("[user_service]"),
 	}
 }

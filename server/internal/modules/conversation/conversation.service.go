@@ -28,7 +28,6 @@ type Service struct {
 	userSettingSvc *usersetting.Service
 	relRepo        *relationships.Repository
 	relSvc         BlockChecker
-	db             *gorm.DB
 	kafkaProducer  *kafka.Producer
 	presence       *websocket.PresenceService
 	logger         *zap.SugaredLogger
@@ -41,7 +40,6 @@ func NewService(
 	userSettingSvc *usersetting.Service,
 	relRepo *relationships.Repository,
 	relSvc *relationships.Service,
-	db *gorm.DB,
 	kafkaProducer *kafka.Producer,
 	presence *websocket.PresenceService,
 	logger *zap.SugaredLogger,
@@ -53,7 +51,6 @@ func NewService(
 		userSettingSvc: userSettingSvc,
 		relRepo:        relRepo,
 		relSvc:         relSvc,
-		db:             db,
 		kafkaProducer:  kafkaProducer,
 		presence:       presence,
 		logger:         logger.Named("[conversation_service]"),

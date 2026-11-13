@@ -28,7 +28,6 @@ import (
 	"github.com/gocql/gocql"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type Service struct {
@@ -40,7 +39,6 @@ type Service struct {
 	userSettingSvc *usersetting.Service
 	relRepo        *relationships.Repository
 	relSvc         conversation.BlockChecker
-	db             *gorm.DB
 	kafkaProducer  *kafka.Producer
 	s3             *services.S3Service
 	redis          *services.CacheService
@@ -48,7 +46,7 @@ type Service struct {
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, userSettingSvc *usersetting.Service, relRepo *relationships.Repository, relSvc *relationships.Service, db *gorm.DB, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, userSettingSvc *usersetting.Service, relRepo *relationships.Repository, relSvc *relationships.Service, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		cache:          cache,
@@ -58,7 +56,6 @@ func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Re
 		userSettingSvc: userSettingSvc,
 		relRepo:        relRepo,
 		relSvc:         relSvc,
-		db:             db,
 		kafkaProducer:  kafkaProducer,
 		s3:             s3,
 		redis:          redis,
