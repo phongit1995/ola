@@ -379,20 +379,20 @@ func (ctrl *Controller) UpdateProfile(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	var req UpdateProfileRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	req, err := utils.BindJSON[UpdateProfileRequest](c)
+	if err != nil {
 		ctrl.logger.Warnw("Invalid update profile request",
 			"user_id", userID,
 			"error", err.Error(),
 		)
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		return nil, err
 	}
 
 	ctrl.logger.Infow("Updating user profile",
 		"user_id", userID,
 	)
 
-	profile, err := ctrl.service.UpdateProfile(userID, &req)
+	profile, err := ctrl.service.UpdateProfile(userID, req)
 	if err != nil {
 		ctrl.logger.Errorw("Failed to update user profile",
 			"user_id", userID,

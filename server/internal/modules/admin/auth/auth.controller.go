@@ -35,12 +35,12 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Failure      403  {object}  utils.APIError
 // @Router       /admin/auth/login [post]
 func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
-	var req LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[LoginRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
-	resp, err := ctrl.service.Login(&req, c.ClientIP(), c.GetHeader("User-Agent"))
+	resp, err := ctrl.service.Login(req, c.ClientIP(), c.GetHeader("User-Agent"))
 	if err != nil {
 		return nil, ctrl.httpError(err)
 	}
@@ -59,9 +59,9 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /admin/auth/refresh [post]
 func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
-	var req RefreshTokenRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[RefreshTokenRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := ctrl.service.RefreshToken(req.RefreshToken, c.ClientIP(), c.GetHeader("User-Agent"))
@@ -116,12 +116,12 @@ func (ctrl *Controller) ChangePassword(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 	}
 
-	var req ChangePasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[ChangePasswordRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := ctrl.service.ChangePassword(adminID, &req); err != nil {
+	if err := ctrl.service.ChangePassword(adminID, req); err != nil {
 		return nil, ctrl.httpError(err)
 	}
 

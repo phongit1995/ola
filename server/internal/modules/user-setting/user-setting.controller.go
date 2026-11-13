@@ -1,8 +1,6 @@
 package usersetting
 
 import (
-	"net/http"
-
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -66,16 +64,16 @@ func (ctrl *Controller) UpdateSettings(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	var req UpdateSettingsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	req, err := utils.BindJSON[UpdateSettingsRequest](c)
+	if err != nil {
 		ctrl.logger.Warnw("Invalid update settings request",
 			"user_id", userID,
 			"error", err.Error(),
 		)
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		return nil, err
 	}
 
-	settings, err := ctrl.service.UpdateSettings(userID, &req)
+	settings, err := ctrl.service.UpdateSettings(userID, req)
 	if err != nil {
 		ctrl.logger.Errorw("Failed to update user settings",
 			"user_id", userID,

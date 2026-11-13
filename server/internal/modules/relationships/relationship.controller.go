@@ -40,13 +40,13 @@ func (ctrl *Controller) SendFriendRequest(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	var req SendFriendRequestRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	req, err := utils.BindJSON[SendFriendRequestRequest](c)
+	if err != nil {
 		ctrl.logger.Warnw("Invalid send friend request",
 			"user_id", userID,
 			"error", err.Error(),
 		)
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		return nil, err
 	}
 
 	addresseeID, err := uuid.Parse(req.UserID)

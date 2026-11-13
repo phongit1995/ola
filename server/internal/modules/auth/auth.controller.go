@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"net/http"
 	"ola-chat-server/internal/utils"
 	"strings"
 
@@ -33,13 +32,13 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Failure      409  {object}  utils.APIError
 // @Router       /auth/register [post]
 func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
-	var req RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	req, err := utils.BindJSON[RegisterRequest](c)
+	if err != nil {
 		ctrl.logger.Warnw("Invalid register request",
 			"error", err.Error(),
 			"ip", c.ClientIP(),
 		)
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		return nil, err
 	}
 
 	ctrl.logger.Infow("User registration attempt",
@@ -47,7 +46,7 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 		"ip", c.ClientIP(),
 	)
 
-	resp, err := ctrl.service.Register(&req, c.ClientIP())
+	resp, err := ctrl.service.Register(req, c.ClientIP())
 	if err != nil {
 		ctrl.logger.Infow("Registration failed",
 			"username", req.Username,
@@ -219,13 +218,13 @@ func (ctrl *Controller) ConfirmEmailVerify(c *gin.Context) (interface{}, error) 
 // @Failure      401  {object}  utils.APIError
 // @Router       /auth/login [post]
 func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
-	var req LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	req, err := utils.BindJSON[LoginRequest](c)
+	if err != nil {
 		ctrl.logger.Warnw("Invalid login request",
 			"error", err.Error(),
 			"ip", c.ClientIP(),
 		)
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+		return nil, err
 	}
 
 	ctrl.logger.Infow("User login attempt",
@@ -233,7 +232,7 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 		"ip", c.ClientIP(),
 	)
 
-	resp, err := ctrl.service.Login(&req, c.ClientIP(), c.GetHeader("User-Agent"))
+	resp, err := ctrl.service.Login(req, c.ClientIP(), c.GetHeader("User-Agent"))
 	if err != nil {
 		ctrl.logger.Infow("Login failed",
 			"username", req.Username,
