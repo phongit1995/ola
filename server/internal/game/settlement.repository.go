@@ -11,6 +11,11 @@ import (
 
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/game/engine"
+	"ola-chat-server/internal/game/games/caro"
+	"ola-chat-server/internal/game/games/thirteen"
+	"ola-chat-server/internal/game/games/tycoon"
+	wargod "ola-chat-server/internal/game/games/war-god"
+	"ola-chat-server/internal/game/games/xiangqi"
 	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/models"
@@ -65,11 +70,11 @@ func NewSettlementRepository(
 		users:  users,
 		logger: logger.Named("[game-settle]"),
 		commissionPercents: map[string]int{
-			"caro":     cfg.CaroCommissionPercent,
-			"war-god":  cfg.WarGodCommissionPercent,
-			"thirteen": cfg.ThirteenCommissionPercent,
-			"tycoon":   cfg.TycoonCommissionPercent,
-			"xiangqi":  cfg.XiangqiCommissionPercent,
+			caro.GameID:     cfg.CaroCommissionPercent,
+			wargod.GameID:   cfg.WarGodCommissionPercent,
+			thirteen.GameID: cfg.ThirteenCommissionPercent,
+			tycoon.GameID:   cfg.TycoonCommissionPercent,
+			xiangqi.GameID:  cfg.XiangqiCommissionPercent,
 		},
 	}
 }

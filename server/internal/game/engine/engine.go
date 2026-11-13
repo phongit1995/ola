@@ -5,6 +5,9 @@ import (
 	"sync"
 	"time"
 
+	"ola-chat-server/internal/game/games/thirteen"
+	"ola-chat-server/internal/game/games/tycoon"
+	wargod "ola-chat-server/internal/game/games/war-god"
 	"ola-chat-server/internal/game/logic"
 	"ola-chat-server/internal/game/protocol"
 
@@ -39,7 +42,7 @@ const (
 	reactionCooldown   = 800 * time.Millisecond
 )
 
-var playingRoomGames = map[string]bool{"war-god": true, "thirteen": true, "tycoon": true}
+var playingRoomGames = map[string]bool{wargod.GameID: true, thirteen.GameID: true, tycoon.GameID: true}
 
 type Engine struct {
 	// mu protects only the match registries. Match state is protected by Match.mu.

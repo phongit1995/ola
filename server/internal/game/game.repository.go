@@ -9,8 +9,11 @@ import (
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/game/engine"
+	"ola-chat-server/internal/game/games/caro"
 	"ola-chat-server/internal/game/games/thirteen"
 	"ola-chat-server/internal/game/games/tycoon"
+	wargod "ola-chat-server/internal/game/games/war-god"
+	"ola-chat-server/internal/game/games/xiangqi"
 	"ola-chat-server/internal/game/logic"
 	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/game/protocol"
@@ -246,7 +249,7 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 			keys:       leaderboardKeysWinLoss,
 		}
 	}
-	if gameID == "caro" || gameID == "war-god" || gameID == "xiangqi" {
+	if gameID == caro.GameID || gameID == wargod.GameID || gameID == xiangqi.GameID {
 		query := r.db.Table("game_matches").
 			Select(`results.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
 				COALESCE(SUM(results.ken), 0) AS ken,

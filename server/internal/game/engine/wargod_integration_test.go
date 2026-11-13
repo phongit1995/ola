@@ -328,8 +328,10 @@ func TestWarGodTimeoutSkipsTurnAndThirdConsecutiveTimeoutLoses(t *testing.T) {
 	if match == nil {
 		t.Fatal("war-god match was not created")
 	}
+	match.mu.Lock()
 	firstIdx := match.turnIdx
 	firstID := match.players[firstIdx].ID
+	match.mu.Unlock()
 
 	waitForCondition(t, 6*time.Second, "turn expiry did not emit STATE", func() bool {
 		return emitter.count(firstID, protocol.S2CState) > 0

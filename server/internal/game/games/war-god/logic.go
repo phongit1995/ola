@@ -3,6 +3,8 @@ package wargod
 import "ola-chat-server/internal/game/logic"
 
 const (
+	GameID = "war-god"
+
 	moveSwap = "swap"
 	moveUlt  = "ult"
 
@@ -69,7 +71,7 @@ func init() {
 	logic.Register(Logic{})
 }
 
-func (Logic) ID() string { return "war-god" }
+func (Logic) ID() string { return GameID }
 
 // The Phi Tiêu fields are additive and the first eight tile codes remain
 // unchanged, so version-2 active snapshots can continue under the new rules.
