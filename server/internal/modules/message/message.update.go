@@ -25,18 +25,15 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		return nil, fmt.Errorf("invalid message ID: %w", err)
 	}
 
-	// Get existing message
 	msg, err := s.repo.GetMessageByID(conversationID, messageID)
 	if err != nil {
 		return nil, fmt.Errorf("message not found: %w", err)
 	}
 
-	// Validate ownership
 	if msg.SenderID != userID {
 		return nil, fmt.Errorf("you can only update your own messages")
 	}
 
-	// Validate message is not deleted
 	if msg.DeletedAt != nil {
 		return nil, fmt.Errorf("cannot update deleted message")
 	}
@@ -45,7 +42,6 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		return nil, fmt.Errorf("cannot update gift message")
 	}
 
-	// Validate content
 	if newContent == "" {
 		return nil, fmt.Errorf("content cannot be empty")
 	}
@@ -65,7 +61,6 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		return nil, err
 	}
 
-	// Update message in ScyllaDB
 	if err := s.repo.UpdateMessage(conversationID, messageID, newContent); err != nil {
 		return nil, fmt.Errorf("failed to update message: %w", err)
 	}
@@ -77,12 +72,10 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		senderAvatar = u.Avatar
 	}
 
-	// Update inbox preview if this is the last message
 	utils.SafeGo(s.logger, func() {
 		s.updateInboxPreviewIfLastMessage(conversationID, messageID, newContent, members)
 	})
 
-	// Build response
 	now := time.Now()
 	response := &MessageResponse{
 		ID:             messageID.String(),
@@ -169,7 +162,6 @@ func (s *Service) DeleteMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		return fmt.Errorf("failed to delete message: %w", err)
 	}
 
-	// Update inbox preview if this is the last message
 	utils.SafeGo(s.logger, func() { s.updateInboxPreviewAfterDelete(conversationID, messageID, members) })
 
 	utils.SafeGo(s.logger, func() { s.invalidateCachesAfterDelete(conversationID, messageID) })

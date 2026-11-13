@@ -275,7 +275,6 @@ func matchKnownError(msg string, table map[string]bool) bool {
 	return false
 }
 
-// KnownHTTPStatusFromMessage maps registered service messages to HTTP statuses.
 func KnownHTTPStatusFromMessage(msg string) (int, bool) {
 	if matchKnownError(msg, errorsBadRequest) {
 		return http.StatusBadRequest, true

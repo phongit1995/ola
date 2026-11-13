@@ -168,30 +168,10 @@ func (r *Repository) CreateShot(shooterID uuid.UUID, side models.PenSide, bet in
 		before := u.Ken
 		after := before - bet
 		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN — mở lại sau.
-		// shootTx := models.KenTransaction{
-		// 	UserID:        shooterID,
-		// 	Direction:     models.KenDirectionDebit,
-		// 	Type:          models.KenTxTypePenShoot,
-		// 	Amount:        bet,
-		// 	BalanceBefore: before,
-		// 	BalanceAfter:  after,
-		// 	Description:   "PEN đặt cược",
-		// 	RefType:       penRefType,
-		// 	RefID:         &shot.ID,
-		// 	ActorType:     models.KenActorUser,
-		// 	ActorID:       &shooterID,
-		// }
-		// if err := tx.Create(&shootTx).Error; err != nil {
-		// 	return err
-		// }
-		// if err := tx.Model(&models.PenShot{}).Where("id = ?", shot.ID).Update("shoot_tx_id", shootTx.ID).Error; err != nil {
-		// 	return err
-		// }
 		if err := tx.Model(&models.User{}).Where("id = ?", shooterID).Update("ken", after).Error; err != nil {
 			return err
 		}
 
-		// shot.ShootTxID = &shootTx.ID
 		newKen = after
 		return nil
 	})
@@ -241,24 +221,6 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 			if dir == models.KenDirectionDebit {
 				after = u.Ken - amount
 			}
-			// ktx := models.KenTransaction{
-			// 	UserID:        u.ID,
-			// 	Direction:     dir,
-			// 	Type:          txType,
-			// 	Amount:        amount,
-			// 	BalanceBefore: u.Ken,
-			// 	BalanceAfter:  after,
-			// 	Description:   desc,
-			// 	RefType:       penRefType,
-			// 	RefID:         &s.ID,
-			// 	ActorType:     actor,
-			// }
-			// if actor == models.KenActorUser {
-			// 	ktx.ActorID = &u.ID
-			// }
-			// if err := tx.Create(&ktx).Error; err != nil {
-			// 	return err
-			// }
 			u.Ken = after
 			return nil
 		}
@@ -300,9 +262,7 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 			"pot":         pot,
 			"commission":  commission,
 			"payout":      payout,
-			// "catch_tx_id":  catchTx.ID,   // TODO(ken): mở lại khi bật ghi ken_transactions cho PEN
-			// "payout_tx_id": payoutTx.ID,
-			"settled_at": now,
+			"settled_at":  now,
 		}
 		if err := tx.Model(&models.PenShot{}).Where("id = ?", s.ID).Updates(updates).Error; err != nil {
 			return err
@@ -316,8 +276,6 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 		s.Pot = &pot
 		s.Commission = &commission
 		s.Payout = &payout
-		// s.CatchTxID = &catchTx.ID   // TODO(ken): mở lại khi bật ghi ken_transactions cho PEN
-		// s.PayoutTxID = &payoutTx.ID
 		s.SettledAt = &now
 
 		out = s
@@ -355,30 +313,13 @@ func (r *Repository) CancelShot(shooterID, shotID uuid.UUID) (*models.PenShot, i
 		before := u.Ken
 		after := before + s.BetAmount
 		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN — mở lại sau.
-		// refundTx := models.KenTransaction{
-		// 	UserID:        shooterID,
-		// 	Direction:     models.KenDirectionCredit,
-		// 	Type:          models.KenTxTypePenRefund,
-		// 	Amount:        s.BetAmount,
-		// 	BalanceBefore: before,
-		// 	BalanceAfter:  after,
-		// 	Description:   "PEN hoàn cược",
-		// 	RefType:       penRefType,
-		// 	RefID:         &s.ID,
-		// 	ActorType:     models.KenActorUser,
-		// 	ActorID:       &shooterID,
-		// }
-		// if err := tx.Create(&refundTx).Error; err != nil {
-		// 	return err
-		// }
 		if err := tx.Model(&models.User{}).Where("id = ?", shooterID).Update("ken", after).Error; err != nil {
 			return err
 		}
 
 		now := time.Now()
 		updates := map[string]interface{}{
-			"status": models.PenStatusCancelled,
-			// "refund_tx_id": refundTx.ID,   // TODO(ken): mở lại khi bật ghi ken_transactions cho PEN
+			"status":       models.PenStatusCancelled,
 			"cancelled_at": now,
 		}
 		if err := tx.Model(&models.PenShot{}).Where("id = ?", s.ID).Updates(updates).Error; err != nil {
@@ -386,7 +327,6 @@ func (r *Repository) CancelShot(shooterID, shotID uuid.UUID) (*models.PenShot, i
 		}
 
 		s.Status = models.PenStatusCancelled
-		// s.RefundTxID = &refundTx.ID   // TODO(ken): mở lại khi bật ghi ken_transactions cho PEN
 		s.CancelledAt = &now
 		out = s
 		newKen = after

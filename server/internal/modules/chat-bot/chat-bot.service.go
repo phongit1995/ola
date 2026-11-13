@@ -110,7 +110,6 @@ func (s *Service) Complete(ctx context.Context, req *CompletionRequest, admissio
 	}, prompt, nil
 }
 
-// Stream đẩy từng delta qua emit và trả về prompt + full text đã sinh.
 func (s *Service) Stream(ctx context.Context, req *CompletionRequest, admission *Admission, emit func(delta string) error) (string, string, error) {
 	prompt, err := buildPrompt(req, admission.persona)
 	if err != nil {

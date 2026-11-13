@@ -145,9 +145,7 @@ func (ctrl *Controller) GetOngoingCall(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// LiveKitWebhook receives LiveKit server callbacks (room_finished, participant_left, ...).
 // LiveKit signs the payload with API secret in `Authorization` header.
-// We verify the signature, then finalize the call when its room finishes.
 func (ctrl *Controller) LiveKitWebhook(c *gin.Context) (interface{}, error) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {

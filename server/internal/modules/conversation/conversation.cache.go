@@ -174,7 +174,6 @@ func (c *CacheService) InvalidateUserConversations(userIDs []uuid.UUID) error {
 	return nil
 }
 
-// GetHiddenConversations gets the set of hidden conversation IDs for a user from Redis
 func (c *CacheService) GetHiddenConversations(userID uuid.UUID) (map[string]bool, error) {
 	key := fmt.Sprintf(CacheKeyHiddenConversations, userID.String())
 	var hiddenMap map[string]bool
@@ -184,35 +183,29 @@ func (c *CacheService) GetHiddenConversations(userID uuid.UUID) (map[string]bool
 	return hiddenMap, nil
 }
 
-// SetHiddenConversations sets the set of hidden conversation IDs for a user in Redis
 func (c *CacheService) SetHiddenConversations(userID uuid.UUID, hiddenMap map[string]bool) error {
 	key := fmt.Sprintf(CacheKeyHiddenConversations, userID.String())
 	return c.cache.Set(key, hiddenMap, CacheTTLHiddenConversations*time.Second)
 }
 
-// AddHiddenConversation adds a conversation to the hidden set in Redis
 func (c *CacheService) AddHiddenConversation(userID, conversationID uuid.UUID) error {
 	hiddenMap, err := c.GetHiddenConversations(userID)
 	if err != nil {
-		// If cache miss, start with new map
 		hiddenMap = make(map[string]bool)
 	}
 	hiddenMap[conversationID.String()] = true
 	return c.SetHiddenConversations(userID, hiddenMap)
 }
 
-// RemoveHiddenConversation removes a conversation from the hidden set in Redis
 func (c *CacheService) RemoveHiddenConversation(userID, conversationID uuid.UUID) error {
 	hiddenMap, err := c.GetHiddenConversations(userID)
 	if err != nil {
-		// If cache miss, nothing to remove
 		return nil
 	}
 	delete(hiddenMap, conversationID.String())
 	return c.SetHiddenConversations(userID, hiddenMap)
 }
 
-// IsConversationHidden checks if a conversation is hidden (from Redis cache)
 func (c *CacheService) IsConversationHidden(userID, conversationID uuid.UUID) (bool, error) {
 	hiddenMap, err := c.GetHiddenConversations(userID)
 	if err != nil {
@@ -221,7 +214,6 @@ func (c *CacheService) IsConversationHidden(userID, conversationID uuid.UUID) (b
 	return hiddenMap[conversationID.String()], nil
 }
 
-// DeleteHiddenConversationsCache invalidates the hidden conversations cache for a user
 func (c *CacheService) DeleteHiddenConversationsCache(userID uuid.UUID) error {
 	key := fmt.Sprintf(CacheKeyHiddenConversations, userID.String())
 	return c.cache.Delete(key)

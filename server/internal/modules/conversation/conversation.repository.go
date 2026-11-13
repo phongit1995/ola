@@ -207,7 +207,6 @@ func (r *Repository) GetConversationByID(conversationID uuid.UUID) (*Conversatio
 		return nil, err
 	}
 
-	// Convert back to uuid.UUID
 	convID, _ := uuid.Parse(gocqlConv.ConversationID.String())
 	createdBy, _ := uuid.Parse(gocqlConv.CreatedBy.String())
 
@@ -250,7 +249,6 @@ func (r *Repository) GetMembers(conversationID uuid.UUID) ([]ConversationMember,
 	for iter.Scan(&gocqlMember.ConversationID, &gocqlMember.UserID, &gocqlMember.JoinedAt,
 		&gocqlMember.LeftAt, &gocqlMember.IsActive, &gocqlMember.Role) {
 
-		// Convert gocql.UUID to uuid.UUID
 		convID, _ := uuid.Parse(gocqlMember.ConversationID.String())
 		userID, _ := uuid.Parse(gocqlMember.UserID.String())
 
@@ -434,7 +432,6 @@ func (r *Repository) GetDirectConversationID(userA, userB uuid.UUID) (*uuid.UUID
 	var conversationID gocql.UUID
 	query := `SELECT conversation_id FROM direct_conversations_by_user_pair WHERE user_a = ? AND user_b = ?`
 
-	// Convert uuid.UUID to gocql.UUID for querying
 	gocqlUserA, _ := utils.ToGocqlUUID(userA)
 	gocqlUserB, _ := utils.ToGocqlUUID(userB)
 
@@ -446,7 +443,6 @@ func (r *Repository) GetDirectConversationID(userA, userB uuid.UUID) (*uuid.UUID
 		return nil, err
 	}
 
-	// Convert back to uuid.UUID
 	resultUUID, err := uuid.Parse(conversationID.String())
 	if err != nil {
 		return nil, err
@@ -507,7 +503,6 @@ func (r *Repository) AddConversationToBatch(batch *gocql.Batch, conv *Conversati
 	query := `INSERT INTO conversations (conversation_id, type, name, avatar, created_by, created_at, updated_at, participant_count)
 	          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
-	// Convert uuid.UUID to gocql.UUID
 	gocqlConvID, _ := utils.ToGocqlUUID(conv.ConversationID)
 	gocqlCreatedBy, _ := utils.ToGocqlUUID(conv.CreatedBy)
 
@@ -522,7 +517,6 @@ func (r *Repository) AddMemberToBatch(batch *gocql.Batch, member *ConversationMe
 	          (conversation_id, user_id, joined_at, is_active, role)
 	          VALUES (?, ?, ?, ?, ?)`
 
-	// Convert uuid.UUID to gocql.UUID
 	gocqlConvID, _ := utils.ToGocqlUUID(member.ConversationID)
 	gocqlUserID, _ := utils.ToGocqlUUID(member.UserID)
 
@@ -642,7 +636,6 @@ func (r *Repository) GetUserConversationByID(userID, conversationID uuid.UUID) (
 	return &conv, nil
 }
 
-// CheckIfHidden checks if a conversation is hidden by a user
 func (r *Repository) CheckIfHidden(userID, conversationID uuid.UUID) (bool, error) {
 	gocqlUserID, _ := utils.ToGocqlUUID(userID)
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
@@ -658,7 +651,6 @@ func (r *Repository) CheckIfHidden(userID, conversationID uuid.UUID) (bool, erro
 	return true, nil
 }
 
-// GetHiddenConversation retrieves hidden conversation data
 func (r *Repository) GetHiddenConversation(userID, conversationID uuid.UUID) (*HiddenConversation, error) {
 	gocqlUserID, _ := utils.ToGocqlUUID(userID)
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
@@ -722,7 +714,6 @@ func (r *Repository) SetMuted(userID, conversationID uuid.UUID, muted bool) (boo
 	return r.session.Query(query, muted, gocqlUserID, gocqlConvID).MapScanCAS(map[string]interface{}{})
 }
 
-// HideConversation moves a conversation from inbox to hidden
 func (r *Repository) HideConversation(userID, conversationID uuid.UUID) error {
 	batch := r.session.NewBatch(gocql.LoggedBatch)
 
