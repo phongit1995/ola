@@ -7,6 +7,7 @@ import {
   parseGiftMessageMetadata,
   parseMessageMetadata,
   withAlpha,
+  fitImageInBox,
 } from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
 import type { MessageMetadata } from '@ola/shared/lib';
@@ -38,18 +39,7 @@ function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
 const CHAT_IMAGE_MAX_WIDTH = 220;
 const CHAT_IMAGE_MAX_HEIGHT = 240;
 
-function fitChatImageSize(ratio: number | null) {
-  if (ratio == null || ratio <= 0) {
-    return { width: CHAT_IMAGE_MAX_WIDTH, height: CHAT_IMAGE_MAX_HEIGHT };
-  }
-  let width = CHAT_IMAGE_MAX_WIDTH;
-  let height = width / ratio;
-  if (height > CHAT_IMAGE_MAX_HEIGHT) {
-    height = CHAT_IMAGE_MAX_HEIGHT;
-    width = height * ratio;
-  }
-  return { width, height };
-}
+const CHAT_IMAGE_BOX = { width: CHAT_IMAGE_MAX_WIDTH, height: CHAT_IMAGE_MAX_HEIGHT };
 
 const sentIcon = require('@assets/icons/chat/ic_message_sent.png');
 const resendIcon = require('@assets/icons/chat/btn_resend_d.png');
@@ -277,7 +267,7 @@ export function ChatBubble({
           onSize={({ width, height }) => {
             if (height > 0) setImageRatio(width / height);
           }}
-          style={{ ...fitChatImageSize(imageRatio), borderRadius: 8 }}
+          style={{ ...fitImageInBox(imageRatio, CHAT_IMAGE_BOX, CHAT_IMAGE_BOX), borderRadius: 8 }}
           resizeMode="cover"
           showLoader
         />

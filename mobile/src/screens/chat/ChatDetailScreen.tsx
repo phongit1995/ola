@@ -6,7 +6,6 @@ import {
   Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -82,6 +81,8 @@ import { ReplyPreviewBar } from './components/ReplyPreviewBar';
 import { EditingNotice } from './components/EditingNotice';
 import type { PendingComposerImage } from '@components/chat/composerTypes';
 import { ChatTransferDialogs } from './components/ChatTransferDialogs';
+import { useTimedHighlight } from '@ola/shared/stores/useTimedHighlight';
+import { useAfterDismiss } from '@hooks/useAfterDismiss';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 
@@ -151,17 +152,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [voiceRecording, setVoiceRecording] = useState(false);
   const [pendingImages, setPendingImages] = useState<PendingComposerImage[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { highlightedId, highlight, clearHighlight } = useTimedHighlight();
   const imageIdRef = useRef(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
-  const pendingDeleteTargetRef = useRef<Message | null>(null);
   const [reportTarget, setReportTarget] = useState<Message | null>(null);
-  const pendingReportTargetRef = useRef<Message | null>(null);
   const [selectTextTarget, setSelectTextTarget] = useState<string | null>(null);
-  const pendingSelectTextRef = useRef<string | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: Message;
     anchor: AnchorRect;
@@ -199,7 +196,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     setVoiceRecording(false);
     setOpenTab(null);
     setEditing(null);
-    setHighlightedId(null);
+    clearHighlight();
   }
 
   useEffect(() => {
@@ -431,17 +428,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     }
     unstick();
     listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
-    setHighlightedId(id);
-    if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
-    highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
+    highlight(id);
   }
-
-  useEffect(
-    () => () => {
-      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
-    },
-    []
-  );
 
   function startReply(message: Message) {
     setEditing(null);
@@ -454,17 +442,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     push('success', t('chat.copied'));
   }
 
-  const openPendingDeleteDialog = useCallback(() => {
-    const target = pendingDeleteTargetRef.current;
-    pendingDeleteTargetRef.current = null;
-    if (target != null) setDeleteTarget(target);
-    const report = pendingReportTargetRef.current;
-    pendingReportTargetRef.current = null;
-    if (report != null) setReportTarget(report);
-    const selectText = pendingSelectTextRef.current;
-    pendingSelectTextRef.current = null;
-    if (selectText != null) setSelectTextTarget(selectText);
-  }, []);
+  const sheetFollowUp = useAfterDismiss();
 
   function sheetActions(message: Message): MessageSheetAction[] {
     const abilities = chatMessageAbilities(message, myId, blocked);
@@ -488,9 +466,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         key: 'selectText',
         label: t('chat.actionSelectText'),
         icon: 'selectText',
-        onSelect: () => {
-          pendingSelectTextRef.current = message.content;
-        },
+        onSelect: () => sheetFollowUp.schedule(() => setSelectTextTarget(message.content)),
       });
     }
     if (abilities.canEdit) {
@@ -506,9 +482,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         key: 'report',
         label: t('chat.actionReport'),
         icon: 'report',
-        onSelect: () => {
-          pendingReportTargetRef.current = message;
-        },
+        onSelect: () => sheetFollowUp.schedule(() => setReportTarget(message)),
       });
     }
     if (abilities.canDelete) {
@@ -517,9 +491,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         label: t('chat.actionDelete'),
         icon: 'delete',
         destructive: true,
-        onSelect: () => {
-          pendingDeleteTargetRef.current = message;
-        },
+        onSelect: () => sheetFollowUp.schedule(() => setDeleteTarget(message)),
       });
     }
     return actions;
@@ -883,9 +855,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onClose={() => {
           suspendRef.current = false;
           setActionTarget(null);
-          if (Platform.OS !== 'ios') requestAnimationFrame(openPendingDeleteDialog);
+          sheetFollowUp.runAfterClose();
         }}
-        onDismiss={openPendingDeleteDialog}
+        onDismiss={sheetFollowUp.onDismiss}
       />
 
       {reportTarget != null && (

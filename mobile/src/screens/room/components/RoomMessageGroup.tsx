@@ -9,7 +9,13 @@ import {
   View,
   type ViewInstance,
 } from 'react-native';
-import { colorForName, formatClockHM, formatDuration, withAlpha } from '@ola/shared/lib';
+import {
+  colorForName,
+  formatClockHM,
+  formatDuration,
+  withAlpha,
+  fitImageInBox,
+} from '@ola/shared/lib';
 import type {
   BubblePosition,
   GroupedMessage,
@@ -41,19 +47,6 @@ const IMAGE_MAX_HEIGHT = 176;
 const IMAGE_RADIUS = 8;
 
 const imageRatioCache = new Map<string, number>();
-
-function fitImageSize(ratio: number | null) {
-  if (ratio == null || ratio <= 0) {
-    return { width: IMAGE_MAX_HEIGHT, height: IMAGE_MAX_HEIGHT };
-  }
-  let width = IMAGE_MAX_WIDTH;
-  let height = width / ratio;
-  if (height > IMAGE_MAX_HEIGHT) {
-    height = IMAGE_MAX_HEIGHT;
-    width = height * ratio;
-  }
-  return { width, height };
-}
 
 interface RoomMessageGroupProps {
   group: MessageGroup;
@@ -178,7 +171,11 @@ function BubbleContent({
   const failed = message.status === MESSAGE_STATUS.failed;
 
   if (isImage) {
-    const size = fitImageSize(imageRatio);
+    const size = fitImageInBox(
+      imageRatio,
+      { width: IMAGE_MAX_WIDTH, height: IMAGE_MAX_HEIGHT },
+      { width: IMAGE_MAX_HEIGHT, height: IMAGE_MAX_HEIGHT },
+    );
     return (
       <Pressable
         onPress={() => {

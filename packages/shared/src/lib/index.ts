@@ -54,3 +54,4 @@ export * from './avatarFrameText';
 export * from './contacts';
 export * from './smileyCodes';
 export * from './transfer';
+export * from './imageFit';

@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, type RefObject } from 'react';
 import { toast } from '@lib';
-
-const MESSAGE_HIGHLIGHT_MS = 1500;
+import { useTimedHighlight } from '@ola/shared/stores/useTimedHighlight';
 
 interface UseMessageHighlightOptions {
   scrollRef: RefObject<HTMLElement | null>;
@@ -14,14 +13,7 @@ export function useMessageHighlight({
   notFoundText,
   onBeforeScroll,
 }: UseMessageHighlightOptions) {
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current != null) clearTimeout(timerRef.current);
-    };
-  }, []);
+  const { highlightedId, highlight, clearHighlight } = useTimedHighlight();
 
   const scrollToMessage = useCallback(
     (id: string) => {
@@ -34,17 +26,10 @@ export function useMessageHighlight({
       }
       onBeforeScroll?.();
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setHighlightedId(id);
-      if (timerRef.current != null) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(
-        () => setHighlightedId(null),
-        MESSAGE_HIGHLIGHT_MS
-      );
+      highlight(id);
     },
-    [scrollRef, notFoundText, onBeforeScroll]
+    [scrollRef, notFoundText, onBeforeScroll, highlight]
   );
-
-  const clearHighlight = useCallback(() => setHighlightedId(null), []);
 
   return { highlightedId, scrollToMessage, clearHighlight };
 }
