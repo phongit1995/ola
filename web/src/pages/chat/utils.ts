@@ -5,7 +5,7 @@ import type {
   Message,
   ChatTransferKind,
 } from '@app-types';
-import { MESSAGE_TYPE } from '@constants';
+import { MESSAGE_TYPE, CONVERSATION_KIND } from '@constants';
 import {
   colorForName,
   DEFAULT_AVATAR_COLOR,
@@ -60,11 +60,11 @@ export function toConversationView(
     fromMe: conversation.isLastMessageFromMe,
     seen: conversation.seen,
     senderName: conversation.lastMessageSenderName,
-    isGroup: conversation.type === 'group',
+    isGroup: conversation.type === CONVERSATION_KIND.group,
     time: formatTime(conversation.lastMessageAt ?? ''),
     unread: conversation.unreadCount,
     online:
-      conversation.type === 'direct'
+      conversation.type === CONVERSATION_KIND.direct
         ? conversation.otherUser?.isOnline ?? false
         : false,
   };

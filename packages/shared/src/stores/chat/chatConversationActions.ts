@@ -1,6 +1,7 @@
 import {
   CHAT_MESSAGE_PAGE_SIZE,
   CHAT_PEER_CARD_LONG_CHAT_SHOW_RATE,
+  MESSAGE_STATUS,
 } from '../../constants/chat';
 import { ConversationService } from '../../services/conversation.service';
 import { MessageService } from '../../services/message.service';
@@ -110,7 +111,7 @@ export function createChatConversationActions(
         );
         const pending = get().messages.filter(
           (item) =>
-            item.status !== 'sent' &&
+            item.status !== MESSAGE_STATUS.sent &&
             !savedIds.has(item.id) &&
             (item.clientMsgId == null || !savedClientMsgIds.has(item.clientMsgId))
         );

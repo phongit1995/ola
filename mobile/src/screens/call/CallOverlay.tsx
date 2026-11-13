@@ -379,7 +379,7 @@ export function CallOverlay() {
   const setExpanded = useCallStore((s) => s.setExpanded);
 
   const incoming = mode === CALL_MODE.incoming;
-  const inCall = !incoming && mode !== 'idle' && callType != null;
+  const inCall = !incoming && mode !== CALL_MODE.idle && callType != null;
   useOverlayBreadcrumb(
     'CallOverlay',
     incoming ? 'incoming' : inCall ? (expanded ? 'call-expanded' : 'call') : null,

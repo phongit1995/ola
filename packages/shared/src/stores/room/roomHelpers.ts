@@ -2,6 +2,7 @@ import { ROOM_MESSAGE_CACHE_LIMIT } from '../../constants/room';
 import { activeVipTypeId } from '../../lib/vip';
 import type { RoomMember, RoomMessage, RoomReplySnapshot } from '../../types/api/room.type';
 import { useAuthStore } from '../auth/authStore';
+import { MESSAGE_STATUS } from '../../constants/chat';
 
 export function withVipTypeId(members: RoomMember[]): RoomMember[] {
   const resolved = members.map((member) => ({
@@ -37,7 +38,7 @@ export function buildOptimisticRoomImage(
     content: '',
     imageUrl: previewUrl,
     createdAt: new Date().toISOString(),
-    status: 'uploading',
+    status: MESSAGE_STATUS.uploading,
   });
 }
 
@@ -80,7 +81,7 @@ export function buildOptimisticRoomAudio(
     audioMimeType: mimeType,
     createdAt: new Date().toISOString(),
     replyTo,
-    status: 'uploading',
+    status: MESSAGE_STATUS.uploading,
   });
 }
 
@@ -104,7 +105,7 @@ export function reconcileRoomServerMessage(
   messages: RoomMessage[],
   saved: RoomMessage
 ): RoomMessage[] {
-  const final: RoomMessage = { ...saved, status: 'sent' };
+  const final: RoomMessage = { ...saved, status: MESSAGE_STATUS.sent };
   const matches = (item: RoomMessage) =>
     item.id === saved.id || (saved.clientMsgId != null && item.clientMsgId === saved.clientMsgId);
   let replaced = false;
@@ -124,7 +125,7 @@ export function reconcileRoomServerMessage(
 }
 
 function isPendingRoomMessage(message: RoomMessage): boolean {
-  return message.status === 'uploading' || message.status === 'failed';
+  return message.status === MESSAGE_STATUS.uploading || message.status === MESSAGE_STATUS.failed;
 }
 
 function capRoomMessages(
@@ -164,7 +165,7 @@ export function mergeRoomMessageSnapshot(
   snapshot: RoomMessage[]
 ): RoomMessage[] {
   const pending = messages.filter(isPendingRoomMessage);
-  const sent = snapshot.map((message) => ({ ...message, status: 'sent' as const }));
+  const sent = snapshot.map((message) => ({ ...message, status: MESSAGE_STATUS.sent }));
 
   const coveredIds = new Set(snapshot.map((message) => message.id));
   const coveredClientMsgIds = new Set(

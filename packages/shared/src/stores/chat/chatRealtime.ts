@@ -2,6 +2,8 @@ import {
   CHAT_MARK_READ_DEBOUNCE_MS,
   CHAT_MARK_READ_MAX_WAIT_MS,
   CHAT_TYPING_TTL_MS,
+  MESSAGE_STATUS,
+  CONVERSATION_KIND,
 } from '../../constants/chat';
 import { CHAT_SOCKET_EVENTS } from '../../constants/socket';
 import { playMessageSound } from '../../platform/sound';
@@ -69,7 +71,7 @@ function handleNewMessage(get: ChatGet, set: ChatSet, event: NewMessageEvent) {
           item.id === message.id ||
           (message.clientMsgId != null && item.clientMsgId === message.clientMsgId)
       );
-      const incoming = { ...message, status: 'sent' as const };
+      const incoming = { ...message, status: MESSAGE_STATUS.sent };
       if (index >= 0) {
         const next = [...state.messages];
         next[index] = incoming;
@@ -90,7 +92,7 @@ function handleNewMessage(get: ChatGet, set: ChatSet, event: NewMessageEvent) {
 
   if (!existing) {
     const senderInfo: Partial<Conversation> =
-      conversation.type === 'direct' && !fromMe && message.senderName != null
+      conversation.type === CONVERSATION_KIND.direct && !fromMe && message.senderName != null
         ? {
             name: message.senderName,
             avatar: message.senderAvatar ?? '',
@@ -178,7 +180,7 @@ export function registerChatRealtime(set: ChatSet, get: ChatGet) {
   SocketService.on<MessageUpdatedEvent>(CHAT_SOCKET_EVENTS.messageUpdated, ({ message }) => {
     if (message.conversationId !== get().currentConversationId) return;
     set((state) => ({
-      messages: markById(state.messages, message.id, { ...message, status: 'sent' }),
+      messages: markById(state.messages, message.id, { ...message, status: MESSAGE_STATUS.sent }),
     }));
   });
 

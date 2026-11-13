@@ -17,6 +17,7 @@ import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { eggAssets } from './eggAssets';
 import { DRAWS_PAGE_SIZE } from './constants';
 import { eggHistoryScrollHeight } from './utils';
+import { EGG_CATEGORY_KIND } from '@ola/shared/constants';
 const FILTERS: EggDrawHistoryFilter[] = ['all', 'win', 'miss'];
 
 interface EggHistoryDialogProps {
@@ -34,7 +35,7 @@ function useOutcomeLabel() {
   const { t } = useTranslation();
   return useCallback(
     (item: EggDrawHistoryItem): OutcomeView => {
-      if (item.categoryType === 'nothing') {
+      if (item.categoryType === EGG_CATEGORY_KIND.nothing) {
         return { text: t('eggGame.history.miss'), tone: 'miss' };
       }
       if (item.isSuperLucky) {
@@ -44,14 +45,14 @@ function useOutcomeLabel() {
           vipTypeId: item.vipTypeId,
         };
       }
-      if (item.categoryType === 'ken' && item.kenAmount) {
+      if (item.categoryType === EGG_CATEGORY_KIND.ken && item.kenAmount) {
         return {
           text: t('eggGame.history.ken', { ken: item.kenAmount }),
           tone: 'win',
           iconSource: eggAssets.kenCoin,
         };
       }
-      if (item.categoryType === 'vip_days' && item.vipDays) {
+      if (item.categoryType === EGG_CATEGORY_KIND.vipDays && item.vipDays) {
         return {
           text: t('eggGame.history.vipDays', { days: item.vipDays }),
           tone: 'win',

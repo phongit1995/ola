@@ -7,6 +7,7 @@ import { penHistoryAssets, penShootAssets } from './penAssets';
 import { PenBg, PenPanel, penTextShadow } from './penUi';
 import { PenHistorySection } from './PenHistorySection';
 import { PenAllHistorySection } from './PenAllHistorySection';
+import { PEN_HISTORY_SECTION } from '@ola/shared/constants';
 
 interface PenHistoryModalProps {
   userId?: string;
@@ -25,7 +26,8 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
     { key: 'catch', label: t('penGame.hist.tabCatch') },
     { key: 'all', label: t('penGame.hist.tabAll') },
   ];
-  const opponentLabel = tab === 'shoot' ? t('penGame.hist.colCatcher') : t('penGame.hist.colShooter');
+  const opponentLabel =
+    tab === PEN_HISTORY_SECTION.shoot ? t('penGame.hist.colCatcher') : t('penGame.hist.colShooter');
 
   return (
     <View
@@ -151,7 +153,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
             style={{ flexShrink: 1, minHeight: 0 }}
             contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 16 }}
           >
-            {tab === 'all' ? (
+            {tab === PEN_HISTORY_SECTION.all ? (
               <PenAllHistorySection />
             ) : (
               <PenHistorySection section={tab} opponentLabel={opponentLabel} userId={userId} />

@@ -30,6 +30,7 @@ import {
   HISTORY_TAB_INACTIVE_STYLE,
   HISTORY_TITLE_STYLE,
 } from './spinWheelStyles';
+import { WHEEL_SEGMENT_KIND } from '@constants';
 
 const PAGE_SIZE = 10;
 const FILTERS: WheelSpinHistoryFilter[] = ['all', 'win', 'miss'];
@@ -50,7 +51,7 @@ function useOutcomeLabel() {
   const { t } = useTranslation();
   return useCallback(
     (item: WheelSpinHistoryItem): OutcomeView => {
-      if (item.segmentKind === 'miss') {
+      if (item.segmentKind === WHEEL_SEGMENT_KIND.miss) {
         return {
           text: t('wheelGame.miss'),
           win: false,

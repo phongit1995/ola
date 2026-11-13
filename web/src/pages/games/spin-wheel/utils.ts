@@ -19,6 +19,7 @@ import {
   rewardVipRandomUrl,
   spinCoinUrl,
 } from './spinWheelAssets';
+import { WHEEL_SEGMENT_KIND } from '@constants';
 
 export interface RewardVisual {
   icon: string | null;
@@ -34,13 +35,13 @@ export interface GiftOptionVisual {
 
 export function rewardKindIcon(kind: WheelSegmentKind): string {
   switch (kind) {
-    case 'ken_fixed':
+    case WHEEL_SEGMENT_KIND.kenFixed:
       return spinCoinUrl;
-    case 'ken_random':
+    case WHEEL_SEGMENT_KIND.kenRandom:
       return rewardKenRandomUrl;
-    case 'vip_random':
+    case WHEEL_SEGMENT_KIND.vipRandom:
       return rewardVipRandomUrl;
-    case 'miss':
+    case WHEEL_SEGMENT_KIND.miss:
       return rewardMissUrl;
     default:
       return rewardVipDaysUrl;
@@ -48,10 +49,10 @@ export function rewardKindIcon(kind: WheelSegmentKind): string {
 }
 
 function rewardIconClass(kind: WheelSegmentKind): string {
-  if (kind === 'ken_fixed') return 'w-[44%]';
-  if (kind === 'ken_random') return 'w-[54%]';
-  if (kind === 'vip_random') return 'w-[60%]';
-  if (kind === 'miss') return 'w-[52%]';
+  if (kind === WHEEL_SEGMENT_KIND.kenFixed) return 'w-[44%]';
+  if (kind === WHEEL_SEGMENT_KIND.kenRandom) return 'w-[54%]';
+  if (kind === WHEEL_SEGMENT_KIND.vipRandom) return 'w-[60%]';
+  if (kind === WHEEL_SEGMENT_KIND.miss) return 'w-[52%]';
   return 'w-[58%]';
 }
 

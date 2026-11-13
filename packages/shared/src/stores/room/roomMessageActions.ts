@@ -22,6 +22,7 @@ import {
   withSenderVip,
 } from './roomHelpers';
 import type { RoomChatGet, RoomChatSet } from './roomChatState';
+import { MESSAGE_STATUS, MESSAGE_TYPE } from '../../constants/chat';
 
 export function createRoomMessageActions(
   set: RoomChatSet,
@@ -47,7 +48,7 @@ export function createRoomMessageActions(
         messages: markRoomMessageByClientMsgId(
           state.messages,
           clientMsgId,
-          { status: 'failed' }
+          { status: MESSAGE_STATUS.failed }
         ),
       }));
     }
@@ -74,7 +75,7 @@ export function createRoomMessageActions(
         messages: markRoomMessageByClientMsgId(
           state.messages,
           clientMsgId,
-          { status: 'failed' }
+          { status: MESSAGE_STATUS.failed }
         ),
       }));
       return 'failed';
@@ -167,7 +168,7 @@ export function createRoomMessageActions(
       const target = get().messages.find((item) => item.id === messageId);
       if (
         target == null ||
-        target.status !== 'failed' ||
+        target.status !== MESSAGE_STATUS.failed ||
         target.imageUrl == null
       ) {
         return;
@@ -180,7 +181,7 @@ export function createRoomMessageActions(
           clientMsgId,
           {
             clientMsgId,
-            status: 'uploading',
+            status: MESSAGE_STATUS.uploading,
           }
         ),
       }));
@@ -198,8 +199,8 @@ export function createRoomMessageActions(
       const target = get().messages.find((item) => item.id === messageId);
       if (
         target == null ||
-        target.type !== 'audio' ||
-        target.status !== 'failed' ||
+        target.type !== MESSAGE_TYPE.audio ||
+        target.status !== MESSAGE_STATUS.failed ||
         target.clientMsgId == null ||
         target.audioUrl == null ||
         target.audioUrl === ''
@@ -215,7 +216,7 @@ export function createRoomMessageActions(
           clientMsgId,
           {
             clientMsgId,
-            status: 'uploading',
+            status: MESSAGE_STATUS.uploading,
           }
         ),
       }));

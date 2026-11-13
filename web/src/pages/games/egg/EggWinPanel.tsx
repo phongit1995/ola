@@ -7,6 +7,7 @@ import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import type { EggDrawResult } from '@app-types';
 import kenCoinUrl from '@/assets/icons/apps/ken.png';
 import vipDaysIconUrl from '@/assets/games/egg/day_vip.png';
+import { EGG_CATEGORY_KIND } from '@constants';
 
 const CARD_H = 250;
 const BTN_H = 42;
@@ -26,8 +27,8 @@ const BTN_LABEL_STYLE = {
 };
 
 function rewardIconUrl(result: EggDrawResult): string | null {
-  if (result.categoryType === 'ken') return kenCoinUrl;
-  if (result.categoryType === 'vip_days') return vipDaysIconUrl;
+  if (result.categoryType === EGG_CATEGORY_KIND.ken) return kenCoinUrl;
+  if (result.categoryType === EGG_CATEGORY_KIND.vipDays) return vipDaysIconUrl;
   if (result.vipTypeId != null) return vipIconUrl(result.vipTypeId);
   return null;
 }
@@ -104,9 +105,9 @@ export function EggWinPanel({ result, width, height }: EggWinPanelProps) {
     ? t('eggGame.winModal.superTitle')
     : t('eggGame.winModal.title');
   const label =
-    result.categoryType === 'ken' && result.kenAmount
+    result.categoryType === EGG_CATEGORY_KIND.ken && result.kenAmount
       ? t('eggGame.winModal.ken', { ken: result.kenAmount })
-      : result.categoryType === 'vip_days' && result.vipDays
+      : result.categoryType === EGG_CATEGORY_KIND.vipDays && result.vipDays
       ? t('eggGame.winModal.vipDays', { days: result.vipDays })
       : result.rewardLabel ?? t('eggGame.winModal.defaultLabel');
 

@@ -28,6 +28,7 @@ import {
   HISTORY_TAB_INACTIVE_STYLE,
   HISTORY_TITLE_STYLE,
 } from './spinWheelStyles';
+import { WHEEL_SEGMENT_KIND } from '@ola/shared/constants';
 const FILTERS: WheelSpinHistoryFilter[] = ['all', 'win', 'miss'];
 
 interface SpinHistoryDialogProps {
@@ -45,7 +46,7 @@ function useOutcomeLabel() {
   const { t } = useTranslation();
   return useCallback(
     (item: WheelSpinHistoryItem): OutcomeView => {
-      if (item.segmentKind === 'miss') {
+      if (item.segmentKind === WHEEL_SEGMENT_KIND.miss) {
         return { text: t('wheelGame.miss'), win: false, iconSource: wheelAssets.rewardMiss };
       }
       if (isKenKind(item.segmentKind)) {

@@ -1,4 +1,4 @@
-import type { KenTxType } from '../types/api/ken.type';
+import type { KenDirection, KenTxType } from '../types/api/ken.type';
 import type { KenHistoryTab } from '../types/client/kenHistory.type';
 
 export const KEN_HISTORY_PAGE_SIZE = 20;
@@ -56,3 +56,8 @@ export const KEN_HISTORY_TABS = [
   { key: 'credit', labelKey: 'ken.historyScreen.tabCredit' },
   { key: 'debit', labelKey: 'ken.historyScreen.tabDebit' },
 ] as const satisfies readonly { key: KenHistoryTab; labelKey: string }[];
+
+export const KEN_DIRECTION = {
+  credit: 'credit',
+  debit: 'debit',
+} as const satisfies Record<string, KenDirection>;

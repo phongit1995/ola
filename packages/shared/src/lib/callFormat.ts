@@ -3,6 +3,8 @@ import type { Conversation } from '../types/api/chat.type';
 import type { PublicProfile } from '../types/api/user.type';
 import type { CallerBrief } from '../types/client/call.type';
 import type { MessageMetadata } from '../types/lib.type';
+import { CALL_STATUS, CALL_TYPE } from '../constants/call';
+import { CONVERSATION_KIND } from '../constants/chat';
 
 export function formatCallDuration(seconds: number): string {
   const safe = Math.max(0, Math.floor(seconds));
@@ -22,7 +24,7 @@ export function withCallPeerFrame(
 ): CallerBrief {
   if (peer.avatarFrameId != null) return peer;
   const other =
-    conversation?.type === 'direct' && conversation.otherUser?.id === peer.id
+    conversation?.type === CONVERSATION_KIND.direct && conversation.otherUser?.id === peer.id
       ? conversation.otherUser
       : null;
   const profile = peerProfile?.id === peer.id ? peerProfile : null;
@@ -58,12 +60,12 @@ export function callMessageView(
   t: TFunction,
   meta: MessageMetadata
 ): CallMessageView {
-  const isVideo = meta.callType === 'video';
-  const missed = meta.callStatus === 'missed' || meta.callStatus === 'declined';
+  const isVideo = meta.callType === CALL_TYPE.video;
+  const missed = meta.callStatus === CALL_STATUS.missed || meta.callStatus === CALL_STATUS.declined;
   const detail =
-    meta.callStatus === 'missed'
+    meta.callStatus === CALL_STATUS.missed
       ? t('call.missedCall')
-      : meta.callStatus === 'declined'
+      : meta.callStatus === CALL_STATUS.declined
         ? t('call.declinedCall')
         : formatCallDuration(meta.durationSeconds ?? 0);
   return {

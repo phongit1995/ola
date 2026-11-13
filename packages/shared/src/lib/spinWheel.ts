@@ -12,6 +12,7 @@ import {
   WHEEL_SLICE_RADIUS,
 } from './spinWheel.constants';
 import { formatKen } from './number';
+import { WHEEL_SEGMENT_KIND } from '../constants/wheel';
 
 export * from './spinWheel.constants';
 export type {
@@ -103,13 +104,13 @@ export function formatRewardKen(amount: number): string {
 }
 
 export function isKenKind(kind: WheelSegmentKind): boolean {
-  return kind === 'ken_fixed' || kind === 'ken_random';
+  return kind === WHEEL_SEGMENT_KIND.kenFixed || kind === WHEEL_SEGMENT_KIND.kenRandom;
 }
 
 export function isVipDaysKind(kind: WheelSegmentKind): boolean {
-  return kind === 'vip_days';
+  return kind === WHEEL_SEGMENT_KIND.vipDays;
 }
 
 export function isVipItemKind(kind: WheelSegmentKind): boolean {
-  return kind === 'vip_item' || kind === 'vip_random';
+  return kind === WHEEL_SEGMENT_KIND.vipItem || kind === WHEEL_SEGMENT_KIND.vipRandom;
 }

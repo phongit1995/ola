@@ -16,6 +16,7 @@ import {
   GIFT_TITLE_STYLE,
   TEXT_SHADOW,
 } from './spinWheelStyles';
+import { WHEEL_SEGMENT_KIND } from '@constants';
 
 const CARD_CLASS = 'rounded-2xl border-2 border-[#ffd24a] bg-[#3457c4]';
 
@@ -107,8 +108,9 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
 
   const randomSegments = segments.filter(
     (segment) =>
-      segment.kind === 'ken_random' ||
-      (segment.kind === 'vip_random' && (segment.options?.length ?? 0) > 0)
+      segment.kind === WHEEL_SEGMENT_KIND.kenRandom ||
+      (segment.kind === WHEEL_SEGMENT_KIND.vipRandom &&
+        (segment.options?.length ?? 0) > 0)
   );
 
   return (
@@ -149,7 +151,7 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
             </p>
           ) : (
             randomSegments.map((segment) =>
-              segment.kind === 'ken_random' ? (
+              segment.kind === WHEEL_SEGMENT_KIND.kenRandom ? (
                 <KenRandomCard key={segment.id} segment={segment} />
               ) : (
                 <VipRandomSection key={segment.id} segment={segment} />

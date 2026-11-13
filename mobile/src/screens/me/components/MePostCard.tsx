@@ -23,6 +23,7 @@ import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { UserName } from '@components/ui/UserName';
+import { POST_REACTION } from '@ola/shared/constants';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -235,8 +236,8 @@ function MePostCardComponent({
 
   const author = post.author?.username ?? '';
   const fullName = post.author?.fullName ?? '';
-  const liked = post.myReaction === 'like';
-  const disliked = post.myReaction === 'dislike';
+  const liked = post.myReaction === POST_REACTION.like;
+  const disliked = post.myReaction === POST_REACTION.dislike;
   const comments = post.commentCount;
   const likes = post.likeCount;
   const topLikers = post.topLikers ?? [];

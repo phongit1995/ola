@@ -6,6 +6,7 @@ import { penHistoryAssets, penShootAssets } from './penAssets';
 import { bgImage } from './utils';
 import { PenHistorySection } from './PenHistorySection';
 import { PenAllHistorySection } from './PenAllHistorySection';
+import { PEN_HISTORY_SECTION } from '@constants';
 
 interface PenHistoryModalProps {
   userId?: string;
@@ -25,7 +26,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
     { key: 'all', label: t('penGame.hist.tabAll') },
   ];
   const opponentLabel =
-    tab === 'shoot'
+    tab === PEN_HISTORY_SECTION.shoot
       ? t('penGame.hist.colCatcher')
       : t('penGame.hist.colShooter');
 
@@ -85,7 +86,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
         </div>
 
         <div className="pen-scroll flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-4 @md:px-3">
-          {tab === 'all' ? (
+          {tab === PEN_HISTORY_SECTION.all ? (
             <PenAllHistorySection />
           ) : (
             <PenHistorySection

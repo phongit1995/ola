@@ -11,7 +11,11 @@ import { applyPostReaction, reconcileTopLikers } from '@ola/shared/stores/feed/p
 import { selfLiker } from '@ola/shared/stores/feed/selfLiker';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { MeService } from '@ola/shared/services';
-import { ME_ERROR_CODE, ME_NOTIFICATION_LABEL_KEY } from '@ola/shared/constants';
+import {
+  ME_ERROR_CODE,
+  ME_NOTIFICATION_LABEL_KEY,
+  ME_NOTIFICATION_TYPE,
+} from '@ola/shared/constants';
 import {
   createTimeFormatter,
   isMomentMediaPurged,
@@ -171,23 +175,35 @@ export function MeNotificationsScreen() {
                   <View className="min-w-0 flex-1">
                     <Text className="text-sm leading-snug text-ola-ink">
                       <Text className="font-bold">{name}</Text>{' '}
-                      {others > 0 && <Text className="font-bold">{t('me.notifOthers', { count: others })} </Text>}
+                      {others > 0 && (
+                        <Text className="font-bold">{t('me.notifOthers', { count: others })} </Text>
+                      )}
                       {t(ME_NOTIFICATION_LABEL_KEY[item.type])}
                     </Text>
-                    {item.type === 'moment_comment' && item.preview != null && item.preview !== '' && (
-                      <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
-                        <SmileyText text={item.preview} fontSize={PREVIEW_FONT_SIZE} />
-                      </Text>
-                    )}
-                    {(item.type === 'comment' || item.type === 'comment_like') && item.preview != null && item.preview !== '' && (
-                      <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
-                        {item.preview}
-                      </Text>
-                    )}
+                    {item.type === ME_NOTIFICATION_TYPE.momentComment &&
+                      item.preview != null &&
+                      item.preview !== '' && (
+                        <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
+                          <SmileyText text={item.preview} fontSize={PREVIEW_FONT_SIZE} />
+                        </Text>
+                      )}
+                    {(item.type === ME_NOTIFICATION_TYPE.comment ||
+                      item.type === ME_NOTIFICATION_TYPE.commentLike) &&
+                      item.preview != null &&
+                      item.preview !== '' && (
+                        <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
+                          {item.preview}
+                        </Text>
+                      )}
                     <View className="mt-1 flex-row items-center gap-1">
                       <Image
-                        source={(reaction != null ? REACTION_IMAGE[reaction] : null) ?? TYPE_ICON[item.type]}
-                        style={reaction != null ? { width: 20, height: 20 } : { width: 16, height: 16 }}
+                        source={
+                          (reaction != null ? REACTION_IMAGE[reaction] : null) ??
+                          TYPE_ICON[item.type]
+                        }
+                        style={
+                          reaction != null ? { width: 20, height: 20 } : { width: 16, height: 16 }
+                        }
                         resizeMode="contain"
                       />
                       <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.45)' }}>

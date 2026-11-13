@@ -4,6 +4,7 @@ import { toMePost } from '../me/utils';
 import type { MePost } from '../me/types';
 import type { ProfileFriend, UserProfile } from './types';
 import { DEFAULT_COVER_COLOR } from './constants';
+import { RELATIONSHIP_STATUS } from '@constants';
 
 export interface ProfileMapDeps {
   seedColor: string;
@@ -44,7 +45,7 @@ export function mapPublicProfile(
       : null,
     birthday: data.dateOfBirth ? formatDateSlashDMY(data.dateOfBirth) : '',
     joinDate: `${deps.joinedLabel} ${deps.formatDate(data.createdAt)}`,
-    isSelf: data.relationship?.status === 'self',
+    isSelf: data.relationship?.status === RELATIONSHIP_STATUS.self,
     canViewVipStore: data.canViewVipStore !== false,
     canViewGiftWall: data.canViewGiftWall !== false,
     canViewAvatarFrameStore: data.canViewAvatarFrameStore === true,

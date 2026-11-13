@@ -13,6 +13,7 @@ import type {
 import { closeCircleButtonUrl, closeXIconUrl } from './eggAssets';
 import kenCoinUrl from '@/assets/icons/apps/ken.png';
 import vipDaysIconUrl from '@/assets/games/egg/day_vip.png';
+import { EGG_CATEGORY_KIND } from '@constants';
 
 interface EggGiftDialogProps {
   open: boolean;
@@ -58,12 +59,12 @@ function rewardText(
   reward: EggGiftReward,
   t: TFunction
 ): string {
-  if (type === 'vip_icon' && reward.vipTypeId != null)
+  if (type === EGG_CATEGORY_KIND.vipIcon && reward.vipTypeId != null)
     return vipName(reward.vipTypeId);
   if (reward.label) return reward.label;
-  if (type === 'ken' && reward.kenAmount)
+  if (type === EGG_CATEGORY_KIND.ken && reward.kenAmount)
     return `${formatKen(reward.kenAmount)} Ken`;
-  if (type === 'vip_days' && reward.vipDays) {
+  if (type === EGG_CATEGORY_KIND.vipDays && reward.vipDays) {
     return t('eggGame.gifts.vipDaysLabel', { days: reward.vipDays });
   }
   return '';
@@ -76,9 +77,9 @@ function RewardIcon({
   type: EggCategoryKind;
   reward: EggGiftReward;
 }) {
-  if (type === 'ken')
+  if (type === EGG_CATEGORY_KIND.ken)
     return <img src={kenCoinUrl} alt="" className="h-9 w-9 object-contain" />;
-  if (type === 'vip_days') {
+  if (type === EGG_CATEGORY_KIND.vipDays) {
     return (
       <img src={vipDaysIconUrl} alt="" className="h-9 w-9 object-contain" />
     );

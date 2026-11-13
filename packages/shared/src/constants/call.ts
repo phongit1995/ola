@@ -1,4 +1,4 @@
-import type { CallType } from '../types/api/call.type';
+import type { CallStatus, CallType } from '../types/api/call.type';
 import type { CallMode } from '../types/client/call.type';
 
 export const CALL_TYPE = {
@@ -12,6 +12,14 @@ export const CALL_MODE = {
   outgoing: 'outgoing',
   active: 'active',
 } as const satisfies Record<string, CallMode>;
+
+export const CALL_STATUS = {
+  ringing: 'ringing',
+  active: 'active',
+  ended: 'ended',
+  missed: 'missed',
+  declined: 'declined',
+} as const satisfies Record<string, CallStatus>;
 
 export const CALL_RING_TIMEOUT_MS = 30_000;
 export const CALL_RING_TIMEOUT_GRACE_MS = 5_000;

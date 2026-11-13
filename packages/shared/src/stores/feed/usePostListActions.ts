@@ -9,6 +9,7 @@ import type {
 } from '../../types/client/feed.type';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
 import { selfLiker } from './selfLiker';
+import { POST_REACTION } from '../../constants/me';
 
 export type {
   PostListActions,
@@ -43,7 +44,7 @@ export function usePostListActions({
           const next = current.map((item) =>
             item.id === id ? reconcileTopLikers(updated, item) : item
           );
-          return keepOnlyLiked && updated.myReaction !== 'like'
+          return keepOnlyLiked && updated.myReaction !== POST_REACTION.like
             ? next.filter((item) => item.id !== id)
             : next;
         });

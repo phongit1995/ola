@@ -17,6 +17,7 @@ import { Dialog } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { eggAssets } from './eggAssets';
 import { eggGiftScrollHeight } from './utils';
+import { EGG_CATEGORY_KIND } from '@ola/shared/constants';
 
 interface EggGiftDialogProps {
   packId: string | null;
@@ -61,20 +62,22 @@ const SECTION_STYLES: Partial<Record<EggCategoryKind, SectionStyle>> = {
 };
 
 function rewardText(type: EggCategoryKind, reward: EggGiftReward, t: TFunction): string {
-  if (type === 'vip_icon' && reward.vipTypeId != null) return vipName(reward.vipTypeId);
+  if (type === EGG_CATEGORY_KIND.vipIcon && reward.vipTypeId != null)
+    return vipName(reward.vipTypeId);
   if (reward.label) return reward.label;
-  if (type === 'ken' && reward.kenAmount) return `${formatKen(reward.kenAmount)} Ken`;
-  if (type === 'vip_days' && reward.vipDays) {
+  if (type === EGG_CATEGORY_KIND.ken && reward.kenAmount)
+    return `${formatKen(reward.kenAmount)} Ken`;
+  if (type === EGG_CATEGORY_KIND.vipDays && reward.vipDays) {
     return t('eggGame.gifts.vipDaysLabel', { days: reward.vipDays });
   }
   return '';
 }
 
 function RewardIcon({ type, reward }: { type: EggCategoryKind; reward: EggGiftReward }) {
-  if (type === 'ken') {
+  if (type === EGG_CATEGORY_KIND.ken) {
     return <Image source={eggAssets.kenCoin} style={{ width: 36, height: 36 }} resizeMode="contain" />;
   }
-  if (type === 'vip_days') {
+  if (type === EGG_CATEGORY_KIND.vipDays) {
     return <Image source={eggAssets.vipDays} style={{ width: 36, height: 36 }} resizeMode="contain" />;
   }
   if (reward.vipTypeId != null) return <VipIconImage typeId={reward.vipTypeId} size={40} rounded />;

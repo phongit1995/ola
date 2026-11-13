@@ -6,6 +6,7 @@ import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { ChatPhoneIcon, ChatVideoIcon } from './icons';
+import { CALL_MODE, CONVERSATION_KIND } from '@constants';
 
 export function ChatCallButtons() {
   const { t } = useTranslation();
@@ -24,7 +25,9 @@ export function ChatCallButtons() {
   const [preparing, setPreparing] = useState(false);
 
   const otherUser =
-    conversation?.type === 'direct' ? conversation.otherUser : null;
+    conversation?.type === CONVERSATION_KIND.direct
+      ? conversation.otherUser
+      : null;
   const peer: CallerBrief | null =
     otherUser != null
       ? {
@@ -44,7 +47,7 @@ export function ChatCallButtons() {
 
   if (peer == null) return null;
 
-  const busy = mode !== 'idle' || pendingAction != null || preparing;
+  const busy = mode !== CALL_MODE.idle || pendingAction != null || preparing;
 
   const handleCall = async (callType: CallType) => {
     if (busy) return;

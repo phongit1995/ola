@@ -14,6 +14,7 @@ import type {
 } from '../../types/api/room.type';
 import type { RoomFilterState } from '../../types/client/room.type';
 import { registerOnLogout, useAuthStore } from '../auth/authStore';
+import { GENDER } from '../../constants/auth';
 
 export { DEFAULT_ROOM_FILTERS } from '../../constants/room';
 
@@ -28,9 +29,10 @@ export function memberMatchesFilter(member: RoomMember, filters: RoomFilters): b
   if (filters.showAll) return true;
   const anyGender = filters.female || filters.male || filters.flexible;
   if (!anyGender) return true;
-  if (filters.female && member.gender === 'female') return true;
-  if (filters.male && member.gender === 'male') return true;
-  if (filters.flexible && member.gender !== 'female' && member.gender !== 'male') return true;
+  if (filters.female && member.gender === GENDER.female) return true;
+  if (filters.male && member.gender === GENDER.male) return true;
+  if (filters.flexible && member.gender !== GENDER.female && member.gender !== GENDER.male)
+    return true;
   return false;
 }
 

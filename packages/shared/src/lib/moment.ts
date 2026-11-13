@@ -49,6 +49,7 @@ import { toApiError } from './apiError';
 import { ImageTooLargeError } from './imageUpload';
 import { randomUuid } from './randomUuid';
 import { HTTP_STATUS } from '../constants/http';
+import { ME_NOTIFICATION_TYPE } from '../constants/notification';
 
 export interface MomentTray {
   mine: Moment[];
@@ -565,11 +566,14 @@ export function ownSessionMoments(
 }
 
 export function isMomentNotification(notification: MeNotification): boolean {
-  return notification.type === 'moment_comment' || notification.type === 'moment_reaction';
+  return (
+    notification.type === ME_NOTIFICATION_TYPE.momentComment ||
+    notification.type === ME_NOTIFICATION_TYPE.momentReaction
+  );
 }
 
 export function momentNotificationReaction(notification: MeNotification): ReactionType | null {
-  if (notification.type !== 'moment_reaction') return null;
+  if (notification.type !== ME_NOTIFICATION_TYPE.momentReaction) return null;
   const preview = notification.preview ?? '';
   return Object.hasOwn(MOMENT_REACTION_LABEL_KEY, preview) ? (preview as ReactionType) : null;
 }

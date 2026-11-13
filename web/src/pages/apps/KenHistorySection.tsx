@@ -6,6 +6,7 @@ import {
   KEN_HISTORY_TABS,
   KEN_TX_META,
   KEN_TX_META_FALLBACK,
+  KEN_DIRECTION,
 } from '@constants';
 import { KEN_HISTORY_PAGE, useKenHistoryStore } from '@ola/shared/stores/ken/kenHistoryStore';
 import type { KenHistoryRow, KenHistoryTab } from '@ola/shared/types';
@@ -13,7 +14,7 @@ import type { KenHistoryRow, KenHistoryTab } from '@ola/shared/types';
 function TransactionRow({ row }: { row: KenHistoryRow }) {
   const { t } = useTranslation();
   const meta = KEN_TX_META[row.type] ?? KEN_TX_META_FALLBACK;
-  const credit = row.direction === 'credit';
+  const credit = row.direction === KEN_DIRECTION.credit;
   const subtitle =
     row.counterpartyName != null && row.counterpartyName !== ''
       ? t(credit ? 'ken.historyScreen.fromUser' : 'ken.historyScreen.toUser', {

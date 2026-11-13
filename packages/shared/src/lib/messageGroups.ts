@@ -5,6 +5,7 @@ import type {
   PendingMessageGroup,
   RoomFeedItem,
 } from '../types/client/roomFeed.type';
+import { MESSAGE_TYPE } from '../constants/chat';
 
 export type {
   BubblePosition,
@@ -35,9 +36,9 @@ function resolveReplySnapshot(
   reply: RoomReplySnapshot | undefined,
   byId: Map<string, RoomMessage>
 ): RoomReplySnapshot | undefined {
-  if (reply == null || reply.type === 'image') return reply;
+  if (reply == null || reply.type === MESSAGE_TYPE.image) return reply;
   const original = byId.get(reply.messageId);
-  if (original?.type === 'image') {
+  if (original?.type === MESSAGE_TYPE.image) {
     return { ...reply, type: 'image', imageUrl: reply.imageUrl ?? original.imageUrl };
   }
   return reply;
