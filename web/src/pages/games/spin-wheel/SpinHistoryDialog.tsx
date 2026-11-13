@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Spinner, VipIcon } from '@components';
-import { createTimeFormatter, formatKen } from '@lib';
+import {
+  createTimeFormatter,
+  formatKen,
+  formatRewardKen,
+  isKenKind,
+  isVipDaysKind,
+} from '@lib';
 import { WheelService } from '@services';
 import type { WheelSpinHistoryFilter, WheelSpinHistoryItem } from '@app-types';
 import {
@@ -19,7 +25,6 @@ import {
   rewardVipDaysUrl,
   spinCoinUrl,
 } from './spinWheelAssets';
-import { formatRewardKen, isKenKind, isVipDaysKind } from './utils';
 import {
   HISTORY_LABEL_STYLE,
   HISTORY_TAB_INACTIVE_STYLE,

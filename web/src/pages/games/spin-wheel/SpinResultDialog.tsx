@@ -10,7 +10,7 @@ import {
   rewardVipDaysUrl,
   spinCoinUrl,
 } from './spinWheelAssets';
-import { formatRewardKen, isKenKind, isVipDaysKind } from './utils';
+import { formatRewardKen, isKenKind, isVipDaysKind } from '@lib';
 
 const REWARD_ICON_CLASS = 'h-24 w-24 drop-shadow';
 

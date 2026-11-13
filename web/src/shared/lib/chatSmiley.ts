@@ -1,3 +1,8 @@
+import {
+  buildSmileyMap,
+  buildSmileyPanel,
+  buildSmileyRegex,
+} from '@ola/shared/lib';
 import { emojiImageForToken } from './emoji';
 
 const smileyFiles = import.meta.glob('../../assets/icons/chat/smiley/*.png', {
@@ -9,84 +14,16 @@ export const SMILEY_IMAGES: string[] = Object.keys(smileyFiles)
   .sort()
   .map((path) => smileyFiles[path]!);
 
-const SMILEY_ALIASES: string[][] = [
-  [':-)', ':)'],
-  [':-P', ':-p', ':p', ':P'],
-  ['>:D<'],
-  [':-))', ':))'],
-  [':">'],
-  ['B-)', 'b-)', 'B)', 'b)'],
-  [':-X', ':-x', ':X', ':x'],
-  [':-*', ':*'],
-  [':-|', ':|'],
-  [':-D', ':-d', ':D', ':d'],
-  [';-)', ';)'],
-  ['|-)', '|)'],
-  ['(:|'],
-  [':-/'],
-  [':-<', ':<'],
-  [':-&', ':&'],
-  [':-(', ':('],
-  [':-B', ':-b', ':B', ':b'],
-  [':-O', ':-o', ':O', ':o'],
-  [':-h', ':-H', ':h', ':H'],
-  [':-S', ':-s', ':S', ':s'],
-  [':-?', ':?'],
-  [':-((', ':(('],
-  ['=(('],
-  ['=;'],
-  [':-W', ':-w', ':W', ':w'],
-  ['X-(', 'x-(', 'X(', 'x('],
-  ['>:)'],
-  [';))'],
-  ['>:P'],
-  ['/:)'],
-  ['<3'],
-  ['(*)'],
-  ['@;-', '@};-'],
-  ['(y)', '(Y)'],
-  ['(n)', '(N)'],
-  ['^_^'],
-  [':v'],
-  [':3'],
-  ['=))'],
-  ['@@'],
-  ['@)'],
-  [':’('],
-  ['O:)', 'o:)', '0:)'],
-  ['>:O', '>:o', '>:0'],
-];
-
 export const SMILEY_PANEL: Array<{ image: string; code: string }> =
-  SMILEY_IMAGES.map((image, index) => ({
-    image,
-    code: SMILEY_ALIASES[index]?.[0] ?? '',
-  }));
+  buildSmileyPanel(SMILEY_IMAGES);
 
-const SMILEY_MAP: Record<string, string> = (() => {
-  const map: Record<string, string> = {};
-  SMILEY_IMAGES.forEach((image, index) => {
-    for (const code of SMILEY_ALIASES[index] ?? []) {
-      map[code] = image;
-    }
-  });
-  return map;
-})();
+const SMILEY_MAP: Record<string, string> = buildSmileyMap(SMILEY_IMAGES);
 
 export function smileyImageForCode(code: string): string | null {
   return SMILEY_MAP[code] ?? emojiImageForToken(code);
 }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-const SMILEY_PATTERN = Object.keys(SMILEY_MAP)
-  .sort((a, b) => b.length - a.length)
-  .map(escapeRegExp)
-  .join('|');
-
-const SMILEY_REGEX = new RegExp(`\\[e:\\d{1,2}\\]|${SMILEY_PATTERN}`, 'g');
+const SMILEY_REGEX = buildSmileyRegex(Object.keys(SMILEY_MAP));
 
 export type SmileyVariant = 'smiley' | 'emoji';
 

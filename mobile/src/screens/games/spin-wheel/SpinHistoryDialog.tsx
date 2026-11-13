@@ -10,13 +10,18 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { OlaModal } from '@components/ui/OlaModal';
-import { createTimeFormatter, formatKen } from '@ola/shared/lib';
+import {
+  createTimeFormatter,
+  formatKen,
+  formatRewardKen,
+  isKenKind,
+  isVipDaysKind,
+} from '@ola/shared/lib';
 import { WheelService } from '@ola/shared/services';
 import type { WheelSpinHistoryFilter, WheelSpinHistoryItem } from '@ola/shared/types';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { VerticalGradient, assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets, wheelHistoryAssets } from './spinWheelAssets';
-import { formatRewardKen, isKenKind, isVipDaysKind } from './utils';
 import { HISTORY_PAGE_SIZE } from './constants';
 import {
   HISTORY_LABEL_STYLE,

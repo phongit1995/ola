@@ -1,6 +1,12 @@
 import type { CSSProperties } from 'react';
 import type { TFunction } from 'i18next';
-import { formatKen, vipName, WHEEL_LABEL_RADIUS, wheelPolar } from '@lib';
+import {
+  formatRewardKen,
+  isVipItemKind,
+  vipName,
+  WHEEL_LABEL_RADIUS,
+  wheelPolar,
+} from '@lib';
 import type {
   WheelPlayerOption,
   WheelPlayerSegment,
@@ -24,26 +30,6 @@ export interface GiftOptionVisual {
   text: string;
   vipTypeId: number | null;
   iconUrl: string | null;
-}
-
-export function formatRewardKen(amount: number): string {
-  if (amount >= 10000) {
-    const k = amount / 1000;
-    return `${Number.isInteger(k) ? k : k.toFixed(1)}K`;
-  }
-  return formatKen(amount);
-}
-
-export function isKenKind(kind: WheelSegmentKind): boolean {
-  return kind === 'ken_fixed' || kind === 'ken_random';
-}
-
-export function isVipDaysKind(kind: WheelSegmentKind): boolean {
-  return kind === 'vip_days';
-}
-
-export function isVipItemKind(kind: WheelSegmentKind): boolean {
-  return kind === 'vip_item' || kind === 'vip_random';
 }
 
 export function rewardKindIcon(kind: WheelSegmentKind): string {

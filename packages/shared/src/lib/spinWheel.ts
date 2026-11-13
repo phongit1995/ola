@@ -1,3 +1,4 @@
+import type { WheelSegmentKind } from '../types/api/wheel.type';
 import type {
   SegmentTheme,
   WheelDividerLine,
@@ -10,6 +11,7 @@ import {
   WHEEL_DIVIDER_INNER_RADIUS,
   WHEEL_SLICE_RADIUS,
 } from './spinWheel.constants';
+import { formatKen } from './number';
 
 export * from './spinWheel.constants';
 export type {
@@ -90,4 +92,24 @@ export function wheelDividerLine(index: number, angle: number): WheelDividerLine
   const inner = wheelPolar(boundary, WHEEL_DIVIDER_INNER_RADIUS);
   const outer = wheelPolar(boundary, WHEEL_SLICE_RADIUS);
   return { x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y };
+}
+
+export function formatRewardKen(amount: number): string {
+  if (amount >= 10000) {
+    const k = amount / 1000;
+    return `${Number.isInteger(k) ? k : k.toFixed(1)}K`;
+  }
+  return formatKen(amount);
+}
+
+export function isKenKind(kind: WheelSegmentKind): boolean {
+  return kind === 'ken_fixed' || kind === 'ken_random';
+}
+
+export function isVipDaysKind(kind: WheelSegmentKind): boolean {
+  return kind === 'vip_days';
+}
+
+export function isVipItemKind(kind: WheelSegmentKind): boolean {
+  return kind === 'vip_item' || kind === 'vip_random';
 }

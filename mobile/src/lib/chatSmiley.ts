@@ -1,5 +1,6 @@
 import { Image } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { buildSmileyMap, buildSmileyPanel, buildSmileyRegex } from '@ola/shared/lib';
 import { SMILEY_IMAGES } from './smileyImages';
 import { emojiImageForToken, isEmojiToken } from './emoji';
 
@@ -23,82 +24,16 @@ export function imageSizeForHeight(
   return { width: height * imageAspectRatio(src), height };
 }
 
-export const SMILEY_ALIASES: string[][] = [
-  [':-)', ':)'],
-  [':-P', ':-p', ':p', ':P'],
-  ['>:D<'],
-  [':-))', ':))'],
-  [':">'],
-  ['B-)', 'b-)', 'B)', 'b)'],
-  [':-X', ':-x', ':X', ':x'],
-  [':-*', ':*'],
-  [':-|', ':|'],
-  [':-D', ':-d', ':D', ':d'],
-  [';-)', ';)'],
-  ['|-)', '|)'],
-  ['(:|'],
-  [':-/'],
-  [':-<', ':<'],
-  [':-&', ':&'],
-  [':-(', ':('],
-  [':-B', ':-b', ':B', ':b'],
-  [':-O', ':-o', ':O', ':o'],
-  [':-h', ':-H', ':h', ':H'],
-  [':-S', ':-s', ':S', ':s'],
-  [':-?', ':?'],
-  [':-((', ':(('],
-  ['=(('],
-  ['=;'],
-  [':-W', ':-w', ':W', ':w'],
-  ['X-(', 'x-(', 'X(', 'x('],
-  ['>:)'],
-  [';))'],
-  ['>:P'],
-  ['/:)'],
-  ['<3'],
-  ['(*)'],
-  ['@;-', '@};-'],
-  ['(y)', '(Y)'],
-  ['(n)', '(N)'],
-  ['^_^'],
-  [':v'],
-  [':3'],
-  ['=))'],
-  ['@@'],
-  ['@)'],
-  [':’('],
-  ['O:)', 'o:)', '0:)'],
-  ['>:O', '>:o', '>:0'],
-];
+export const SMILEY_PANEL: Array<{ image: ImageSourcePropType; code: string }> =
+  buildSmileyPanel(SMILEY_IMAGES);
 
-export const SMILEY_PANEL: Array<{ image: ImageSourcePropType; code: string }> = SMILEY_IMAGES.map(
-  (image, index) => ({ image, code: SMILEY_ALIASES[index]?.[0] ?? '' })
-);
-
-const SMILEY_MAP: Record<string, ImageSourcePropType> = (() => {
-  const map: Record<string, ImageSourcePropType> = {};
-  SMILEY_IMAGES.forEach((image, index) => {
-    for (const code of SMILEY_ALIASES[index] ?? []) {
-      map[code] = image;
-    }
-  });
-  return map;
-})();
+const SMILEY_MAP: Record<string, ImageSourcePropType> = buildSmileyMap(SMILEY_IMAGES);
 
 export function smileyImageForCode(code: string): ImageSourcePropType | null {
   return SMILEY_MAP[code] ?? emojiImageForToken(code);
 }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-const SMILEY_PATTERN = Object.keys(SMILEY_MAP)
-  .sort((a, b) => b.length - a.length)
-  .map(escapeRegExp)
-  .join('|');
-
-const SMILEY_REGEX = new RegExp(`\\[e:\\d{1,2}\\]|${SMILEY_PATTERN}`, 'g');
+const SMILEY_REGEX = buildSmileyRegex(Object.keys(SMILEY_MAP));
 
 export type SmileyVariant = 'smiley' | 'emoji';
 
