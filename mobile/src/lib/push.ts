@@ -155,6 +155,13 @@ function androidOptions(
     };
   }
   if (data.type !== 'dm') return withBadge;
+  if (data.imageUrl) {
+    return {
+      ...withBadge,
+      visibility: AndroidVisibility.PRIVATE,
+      style: { type: AndroidStyle.BIGPICTURE, picture: data.imageUrl, largeIcon: null },
+    };
+  }
   const me = useAuthStore.getState().user;
   return {
     ...withBadge,
