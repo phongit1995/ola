@@ -33,12 +33,7 @@ type UserStatsItem struct {
 	LastPlayAt     string    `json:"lastPlayAt" example:"2026-07-25T15:12:33Z"`
 }
 
-type UserStatsResponse struct {
-	Total  int64           `json:"total" example:"1"`
-	Limit  int             `json:"limit" example:"20"`
-	Offset int             `json:"offset" example:"0"`
-	Items  []UserStatsItem `json:"items"`
-}
+type UserStatsResponse = utils.Page[UserStatsItem]
 
 type SideStatsResponse struct {
 	ShooterLeft  int64 `json:"shooterLeft" example:"120"`

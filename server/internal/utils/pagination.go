@@ -9,6 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
+type Page[T any] struct {
+	Total  int64 `json:"total" example:"1"`
+	Limit  int   `json:"limit" example:"20"`
+	Offset int   `json:"offset" example:"0"`
+	Items  []T   `json:"items"`
+}
+
 func ParseLimit(c *gin.Context, defaultLimit, maxLimit int) int {
 	limit := defaultLimit
 	if s := c.Query("limit"); s != "" {
