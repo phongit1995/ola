@@ -30,13 +30,12 @@ import {
   parseMessageMetadata,
 } from '@ola/shared/lib';
 import {
-  GIFT_SOURCE,
   MESSAGE_STATUS,
   MESSAGE_TYPE,
   RELATIONSHIP_STATUS,
   REPORT_TARGET_TYPE,
 } from '@ola/shared/constants';
-import type { Message, NativeUploadFile, ReactionType } from '@ola/shared/types';
+import type { Message, NativeUploadFile, ReactionType, ChatTransferKind } from '@ola/shared/types';
 import { ChatCallButtons } from '@screens/call/ChatCallButtons';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -55,8 +54,6 @@ import {
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { RoomReactionsDialog } from '@screens/room/components/RoomReactionsDialog';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
-import { TransferKenDialog } from '@screens/ken/components/TransferKenDialog';
-import { GiftPickerDialog } from '@components/gift/GiftPickerDialog';
 import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 import { DIVIDER } from '@constants';
 import { useChatDetail } from './useChatDetail';
@@ -74,9 +71,6 @@ import {
   VoiceRecorderControl,
   type VoiceRecorderControlHandle,
 } from '@components/chat/voice/VoiceRecorderControl';
-import { TradingVipDialog } from './components/TradingVipDialog';
-import { TransferVipDaysDialog } from './components/TransferVipDaysDialog';
-import { VipDayTransferDialog } from './components/VipDayTransferDialog';
 import {
   selectVipDayTransferEnabled,
   useVipDayTransferConfigStore,
@@ -87,6 +81,7 @@ import { TypingIndicator } from './components/TypingIndicator';
 import { ReplyPreviewBar } from './components/ReplyPreviewBar';
 import { EditingNotice } from './components/EditingNotice';
 import type { PendingComposerImage } from '@components/chat/composerTypes';
+import { ChatTransferDialogs } from './components/ChatTransferDialogs';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 
@@ -141,17 +136,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   useIncomingGiftAnimation(messages, myId, title);
 
   const [openTab, setOpenTab] = useState<AttachPanelTab | null>(null);
-  const [transferKenOpen, setTransferKenOpen] = useState(false);
-  const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
-  const [vipDayTransferOpen, setVipDayTransferOpen] = useState(false);
+  const [activeTransfer, setActiveTransfer] = useState<ChatTransferKind | null>(null);
   const vipDayTransferEnabled = useVipDayTransferConfigStore(selectVipDayTransferEnabled);
   const loadVipDayTransferConfig = useVipDayTransferConfigStore((s) => s.load);
 
   useEffect(() => {
     void loadVipDayTransferConfig();
   }, [loadVipDayTransferConfig]);
-  const [tradingVipOpen, setTradingVipOpen] = useState(false);
-  const [giftOpen, setGiftOpen] = useState(false);
   const giftsEnabled = useGiftCatalogStore((s) => s.settings.enabled);
   const loadGiftSettings = useGiftCatalogStore((s) => s.loadSettings);
   const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
@@ -534,6 +525,15 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     return actions;
   }
 
+  function openTransfer(kind: ChatTransferKind) {
+    setOpenTab(null);
+    if (peerId === '') {
+      push('error', t('chat.actionError'));
+      return;
+    }
+    setActiveTransfer(kind);
+  }
+
   const transferReceiver = {
     id: peerId,
     name: title,
@@ -835,46 +835,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           }}
           onPickImage={() => void pickImages()}
           onPickCamera={() => void capturePhoto()}
-          onTransferKen={() => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
-            setTransferKenOpen(true);
-          }}
-          onTradingVip={() => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
-            setTradingVipOpen(true);
-          }}
-          onSendVipDays={() => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
-            setTransferVipDaysOpen(true);
-          }}
-          onVipDayTransfer={vipDayTransferEnabled ? () => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
-            setVipDayTransferOpen(true);
-          } : undefined}
+          onTransferKen={() => openTransfer('ken')}
+          onTradingVip={() => openTransfer('vip')}
+          onSendVipDays={() => openTransfer('vipDays')}
+          onVipDayTransfer={vipDayTransferEnabled ? () => openTransfer('vipDayTransfer') : undefined}
           onSendGift={giftsEnabled ? () => {
-            setOpenTab(null);
-            if (peerId === '') {
-              push('error', t('chat.actionError'));
-              return;
-            }
             Keyboard.dismiss();
-            setGiftOpen(true);
+            openTransfer('gift');
           } : undefined}
         />
       )}
@@ -884,43 +851,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
       <ChatReactionBalloons />
 
-      {transferKenOpen && peerId !== '' && (
-        <TransferKenDialog
-          visible
-          onClose={() => setTransferKenOpen(false)}
+      {peerId !== '' && (
+        <ChatTransferDialogs
+          active={activeTransfer}
           receiver={transferReceiver}
-        />
-      )}
-
-      {transferVipDaysOpen && peerId !== '' && (
-        <TransferVipDaysDialog
-          visible
-          onClose={() => setTransferVipDaysOpen(false)}
-          receiver={transferReceiver}
-        />
-      )}
-
-      {vipDayTransferOpen && vipDayTransferEnabled && peerId !== '' && (
-        <VipDayTransferDialog
-          visible
-          onClose={() => setVipDayTransferOpen(false)}
-          receiver={transferReceiver}
-        />
-      )}
-
-      {giftOpen && peerId !== '' && (
-        <GiftPickerDialog
-          source={GIFT_SOURCE.chat}
-          onClose={() => setGiftOpen(false)}
-          receiver={transferReceiver}
-        />
-      )}
-
-      {tradingVipOpen && peerId !== '' && (
-        <TradingVipDialog
-          visible
-          onClose={() => setTradingVipOpen(false)}
-          receiver={transferReceiver}
+          vipDayTransferEnabled={vipDayTransferEnabled}
+          onClose={() => setActiveTransfer(null)}
         />
       )}
 

@@ -14,9 +14,13 @@ import {
   nicknameTierLabel,
   normalizeDevice,
   normalizeNickname,
+  transferAmountDigits,
+  transferErrorText,
+  ApiError,
   vipHistoryIconTypeId,
   vipHistorySourceKey,
 } from '@ola/shared/lib';
+import { HTTP_STATUS, VIP_TRANSFER_BLOCKED_ERROR } from '@ola/shared/constants';
 import type { Friend } from '@ola/shared/types';
 
 describe('normalizeDevice', () => {
@@ -152,5 +156,36 @@ describe('smiley codes', () => {
 
   it('only covers the images it was given', () => {
     expect(Object.values(buildSmileyMap(['only']))).toEqual(['only', 'only']);
+  });
+});
+
+describe('transfer helpers', () => {
+  const t = ((key: string) => key) as unknown as TFunction;
+  const keys = {
+    network: 'net',
+    unauthorized: 'pwd',
+    forbidden: 'forbid',
+    blocked: 'blocked',
+  } as unknown as Parameters<typeof transferErrorText>[2];
+  const apiError = (status: number, message = 'server says no') => new ApiError(status, message);
+
+  it('keeps digits only, max 12', () => {
+    expect(transferAmountDigits('1.000a2')).toBe('10002');
+    expect(transferAmountDigits('1234567890123456')).toBe('123456789012');
+  });
+
+  it('maps transfer errors', () => {
+    expect(transferErrorText(t, apiError(0), keys)).toBe('net');
+    expect(transferErrorText(t, apiError(HTTP_STATUS.unauthorized), keys)).toBe('pwd');
+    expect(transferErrorText(t, apiError(400, VIP_TRANSFER_BLOCKED_ERROR), keys)).toBe('blocked');
+    expect(transferErrorText(t, apiError(HTTP_STATUS.forbidden), keys)).toBe('forbid');
+    expect(transferErrorText(t, apiError(500), keys)).toBe('server says no');
+  });
+
+  it('treats the blocked message as forbidden when no blocked key', () => {
+    const withoutBlocked = { ...keys, blocked: undefined };
+    expect(
+      transferErrorText(t, apiError(HTTP_STATUS.forbidden, VIP_TRANSFER_BLOCKED_ERROR), withoutBlocked),
+    ).toBe('forbid');
   });
 });

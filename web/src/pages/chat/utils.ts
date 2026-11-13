@@ -1,5 +1,10 @@
 import type { TFunction } from 'i18next';
-import type { ChatReplySnapshot, Conversation, Message } from '@app-types';
+import type {
+  ChatReplySnapshot,
+  Conversation,
+  Message,
+  ChatTransferKind,
+} from '@app-types';
 import { MESSAGE_TYPE } from '@constants';
 import {
   colorForName,
@@ -17,6 +22,7 @@ import type {
   ConversationView,
 } from './types';
 import { STATUS_MAP } from './constants';
+import type { AttachSendPayload } from '@components';
 
 export function conversationDisplayName(conversation: Conversation): string {
   return (
@@ -134,4 +140,10 @@ export function toBubble(message: Message, myId: string): ChatMessage {
     reactions: message.reactions,
     replyTo: message.replyTo,
   };
+}
+
+export function isChatTransferKind(
+  kind: AttachSendPayload['kind']
+): kind is ChatTransferKind {
+  return kind !== 'location';
 }

@@ -1,11 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { formatKen, toApiError } from '@ola/shared/lib';
-import { VipService } from '@ola/shared/services';
-import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import type { VipPackageItem } from '@ola/shared/types';
+import { formatKen } from '@ola/shared/lib';
 import { TransferReceiverRow } from '@components/transfer/TransferReceiverRow';
 import type { TransferReceiver } from '@components/transfer/types';
 import { TransferPasswordField } from '@components/transfer/TransferPasswordField';
@@ -14,7 +10,7 @@ import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { HTTP_STATUS } from '@ola/shared/constants';
+import { useTransferVipDays } from '@ola/shared/stores/vip/useTransferVipDays';
 
 const vipIcon = require('@assets/icons/apps/vip.png');
 
@@ -27,82 +23,21 @@ interface TransferVipDaysDialogProps {
 export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVipDaysDialogProps) {
   const colors = useThemeColors();
   const { t } = useTranslation();
-  const balance = useAuthStore((s) => s.user?.ken ?? 0);
-  const setUser = useAuthStore((s) => s.setUser);
-  const push = useToastStore((s) => s.push);
-
-  const [step, setStep] = useState<'select' | 'confirm'>('select');
-  const [loading, setLoading] = useState(true);
-  const [packages, setPackages] = useState<VipPackageItem[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const {
+    balance,
+    step,
+    setStep,
+    loading,
+    packages,
+    selected,
+    setSelectedId,
+    password,
+    setPassword,
+    submitting,
+    goToConfirm,
+    submitGift,
+  } = useTransferVipDays({ receiver, enabled: visible, onDone: onClose });
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!visible) return;
-    let active = true;
-    setLoading(true);
-    VipService.listPackages()
-      .then((res) => {
-        if (!active) return;
-        setPackages(res.items);
-        setSelectedId((current) => current ?? res.items[0]?.id ?? null);
-      })
-      .catch(() => undefined)
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [visible]);
-
-  const selected = packages.find((item) => item.id === selectedId) ?? null;
-
-  function goToConfirm() {
-    if (selected == null) {
-      push('error', t('chat.transferVipDaysErrSelect'));
-      return;
-    }
-    if (selected.kenPrice > balance) {
-      push('error', t('chat.transferVipDaysErrNotEnough'));
-      return;
-    }
-    setStep('confirm');
-  }
-
-  async function submitGift() {
-    if (selected == null || receiver.username == null || receiver.username === '') {
-      push('error', t('chat.actionError'));
-      return;
-    }
-    if (password.trim() === '') {
-      push('error', t('chat.transferVipDaysErrPassword'));
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const result = await VipService.giftPackage(selected.id, receiver.username, password);
-      const current = useAuthStore.getState().user;
-      if (current != null) setUser({ ...current, ken: result.kenBalance });
-      push('success', t('chat.transferVipDaysSuccess', { days: result.days, name: receiver.name }));
-      onClose();
-    } catch (error) {
-      const apiError = toApiError(error);
-      if (apiError.status === 0) {
-        push('error', t('chat.transferVipDaysError'));
-      } else if (apiError.status === HTTP_STATUS.unauthorized) {
-        push('error', t('chat.transferVipDaysErrWrongPassword'));
-      } else if (apiError.status === HTTP_STATUS.forbidden) {
-        push('error', t('chat.transferKenErrBlocked'));
-      } else {
-        push('error', apiError.message);
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   const title =
     step === 'confirm' ? t('chat.transferVipDaysConfirmTitle') : t('chat.transferVipDaysTitle');

@@ -6,17 +6,12 @@ import { useVipDayTransferForm } from '@ola/shared/stores/vip/useVipDayTransferF
 import { VipDayTransferFields } from '@/pages/vip/components/VipDayTransferFields';
 import { VipDayTransferSummary } from '@/pages/vip/components/VipDayTransferSummary';
 import vipIcon from '@/assets/icons/apps/vip.png';
+import type { TransferReceiver } from '../types';
 
 interface VipDayTransferDialogProps {
   open: boolean;
   onClose: () => void;
-  receiver: {
-    id: string;
-    name: string;
-    username?: string;
-    avatar?: string;
-    color: string;
-  };
+  receiver: TransferReceiver;
 }
 
 export function VipDayTransferDialog({

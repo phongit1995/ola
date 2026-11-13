@@ -96,3 +96,11 @@ export interface ChatMessageAbilities {
   canDelete: boolean;
   canReport: boolean;
 }
+
+export interface TransferReceiver {
+  id: string;
+  name: string;
+  username?: string;
+  avatar?: string;
+  color: string;
+}

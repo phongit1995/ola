@@ -1,37 +1,19 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, UserRow, UserSearchPicker } from '@components';
-import { colorForName, formatKen, toApiError, toast } from '@lib';
-import { KenService } from '@services';
+import { colorForName, formatKen } from '@lib';
 import type { UserSearchResult } from '@app-types';
-import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import kenIcon from '@/assets/icons/apps/ken.png';
-import { KEN_TRANSFER_MAX, KEN_TRANSFER_MIN } from '../constants';
-import { HTTP_STATUS } from '@constants';
-
-interface TransferKenReceiver {
-  id: string;
-  name: string;
-  username?: string;
-  avatar?: string;
-  color: string;
-}
+import { useTransferKen } from '@ola/shared/stores/ken/useTransferKen';
+import type { TransferReceiver } from '../types';
 
 interface TransferKenDialogProps {
   open: boolean;
   onClose: () => void;
-  receiver?: TransferKenReceiver;
+  receiver?: TransferReceiver;
 }
 
-type Step = 'recipient' | 'input' | 'confirm';
-
-const AMOUNT_MAX_DIGITS = 12;
-
-function onlyDigits(value: string): string {
-  return value.replace(/\D/g, '').slice(0, AMOUNT_MAX_DIGITS);
-}
-
-function toReceiver(user: UserSearchResult): TransferKenReceiver {
+function toReceiver(user: UserSearchResult): TransferReceiver {
   return {
     id: user.id,
     name: user.fullName || user.username,
@@ -47,98 +29,23 @@ export function TransferKenDialog({
   receiver,
 }: TransferKenDialogProps) {
   const { t } = useTranslation();
-  const myId = useAuthStore((s) => s.user?.id ?? '');
-  const balance = useAuthStore((s) => s.user?.ken ?? 0);
-  const setUser = useAuthStore((s) => s.setUser);
-
-  const [step, setStep] = useState<Step>(
-    receiver != null ? 'input' : 'recipient'
-  );
-  const [pickedReceiver, setPickedReceiver] =
-    useState<TransferKenReceiver | null>(null);
-  const [amountDigits, setAmountDigits] = useState('');
-  const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const {
+    balance,
+    step,
+    setStep,
+    activeReceiver,
+    amount,
+    displayAmount,
+    changeAmount,
+    password,
+    setPassword,
+    submitting,
+    pickReceiver,
+    changeReceiver,
+    goToConfirm,
+    submitTransfer,
+  } = useTransferKen({ receiver, toReceiver, onDone: onClose });
   const amountInputRef = useRef<HTMLInputElement>(null);
-
-  const activeReceiver = receiver ?? pickedReceiver;
-  const amount = amountDigits === '' ? 0 : Number(amountDigits);
-  const displayAmount = amountDigits === '' ? '' : formatKen(amount);
-
-  function pickReceiver(user: UserSearchResult) {
-    setPickedReceiver(toReceiver(user));
-    setStep('input');
-  }
-
-  function changeReceiver() {
-    setPickedReceiver(null);
-    setAmountDigits('');
-    setStep('recipient');
-  }
-
-  function goToConfirm() {
-    if (activeReceiver == null) return;
-    if (amount <= 0) {
-      toast.error(t('chat.transferKenErrEmpty'));
-      return;
-    }
-    if (activeReceiver.id === myId) {
-      toast.error(t('chat.transferKenErrSelf'));
-      return;
-    }
-    if (amount < KEN_TRANSFER_MIN) {
-      toast.error(
-        t('chat.transferKenErrMin', { min: formatKen(KEN_TRANSFER_MIN) })
-      );
-      return;
-    }
-    if (amount > KEN_TRANSFER_MAX) {
-      toast.error(
-        t('chat.transferKenErrMax', { max: formatKen(KEN_TRANSFER_MAX) })
-      );
-      return;
-    }
-    if (amount > balance) {
-      toast.error(t('chat.transferKenErrNotEnough'));
-      return;
-    }
-    setStep('confirm');
-  }
-
-  async function submitTransfer() {
-    if (activeReceiver == null) return;
-    if (password.trim() === '') {
-      toast.error(t('chat.transferKenErrPasswordEmpty'));
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const result = await KenService.transfer({
-        toUserId: activeReceiver.id,
-        amount,
-        password,
-      });
-      const current = useAuthStore.getState().user;
-      if (current != null) setUser({ ...current, ken: result.kenBalance });
-      toast.success(
-        t('chat.transferKenSuccess', { name: activeReceiver.name })
-      );
-      onClose();
-    } catch (error) {
-      const apiError = toApiError(error);
-      if (apiError.status === 0) {
-        toast.error(t('chat.transferKenError'));
-      } else if (apiError.status === HTTP_STATUS.unauthorized) {
-        toast.error(t('chat.transferKenErrPassword'));
-      } else if (apiError.status === HTTP_STATUS.forbidden) {
-        toast.error(t('chat.transferKenErrBlocked'));
-      } else {
-        toast.error(apiError.message);
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   const title =
     step === 'confirm'
@@ -221,7 +128,7 @@ export function TransferKenDialog({
             inputMode="numeric"
             value={displayAmount}
             onChange={(event) =>
-              setAmountDigits(onlyDigits(event.target.value))
+              changeAmount(event.target.value)
             }
             placeholder={t('chat.transferKenAmountPlaceholder')}
             className="mt-1 w-full rounded border border-black/12 px-3 py-2 text-base text-black/87 outline-none focus:border-ola-primary"

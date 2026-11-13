@@ -4,4 +4,3 @@ export const SWIPE_MAX = 88;
 
 export const SWIPE_TRIGGER = 56;
 
-export const TRADING_VIP_PAGE_SIZE = 100;

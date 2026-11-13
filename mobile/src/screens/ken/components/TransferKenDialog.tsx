@@ -1,10 +1,6 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
-import { formatKen, toApiError } from '@ola/shared/lib';
-import { KenService } from '@ola/shared/services';
-import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
+import { formatKen } from '@ola/shared/lib';
 import type { UserSearchResult } from '@ola/shared/types';
 import { TransferReceiverRow } from '@components/transfer/TransferReceiverRow';
 import type { TransferReceiver } from '@components/transfer/types';
@@ -15,23 +11,14 @@ import { UserSearchPicker } from '@components/user/UserSearchPicker';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { HTTP_STATUS } from '@ola/shared/constants';
+import { useTransferKen } from '@ola/shared/stores/ken/useTransferKen';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
-
-const KEN_TRANSFER_MIN = 1000;
-const KEN_TRANSFER_MAX = 10_000_000;
 
 interface TransferKenDialogProps {
   visible: boolean;
   onClose: () => void;
   receiver?: TransferReceiver;
-}
-
-type Step = 'recipient' | 'input' | 'confirm';
-
-function onlyDigits(value: string): string {
-  return value.replace(/\D/g, '').slice(0, 12);
 }
 
 function toReceiver(user: UserSearchResult): TransferReceiver {
@@ -44,86 +31,22 @@ function toReceiver(user: UserSearchResult): TransferReceiver {
 export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDialogProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const myId = useAuthStore((s) => s.user?.id ?? '');
-  const balance = useAuthStore((s) => s.user?.ken ?? 0);
-  const setUser = useAuthStore((s) => s.setUser);
-  const push = useToastStore((s) => s.push);
-
-  const [step, setStep] = useState<Step>(receiver != null ? 'input' : 'recipient');
-  const [pickedReceiver, setPickedReceiver] =
-    useState<TransferReceiver | null>(null);
-  const [amountDigits, setAmountDigits] = useState('');
-  const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  const activeReceiver = receiver ?? pickedReceiver;
-  const amount = amountDigits === '' ? 0 : Number(amountDigits);
-  const displayAmount = amountDigits === '' ? '' : formatKen(amount);
-
-  function pickReceiver(user: UserSearchResult) {
-    setPickedReceiver(toReceiver(user));
-    setStep('input');
-  }
-
-  function changeReceiver() {
-    setPickedReceiver(null);
-    setAmountDigits('');
-    setStep('recipient');
-  }
-
-  function goToConfirm() {
-    if (activeReceiver == null) return;
-    if (amount <= 0) {
-      push('error', t('chat.transferKenErrEmpty'));
-      return;
-    }
-    if (activeReceiver.id === myId) {
-      push('error', t('chat.transferKenErrSelf'));
-      return;
-    }
-    if (amount < KEN_TRANSFER_MIN) {
-      push('error', t('chat.transferKenErrMin', { min: formatKen(KEN_TRANSFER_MIN) }));
-      return;
-    }
-    if (amount > KEN_TRANSFER_MAX) {
-      push('error', t('chat.transferKenErrMax', { max: formatKen(KEN_TRANSFER_MAX) }));
-      return;
-    }
-    if (amount > balance) {
-      push('error', t('chat.transferKenErrNotEnough'));
-      return;
-    }
-    setStep('confirm');
-  }
-
-  async function submitTransfer() {
-    if (activeReceiver == null) return;
-    if (password.trim() === '') {
-      push('error', t('chat.transferKenErrPasswordEmpty'));
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const result = await KenService.transfer({ toUserId: activeReceiver.id, amount, password });
-      const current = useAuthStore.getState().user;
-      if (current != null) setUser({ ...current, ken: result.kenBalance });
-      push('success', t('chat.transferKenSuccess', { name: activeReceiver.name }));
-      onClose();
-    } catch (error) {
-      const apiError = toApiError(error);
-      if (apiError.status === 0) {
-        push('error', t('chat.transferKenError'));
-      } else if (apiError.status === HTTP_STATUS.unauthorized) {
-        push('error', t('chat.transferKenErrPassword'));
-      } else if (apiError.status === HTTP_STATUS.forbidden) {
-        push('error', t('chat.transferKenErrBlocked'));
-      } else {
-        push('error', apiError.message);
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const {
+    balance,
+    step,
+    setStep,
+    activeReceiver,
+    amount,
+    displayAmount,
+    changeAmount,
+    password,
+    setPassword,
+    submitting,
+    pickReceiver,
+    changeReceiver,
+    goToConfirm,
+    submitTransfer,
+  } = useTransferKen({ receiver, toReceiver, onDone: onClose });
 
   const title = step === 'confirm' ? t('chat.transferKenConfirmTitle') : t('chat.transferKenTitle');
 
@@ -184,7 +107,7 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
             autoFocus
             keyboardType="number-pad"
             value={displayAmount}
-            onChangeText={(text) => setAmountDigits(onlyDigits(text))}
+            onChangeText={changeAmount}
             placeholder={t('chat.transferKenAmountPlaceholder')}
             placeholderTextColor="rgba(0,0,0,0.38)"
             className="mt-1 w-full rounded px-3 py-2 text-base"

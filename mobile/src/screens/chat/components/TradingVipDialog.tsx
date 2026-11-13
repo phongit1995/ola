@@ -1,11 +1,6 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
-import { VIP_TRANSFER_BLOCKED_ERROR, HTTP_STATUS } from '@ola/shared/constants';
-import { isVipIconTransferable, toApiError, vipName } from '@ola/shared/lib';
-import { VipService } from '@ola/shared/services';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import type { VipIconInstance } from '@ola/shared/types';
+import { vipName } from '@ola/shared/lib';
 import { TransferReceiverRow } from '@components/transfer/TransferReceiverRow';
 import type { TransferReceiver } from '@components/transfer/types';
 import { TransferPasswordField } from '@components/transfer/TransferPasswordField';
@@ -13,7 +8,7 @@ import { VipBadge } from '@components/ui/VipBadge';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { TRADING_VIP_PAGE_SIZE } from '../constants';
+import { useTradingVip } from '@ola/shared/stores/vip/useTradingVip';
 
 interface TradingVipDialogProps {
   visible: boolean;
@@ -24,80 +19,18 @@ interface TradingVipDialogProps {
 export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialogProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const push = useToastStore((s) => s.push);
-
-  const [step, setStep] = useState<'select' | 'confirm'>('select');
-  const [loading, setLoading] = useState(true);
-  const [vips, setVips] = useState<VipIconInstance[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!visible) return;
-    let active = true;
-    setLoading(true);
-    VipService.store({ limit: TRADING_VIP_PAGE_SIZE })
-      .then((res) => {
-        if (active) {
-          setVips(
-            res.items.filter(
-              (item) => !item.isUsing && !item.isLocked && isVipIconTransferable(item),
-            ),
-          );
-        }
-      })
-      .catch(() => undefined)
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [visible]);
-
-  const selected = vips.find((item) => item.instanceId === selectedId) ?? null;
-
-  function pickVip(instanceId: string) {
-    setSelectedId(instanceId);
-    setStep('confirm');
-  }
-
-  async function submitTransfer() {
-    if (selected == null) {
-      push('error', t('chat.tradingVipErrSelect'));
-      return;
-    }
-    if (password.trim() === '') {
-      push('error', t('chat.tradingVipErrPassword'));
-      return;
-    }
-    if (receiver.id === '') {
-      push('error', t('chat.actionError'));
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await VipService.transferIcon(selected.instanceId, { toUserId: receiver.id, password });
-      push('success', t('chat.tradingVipSuccess', { name: receiver.name }));
-      onClose();
-    } catch (error) {
-      const apiError = toApiError(error);
-      if (apiError.status === HTTP_STATUS.unauthorized) {
-        push('error', t('chat.tradingVipErrWrongPassword'));
-      } else if (apiError.message === VIP_TRANSFER_BLOCKED_ERROR) {
-        push('error', t('chat.tradingVipErrBlocked'));
-      } else if (apiError.status === HTTP_STATUS.forbidden) {
-        push('error', t('chat.tradingVipErrNotAllowed'));
-      } else if (apiError.status === 0) {
-        push('error', t('chat.tradingVipError'));
-      } else {
-        push('error', apiError.message);
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const {
+    step,
+    setStep,
+    loading,
+    vips,
+    selected,
+    pickVip,
+    password,
+    setPassword,
+    submitting,
+    submitTransfer,
+  } = useTradingVip({ receiver, enabled: visible, onDone: onClose });
 
   const footer =
     step === 'confirm' ? (
