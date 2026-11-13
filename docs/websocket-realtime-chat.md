@@ -6,7 +6,7 @@
 > - Backend ola: `server/internal/transport/websocket/{server,event_handler}.go`, `server/internal/utils/message.emit.go`, `server/internal/domain/{message,conversation,call}/*.handler.go`, `server/internal/constants/constant.go`.
 > - Backend reference: `chat-service/internal/transport/websocket/*`, `internal/domain/*/handler.go` (cấu trúc gần như **giống hệt** — ola được dựng theo reference).
 > - Client reference: `chat-service/clients/packages/shared/src/{services/socket.ts, store/chat.realtime.ts, store/chatStore.ts}`.
-> - Client ola: `web/src/shared/services/socket.service.ts`, `web/src/store/roomChatStore.ts`.
+> - Client ola: `web/src/shared/services/socket.service.ts`, `packages/shared/src/stores/room/roomChatStore.ts`.
 
 ---
 

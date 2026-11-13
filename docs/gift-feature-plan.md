@@ -177,7 +177,7 @@ Port từ web bằng skill `port-web-to-mobile`. Logic chung nằm ở `@ola/sha
 
 - `useGiftPicker`: chọn quà/số lượng/lời nhắn, giữ `clientRequestId` (đổi khi đổi lựa chọn, giữ nguyên khi thử lại), bước xác nhận theo `confirmOverKen`, gửi, cập nhật số dư, chạy hiệu ứng, toast lỗi.
 - `useGiftHistory` (phân trang, cờ đang tải riêng từng tab), `useGiftLeaderboard` (đệm theo loại + kỳ, lỗi gắn với đúng tab/kỳ và tự xoá khi đổi lựa chọn), `useGiftWall`.
-- `useGiftAnimationStore` (hàng đợi hiệu ứng, chống chạy trùng theo id); web `@/store/giftAnimationStore` chỉ re-export.
+- `useGiftAnimationStore` (hàng đợi hiệu ứng, chống chạy trùng theo id); web và mobile import thẳng `@ola/shared/stores/gift/giftAnimationStore`.
 - Hằng số tab/nhãn kỳ/huy chương (`GIFT_LEADERBOARD_TYPE_TABS`, `GIFT_HISTORY_TABS`...) và `isRecentGift` (quà mới ≤ 15 giây) cũng ở shared.
 
 Phần riêng của mobile:

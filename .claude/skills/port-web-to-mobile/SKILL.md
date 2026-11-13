@@ -28,7 +28,7 @@ App web (`web/`, React + Vite + Tailwind v4 DOM) và app mobile (`mobile/`, Reac
 ## 1. KIẾN TRÚC — cái gì dùng chung, cái gì phải viết lại
 
 ### Dùng chung qua `@ola/shared` — TÁI DÙNG, TUYỆT ĐỐI đừng viết lại
-Web `@/store/*` phần lớn chỉ `export * from '@ola/shared/stores/*'`. Cả 2 app import cùng nguồn:
+Web và mobile đều import thẳng `@ola/shared/stores/*` (web `@/store/*` chỉ còn store riêng của web, không còn file re-export):
 - **Store (zustand)**: `@ola/shared/stores/<feature>/<store>` — `room/roomChatStore`, `chat/chatStore`, `auth/authStore`, `feed/meFeedStore`, `toast/toastStore`... (store đứng một mình thì phẳng: `settingsStore`, `themeStore`). Actions realtime/optimistic/API **đã có sẵn** (vd `roomChatStore` đã có `sendImage`, `resendRoomImage`, `reactionNotice`, `deleteRoomMessage`). Mobile chỉ việc **gọi + render**.
 - **Types**: `@ola/shared/types` — `RoomMessage`, `ReactionType`, `MeNotificationType`... Nguồn sự thật DUY NHẤT của kiểu. Web đổi type → mobile phải theo (đây là nguồn lỗi `tsc` khi mobile tụt hậu).
 - **Services / API**: `@ola/shared/services` (`RoomService`, `MeService`...) + `@ola/shared/api`. Upload nhận `UploadFile = Blob | NativeUploadFile{uri,name,type}` ⇒ service **đã hỗ trợ file RN**, mobile chỉ cần tạo `{uri,name,type}`.
