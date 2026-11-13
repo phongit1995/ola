@@ -38,7 +38,6 @@ var (
 	ErrCannotTransferSelf = errors.New("cannot transfer to yourself")
 	ErrUserNotFound       = apperr.ErrUserNotFound
 	ErrPackageNotFound    = errors.New("vip package not found")
-	ErrInsufficientKen    = errors.New("insufficient ken balance")
 	ErrReceiverNotFound   = errors.New("receiver not found")
 	ErrCannotGiftSelf     = errors.New("cannot gift to yourself")
 	ErrShopItemNotFound   = errors.New("vip shop item not found")

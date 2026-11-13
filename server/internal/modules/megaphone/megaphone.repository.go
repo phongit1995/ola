@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/apperr"
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -204,34 +205,23 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 			return err
 		}
 
-		balance := sender.Ken
 		if p.KenPrice > 0 {
-			balance = sender.Ken - p.KenPrice
-			if err := tx.Model(&models.User{}).Where("id = ?", p.SenderID).Update("ken", balance).Error; err != nil {
-				return err
-			}
 			refID := record.ID
 			actorID := p.SenderID
-			kenTx := models.KenTransaction{
-				UserID:        p.SenderID,
-				Direction:     models.KenDirectionDebit,
-				Type:          models.KenTxTypeMegaphone,
-				Amount:        p.KenPrice,
-				BalanceBefore: sender.Ken,
-				BalanceAfter:  balance,
-				Description:   "Phát loa",
-				RefType:       KenRefTypeMegaphone,
-				RefID:         &refID,
-				ActorType:     models.KenActorUser,
-				ActorID:       &actorID,
-			}
-			if err := tx.Create(&kenTx).Error; err != nil {
+			if _, err := ledger.Debit(tx, &sender, p.KenPrice, ledger.Entry{
+				Type:        models.KenTxTypeMegaphone,
+				Description: "Phát loa",
+				RefType:     KenRefTypeMegaphone,
+				RefID:       &refID,
+				ActorType:   models.KenActorUser,
+				ActorID:     &actorID,
+			}); err != nil {
 				return err
 			}
 		}
 
 		result.Megaphone = record
-		result.SenderBalance = balance
+		result.SenderBalance = sender.Ken
 		result.Wait = wait
 		return nil
 	})

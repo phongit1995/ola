@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -151,7 +152,7 @@ func (r *Repository) CreateShot(shooterID uuid.UUID, side models.PenSide, bet in
 			return err
 		}
 		if u.Ken < bet {
-			return ErrInsufficientKen
+			return ledger.ErrInsufficientKen
 		}
 
 		shot = models.PenShot{
@@ -230,7 +231,7 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 
 		bet := s.BetAmount
 		if keeper.Ken < bet {
-			return ErrInsufficientKen
+			return ledger.ErrInsufficientKen
 		}
 
 		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN — mở lại sau.

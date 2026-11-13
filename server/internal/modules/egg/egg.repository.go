@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/vip"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -149,7 +151,7 @@ func (r *Repository) ApplyDraw(userID uuid.UUID, pack *models.EggPack, outcome D
 		}
 
 		if u.Ken < pack.KenCost {
-			return ErrInsufficientKen
+			return ledger.ErrInsufficientKen
 		}
 
 		before := u.Ken
@@ -200,23 +202,13 @@ func (r *Repository) ApplyDraw(userID uuid.UUID, pack *models.EggPack, outcome D
 			}
 		case models.EggCategoryVipIcon:
 			if outcome.VipTypeID != nil {
-				icon := models.UserVipIcon{
-					UserID:     userID,
-					VipIconID:  *outcome.VipTypeID,
-					Source:     "egg",
-					AcquiredAt: time.Now(),
-				}
-				if err := tx.Create(&icon).Error; err != nil {
+				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceEgg); err != nil {
 					return err
 				}
 			}
 		case models.EggCategoryVipDays:
 			if outcome.VipDays != nil && *outcome.VipDays > 0 {
-				base := time.Now()
-				if u.VipEndTime != nil && u.VipEndTime.After(base) {
-					base = *u.VipEndTime
-				}
-				end := base.Add(time.Duration(*outcome.VipDays) * 24 * time.Hour)
+				end := vip.ExtendEnd(time.Now(), u.VipEndTime, *outcome.VipDays)
 				newEnd = &end
 			}
 		}

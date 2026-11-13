@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/apperr"
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -196,25 +197,19 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 
 		receiverID := p.ReceiverID
 		actorID := p.SenderID
-		kenTx := models.KenTransaction{
-			UserID:        p.SenderID,
-			Direction:     models.KenDirectionDebit,
-			Type:          models.KenTxTypeGiftSent,
-			Amount:        total,
-			BalanceBefore: sender.Ken,
-			BalanceAfter:  senderAfter,
-			Description:   p.Description,
-			RefType:       KenRefTypeUser,
-			RefID:         &receiverID,
-			ActorType:     models.KenActorUser,
-			ActorID:       &actorID,
+		if _, err := ledger.Record(tx, p.SenderID, models.KenDirectionDebit, total, sender.Ken, senderAfter, ledger.Entry{
+			Type:        models.KenTxTypeGiftSent,
+			Description: p.Description,
+			RefType:     KenRefTypeUser,
+			RefID:       &receiverID,
+			ActorType:   models.KenActorUser,
+			ActorID:     &actorID,
 			Metadata: models.JSONB{
 				"giftTransactionId": record.ID.String(),
 				"giftId":            p.Gift.ID.String(),
 				"quantity":          p.Quantity,
 			},
-		}
-		if err := tx.Create(&kenTx).Error; err != nil {
+		}); err != nil {
 			return err
 		}
 

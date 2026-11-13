@@ -17,9 +17,8 @@ import (
 )
 
 var (
-	ErrWheelNotFound   = errors.New("wheel not found")
-	ErrInsufficientKen = errors.New("insufficient ken balance")
-	ErrWheelEmpty      = errors.New("wheel has no active segments")
+	ErrWheelNotFound = errors.New("wheel not found")
+	ErrWheelEmpty    = errors.New("wheel has no active segments")
 )
 
 type SpinOutcome struct {

@@ -17,9 +17,8 @@ import (
 )
 
 var (
-	ErrPackNotFound    = errors.New("egg pack not found")
-	ErrInsufficientKen = errors.New("insufficient ken balance")
-	ErrPackEmpty       = errors.New("egg pack has no active rewards")
+	ErrPackNotFound = errors.New("egg pack not found")
+	ErrPackEmpty    = errors.New("egg pack has no active rewards")
 )
 
 type DrawOutcome struct {

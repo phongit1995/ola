@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
@@ -182,7 +184,7 @@ func (r *Repository) ApplySpin(userID uuid.UUID, wheel *models.Wheel, outcome Sp
 		cost := 0
 		if !isFree {
 			if u.Ken < wheel.KenCost {
-				return ErrInsufficientKen
+				return ledger.ErrInsufficientKen
 			}
 			cost = wheel.KenCost
 		}
@@ -197,43 +199,23 @@ func (r *Repository) ApplySpin(userID uuid.UUID, wheel *models.Wheel, outcome Sp
 			}
 		case models.WheelSegmentVipItem:
 			if outcome.VipTypeID != nil {
-				icon := models.UserVipIcon{
-					UserID:     userID,
-					VipIconID:  *outcome.VipTypeID,
-					Source:     "wheel",
-					AcquiredAt: time.Now(),
-				}
-				if err := tx.Create(&icon).Error; err != nil {
+				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceWheel); err != nil {
 					return err
 				}
 			}
 		case models.WheelSegmentVipDays:
 			if outcome.VipDays != nil && *outcome.VipDays > 0 {
-				base := time.Now()
-				if u.VipEndTime != nil && u.VipEndTime.After(base) {
-					base = *u.VipEndTime
-				}
-				end := base.Add(time.Duration(*outcome.VipDays) * 24 * time.Hour)
+				end := vip.ExtendEnd(time.Now(), u.VipEndTime, *outcome.VipDays)
 				newEnd = &end
 			}
 		case models.WheelSegmentVipRandom:
 			if outcome.VipTypeID != nil {
-				icon := models.UserVipIcon{
-					UserID:     userID,
-					VipIconID:  *outcome.VipTypeID,
-					Source:     "wheel",
-					AcquiredAt: time.Now(),
-				}
-				if err := tx.Create(&icon).Error; err != nil {
+				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceWheel); err != nil {
 					return err
 				}
 			}
 			if outcome.VipDays != nil && *outcome.VipDays > 0 {
-				base := time.Now()
-				if u.VipEndTime != nil && u.VipEndTime.After(base) {
-					base = *u.VipEndTime
-				}
-				end := base.Add(time.Duration(*outcome.VipDays) * 24 * time.Hour)
+				end := vip.ExtendEnd(time.Now(), u.VipEndTime, *outcome.VipDays)
 				newEnd = &end
 			}
 			if outcome.KenAmount != nil && *outcome.KenAmount > 0 {

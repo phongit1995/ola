@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"ola-chat-server/internal/apperr"
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -16,7 +17,6 @@ var (
 	ErrClanNotFound             = errors.New("clan not found")
 	ErrClanNameTaken            = errors.New("clan name is already taken")
 	ErrClanOwnLimitReached      = errors.New("you have reached the maximum number of clans you can own")
-	ErrInsufficientKen          = errors.New("insufficient ken balance")
 	ErrNotClanMember            = errors.New("you are not a member of this clan")
 	ErrAlreadyClanMember        = errors.New("you are already a member of this clan")
 	ErrClanBanned               = errors.New("you are banned from this clan")
@@ -56,15 +56,15 @@ func (r *Repository) CreateClan(p CreateClanParams) (*CreateClanResult, error) {
 	var result CreateClanResult
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		var owner models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&owner, "id = ?", p.OwnerID).Error; err != nil {
+		owner, err := ledger.LockUser(tx, p.OwnerID)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return apperr.ErrUserNotFound
 			}
 			return err
 		}
-		if owner.Ken < p.Cost {
-			return ErrInsufficientKen
+		if err := ledger.EnsureBalance(owner, p.Cost); err != nil {
+			return err
 		}
 
 		var owned int64
@@ -100,25 +100,16 @@ func (r *Repository) CreateClan(p CreateClanParams) (*CreateClanResult, error) {
 
 		balanceAfter := owner.Ken - p.Cost
 		if p.Cost > 0 {
-			if err := tx.Model(&models.User{}).Where("id = ?", p.OwnerID).Update("ken", balanceAfter).Error; err != nil {
-				return err
-			}
 			clanID := clan.ID
 			actorID := p.OwnerID
-			kenTx := models.KenTransaction{
-				UserID:        p.OwnerID,
-				Direction:     models.KenDirectionDebit,
-				Type:          models.KenTxTypeClanCreate,
-				Amount:        p.Cost,
-				BalanceBefore: owner.Ken,
-				BalanceAfter:  balanceAfter,
-				Description:   "create clan #" + p.Handle,
-				RefType:       "clan",
-				RefID:         &clanID,
-				ActorType:     models.KenActorUser,
-				ActorID:       &actorID,
-			}
-			if err := tx.Create(&kenTx).Error; err != nil {
+			if _, err := ledger.Debit(tx, owner, p.Cost, ledger.Entry{
+				Type:        models.KenTxTypeClanCreate,
+				Description: "create clan #" + p.Handle,
+				RefType:     "clan",
+				RefID:       &clanID,
+				ActorType:   models.KenActorUser,
+				ActorID:     &actorID,
+			}); err != nil {
 				return err
 			}
 		}

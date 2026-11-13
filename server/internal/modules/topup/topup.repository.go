@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -93,42 +94,32 @@ func (r *Repository) Credit(p CreditParams) (*models.User, *models.KenTransactio
 			return ErrAlreadyCredited
 		}
 
-		var u models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", p.UserID).Error; err != nil {
+		u, err := ledger.LockUser(tx, p.UserID)
+		if err != nil {
 			return err
 		}
 
-		before := u.Ken
-		if p.KenAmount <= 0 || before > math.MaxInt32-p.KenAmount {
+		if p.KenAmount <= 0 || u.Ken > math.MaxInt32-p.KenAmount {
 			return ErrBalanceOverflow
 		}
-		after := before + p.KenAmount
-		if err := tx.Model(&models.User{}).Where("id = ?", p.UserID).Update("ken", after).Error; err != nil {
-			return err
-		}
-
-		kenTx = models.KenTransaction{
-			UserID:        p.UserID,
-			Direction:     models.KenDirectionCredit,
-			Type:          models.KenTxTypeTopup,
-			Amount:        p.KenAmount,
-			BalanceBefore: before,
-			BalanceAfter:  after,
-			Description:   p.Description,
-			RefType:       "topup_transaction",
-			RefID:         &p.RowID,
-			ActorType:     p.ActorType,
-			ActorID:       p.ActorID,
+		credited, err := ledger.Credit(tx, u, p.KenAmount, ledger.Entry{
+			Type:        models.KenTxTypeTopup,
+			Description: p.Description,
+			RefType:     "topup_transaction",
+			RefID:       &p.RowID,
+			ActorType:   p.ActorType,
+			ActorID:     p.ActorID,
 			Metadata: models.JSONB{
 				"providerTxId": p.ProviderTxID,
 				"amountVnd":    p.AmountVnd,
 				"bonusKen":     p.BonusKen,
 				"bonusPercent": p.BonusPercent,
 			},
-		}
-		if err := tx.Create(&kenTx).Error; err != nil {
+		})
+		if err != nil {
 			return err
 		}
+		kenTx = *credited
 
 		if err := tx.Model(&models.TopupTransaction{}).Where("id = ?", p.RowID).Updates(map[string]interface{}{
 			"status":        models.TopupTxStatusCredited,
@@ -143,8 +134,7 @@ func (r *Repository) Credit(p CreditParams) (*models.User, *models.KenTransactio
 			return err
 		}
 
-		u.Ken = after
-		updatedUser = u
+		updatedUser = *u
 		return nil
 	})
 	if err != nil {

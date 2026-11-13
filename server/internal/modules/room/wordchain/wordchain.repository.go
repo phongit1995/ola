@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 	"strconv"
 	"time"
@@ -188,32 +189,24 @@ func (r *Repository) ChargeHint(ctx context.Context, charge HintCharge) (HintCha
 		if user.Ken < charge.Price {
 			return errKenShort
 		}
-		balance := user.Ken - charge.Price
-		if err := tx.Model(&models.User{}).Where("id = ?", charge.UserID).Update("ken", balance).Error; err != nil {
-			return err
-		}
 		actorID := charge.UserID
-		txn := models.KenTransaction{
-			UserID:        charge.UserID,
-			Direction:     models.KenDirectionDebit,
-			Type:          models.KenTxTypeWordChainHint,
-			Amount:        charge.Price,
-			BalanceBefore: user.Ken,
-			BalanceAfter:  balance,
-			Description:   "word chain hint for " + charge.Word,
-			RefType:       "word_chain",
-			ActorType:     models.KenActorUser,
-			ActorID:       &actorID,
+		txn, err := ledger.Debit(tx, &user, charge.Price, ledger.Entry{
+			Type:        models.KenTxTypeWordChainHint,
+			Description: "word chain hint for " + charge.Word,
+			RefType:     "word_chain",
+			ActorType:   models.KenActorUser,
+			ActorID:     &actorID,
 			Metadata: models.JSONB{
 				"sessionId": charge.SessionID.String(),
 				"word":      charge.Word,
 				"turn":      charge.Turn,
 				"hints":     charge.Hints,
 			},
-		}
-		if err := tx.Create(&txn).Error; err != nil {
+		})
+		if err != nil {
 			return err
 		}
+		balance := user.Ken
 		purchase := models.WordChainHintPurchase{
 			UserID:           charge.UserID,
 			SessionID:        charge.SessionID,
@@ -266,31 +259,26 @@ func (r *Repository) ChargeGuesses(ctx context.Context, charge GuessCharge) (int
 		if user.Ken < charge.Price {
 			return errKenShort
 		}
-		balance = user.Ken - charge.Price
-		if err := tx.Model(&models.User{}).Where("id = ?", charge.UserID).Update("ken", balance).Error; err != nil {
-			return err
-		}
 		actorID := charge.UserID
 		sessionID := charge.SessionID
-		return tx.Create(&models.KenTransaction{
-			UserID:        charge.UserID,
-			Direction:     models.KenDirectionDebit,
-			Type:          models.KenTxTypeWordChainGuess,
-			Amount:        charge.Price,
-			BalanceBefore: user.Ken,
-			BalanceAfter:  balance,
-			Description:   fmt.Sprintf("word chain +%d guesses for %s", charge.Guesses, charge.Word),
-			RefType:       "word_chain",
-			RefID:         &sessionID,
-			ActorType:     models.KenActorUser,
-			ActorID:       &actorID,
+		if _, err := ledger.Debit(tx, &user, charge.Price, ledger.Entry{
+			Type:        models.KenTxTypeWordChainGuess,
+			Description: fmt.Sprintf("word chain +%d guesses for %s", charge.Guesses, charge.Word),
+			RefType:     "word_chain",
+			RefID:       &sessionID,
+			ActorType:   models.KenActorUser,
+			ActorID:     &actorID,
 			Metadata: models.JSONB{
 				"sessionId": charge.SessionID.String(),
 				"word":      charge.Word,
 				"turn":      charge.Turn,
 				"guesses":   charge.Guesses,
 			},
-		}).Error
+		}); err != nil {
+			return err
+		}
+		balance = user.Ken
+		return nil
 	})
 	if err != nil {
 		return 0, err

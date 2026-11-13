@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/apperr"
+	"ola-chat-server/internal/ledger"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
@@ -211,11 +212,11 @@ func lockUsersInOrder(tx *gorm.DB, ids ...uuid.UUID) (map[uuid.UUID]*models.User
 	}
 	locked := make(map[uuid.UUID]*models.User, len(ordered))
 	for _, id := range ordered {
-		var u models.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", id).Error; err != nil {
+		u, err := ledger.LockUser(tx, id)
+		if err != nil {
 			return nil, err
 		}
-		locked[id] = &u
+		locked[id] = u
 	}
 	return locked, nil
 }
@@ -334,9 +335,6 @@ func (r *Repository) purchase(p purchaseParams, alreadyOwnedErr error) (*models.
 			return ErrInsufficientKen
 		}
 		newKen := payer.Ken - item.KenPrice
-		if err := tx.Model(&models.User{}).Where("id = ?", p.payerID).Update("ken", newKen).Error; err != nil {
-			return err
-		}
 
 		now := time.Now()
 		frame := models.UserAvatarFrame{
@@ -369,27 +367,18 @@ func (r *Repository) purchase(p purchaseParams, alreadyOwnedErr error) (*models.
 			return err
 		}
 
-		if item.KenPrice > 0 {
-			payerID := p.payerID
-			kenTx := models.KenTransaction{
-				UserID:        p.payerID,
-				Direction:     models.KenDirectionDebit,
-				Type:          models.KenTxTypeAvatarFrame,
-				Amount:        item.KenPrice,
-				BalanceBefore: payer.Ken,
-				BalanceAfter:  newKen,
-				Description:   p.description,
-				RefType:       KenRefTypePurchase,
-				RefID:         &purchase.ID,
-				ActorType:     models.KenActorUser,
-				ActorID:       &payerID,
-			}
-			if err := tx.Create(&kenTx).Error; err != nil {
-				return err
-			}
+		payerID := p.payerID
+		if _, err := ledger.Debit(tx, payer, item.KenPrice, ledger.Entry{
+			Type:        models.KenTxTypeAvatarFrame,
+			Description: p.description,
+			RefType:     KenRefTypePurchase,
+			RefID:       &purchase.ID,
+			ActorType:   models.KenActorUser,
+			ActorID:     &payerID,
+		}); err != nil {
+			return err
 		}
 
-		payer.Ken = newKen
 		payerAfter = *payer
 		return nil
 	})

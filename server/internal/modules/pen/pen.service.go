@@ -18,11 +18,10 @@ import (
 )
 
 var (
-	ErrInsufficientKen = errors.New("insufficient ken balance")
-	ErrShotNotFound    = errors.New("pen shot not found")
-	ErrShotNotOpen     = errors.New("pen shot is no longer open")
-	ErrCannotCatchOwn  = errors.New("you cannot catch your own pen")
-	ErrNotYourShot     = errors.New("this pen is not yours")
+	ErrShotNotFound   = errors.New("pen shot not found")
+	ErrShotNotOpen    = errors.New("pen shot is no longer open")
+	ErrCannotCatchOwn = errors.New("you cannot catch your own pen")
+	ErrNotYourShot    = errors.New("this pen is not yours")
 )
 
 type Service struct {
