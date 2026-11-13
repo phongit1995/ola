@@ -6,7 +6,7 @@ import { measureRichText, richTextNativeAvailable } from '@lib/richTextNativeCon
 import { cappedFontScale, CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
 import { useAppTypography } from '@components/AppFontProvider';
 import { useThemeColors } from '@hooks/useThemeColors';
-import OlaRichTextViewNative from '../specs/OlaRichTextViewNativeComponent';
+import OlaRichTextViewNative from '@components/specs/OlaRichTextViewNativeComponent';
 
 let nativeRichTextEnabled = true;
 

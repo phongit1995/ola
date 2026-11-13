@@ -1,6 +1,6 @@
 import { Image } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import NativeOlaRichText from '../components/specs/NativeOlaRichText';
+import NativeOlaRichText from '@components/specs/NativeOlaRichText';
 import { EMOJI_IMAGES } from './emojiImages';
 import { SMILEY_ALIASES } from '@ola/shared/lib';
 import { SMILEY_IMAGES, imageAspectRatio } from './chatSmiley';

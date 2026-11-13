@@ -32,7 +32,7 @@ import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNot
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { androidNotificationBase } from '@lib/notificationAndroid';
 import i18n from '../i18n';
-import { ROOT_ROUTES } from '../navigation/routes';
+import { ROOT_ROUTES } from '@navigation/routes';
 
 type PushData = Record<string, string>;
 type NavRef = NavigationContainerRefWithCurrent<ParamListBase>;

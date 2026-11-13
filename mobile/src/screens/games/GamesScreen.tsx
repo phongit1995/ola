@@ -12,7 +12,7 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { trackEvent } from '@lib/telemetry';
 import { useArcadeOverlayStore } from '@ola/shared/stores/arcadeOverlayStore';
 import { useArcadeStore } from '@ola/shared/stores/arcadeStore';
-import { GAME_ITEMS, type AppItem } from '../apps/constants';
+import { GAME_ITEMS, type AppItem } from '@screens/apps/constants';
 
 interface GameTileProps {
   icon?: number;
