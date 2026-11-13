@@ -6,7 +6,7 @@ import { useCallStore } from '@ola/shared/stores/call/callStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { ensureCallPermissions } from './lib/callPermissionGuard';
 import { ChatPhoneIcon, ChatVideoIcon } from './icons';
-import { CALL_MODE, CONVERSATION_KIND } from '@constants';
+import { CALL_MODE, CONVERSATION_KIND, CALL_TYPE } from '@constants';
 
 export function ChatCallButtons() {
   const { t } = useTranslation();
@@ -84,7 +84,7 @@ export function ChatCallButtons() {
         type="button"
         aria-label={t('call.voiceCall')}
         disabled={busy}
-        onClick={() => void handleCall('audio')}
+        onClick={() => void handleCall(CALL_TYPE.audio)}
         className="flex h-9 w-9 items-center justify-center rounded-full text-white hover:bg-white/15 disabled:opacity-40"
       >
         <ChatPhoneIcon />
@@ -93,7 +93,7 @@ export function ChatCallButtons() {
         type="button"
         aria-label={t('call.videoCall')}
         disabled={busy}
-        onClick={() => void handleCall('video')}
+        onClick={() => void handleCall(CALL_TYPE.video)}
         className="flex h-9 w-9 items-center justify-center rounded-full text-white hover:bg-white/15 disabled:opacity-40"
       >
         <ChatVideoIcon />

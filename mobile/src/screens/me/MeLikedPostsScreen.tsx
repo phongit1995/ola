@@ -26,6 +26,7 @@ import { MeComposerModal } from './components/MeComposerModal';
 import { useQuickComment } from './useQuickComment';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
+import { POST_REACTION } from '@ola/shared/constants';
 
 export function MeLikedPostsScreen() {
   const { t, i18n } = useTranslation();
@@ -162,8 +163,8 @@ export function MeLikedPostsScreen() {
             <MePostCard
               post={item}
               timeLabel={formatTime(item.createdAt)}
-              onToggleLike={(id) => void toggleReaction(id, 'like')}
-              onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
+              onToggleLike={(id) => void toggleReaction(id, POST_REACTION.like)}
+              onToggleDislike={(id) => void toggleReaction(id, POST_REACTION.dislike)}
               onOpenProfile={openProfile}
               onOpenComments={(id, focusInput) => {
                 setCommentFocusInput(focusInput === true);
@@ -184,8 +185,8 @@ export function MeLikedPostsScreen() {
           language={language}
           autoFocusInput={commentFocusInput}
           onClose={() => setCommentPostId(null)}
-          onToggleLike={(id) => void toggleReaction(id, 'like')}
-          onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
+          onToggleLike={(id) => void toggleReaction(id, POST_REACTION.like)}
+          onToggleDislike={(id) => void toggleReaction(id, POST_REACTION.dislike)}
           onOpenProfile={openProfile}
           onCommentDelta={adjustCommentCount}
         />

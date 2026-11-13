@@ -250,8 +250,8 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
         <MeCommentSheet
           post={openPost}
           onClose={() => setOpenPost(null)}
-          onToggleLike={(id) => toggleReaction(id, 'like')}
-          onToggleDislike={(id) => toggleReaction(id, 'dislike')}
+          onToggleLike={(id) => toggleReaction(id, POST_REACTION.like)}
+          onToggleDislike={(id) => toggleReaction(id, POST_REACTION.dislike)}
           onOpenProfile={(nick, color) =>
             setProfileTarget({ username: nick, color })
           }

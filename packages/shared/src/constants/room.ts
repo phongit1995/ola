@@ -1,4 +1,4 @@
-import type { RoomFilters } from '../types/api/room.type';
+import type { RoomFilters, RoomMessageStatus } from '../types/api/room.type';
 import type { RoomChatStatus } from '../types/client/roomChat.type';
 
 export const DEFAULT_ROOM_FILTERS: RoomFilters = {
@@ -25,3 +25,9 @@ export const ROOM_CHAT_STATUS = {
   error: 'error',
   vipRequired: 'vipRequired',
 } as const satisfies Record<string, RoomChatStatus>;
+
+export const ROOM_MESSAGE_STATUS = {
+  uploading: 'uploading',
+  sent: 'sent',
+  failed: 'failed',
+} as const satisfies Record<string, RoomMessageStatus>;

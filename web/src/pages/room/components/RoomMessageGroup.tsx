@@ -4,7 +4,7 @@ import mentionIcon from '@/assets/icons/room/ic_tag_people.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
 import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
 import { Spinner, VipAvatar } from '@components';
-import { MESSAGE_STATUS, MESSAGE_TYPE } from '@constants';
+import { MESSAGE_TYPE, ROOM_MESSAGE_STATUS } from '@constants';
 import { useLongPress, useUploadPreviewLease } from '@hooks';
 import {
   bubbleSurface,
@@ -120,8 +120,8 @@ function RoomBubble({
   onResendAudio,
 }: RoomBubbleProps) {
   const { t } = useTranslation();
-  const uploading = message.status === MESSAGE_STATUS.uploading;
-  const failed = message.status === MESSAGE_STATUS.failed;
+  const uploading = message.status === ROOM_MESSAGE_STATUS.uploading;
+  const failed = message.status === ROOM_MESSAGE_STATUS.failed;
   const suppressClick = useRef(false);
   const longPress = useLongPress((anchor) => {
     if (uploading || failed) return;

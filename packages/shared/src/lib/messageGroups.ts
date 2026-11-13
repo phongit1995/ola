@@ -39,7 +39,7 @@ function resolveReplySnapshot(
   if (reply == null || reply.type === MESSAGE_TYPE.image) return reply;
   const original = byId.get(reply.messageId);
   if (original?.type === MESSAGE_TYPE.image) {
-    return { ...reply, type: 'image', imageUrl: reply.imageUrl ?? original.imageUrl };
+    return { ...reply, type: MESSAGE_TYPE.image, imageUrl: reply.imageUrl ?? original.imageUrl };
   }
   return reply;
 }

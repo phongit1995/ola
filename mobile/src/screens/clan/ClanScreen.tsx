@@ -34,7 +34,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { useClanScreen } from './useClanScreen';
 import { ClanHeaderCard } from './components/ClanHeaderCard';
-import { CLAN_ROLE } from '@ola/shared/constants';
+import { CLAN_ROLE, POST_REACTION } from '@ola/shared/constants';
 
 interface ClanScreenProps {
   handle?: string;
@@ -300,8 +300,8 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
             <MePostCard
               post={item}
               timeLabel={timeFormatter(item.createdAt)}
-              onToggleLike={(postId) => handleReaction(postId, 'like')}
-              onToggleDislike={(postId) => handleReaction(postId, 'dislike')}
+              onToggleLike={(postId) => handleReaction(postId, POST_REACTION.like)}
+              onToggleDislike={(postId) => handleReaction(postId, POST_REACTION.dislike)}
               onOpenProfile={openProfile}
               onOpenComments={openComments}
               onQuickComment={(postId) => setQuickCommentPostId(postId)}
@@ -398,8 +398,8 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
           language={i18n.language}
           autoFocusInput={commentFocusInput}
           onClose={() => setCommentPostId(null)}
-          onToggleLike={(postId) => handleReaction(postId, 'like')}
-          onToggleDislike={(postId) => handleReaction(postId, 'dislike')}
+          onToggleLike={(postId) => handleReaction(postId, POST_REACTION.like)}
+          onToggleDislike={(postId) => handleReaction(postId, POST_REACTION.dislike)}
           onOpenProfile={openProfile}
           onCommentDelta={adjustCommentCount}
         />

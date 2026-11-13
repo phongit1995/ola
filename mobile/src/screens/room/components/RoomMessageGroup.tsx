@@ -35,7 +35,7 @@ import { useThemeColors } from '@hooks/useThemeColors';
 import type { AnchorRect } from './MessageActionSheet';
 import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
 import { roomBubbleTextMaxWidth } from '../utils';
-import { MESSAGE_STATUS, MESSAGE_TYPE } from '@ola/shared/constants';
+import { MESSAGE_TYPE, ROOM_MESSAGE_STATUS } from '@ola/shared/constants';
 import { BUBBLE_IN_BG, BUBBLE_IN_SHADOW } from '@constants';
 
 const mentionIcon = require('@assets/icons/room/ic_tag_people.png');
@@ -167,8 +167,8 @@ function BubbleContent({
     message.type === MESSAGE_TYPE.audio &&
     message.audioUrl != null &&
     message.audioUrl !== '';
-  const uploading = message.status === MESSAGE_STATUS.uploading;
-  const failed = message.status === MESSAGE_STATUS.failed;
+  const uploading = message.status === ROOM_MESSAGE_STATUS.uploading;
+  const failed = message.status === ROOM_MESSAGE_STATUS.failed;
 
   if (isImage) {
     const size = fitImageInBox(
@@ -378,8 +378,8 @@ function RoomBubble({
   onResendImage?: (id: string) => void;
   onResendAudio?: (id: string) => void;
 }) {
-  const uploading = message.status === MESSAGE_STATUS.uploading;
-  const failed = message.status === MESSAGE_STATUS.failed;
+  const uploading = message.status === ROOM_MESSAGE_STATUS.uploading;
+  const failed = message.status === ROOM_MESSAGE_STATUS.failed;
   const bubbleRef = useRef<ViewInstance>(null);
 
   function handleLongPress() {

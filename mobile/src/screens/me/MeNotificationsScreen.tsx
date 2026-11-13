@@ -15,6 +15,7 @@ import {
   ME_ERROR_CODE,
   ME_NOTIFICATION_LABEL_KEY,
   ME_NOTIFICATION_TYPE,
+  POST_REACTION,
 } from '@ola/shared/constants';
 import {
   createTimeFormatter,
@@ -26,7 +27,7 @@ import {
   toApiError,
 } from '@ola/shared/lib';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
-import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';
+import type { MeNotification, MeNotificationType, Post, PostReaction } from '@ola/shared/types';
 import { REACTION_IMAGE } from '@lib/reactions';
 import { SmileyText } from '@lib/richText';
 import { useMomentOverlays } from '@screens/moment/useMomentOverlays';
@@ -113,7 +114,7 @@ export function MeNotificationsScreen() {
     }
   }
 
-  async function toggleReaction(id: string, type: 'like' | 'dislike') {
+  async function toggleReaction(id: string, type: PostReaction) {
     if (openPost == null) return;
     const active = openPost.myReaction === type;
     const optimistic = applyPostReaction(openPost, active ? null : type, selfLiker());
@@ -223,8 +224,8 @@ export function MeNotificationsScreen() {
             post={openPost}
             language={language}
             onClose={() => setOpenPost(null)}
-            onToggleLike={(id) => toggleReaction(id, 'like')}
-            onToggleDislike={(id) => toggleReaction(id, 'dislike')}
+            onToggleLike={(id) => toggleReaction(id, POST_REACTION.like)}
+            onToggleDislike={(id) => toggleReaction(id, POST_REACTION.dislike)}
             onOpenProfile={openProfile}
             onCommentDelta={adjustCommentCount}
           />

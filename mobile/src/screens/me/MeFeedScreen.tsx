@@ -38,6 +38,7 @@ import { useMomentEnabled } from '@ola/shared/stores/moment/momentConfigStore';
 import { useQuickComment } from './useQuickComment';
 import { TAB_FILTER } from './constants';
 import type { MeTab } from './types';
+import { POST_REACTION } from '@ola/shared/constants';
 
 const editIcon = require('@assets/icons/me/ic_action_edit.png');
 
@@ -261,8 +262,8 @@ export function MeFeedScreen() {
               <MePostCard
                 post={item}
                 timeLabel={timeFormatter(item.createdAt)}
-                onToggleLike={(id) => handleReaction(id, 'like')}
-                onToggleDislike={(id) => handleReaction(id, 'dislike')}
+                onToggleLike={(id) => handleReaction(id, POST_REACTION.like)}
+                onToggleDislike={(id) => handleReaction(id, POST_REACTION.dislike)}
                 onOpenProfile={openProfile}
                 onOpenComments={openComments}
                 onQuickComment={(id) => setQuickCommentPostId(id)}
@@ -380,8 +381,8 @@ export function MeFeedScreen() {
           language={i18n.language}
           autoFocusInput={commentFocusInput}
           onClose={() => setCommentPostId(null)}
-          onToggleLike={(id) => handleReaction(id, 'like')}
-          onToggleDislike={(id) => handleReaction(id, 'dislike')}
+          onToggleLike={(id) => handleReaction(id, POST_REACTION.like)}
+          onToggleDislike={(id) => handleReaction(id, POST_REACTION.dislike)}
           onOpenProfile={openProfile}
           onCommentDelta={adjustCommentCount}
         />

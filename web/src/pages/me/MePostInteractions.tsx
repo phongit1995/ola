@@ -19,7 +19,7 @@ import { MeLikersDialog } from './components/MeLikersDialog';
 import { UserProfileView } from '../profile/UserProfileView';
 import { EDIT_WINDOW_MS } from './constants';
 import type { MePost } from './types';
-import { HTTP_STATUS } from '@constants';
+import { HTTP_STATUS, POST_REACTION } from '@constants';
 
 export interface MePostSource {
   posts: MePost[];
@@ -235,11 +235,11 @@ export function MePostInteractions({
   }, []);
 
   const toggleLike = useCallback(
-    (id: string) => toggleReaction(id, 'like'),
+    (id: string) => toggleReaction(id, POST_REACTION.like),
     [toggleReaction]
   );
   const toggleDislike = useCallback(
-    (id: string) => toggleReaction(id, 'dislike'),
+    (id: string) => toggleReaction(id, POST_REACTION.dislike),
     [toggleReaction]
   );
 

@@ -58,7 +58,7 @@ export function createChatMessageActions(
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
-          type: 'text',
+          type: MESSAGE_TYPE.text,
           content: text,
           status: MESSAGE_STATUS.sending,
           ...(reply != null ? { replyTo: replySnapshotOf(reply) } : {}),
@@ -66,7 +66,7 @@ export function createChatMessageActions(
         (id) =>
           MessageService.send({
             conversationId,
-            type: 'text',
+            type: MESSAGE_TYPE.text,
             content: text,
             clientMsgId: id,
             ...(reply != null ? { replyToId: reply.id } : {}),
@@ -85,7 +85,7 @@ export function createChatMessageActions(
       try {
         await MessageService.sendDirect({
           recipientId: draft.id,
-          type: 'text',
+          type: MESSAGE_TYPE.text,
           content: text,
           clientMsgId: randomUuid(),
         });
@@ -111,7 +111,7 @@ export function createChatMessageActions(
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
-          type: 'image',
+          type: MESSAGE_TYPE.image,
           metadata: JSON.stringify({
             url: previewUrl,
             uploadName: nativeFile?.name,
@@ -151,7 +151,7 @@ export function createChatMessageActions(
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
-          type: 'audio',
+          type: MESSAGE_TYPE.audio,
           metadata: JSON.stringify({
             url: previewUrl,
             duration,
@@ -198,7 +198,7 @@ export function createChatMessageActions(
         if (target.type === MESSAGE_TYPE.text) {
           saved = await MessageService.send({
             conversationId,
-            type: 'text',
+            type: MESSAGE_TYPE.text,
             content: target.content,
             clientMsgId,
           });
