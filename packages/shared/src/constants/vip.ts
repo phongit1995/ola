@@ -1,6 +1,7 @@
 import type { BuyVipMode } from '../types/client/vipPurchase.type';
 
 export const BUY_VIP_DEFAULT_TYPE_ID = 4;
+export const VIP_STORE_PAGE_SIZE = 100;
 
 export const BUY_VIP_MODE_ORDER: readonly BuyVipMode[] = [
   'buy',

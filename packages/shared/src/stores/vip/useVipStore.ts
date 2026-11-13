@@ -1,52 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
-import { VipService } from '@ola/shared/services';
-import { isVipIconTransferable, vipName } from '@ola/shared/lib';
-import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import type { VipIconInstance, VipStoreResult } from '@ola/shared/types';
-import type { ListOption } from '@components/ui/ListOptionDialog';
-import { VIP_PAGE_SIZE } from './constants';
-import { VIP_PRIVACY_KEYS } from '@ola/shared/constants';
+import i18n from 'i18next';
+import { VIP_PRIVACY_KEYS } from '../../constants/settings';
+import { VIP_STORE_PAGE_SIZE } from '../../constants/vip';
+import { isVipIconTransferable } from '../../lib/giftCode';
+import { toast } from '../../lib/toast';
+import { vipName } from '../../lib/vip';
+import { vipRemainingText } from '../../lib/vipPurchase';
+import { VipService } from '../../services/vip.service';
+import type { VipIconInstance, VipStoreResult } from '../../types/api/vip.type';
+import type { MenuOption } from '../../types/client/menu.type';
+import { useAuthStore } from '../auth/authStore';
 
-function buildDurationText(
-  t: TFunction,
-  vipEndTime: string | null,
-  remainingDays: number | null,
-  loadedAt: number,
-): string {
-  if (vipEndTime != null) {
-    const diffMs = new Date(vipEndTime).getTime() - loadedAt;
-    if (Number.isNaN(diffMs)) {
-      return remainingDays != null && remainingDays > 0
-        ? t('vip.daysLeft', { count: remainingDays })
-        : t('vip.noVip');
-    }
-    if (diffMs <= 0) return t('vip.expired');
-    const ONE_DAY = 86_400_000;
-    const ONE_HOUR = 3_600_000;
-    const ONE_MINUTE = 60_000;
-    if (diffMs >= ONE_DAY) return t('vip.daysLeft', { count: Math.ceil(diffMs / ONE_DAY) });
-    const hours = Math.floor(diffMs / ONE_HOUR);
-    const minutes = Math.floor((diffMs % ONE_HOUR) / ONE_MINUTE);
-    if (hours >= 1) {
-      return minutes > 0
-        ? t('vip.hoursMinutesLeft', { hours, minutes })
-        : t('vip.hoursLeft', { count: hours });
-    }
-    if (minutes >= 1) return t('vip.minutesLeft', { count: minutes });
-    return t('vip.expiringSoon');
-  }
-  return remainingDays != null && remainingDays > 0
-    ? t('vip.daysLeft', { count: remainingDays })
-    : t('vip.noVip');
-}
-
-export function useVipStoreScreen() {
-  const { t } = useTranslation();
+export function useVipStore() {
+  const t = i18n.t;
   const refreshUser = useAuthStore((s) => s.refreshUser);
-  const push = useToastStore((s) => s.push);
 
   const [store, setStore] = useState<VipStoreResult | null>(null);
   const [items, setItems] = useState<VipIconInstance[]>([]);
@@ -63,7 +30,7 @@ export function useVipStoreScreen() {
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
 
   const loadPage = useCallback(async (offset: number) => {
-    const res = await VipService.store({ limit: VIP_PAGE_SIZE, offset });
+    const res = await VipService.store({ limit: VIP_STORE_PAGE_SIZE, offset });
     setStore(res);
     setLoadedAt(Date.now());
     setItems((prev) => (offset === 0 ? res.items : [...prev, ...res.items]));
@@ -76,7 +43,7 @@ export function useVipStoreScreen() {
     let active = true;
     loadPage(0)
       .catch(() => {
-        if (active) push('info', t('common.error'));
+        if (active) toast.info(t('common.error'));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -84,7 +51,7 @@ export function useVipStoreScreen() {
     return () => {
       active = false;
     };
-  }, [loadPage, push, t]);
+  }, [loadPage, t]);
 
   const total = store?.total ?? 0;
   const hasMore = items.length < total;
@@ -99,7 +66,7 @@ export function useVipStoreScreen() {
     void loadPage(items.length).finally(() => setLoadingMore(false));
   }
 
-  const durationText = buildDurationText(t, vipEndTime, remainingDays, loadedAt);
+  const durationText = vipRemainingText(t, vipEndTime, remainingDays, loadedAt);
 
   async function runAction(action: () => Promise<unknown>, successText: string, syncUser = false) {
     if (busy) return;
@@ -108,9 +75,9 @@ export function useVipStoreScreen() {
       await action();
       await reload();
       if (syncUser) await refreshUser();
-      push('success', successText);
+      toast.success(successText);
     } catch {
-      push('info', t('common.error'));
+      toast.info(t('common.error'));
     } finally {
       setBusy(false);
     }
@@ -181,8 +148,8 @@ export function useVipStoreScreen() {
     );
   }
 
-  function buildMenuOptions(icon: VipIconInstance, onTransfer: () => void): ListOption[] {
-    const options: ListOption[] = [];
+  function buildMenuOptions(icon: VipIconInstance, onTransfer: () => void): MenuOption[] {
+    const options: MenuOption[] = [];
     if (!icon.isUsing) {
       options.push({ key: 'use', label: t('vip.actionUse'), onSelect: () => setUseTarget(icon) });
     }
@@ -205,7 +172,7 @@ export function useVipStoreScreen() {
     return options;
   }
 
-  function changePrivacyOptions(): ListOption[] {
+  function privacyOptions(): MenuOption[] {
     return VIP_PRIVACY_KEYS.map((key, index) => ({
       key,
       label: t(`vip.${key}`),
@@ -233,7 +200,8 @@ export function useVipStoreScreen() {
     confirmUse,
     confirmDelete,
     buildMenuOptions,
-    changePrivacyOptions,
+    privacyOptions,
+    hasMore,
     busy,
     selectMode,
     setSelectMode,

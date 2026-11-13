@@ -19,6 +19,7 @@ import {
   ApiError,
   vipHistoryIconTypeId,
   vipHistorySourceKey,
+  vipRemainingText,
 } from '@ola/shared/lib';
 import { HTTP_STATUS, VIP_TRANSFER_BLOCKED_ERROR } from '@ola/shared/constants';
 import type { Friend } from '@ola/shared/types';
@@ -187,5 +188,29 @@ describe('transfer helpers', () => {
     expect(
       transferErrorText(t, apiError(HTTP_STATUS.forbidden, VIP_TRANSFER_BLOCKED_ERROR), withoutBlocked),
     ).toBe('forbid');
+  });
+});
+
+describe('vipRemainingText', () => {
+  const t = ((key: string, opts?: Record<string, number>) =>
+    opts == null ? key : `${key}:${JSON.stringify(opts)}`) as unknown as TFunction;
+  const now = Date.UTC(2026, 10, 13, 0, 0, 0);
+  const at = (ms: number) => new Date(now + ms).toISOString();
+
+  it('uses remaining days without an end time', () => {
+    expect(vipRemainingText(t, null, 3, now)).toBe('vip.daysLeft:{"count":3}');
+    expect(vipRemainingText(t, null, 0, now)).toBe('vip.noVip');
+    expect(vipRemainingText(t, 'not-a-date', null, now)).toBe('vip.noVip');
+  });
+
+  it('formats time left from the end time', () => {
+    expect(vipRemainingText(t, at(-1), 5, now)).toBe('vip.expired');
+    expect(vipRemainingText(t, at(36 * 3_600_000), null, now)).toBe('vip.daysLeft:{"count":2}');
+    expect(vipRemainingText(t, at(2 * 3_600_000 + 5 * 60_000), null, now)).toBe(
+      'vip.hoursMinutesLeft:{"hours":2,"minutes":5}',
+    );
+    expect(vipRemainingText(t, at(3 * 3_600_000), null, now)).toBe('vip.hoursLeft:{"count":3}');
+    expect(vipRemainingText(t, at(10 * 60_000), null, now)).toBe('vip.minutesLeft:{"count":10}');
+    expect(vipRemainingText(t, at(30_000), null, now)).toBe('vip.expiringSoon');
   });
 });

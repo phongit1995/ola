@@ -36,3 +36,4 @@ export type * from './vipPurchase.type';
 export type * from './story.type';
 export type * from './wordChain.type';
 export type * from './announcement.type';
+export type * from './menu.type';
