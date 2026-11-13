@@ -20,7 +20,8 @@ func TestContainerResolvesEveryDependency(t *testing.T) {
 	}
 	invocations := []interface{}{
 		func(*config.Config, *zap.SugaredLogger) {},
-		func(*websocket.Server, *kafka.Consumer, *kafka.KafkaEventAdapter, *push.Sender, *wordchain.Access, *config.Config) {},
+		func(*websocket.Server, *kafka.Consumer, *kafka.KafkaEventAdapter, *push.Sender, *wordchain.Access, *config.Config) {
+		},
 	}
 	for _, invoke := range invocations {
 		if err := c.Invoke(invoke); err != nil {
