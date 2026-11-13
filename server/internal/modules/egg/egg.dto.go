@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	userModule "ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
 )
@@ -142,12 +143,7 @@ type DrawListResponse struct {
 	Offset int        `json:"offset"`
 }
 
-type DrawUserView struct {
-	ID       uuid.UUID `json:"id"`
-	Username string    `json:"username"`
-	FullName string    `json:"fullName"`
-	Avatar   string    `json:"avatar"`
-}
+type DrawUserView = userModule.UserSummary
 
 type AdminDrawView struct {
 	DrawView

@@ -810,7 +810,7 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 	return response
 }
 
-func (s *Service) resolveSpouse(user *models.User) *SpouseInfo {
+func (s *Service) resolveSpouse(user *models.User) *UserBrief {
 	if user.SpouseID == nil {
 		return nil
 	}
@@ -818,7 +818,7 @@ func (s *Service) resolveSpouse(user *models.User) *SpouseInfo {
 	if err != nil || spouse == nil {
 		return nil
 	}
-	return &SpouseInfo{
+	return &UserBrief{
 		ID:       user.SpouseID.String(),
 		Username: spouse.Username,
 		FullName: spouse.FullName,

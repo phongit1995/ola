@@ -8,6 +8,7 @@ import (
 
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/moment"
+	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
@@ -281,7 +282,7 @@ func toMomentItem(r *models.Moment, now time.Time) MomentItem {
 		State:       momentState(r, now),
 		Enabled:     r.Enabled,
 		MediaPurged: purged,
-		Author:      toAuthor(r.Author),
+		Author:      userModule.ToUserBrief(r.Author),
 		CreatedAt:   r.CreatedAt.UTC().Format(time.RFC3339),
 		ExpiresAt:   r.ExpiresAt.UTC().Format(time.RFC3339),
 	}
@@ -316,16 +317,4 @@ func toMusicItem(r *models.Moment) *MomentMusicItem {
 		item.URL = r.MusicURL
 	}
 	return item
-}
-
-func toAuthor(u *models.User) *AuthorResponse {
-	if u == nil {
-		return nil
-	}
-	return &AuthorResponse{
-		ID:       u.ID.String(),
-		Username: u.Username,
-		FullName: u.FullName,
-		Avatar:   u.Avatar,
-	}
 }

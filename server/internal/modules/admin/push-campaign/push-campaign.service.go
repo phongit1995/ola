@@ -9,6 +9,7 @@ import (
 
 	pushBroadcastEvents "ola-chat-server/internal/domain/push-broadcast"
 	"ola-chat-server/internal/models"
+	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/push"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/utils"
@@ -147,12 +148,7 @@ func toCampaignItem(campaign *models.PushCampaign) CampaignItem {
 		item.FinishedAt = campaign.FinishedAt.UTC().Format(time.RFC3339)
 	}
 	if campaign.TargetUser != nil {
-		item.TargetUser = &UserBrief{
-			ID:       campaign.TargetUser.ID.String(),
-			Username: campaign.TargetUser.Username,
-			FullName: campaign.TargetUser.FullName,
-			Avatar:   campaign.TargetUser.Avatar,
-		}
+		item.TargetUser = userModule.ToUserBrief(campaign.TargetUser)
 	}
 	if campaign.Creator != nil {
 		item.CreatedBy = &AdminBrief{

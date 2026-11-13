@@ -1,13 +1,12 @@
 package adminme
 
-import "ola-chat-server/internal/modules/moderation"
+import (
+	"ola-chat-server/internal/modules/moderation"
 
-type AuthorResponse struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+	userModule "ola-chat-server/internal/modules/user"
+)
+
+type AuthorResponse = userModule.UserBrief
 
 type MeImageResponse struct {
 	URL      string `json:"url"`

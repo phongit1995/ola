@@ -246,15 +246,6 @@ func toSpouseInfo(u *models.User) *SpouseInfo {
 	}
 }
 
-func toBrief(u *models.User) *UserBrief {
-	return &UserBrief{
-		ID:       u.ID.String(),
-		Username: u.Username,
-		FullName: u.FullName,
-		Avatar:   u.Avatar,
-	}
-}
-
 func toProposalItem(p *models.MarriageProposal) ProposalItem {
 	item := ProposalItem{
 		ID:        p.ID.String(),
@@ -263,10 +254,10 @@ func toProposalItem(p *models.MarriageProposal) ProposalItem {
 		CreatedAt: p.CreatedAt.Format(time.RFC3339),
 	}
 	if p.Proposer != nil {
-		item.Proposer = toBrief(p.Proposer)
+		item.Proposer = user.ToUserBrief(p.Proposer)
 	}
 	if p.Addressee != nil {
-		item.Addressee = toBrief(p.Addressee)
+		item.Addressee = user.ToUserBrief(p.Addressee)
 	}
 	if p.RespondedAt != nil {
 		item.RespondedAt = p.RespondedAt.Format(time.RFC3339)

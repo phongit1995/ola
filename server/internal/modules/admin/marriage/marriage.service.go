@@ -3,7 +3,7 @@ package adminmarriage
 import (
 	"time"
 
-	"github.com/google/uuid"
+	userModule "ola-chat-server/internal/modules/user"
 )
 
 type Service struct {
@@ -12,13 +12,6 @@ type Service struct {
 
 func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
-}
-
-func userInfo(id uuid.UUID, username, fullName, avatar string) UserInfo {
-	if username == "" {
-		return UserInfo{ID: id.String(), Username: id.String()[:8]}
-	}
-	return UserInfo{ID: id.String(), Username: username, FullName: fullName, Avatar: avatar}
 }
 
 func (s *Service) GetStats(f StatsFilter) (*StatsResponse, error) {
@@ -55,8 +48,8 @@ func (s *Service) ListMarriages(f ListFilter, limit, offset int) (*MarriageListR
 	for i, row := range rows {
 		item := MarriageItem{
 			ID:        row.ID.String(),
-			UserA:     userInfo(row.UserLowID, row.LowUsername, row.LowFullName, row.LowAvatar),
-			UserB:     userInfo(row.UserHighID, row.HighUsername, row.HighFullName, row.HighAvatar),
+			UserA:     userModule.UserBriefOf(row.UserLowID, row.LowUsername, row.LowFullName, row.LowAvatar),
+			UserB:     userModule.UserBriefOf(row.UserHighID, row.HighUsername, row.HighFullName, row.HighAvatar),
 			Status:    row.Status,
 			MarriedAt: row.MarriedAt.UTC().Format(time.RFC3339),
 		}
@@ -80,8 +73,8 @@ func (s *Service) ListProposals(f ListFilter, limit, offset int) (*ProposalListR
 	for i, row := range rows {
 		item := ProposalItem{
 			ID:        row.ID.String(),
-			Proposer:  userInfo(row.ProposerID, row.ProposerUsername, row.ProposerFullName, row.ProposerAvatar),
-			Addressee: userInfo(row.AddresseeID, row.AddresseeUsername, row.AddresseeFullName, row.AddresseeAvatar),
+			Proposer:  userModule.UserBriefOf(row.ProposerID, row.ProposerUsername, row.ProposerFullName, row.ProposerAvatar),
+			Addressee: userModule.UserBriefOf(row.AddresseeID, row.AddresseeUsername, row.AddresseeFullName, row.AddresseeAvatar),
 			Message:   row.Message,
 			Status:    row.Status,
 			CreatedAt: row.CreatedAt.UTC().Format(time.RFC3339),

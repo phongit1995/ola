@@ -1,6 +1,11 @@
 package adminvip
 
-import "time"
+import (
+	"time"
+
+	userModule "ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/utils"
+)
 
 const (
 	PurchaseKindPackage = "package"
@@ -18,12 +23,7 @@ type PurchaseFilter struct {
 	To     *time.Time
 }
 
-type UserInfo struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+type UserInfo = userModule.UserBrief
 
 type PurchaseItem struct {
 	ID         string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -49,19 +49,9 @@ type DayTransferItem struct {
 	CreatedAt  string    `json:"createdAt" example:"2026-10-19T10:00:00Z"`
 }
 
-type DayTransferListResponse struct {
-	Total  int64             `json:"total" example:"1"`
-	Limit  int               `json:"limit" example:"20"`
-	Offset int               `json:"offset" example:"0"`
-	Items  []DayTransferItem `json:"items"`
-}
+type DayTransferListResponse = utils.Page[DayTransferItem]
 
-type PurchaseListResponse struct {
-	Total  int64          `json:"total" example:"1"`
-	Limit  int            `json:"limit" example:"20"`
-	Offset int            `json:"offset" example:"0"`
-	Items  []PurchaseItem `json:"items"`
-}
+type PurchaseListResponse = utils.Page[PurchaseItem]
 
 type PurchaseTotals struct {
 	Count        int64 `json:"count"`

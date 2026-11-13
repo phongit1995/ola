@@ -2,15 +2,11 @@ package adminconversation
 
 import (
 	"ola-chat-server/internal/modules/message"
+	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/utils"
 )
 
-type UserBrief struct {
-	ID       string `json:"id" example:"ca4c6d54-870c-4735-b9a6-cce05a04aedb"`
-	Username string `json:"username" example:"minhanh"`
-	FullName string `json:"fullName,omitempty" example:"Minh Anh"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+type UserBrief = userModule.UserBrief
 
 type ConversationItem struct {
 	ID                 string     `json:"id"`

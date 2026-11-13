@@ -3,17 +3,13 @@ package adminrelationship
 import (
 	"time"
 
+	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 )
 
-type UserInfo struct {
-	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username string `json:"username" example:"john_doe"`
-	FullName string `json:"fullName,omitempty" example:"John Doe"`
-	Avatar   string `json:"avatar,omitempty" example:"https://cdn.ola.vn/a.png"`
-}
+type UserInfo = userModule.UserBrief
 
 type StatsFilter struct {
 	From *time.Time
@@ -53,12 +49,7 @@ type RelationshipItem struct {
 	ActionedAt string   `json:"actionedAt,omitempty" example:"2026-07-26T10:05:00Z"`
 }
 
-type RelationshipListResponse struct {
-	Total  int64              `json:"total" example:"1"`
-	Limit  int                `json:"limit" example:"20"`
-	Offset int                `json:"offset" example:"0"`
-	Items  []RelationshipItem `json:"items"`
-}
+type RelationshipListResponse = utils.Page[RelationshipItem]
 
 type FollowFilter struct {
 	FollowerID *uuid.UUID
@@ -75,12 +66,7 @@ type FollowItem struct {
 	CreatedAt string   `json:"createdAt" example:"2026-07-26T10:00:00Z"`
 }
 
-type FollowListResponse struct {
-	Total  int64        `json:"total" example:"1"`
-	Limit  int          `json:"limit" example:"20"`
-	Offset int          `json:"offset" example:"0"`
-	Items  []FollowItem `json:"items"`
-}
+type FollowListResponse = utils.Page[FollowItem]
 
 type UserStatsFilter struct {
 	UserID *uuid.UUID
@@ -96,12 +82,7 @@ type UserStatsItem struct {
 	Following int64    `json:"following" example:"18"`
 }
 
-type UserStatsResponse struct {
-	Total  int64           `json:"total" example:"1"`
-	Limit  int             `json:"limit" example:"20"`
-	Offset int             `json:"offset" example:"0"`
-	Items  []UserStatsItem `json:"items"`
-}
+type UserStatsResponse = utils.Page[UserStatsItem]
 
 type StatsSuccessResponse = utils.BaseResponse[StatsResponse]
 type RelationshipListSuccessResponse = utils.BaseResponse[RelationshipListResponse]

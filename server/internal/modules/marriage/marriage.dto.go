@@ -1,18 +1,17 @@
 package marriage
 
-import "ola-chat-server/internal/utils"
+import (
+	"ola-chat-server/internal/utils"
+
+	userModule "ola-chat-server/internal/modules/user"
+)
 
 type ProposeRequest struct {
 	AddresseeID string `json:"addresseeId" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Message     string `json:"message" binding:"omitempty,max=500" example:"Em đồng ý làm vợ anh nhé?"`
 }
 
-type UserBrief struct {
-	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username string `json:"username" example:"john_doe"`
-	FullName string `json:"fullName,omitempty" example:"John Doe"`
-	Avatar   string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-}
+type UserBrief = userModule.UserBrief
 
 type ProposalItem struct {
 	ID          string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`

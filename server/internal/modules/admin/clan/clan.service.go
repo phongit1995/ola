@@ -5,6 +5,7 @@ import (
 
 	"ola-chat-server/internal/models"
 	clanModule "ola-chat-server/internal/modules/clan"
+	userModule "ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -20,18 +21,6 @@ func NewService(repo *Repository, clanRepo *clanModule.Repository, logger *zap.S
 	return &Service{repo: repo, clanRepo: clanRepo, logger: logger.Named("[admin_clan_service]")}
 }
 
-func toClanUserResponse(user *models.User) *ClanUserResponse {
-	if user == nil {
-		return nil
-	}
-	return &ClanUserResponse{
-		ID:       user.ID.String(),
-		Username: user.Username,
-		FullName: user.FullName,
-		Avatar:   user.Avatar,
-	}
-}
-
 func toClanResponse(clan *models.Clan) ClanResponse {
 	resp := ClanResponse{
 		ID:               clan.ID.String(),
@@ -43,7 +32,7 @@ func toClanResponse(clan *models.Clan) ClanResponse {
 		MemberPublicPost: clan.MemberPublicPost,
 		MemberCount:      clan.MemberCount,
 		VisitCount:       clan.VisitCount,
-		Owner:            toClanUserResponse(clan.Owner),
+		Owner:            userModule.ToUserBrief(clan.Owner),
 		CreatedAt:        clan.CreatedAt.UTC().Format(time.RFC3339),
 	}
 	if clan.RoomID != nil {
@@ -75,7 +64,7 @@ func (s *Service) Members(clanID uuid.UUID, limit, offset int) (*MemberListRespo
 	items := make([]MemberResponse, 0, len(members))
 	for i := range members {
 		items = append(items, MemberResponse{
-			User:     toClanUserResponse(members[i].User),
+			User:     userModule.ToUserBrief(members[i].User),
 			Role:     string(members[i].Role),
 			Verified: members[i].Verified,
 			JoinedAt: members[i].CreatedAt.UTC().Format(time.RFC3339),

@@ -109,7 +109,7 @@ func (s *Service) ListClaims(chestID uuid.UUID, search string, limit, offset int
 			IsEmpty:   rows[i].IsEmpty,
 			CreatedAt: rows[i].CreatedAt,
 			User: ClaimUserView{
-				ID:       rows[i].UserID,
+				ID:       rows[i].UserID.String(),
 				Username: rows[i].Username,
 				FullName: rows[i].FullName,
 				Avatar:   rows[i].Avatar,
@@ -133,7 +133,7 @@ func (s *Service) ListAllClaims(search string, limit, offset int) (*ClaimHistory
 			ChestSource: rows[i].ChestSource,
 			CreatedAt:   rows[i].CreatedAt,
 			User: ClaimUserView{
-				ID:       rows[i].UserID,
+				ID:       rows[i].UserID.String(),
 				Username: rows[i].Username,
 				FullName: rows[i].FullName,
 				Avatar:   rows[i].Avatar,

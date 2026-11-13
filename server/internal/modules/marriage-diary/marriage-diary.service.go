@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	userModule "ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -100,16 +101,7 @@ func toItem(e *models.MarriageDiaryEntry) DiaryEntryItem {
 		CreatedAt: e.CreatedAt.Format(time.RFC3339),
 	}
 	if e.Author != nil {
-		item.Author = toBrief(e.Author)
+		item.Author = userModule.ToUserBrief(e.Author)
 	}
 	return item
-}
-
-func toBrief(u *models.User) *UserBrief {
-	return &UserBrief{
-		ID:       u.ID.String(),
-		Username: u.Username,
-		FullName: u.FullName,
-		Avatar:   u.Avatar,
-	}
 }

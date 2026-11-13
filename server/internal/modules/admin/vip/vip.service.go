@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/modules/vip"
 
 	"github.com/google/uuid"
@@ -168,7 +169,7 @@ func toUserInfo(users map[uuid.UUID]models.User, id uuid.UUID) *UserInfo {
 	if !ok {
 		return nil
 	}
-	return &UserInfo{ID: u.ID.String(), Username: u.Username, FullName: u.FullName, Avatar: u.Avatar}
+	return userModule.ToUserBrief(&u)
 }
 
 func toPurchaseItem(row *purchaseRow, users map[uuid.UUID]models.User) PurchaseItem {

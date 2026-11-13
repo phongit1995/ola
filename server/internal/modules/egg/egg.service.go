@@ -521,7 +521,7 @@ func (s *Service) ListAllDraws(filter AdminDrawFilter, limit, offset int) (*Admi
 				CreatedAt:    r.CreatedAt,
 			},
 			User: DrawUserView{
-				ID:       r.UserID,
+				ID:       r.UserID.String(),
 				Username: r.Username,
 				FullName: r.FullName,
 				Avatar:   r.Avatar,
@@ -582,7 +582,7 @@ func (s *Service) Stats(filter AdminDrawFilter) (*StatsResponse, error) {
 	players := make([]StatsPlayer, len(playerRows))
 	for i, p := range playerRows {
 		players[i] = StatsPlayer{
-			User:     DrawUserView{ID: p.UserID, Username: p.Username, FullName: p.FullName, Avatar: p.Avatar},
+			User:     DrawUserView{ID: p.UserID.String(), Username: p.Username, FullName: p.FullName, Avatar: p.Avatar},
 			Draws:    p.Draws,
 			KenSpent: p.KenSpent,
 		}

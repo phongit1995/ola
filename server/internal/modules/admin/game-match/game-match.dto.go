@@ -3,6 +3,7 @@ package admingamematch
 import (
 	"time"
 
+	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
@@ -21,12 +22,7 @@ type AdminMatchFilter struct {
 	To       *time.Time
 }
 
-type UserBrief struct {
-	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username string `json:"username" example:"john_doe"`
-	FullName string `json:"fullName,omitempty" example:"John Doe"`
-	Avatar   string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-}
+type UserBrief = userModule.UserBrief
 
 type MatchPlayer struct {
 	User  UserBrief `json:"user"`
@@ -54,12 +50,7 @@ type MatchView struct {
 	FinishedAt  string        `json:"finishedAt,omitempty"`
 }
 
-type MatchListResponse struct {
-	Total  int64       `json:"total" example:"1"`
-	Limit  int         `json:"limit" example:"20"`
-	Offset int         `json:"offset" example:"0"`
-	Items  []MatchView `json:"items"`
-}
+type MatchListResponse = utils.Page[MatchView]
 
 type StatsOverview struct {
 	TotalMatches    int64 `json:"totalMatches"`
@@ -148,12 +139,7 @@ type LevelView struct {
 	UpdatedAt string    `json:"updatedAt" example:"2026-08-28T10:00:00Z"`
 }
 
-type LevelListResponse struct {
-	Total  int64       `json:"total" example:"1"`
-	Limit  int         `json:"limit" example:"20"`
-	Offset int         `json:"offset" example:"0"`
-	Items  []LevelView `json:"items"`
-}
+type LevelListResponse = utils.Page[LevelView]
 
 type MatchListSuccessResponse = utils.BaseResponse[MatchListResponse]
 type MatchStatsSuccessResponse = utils.BaseResponse[MatchStatsResponse]

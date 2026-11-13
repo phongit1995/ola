@@ -1,5 +1,7 @@
 package adminpushcampaign
 
+import userModule "ola-chat-server/internal/modules/user"
+
 type CreateCampaignRequest struct {
 	Audience string `json:"audience" binding:"required,oneof=all vip user" example:"all"`
 	Username string `json:"username" binding:"omitempty,max=50" example:"olame"`
@@ -12,12 +14,7 @@ type AudienceResponse struct {
 	Devices int64 `json:"devices"`
 }
 
-type UserBrief struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-}
+type UserBrief = userModule.UserBrief
 
 type AdminBrief struct {
 	ID       string `json:"id"`
