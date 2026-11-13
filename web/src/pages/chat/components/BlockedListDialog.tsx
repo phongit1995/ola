@@ -1,58 +1,19 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionButton, UserListDialog, UserRow } from '@components';
-import { colorForName, toast } from '@lib';
-import { RelationshipService } from '@services';
-import type { Relationship } from '@app-types';
+import { colorForName } from '@lib';
+import {
+  blockedRelationshipName,
+  useBlockedRelationships,
+} from '@ola/shared/stores/friends/useBlockedRelationships';
 
 interface BlockedListDialogProps {
   open: boolean;
   onClose: () => void;
 }
 
-function blockedName(relationship: Relationship): string {
-  return (
-    relationship.addressee?.fullName || relationship.addressee?.username || ''
-  );
-}
-
-const BLOCKED_PAGE_SIZE = 100;
-
 export function BlockedListDialog({ open, onClose }: BlockedListDialogProps) {
   const { t } = useTranslation();
-  const [items, setItems] = useState<Relationship[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    RelationshipService.blocked({ limit: BLOCKED_PAGE_SIZE })
-      .then((result) => {
-        if (active) setItems(result.relationships);
-      })
-      .catch(() => {
-        if (active) toast.error(t('chat.blockListError'));
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [t]);
-
-  async function unblock(relationship: Relationship) {
-    setBusyId(relationship.id);
-    try {
-      await RelationshipService.unblock(relationship.id);
-      setItems((list) => list.filter((item) => item.id !== relationship.id));
-      toast.success(t('chat.unblockDone', { name: blockedName(relationship) }));
-    } catch {
-      toast.error(t('chat.actionError'));
-    } finally {
-      setBusyId(null);
-    }
-  }
+  const { items, loading, busyId, unblock } = useBlockedRelationships();
 
   return (
     <UserListDialog
@@ -70,7 +31,7 @@ export function BlockedListDialog({ open, onClose }: BlockedListDialogProps) {
       listMaxHeightClass="max-h-80"
     >
       {items.map((relationship) => {
-        const name = blockedName(relationship);
+        const name = blockedRelationshipName(relationship);
         return (
           <li key={relationship.id}>
             <UserRow

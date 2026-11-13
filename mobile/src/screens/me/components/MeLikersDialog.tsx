@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
@@ -10,6 +10,7 @@ import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { Dialog } from '@components/ui/Dialog';
 import { LIKERS_PAGE_SIZE } from '../constants';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
 
 interface MeLikersDialogProps {
   postId: string;
@@ -22,12 +23,6 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
   const { t } = useTranslation();
   const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
-  const [likers, setLikers] = useState<PostAuthor[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [reachedEnd, setReachedEnd] = useState(false);
-  const [error, setError] = useState(false);
   const [requested, setRequested] = useState<Record<string, boolean>>({});
 
   const fetchPage = useCallback(
@@ -38,42 +33,15 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
     [postId, commentId]
   );
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const result = await fetchPage(0);
-        if (!active) return;
-        setLikers(result.items);
-        setTotal(result.total);
-        if (result.items.length < LIKERS_PAGE_SIZE) setReachedEnd(true);
-      } catch {
-        if (active) setError(true);
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [fetchPage]);
-
-  const hasMore = !reachedEnd && likers.length < total;
-
-  const loadMore = useCallback(async () => {
-    if (loading || loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    try {
-      const result = await fetchPage(likers.length);
-      setLikers((current) => [...current, ...result.items]);
-      setTotal(result.total);
-      if (result.items.length < LIKERS_PAGE_SIZE) setReachedEnd(true);
-    } catch {
-      return;
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [fetchPage, likers.length, loading, loadingMore, hasMore]);
+  const {
+    items: likers,
+    total,
+    loading,
+    loadingMore,
+    error: loadError,
+    loadMore,
+  } = useOffsetPage(fetchPage, { pageSize: LIKERS_PAGE_SIZE });
+  const error = loadError != null;
 
   function openProfile(name: string) {
     onOpenProfile?.(name, colorForName(name));

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -15,6 +15,7 @@ import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { FOLLOW_PAGE_SIZE } from '../constants';
 import { UserName } from '@components/ui/UserName';
+import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
 
 type FollowListKind = 'following' | 'followers';
 
@@ -49,47 +50,19 @@ function FollowingListBody({
   const { t } = useTranslation();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const [rows, setRows] = useState<FollowUser[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
 
   const loadPage = useCallback(
-    (offset: number) =>
-      kind === 'followers'
-        ? UserService.followers(userId, { limit: FOLLOW_PAGE_SIZE, offset })
-        : UserService.following(userId, { limit: FOLLOW_PAGE_SIZE, offset }),
+    async (offset: number) => {
+      const params = { limit: FOLLOW_PAGE_SIZE, offset };
+      const result =
+        kind === 'followers'
+          ? await UserService.followers(userId, params)
+          : await UserService.following(userId, params);
+      return { items: result.users, total: result.total };
+    },
     [userId, kind],
   );
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const result = await loadPage(0).catch(() => null);
-      if (!active) return;
-      if (result != null) {
-        setRows(result.users);
-        setTotal(result.total);
-      }
-      setLoading(false);
-    })();
-    return () => {
-      active = false;
-    };
-  }, [loadPage]);
-
-  const hasMore = rows.length < total;
-
-  const loadMore = useCallback(async () => {
-    if (loading || loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    const result = await loadPage(rows.length).catch(() => null);
-    if (result != null) {
-      setRows(current => [...current, ...result.users]);
-      setTotal(result.total);
-    }
-    setLoadingMore(false);
-  }, [loadPage, loading, loadingMore, hasMore, rows.length]);
+  const { items: rows, loading, loadingMore, loadMore } = useOffsetPage(loadPage);
 
   return (
     <View className="flex-1 bg-white">

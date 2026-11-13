@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
 import { VipService } from '@ola/shared/services';
 import { ApiError, vipName } from '@ola/shared/lib';
-import type { VipIconInstance } from '@ola/shared/types';
 import { Dialog } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { PEER_VIP_PAGE_SIZE } from '../constants';
 import { HTTP_STATUS } from '@ola/shared/constants';
+import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
 
 type LoadState = 'loading' | 'private' | 'error' | 'ready';
 
@@ -22,46 +22,24 @@ interface PeerVipStoreDialogProps {
 export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialogProps) {
   const colors = useThemeColors();
   const { t } = useTranslation();
-  const [items, setItems] = useState<VipIconInstance[]>([]);
-  const [total, setTotal] = useState(0);
-  const [state, setState] = useState<LoadState>('loading');
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    VipService.userStore(userId, { limit: PEER_VIP_PAGE_SIZE, offset: 0 })
-      .then((res) => {
-        if (!active) return;
-        setItems(res.items);
-        setTotal(res.total);
-        setState('ready');
-      })
-      .catch((err) => {
-        if (!active) return;
-        setState(
-          err instanceof ApiError && err.status === HTTP_STATUS.forbidden ? 'private' : 'error',
-        );
-      });
-    return () => {
-      active = false;
-    };
-  }, [userId]);
-
-  const hasMore = items.length < total;
-
-  function loadMore() {
-    if (loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    VipService.userStore(userId, { limit: PEER_VIP_PAGE_SIZE, offset: items.length })
-      .then((res) => setItems((prev) => [...prev, ...res.items]))
-      .catch(() => {})
-      .finally(() => setLoadingMore(false));
-  }
+  const fetchPage = useCallback(
+    (offset: number) => VipService.userStore(userId, { limit: PEER_VIP_PAGE_SIZE, offset }),
+    [userId],
+  );
+  const { items, total, loading, loadingMore, error, loadMore } =
+    useOffsetPage(fetchPage);
+  const state: LoadState = loading
+    ? 'loading'
+    : error == null
+      ? 'ready'
+      : error instanceof ApiError && error.status === HTTP_STATUS.forbidden
+        ? 'private'
+        : 'error';
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     if (contentSize.height - contentOffset.y - layoutMeasurement.height > 200) return;
-    loadMore();
+    void loadMore();
   }
 
   return (
