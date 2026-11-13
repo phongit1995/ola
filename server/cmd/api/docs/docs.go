@@ -497,6 +497,345 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/avatar-frames/purchases": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Lịch sử mua và tặng khung avatar toàn hệ thống (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "purchase|gift",
+                        "name": "mode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username, tên hoặc mã khung",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.PurchaseHistoryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/avatar-frames/purchases/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Thống kê bán khung avatar: hôm nay, tháng này, khoảng chọn, khung bán chạy (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339), mặc định 30 ngày trước",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339), mặc định bây giờ",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_avatar-frame.StatsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/avatar-frames/shop": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Khung avatar trong cửa hàng, gồm cả khung đang tắt (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.ShopResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Thêm một hoặc nhiều khung vào cửa hàng cùng một giá (admin)",
+                "parameters": [
+                    {
+                        "description": "Danh sách khung và giá",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.CreateShopItemsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.CreateShopItemsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/avatar-frames/shop/order": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Lưu thứ tự toàn bộ khung trong cửa hàng (admin), gán lại thành 1..N",
+                "parameters": [
+                    {
+                        "description": "Toàn bộ id theo thứ tự mới",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.ReorderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/avatar-frames/shop/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Gỡ một khung khỏi cửa hàng, khung user đã có vẫn giữ (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shop item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.MessageResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Sửa giá, bật tắt, thứ tự một khung trong cửa hàng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shop item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Trường cần sửa",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.UpdateShopItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.ShopItem"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/avatar-frames/transfers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Lịch sử chuyển khung avatar toàn hệ thống (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username, tên hoặc mã khung",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.TransferHistoryResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/clans": {
             "get": {
                 "security": [
@@ -1570,6 +1909,739 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/gift-codes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Danh sách đợt mã quà tặng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tên đợt hoặc mã",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "running | scheduled | soldout | expired | off",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "shared | unique",
+                        "name": "kind",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CampaignListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mã chung: code + totalUses là tổng lượt. Mã riêng: codePrefix + codeLength, totalUses là số mã cần sinh",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Tạo đợt mã quà tặng (admin)",
+                "parameters": [
+                    {
+                        "description": "Campaign",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift-code.CampaignRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CampaignItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/attempts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Nhật ký từng lượt nhập mã lỗi (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "1h | 24h | 7d | 30d (default 24h)",
+                        "name": "range",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Nickname, mã hoặc IP",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lý do lỗi",
+                        "name": "reason",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_AttemptListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/attempts/devices": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Nhập mã lỗi gom theo thiết bị (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "1h | 24h | 7d | 30d (default 24h)",
+                        "name": "range",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tên thiết bị hoặc nickname",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_AttemptDeviceListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/attempts/summary": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Thống kê nhập mã lỗi (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "1h | 24h | 7d | 30d (default 24h)",
+                        "name": "range",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_AttemptSummary"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/attempts/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Nhập mã lỗi gom theo người dùng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "1h | 24h | 7d | 30d (default 24h)",
+                        "name": "range",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Nickname, mã hoặc IP",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lý do lỗi",
+                        "name": "reason",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_AttemptUserListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Chi tiết đợt mã quà tặng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CampaignItem"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Đã có người nhận thì không đổi được loại mã, dạng mã và quà. Mã riêng thêm mã bằng POST /codes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Sửa đợt mã quà tặng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Campaign",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift-code.CampaignRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CampaignItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/{id}/codes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Danh sách mã của đợt (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "unused | used | locked",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Mã",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CodeListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Sinh thêm mã cho đợt mã riêng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Count",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift-code.GenerateCodesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_GenerateCodesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/{id}/codes/export": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Toàn bộ mã của đợt để xuất CSV (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "unused | used | locked",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CodeListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/{id}/codes/{codeId}/lock": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Khoá phải có lý do. Mã đã dùng thì không khoá được",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Khoá hoặc mở khoá một mã (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Code ID",
+                        "name": "codeId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Lock",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift-code.LockCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CodeItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/{id}/enabled": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Bật hoặc tắt đợt mã quà tặng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Enabled",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_gift-code.EnabledRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CampaignItem"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/{id}/redemptions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Người đã nhận quà của đợt (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Nickname, tên hoặc mã",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "platform",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_RedemptionListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gift-codes/{id}/redemptions/export": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gift-codes"
+                ],
+                "summary": "Toàn bộ người đã nhận để xuất CSV (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_RedemptionListResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/gifts": {
             "get": {
                 "security": [
@@ -1629,6 +2701,53 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/gifts/order": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-gifts"
+                ],
+                "summary": "Lưu thứ tự toàn bộ quà (admin), gán lại thành 1..N theo danh sách gửi lên",
+                "parameters": [
+                    {
+                        "description": "Toàn bộ id quà theo thứ tự mới",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.ReorderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -3337,6 +4456,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/mini-games/order": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-mini-game"
+                ],
+                "summary": "Lưu thứ tự toàn bộ mini game (admin), gán lại thành 1..N",
+                "parameters": [
+                    {
+                        "description": "Toàn bộ id theo thứ tự mới",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.ReorderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/mini-games/{id}": {
             "delete": {
                 "security": [
@@ -3554,6 +4720,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "boolean",
+                        "description": "Filter moments with/without music",
+                        "name": "hasMusic",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "createdAt, reportCount",
                         "name": "sortBy",
@@ -3687,6 +4859,50 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_moment_MomentDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/moments/{id}/remove-music": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-moment"
+                ],
+                "summary": "Remove music from a moment; with block, also bans the file and removes it from every moment using it",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Moment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Options",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_moment.RemoveMusicRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -4726,6 +5942,53 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/rooms/order": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-room"
+                ],
+                "summary": "Lưu thứ tự toàn bộ phòng chat (admin), gán lại thành 1..N",
+                "parameters": [
+                    {
+                        "description": "Toàn bộ id theo thứ tự mới",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.ReorderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -6226,6 +7489,176 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/users/{id}/avatar-frames": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Kho khung avatar của một user, kể cả khi user để riêng tư (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.StoreResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Tặng một khung avatar vào kho của user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Mã khung",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_avatar-frame.GrantUserFrameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/avatar-frames/{frameId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Thu hồi một khung avatar khỏi kho của user, tự gỡ nếu đang đeo (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Mã khung",
+                        "name": "frameId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/users/{id}/password": {
             "patch": {
                 "security": [
@@ -7012,6 +8445,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/vip/packages/order": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Lưu thứ tự toàn bộ gói VIP (admin), gán lại thành 1..N",
+                "parameters": [
+                    {
+                        "description": "Toàn bộ id theo thứ tự mới",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.ReorderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/vip/packages/{id}": {
             "delete": {
                 "security": [
@@ -7264,6 +8744,53 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_modules_vip.ShopItemSuccessResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/vip/shop/order": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Lưu thứ tự toàn bộ VIP trong shop (admin), gán lại thành 1..N",
+                "parameters": [
+                    {
+                        "description": "Toàn bộ id theo thứ tự mới",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.ReorderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "409": {
@@ -8483,6 +10010,332 @@ const docTemplate = `{
                         "description": "Too Many Requests",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/buy": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Mua khung avatar bằng KEN",
+                "parameters": [
+                    {
+                        "description": "Mặt hàng",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.BuyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.BuyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/equip": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Đeo khung avatar (cần còn VIP), frameId rỗng để tháo",
+                "parameters": [
+                    {
+                        "description": "Khung",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.EquipRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.EquipResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/gift": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Mua khung avatar tặng người khác",
+                "parameters": [
+                    {
+                        "description": "Mặt hàng, người nhận, mật khẩu",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.GiftRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.GiftResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Lịch sử mua và được tặng khung avatar của tôi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.PurchaseHistoryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/mine": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Kho khung avatar của tôi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.StoreResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/mine/{frameId}/transfer": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Chuyển khung avatar đã sở hữu cho người khác",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Frame ID",
+                        "name": "frameId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Người nhận, mật khẩu",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.TransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/shop": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Khung avatar đang bán, kèm cờ đã sở hữu",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.ShopResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/store/privacy": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Đổi quyền xem Kho khung avatar (0 mọi người, 1 bạn bè, 2 chỉ mình tôi)",
+                "parameters": [
+                    {
+                        "description": "Quyền xem",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.PrivacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/transfers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Lịch sử chuyển khung avatar của tôi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.TransferHistoryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/avatar-frames/users/{userId}/store": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "avatar-frame"
+                ],
+                "summary": "Kho khung avatar của người khác (theo quyền xem)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_avatar-frame.StoreResponse"
                         }
                     }
                 }
@@ -10457,6 +12310,75 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/gift-codes/redeem": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mỗi người nhận 1 lần mỗi đợt. Nhập sai mã 5 lần trong 1 phút thì bị chặn 15 phút (GIFT_CODE_TOO_MANY_ATTEMPTS)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gift-codes"
+                ],
+                "summary": "Nhập mã quà tặng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Code",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_gift-code.RedeemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_gift-code_RedeemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -13071,6 +14993,24 @@ const docTemplate = `{
                         "description": "Video cover JPEG (≤300KB)",
                         "name": "thumb",
                         "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Audio file for image/text moments (≤30MB): mp3, m4a, aac, wav, flac, ogg, opus, 3gp, amr, caf",
+                        "name": "music",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Song title (≤80 characters), defaults to the file name",
+                        "name": "musicTitle",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Where the 15-second part starts in the file; files shorter than 15 seconds loop",
+                        "name": "musicStartMs",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -15605,7 +17545,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment; nội dung mỗi key giống API riêng /settings/\u003ctên\u003e và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.\nGửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.",
+                "description": "configs gồm các key topup, usernameChange, wordChain, story, chatBot, moment, gift, megaphone, giftCode, vipDayTransfer; nội dung mỗi key giống API riêng /settings/\u003ctên\u003e và đã tính theo nền tảng, phiên bản app đang gọi. Key nào lỗi thì vắng mặt, client dùng giá trị mặc định cho key đó.\nGửi lại version đã nhận để hỏi có đổi không: không đổi thì trả notModified=true và không có configs.",
                 "produces": [
                     "application/json"
                 ],
@@ -18356,6 +20296,38 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_avatar-frame.GrantUserFrameRequest": {
+            "type": "object",
+            "required": [
+                "frameId"
+            ],
+            "properties": {
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                }
+            }
+        },
+        "internal_modules_admin_avatar-frame.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "range": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.PurchaseTotals"
+                },
+                "thisMonth": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.PurchaseTotals"
+                },
+                "today": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.PurchaseTotals"
+                },
+                "topFrames": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.FrameSalesRow"
+                    }
+                }
+            }
+        },
         "internal_modules_admin_clan.ClanListResponse": {
             "type": "object",
             "properties": {
@@ -18421,16 +20393,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -18718,19 +20694,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
                     "type": "string",
-                    "example": "Minh Anh"
+                    "example": "John Doe"
                 },
                 "id": {
                     "type": "string",
-                    "example": "ca4c6d54-870c-4735-b9a6-cce05a04aedb"
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
                     "type": "string",
-                    "example": "minhanh"
+                    "example": "john_doe"
                 }
             }
         },
@@ -19607,6 +21584,613 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.AdminBrief": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.AttemptDeviceItem": {
+            "type": "object",
+            "properties": {
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                    }
+                },
+                "deviceId": {
+                    "type": "string"
+                },
+                "deviceName": {
+                    "type": "string"
+                },
+                "failures": {
+                    "type": "integer"
+                },
+                "lastAt": {
+                    "type": "string"
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "successes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.AttemptDeviceListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift-code.AttemptDeviceItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.AttemptItem": {
+            "type": "object",
+            "properties": {
+                "codeInput": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deviceName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ipAddress": {
+                    "type": "string"
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.AttemptListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift-code.AttemptItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.AttemptSummary": {
+            "type": "object",
+            "properties": {
+                "blockedUsers": {
+                    "type": "integer"
+                },
+                "failures": {
+                    "type": "integer"
+                },
+                "multiAccountDevices": {
+                    "type": "integer"
+                },
+                "wrongCodes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.AttemptUserItem": {
+            "type": "object",
+            "properties": {
+                "blockedUntil": {
+                    "type": "string"
+                },
+                "deviceName": {
+                    "type": "string"
+                },
+                "failures": {
+                    "type": "integer"
+                },
+                "lastAt": {
+                    "type": "string"
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "recentCodes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "topReason": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.AttemptUserListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift-code.AttemptUserItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.CampaignItem": {
+            "type": "object",
+            "properties": {
+                "allowAndroid": {
+                    "type": "boolean"
+                },
+                "allowIos": {
+                    "type": "boolean"
+                },
+                "allowWeb": {
+                    "type": "boolean"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "codeLength": {
+                    "type": "integer"
+                },
+                "codePrefix": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.AdminBrief"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "endsAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "lockedCodes": {
+                    "type": "integer"
+                },
+                "minAccountAgeDays": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "onePerDevice": {
+                    "type": "boolean"
+                },
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift-code.RewardItem"
+                    }
+                },
+                "sendNotification": {
+                    "type": "boolean"
+                },
+                "startsAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "successMessage": {
+                    "type": "string"
+                },
+                "totalUses": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "updatedBy": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.AdminBrief"
+                },
+                "usedCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.CampaignListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift-code.CampaignItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "stats": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.CampaignStats"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.CampaignRequest": {
+            "type": "object",
+            "required": [
+                "endsAt",
+                "kind",
+                "name",
+                "rewards",
+                "totalUses"
+            ],
+            "properties": {
+                "allowAndroid": {
+                    "type": "boolean"
+                },
+                "allowIos": {
+                    "type": "boolean"
+                },
+                "allowWeb": {
+                    "type": "boolean"
+                },
+                "code": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "TET2027"
+                },
+                "codeLength": {
+                    "type": "integer",
+                    "maximum": 16,
+                    "minimum": 6,
+                    "example": 8
+                },
+                "codePrefix": {
+                    "type": "string",
+                    "maxLength": 8,
+                    "example": "TET27-"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "endsAt": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "shared",
+                        "unique"
+                    ],
+                    "example": "shared"
+                },
+                "minAccountAgeDays": {
+                    "type": "integer",
+                    "maximum": 365,
+                    "minimum": 0,
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Tết 2027"
+                },
+                "onePerDevice": {
+                    "type": "boolean"
+                },
+                "rewards": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift-code.RewardInput"
+                    }
+                },
+                "sendNotification": {
+                    "type": "boolean"
+                },
+                "startsAt": {
+                    "type": "string"
+                },
+                "successMessage": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "example": "Chúc mừng năm mới! Bạn nhận được {quà}."
+                },
+                "totalUses": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 500
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.CampaignStats": {
+            "type": "object",
+            "properties": {
+                "redeemedToday": {
+                    "type": "integer"
+                },
+                "redeemedTotal": {
+                    "type": "integer"
+                },
+                "running": {
+                    "type": "integer"
+                },
+                "vipDaysGiven": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.CodeCounts": {
+            "type": "object",
+            "properties": {
+                "locked": {
+                    "type": "integer"
+                },
+                "unused": {
+                    "type": "integer"
+                },
+                "used": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.CodeItem": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lockReason": {
+                    "type": "string"
+                },
+                "lockedAt": {
+                    "type": "string"
+                },
+                "lockedBy": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.AdminBrief"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "usedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.CodeListResponse": {
+            "type": "object",
+            "properties": {
+                "counts": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.CodeCounts"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift-code.CodeItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.EnabledRequest": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.GenerateCodesRequest": {
+            "type": "object",
+            "required": [
+                "count"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "maximum": 50000,
+                    "minimum": 1,
+                    "example": 20
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.GenerateCodesResponse": {
+            "type": "object",
+            "properties": {
+                "generated": {
+                    "type": "integer"
+                },
+                "totalUses": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.LockCodeRequest": {
+            "type": "object",
+            "properties": {
+                "locked": {
+                    "type": "boolean"
+                },
+                "reason": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "example": "Lộ trên group Facebook"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.RedemptionItem": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deviceName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ipAddress": {
+                    "type": "string"
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift-code.RewardItem"
+                    }
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.RedemptionListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_gift-code.RedemptionItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.RewardInput": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 1,
+                    "example": 7
+                },
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "vip_days",
+                        "vip_icon",
+                        "avatar_frame"
+                    ],
+                    "example": "vip_days"
+                },
+                "vipIconId": {
+                    "type": "integer",
+                    "maximum": 138,
+                    "minimum": 1,
+                    "example": 15
+                }
+            }
+        },
+        "internal_modules_admin_gift-code.RewardItem": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer"
+                },
+                "frameId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "vipIconId": {
+                    "type": "integer"
                 }
             }
         },
@@ -20830,7 +23414,7 @@ const docTemplate = `{
             "properties": {
                 "avatar": {
                     "type": "string",
-                    "example": "https://cdn.ola.vn/a.png"
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
                     "type": "string",
@@ -20850,16 +23434,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -21091,6 +23679,7 @@ const docTemplate = `{
                         "sensitive",
                         "scam",
                         "harassment",
+                        "copyright",
                         "other"
                     ],
                     "example": "sensitive"
@@ -21346,6 +23935,7 @@ const docTemplate = `{
                         "sensitive",
                         "scam",
                         "harassment",
+                        "copyright",
                         "other"
                     ],
                     "example": "scam"
@@ -21415,16 +24005,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -21506,6 +24100,9 @@ const docTemplate = `{
                 },
                 "mimeType": {
                     "type": "string"
+                },
+                "music": {
+                    "$ref": "#/definitions/internal_modules_admin_moment.MomentMusicItem"
                 },
                 "overlays": {
                     "type": "array",
@@ -21617,6 +24214,9 @@ const docTemplate = `{
                 "mimeType": {
                     "type": "string"
                 },
+                "music": {
+                    "$ref": "#/definitions/internal_modules_admin_moment.MomentMusicItem"
+                },
                 "overlays": {
                     "type": "array",
                     "items": {
@@ -21690,6 +24290,32 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_moment.MomentMusicItem": {
+            "type": "object",
+            "properties": {
+                "durationMs": {
+                    "type": "integer"
+                },
+                "startMs": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_moment.RemoveMusicRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
@@ -22008,16 +24634,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -22241,7 +24871,7 @@ const docTemplate = `{
             "properties": {
                 "avatar": {
                     "type": "string",
-                    "example": "https://cdn.ola.vn/a.png"
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
                     "type": "string",
@@ -22885,13 +25515,16 @@ const docTemplate = `{
                     }
                 },
                 "limit": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 20
                 },
                 "offset": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 0
                 },
                 "total": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -22910,16 +25543,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -23278,16 +25915,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -23557,16 +26198,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -23817,16 +26462,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -24242,6 +26891,366 @@ const docTemplate = `{
         "internal_modules_auth.UserResponse": {
             "type": "object"
         },
+        "internal_modules_avatar-frame.BuyRequest": {
+            "type": "object",
+            "required": [
+                "expectedKenPrice",
+                "shopItemId"
+            ],
+            "properties": {
+                "expectedKenPrice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 5000
+                },
+                "shopItemId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.BuyResponse": {
+            "type": "object",
+            "properties": {
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 15000
+                },
+                "kenSpent": {
+                    "type": "integer",
+                    "example": 5000
+                }
+            }
+        },
+        "internal_modules_avatar-frame.EquipRequest": {
+            "type": "object",
+            "properties": {
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.EquipResponse": {
+            "type": "object",
+            "properties": {
+                "equippedFrameId": {
+                    "type": "string",
+                    "example": "001"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.GiftRequest": {
+            "type": "object",
+            "required": [
+                "expectedKenPrice",
+                "password",
+                "shopItemId",
+                "toUsername"
+            ],
+            "properties": {
+                "expectedKenPrice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 5000
+                },
+                "password": {
+                    "type": "string",
+                    "example": "password123"
+                },
+                "shopItemId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "toUsername": {
+                    "type": "string",
+                    "example": "minhanh"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.GiftResponse": {
+            "type": "object",
+            "properties": {
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 15000
+                },
+                "kenSpent": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "receiverUsername": {
+                    "type": "string",
+                    "example": "minhanh"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.OwnedFrame": {
+            "type": "object",
+            "properties": {
+                "acquiredAt": {
+                    "type": "string",
+                    "example": "2026-11-09T10:00:00Z"
+                },
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "isEquipped": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "source": {
+                    "type": "string",
+                    "example": "purchase"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.PrivacyRequest": {
+            "type": "object",
+            "properties": {
+                "privacy": {
+                    "type": "integer",
+                    "maximum": 2,
+                    "minimum": 0,
+                    "example": 0
+                }
+            }
+        },
+        "internal_modules_avatar-frame.PurchaseHistoryItem": {
+            "type": "object",
+            "properties": {
+                "buyer": {
+                    "$ref": "#/definitions/internal_modules_avatar-frame.UserBrief"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-09T10:00:00Z"
+                },
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "recipient": {
+                    "$ref": "#/definitions/internal_modules_avatar-frame.UserBrief"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "gift"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.PurchaseHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_avatar-frame.PurchaseHistoryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_avatar-frame.ShopItem": {
+            "type": "object",
+            "properties": {
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "owned": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "internal_modules_avatar-frame.ShopResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_avatar-frame.ShopItem"
+                    }
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_avatar-frame.StoreResponse": {
+            "type": "object",
+            "properties": {
+                "equippedFrameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_avatar-frame.OwnedFrame"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "privacy": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "userId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "vipActive": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_modules_avatar-frame.TransferHistoryItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-09T10:00:00Z"
+                },
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "from": {
+                    "$ref": "#/definitions/internal_modules_avatar-frame.UserBrief"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "to": {
+                    "$ref": "#/definitions/internal_modules_avatar-frame.UserBrief"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.TransferHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_avatar-frame.TransferHistoryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_avatar-frame.TransferRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "toUserId"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "example": "password123"
+                },
+                "toUserId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_avatar-frame.UserBrief": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string",
+                    "example": "Minh Anh"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "minhanh"
+                }
+            }
+        },
         "internal_modules_call.CallTokenResponse": {
             "type": "object",
             "properties": {
@@ -24601,6 +27610,9 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
+                "avatarFrameId": {
+                    "type": "string"
+                },
                 "fullName": {
                     "type": "string"
                 },
@@ -24928,6 +27940,10 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
+                },
+                "avatarFrameId": {
+                    "type": "string",
+                    "example": "001"
                 },
                 "bio": {
                     "type": "string",
@@ -25265,6 +28281,55 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_gift-code.RedeemRequest": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "example": "TET2027"
+                }
+            }
+        },
+        "internal_modules_gift-code.RedeemResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Bạn nhận được 7 ngày VIP."
+                },
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_gift-code.RewardItem"
+                    }
+                }
+            }
+        },
+        "internal_modules_gift-code.RewardItem": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "vip_days"
+                },
+                "vipIconId": {
+                    "type": "integer",
+                    "example": 15
+                }
+            }
+        },
         "internal_modules_gift.GiftCatalogResponse": {
             "type": "object",
             "properties": {
@@ -25448,6 +28513,10 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string",
                     "example": "https://cdn.ola.vn/a.png"
+                },
+                "avatarFrameId": {
+                    "type": "string",
+                    "example": "001"
                 },
                 "fullName": {
                     "type": "string",
@@ -26347,6 +29416,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
                 },
+                "avatarFrameId": {
+                    "type": "string",
+                    "example": "001"
+                },
                 "fullName": {
                     "type": "string",
                     "example": "Jane Doe"
@@ -26386,6 +29459,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "fullName": {
@@ -27615,6 +30691,9 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
+                "avatarFrameId": {
+                    "type": "string"
+                },
                 "fullName": {
                     "type": "string"
                 },
@@ -27691,6 +30770,20 @@ const docTemplate = `{
                 },
                 "nextOffset": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_moment.MomentMusicResponse": {
+            "type": "object",
+            "properties": {
+                "durationMs": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
@@ -27799,6 +30892,9 @@ const docTemplate = `{
                 },
                 "mediaUrl": {
                     "type": "string"
+                },
+                "music": {
+                    "$ref": "#/definitions/internal_modules_moment.MomentMusicResponse"
                 },
                 "myComment": {
                     "$ref": "#/definitions/internal_modules_moment.MomentMyCommentResponse"
@@ -27968,6 +31064,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "fullName": {
@@ -28691,6 +31790,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
                 },
+                "avatarFrameId": {
+                    "type": "string",
+                    "example": "001"
+                },
                 "email": {
                     "type": "string",
                     "example": "john@example.com"
@@ -28793,6 +31896,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "fullName": {
@@ -29171,6 +32277,9 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
+                "avatarFrameId": {
+                    "type": "string"
+                },
                 "fullName": {
                     "type": "string"
                 },
@@ -29495,6 +32604,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "createdAt": {
@@ -30217,6 +33329,9 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
+                "avatarFrameId": {
+                    "type": "string"
+                },
                 "fullName": {
                     "type": "string"
                 },
@@ -30506,6 +33621,10 @@ const docTemplate = `{
         "internal_modules_user-setting.UserSettingsResponse": {
             "type": "object",
             "properties": {
+                "avatarFrameStorePrivacy": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "commentPrivacy": {
                     "type": "string",
                     "example": "all"
@@ -30761,6 +33880,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
                 },
+                "avatarFrameId": {
+                    "type": "string",
+                    "example": "001"
+                },
                 "bio": {
                     "type": "string",
                     "example": "Software developer"
@@ -30979,27 +34102,6 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_user.SpouseInfo": {
-            "type": "object",
-            "properties": {
-                "avatar": {
-                    "type": "string",
-                    "example": "https://example.com/avatar.jpg"
-                },
-                "fullName": {
-                    "type": "string",
-                    "example": "Jane Doe"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "username": {
-                    "type": "string",
-                    "example": "jane_doe"
-                }
-            }
-        },
         "internal_modules_user.UpdateProfileRequest": {
             "type": "object",
             "properties": {
@@ -31105,6 +34207,27 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_user.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
         "internal_modules_user.UserPresence": {
             "type": "object",
             "properties": {
@@ -31136,6 +34259,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
                 },
+                "avatarFrameId": {
+                    "type": "string",
+                    "example": "001"
+                },
                 "bio": {
                     "type": "string",
                     "example": "Software developer"
@@ -31143,6 +34270,10 @@ const docTemplate = `{
                 "bioImage": {
                     "type": "string",
                     "example": "https://example.com/bio.jpg"
+                },
+                "canViewAvatarFrameStore": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "canViewGiftWall": {
                     "type": "boolean",
@@ -31212,7 +34343,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/internal_modules_user.RelationshipInfo"
                 },
                 "spouse": {
-                    "$ref": "#/definitions/internal_modules_user.SpouseInfo"
+                    "$ref": "#/definitions/internal_modules_user.UserBrief"
                 },
                 "username": {
                     "type": "string",
@@ -31264,6 +34395,10 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
+                },
+                "avatarFrameId": {
+                    "type": "string",
+                    "example": "001"
                 },
                 "bio": {
                     "type": "string",
@@ -31350,6 +34485,10 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
+                },
+                "avatarFrameId": {
+                    "type": "string",
+                    "example": "001"
                 },
                 "fullName": {
                     "type": "string",
@@ -32311,6 +35450,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "https://cdn.ola.vn/a.png"
                 },
+                "avatarFrameId": {
+                    "type": "string",
+                    "example": "001"
+                },
                 "fullName": {
                     "type": "string",
                     "example": "Minh"
@@ -32378,6 +35521,9 @@ const docTemplate = `{
                 },
                 "days": {
                     "type": "integer"
+                },
+                "frameId": {
+                    "type": "string"
                 },
                 "vipTypeId": {
                     "type": "integer"
@@ -32643,6 +35789,337 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_modules_avatar-frame.CreateShopItemsRequest": {
+            "type": "object",
+            "required": [
+                "frameIds"
+            ],
+            "properties": {
+                "frameIds": {
+                    "type": "array",
+                    "maxItems": 200,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "001"
+                    ]
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 5000
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.CreateShopItemsResponse": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.ShopItem"
+                    }
+                },
+                "skipped": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.FrameSalesRow": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "frameId": {
+                    "type": "string"
+                },
+                "giftCount": {
+                    "type": "integer"
+                },
+                "ken": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.OwnedFrame": {
+            "type": "object",
+            "properties": {
+                "acquiredAt": {
+                    "type": "string",
+                    "example": "2026-11-09T10:00:00Z"
+                },
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "isEquipped": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "source": {
+                    "type": "string",
+                    "example": "purchase"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.PurchaseHistoryItem": {
+            "type": "object",
+            "properties": {
+                "buyer": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.UserBrief"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-09T10:00:00Z"
+                },
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "recipient": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.UserBrief"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "gift"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.PurchaseHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.PurchaseHistoryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.PurchaseTotals": {
+            "type": "object",
+            "properties": {
+                "buyers": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "giftCount": {
+                    "type": "integer"
+                },
+                "ken": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.ShopItem": {
+            "type": "object",
+            "properties": {
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "owned": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.ShopResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.ShopItem"
+                    }
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.StoreResponse": {
+            "type": "object",
+            "properties": {
+                "equippedFrameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.OwnedFrame"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "privacy": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "userId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "vipActive": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.TransferHistoryItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-09T10:00:00Z"
+                },
+                "frameId": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "from": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.UserBrief"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "to": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.UserBrief"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.TransferHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.TransferHistoryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.UpdateShopItemRequest": {
+            "type": "object",
+            "properties": {
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 5000
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_avatar-frame.UserBrief": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string",
+                    "example": "Minh Anh"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "minhanh"
+                }
+            }
+        },
         "ola-chat-server_internal_modules_content-filter.Result": {
             "type": "object",
             "properties": {
@@ -32827,16 +36304,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -33399,16 +36880,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -33475,6 +36960,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "fullName": {
@@ -34055,6 +37543,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "fullName": {
@@ -34812,16 +38303,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -34943,6 +38438,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "createdAt": {
@@ -35631,6 +39129,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "fullName": {
@@ -36470,16 +39971,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
                 },
                 "fullName": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -36927,6 +40432,266 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_clan.MemberListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_AttemptDeviceListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.AttemptDeviceListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_AttemptListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.AttemptListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_AttemptSummary": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.AttemptSummary"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_AttemptUserListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.AttemptUserListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CampaignItem": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.CampaignItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CampaignListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.CampaignListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CodeItem": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.CodeItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_CodeListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.CodeListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_GenerateCodesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.GenerateCodesResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_gift-code_RedemptionListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_gift-code.RedemptionListResponse"
                 },
                 "error": {
                     "type": "string"
@@ -37785,6 +41550,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_clan.UploadClanImageResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_gift-code_RedeemResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_gift-code.RedeemResponse"
                 },
                 "error": {
                     "type": "string"
@@ -39701,6 +43492,21 @@ const docTemplate = `{
                 },
                 "traceId": {
                     "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.ReorderRequest": {
+            "type": "object",
+            "required": [
+                "ids"
+            ],
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         }
