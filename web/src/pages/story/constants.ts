@@ -17,7 +17,6 @@ import stateErrorArt from '@/assets/icons/story/illustrated/state-error.webp';
 import topViewedArt from '@/assets/icons/story/illustrated/top-viewed.webp';
 import type { ReaderPalette } from './types';
 
-
 export const STORY_SCREEN_CLASS =
   'animate-ola-screen-in bg-ola-surface motion-reduce:animate-none';
 

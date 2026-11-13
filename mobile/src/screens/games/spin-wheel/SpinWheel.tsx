@@ -7,7 +7,6 @@ import { wheelAssets } from './spinWheelAssets';
 import { WheelFace } from './WheelFace';
 import { WheelLabels } from './WheelLabels';
 
-
 interface SpinWheelProps {
   segments: WheelPlayerSegment[];
   rotation: number;

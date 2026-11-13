@@ -39,7 +39,6 @@ const memberIcon = require('@assets/icons/clan/ic_clan_member.png');
 const visitIcon = require('@assets/icons/clan/ic_clan_visit.png');
 const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
 
-
 interface TopResult {
   q: string;
   items: ClanSummary[];

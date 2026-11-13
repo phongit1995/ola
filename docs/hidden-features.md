@@ -6,7 +6,7 @@ Các mục dưới đây từng nằm trong code dưới dạng comment. Code đ
 
 ### Banner mua VIP
 
-Ẩn theo yêu cầu. Bật lại: thêm lại prop `onBuyVip` cho `RoomList`, đặt khối này ngay đầu danh sách (trước các `SpecialRow`).
+Ẩn theo yêu cầu. Bật lại: thêm prop `onBuyVip: () => void` vào `RoomListProps` + destructure, truyền handler mua VIP từ `RoomPanel.tsx`, rồi đặt khối này ngay sau `<ul>`, trước dòng `{showQuickJoin && (`.
 
 ```tsx
 <li className="flex items-center justify-between gap-3 border-b border-black/12 bg-[#fff8e1] px-4 py-3">
@@ -30,7 +30,7 @@ Các mục dưới đây từng nằm trong code dưới dạng comment. Code đ
 
 ### "Xung quanh bạn"
 
-Ẩn theo yêu cầu. Bật lại: thêm lại prop `onAroundYou` vào destructure của `RoomList`.
+Ẩn theo yêu cầu. Prop `onAroundYou` vẫn còn trong `RoomListProps` và `RoomPanel.tsx` vẫn truyền vào; bật lại chỉ cần thêm `onAroundYou` vào destructure và đặt khối này ngay sau banner VIP (nếu có), trước dòng `{showQuickJoin && (`.
 
 ```tsx
 <SpecialRow
@@ -47,7 +47,7 @@ Chờ API gợi ý kết bạn thật: `SuggestedFriendsScreen` đang chạy tr�
 
 ### Web (`web/src/pages/chat/components/ContactList.tsx`)
 
-Bật lại: import lại `PeopleIcon`, `SUGGESTED_FRIENDS` và thêm prop `onOpenSuggested`.
+Bật lại: `import { PeopleIcon } from './Icons';`, `import { SUGGESTED_FRIENDS } from '../constants';`; prop `onOpenSuggested` vẫn còn trong `ContactListProps`, chỉ cần thêm vào destructure. Đặt khối ngay sau khối lời mời kết bạn (`requests`), trước `{enabledBots.length > 0 && (`.
 
 ```tsx
 <button
@@ -84,7 +84,7 @@ Bật lại: import lại `PeopleIcon`, `SUGGESTED_FRIENDS` và thêm prop `onOp
 
 ### Mobile (`mobile/src/screens/chat/components/ContactsPane.tsx`)
 
-Bật lại: import lại `peopleIcon` và `SUGGESTED_FRIENDS`.
+Bật lại: `import { SUGGESTED_FRIENDS } from '@screens/friends/constants';` và `const peopleIcon = require('@assets/icons/chat/ic_people_gray.png');`. Đặt khối ngay sau khối lời mời kết bạn, trước phần danh sách bot.
 
 ```tsx
 <Pressable
@@ -118,7 +118,7 @@ Bật lại: import lại `peopleIcon` và `SUGGESTED_FRIENDS`.
 
 ## Web — Danh bạ: "Mời thêm bạn bè" và "Chat nhóm" (`ContactList.tsx`)
 
-Chưa có chức năng mời bạn qua Facebook và chưa có chat nhóm. Đặt sau khối "Có thể bạn muốn làm quen". "Chat nhóm" cần import lại `groupIcon`.
+Chưa có chức năng mời bạn qua Facebook và chưa có chat nhóm. Đặt sau khối "Có thể bạn muốn làm quen". "Chat nhóm" cần `import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';`.
 
 ```tsx
 <ActionRow

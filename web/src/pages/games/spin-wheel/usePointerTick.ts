@@ -1,7 +1,6 @@
 import { useEffect, type RefObject } from 'react';
 import { pointerTickDeg } from '@lib';
 
-
 function wheelAngleFromTransform(transform: string): number {
   if (!transform || transform === 'none') return 0;
   const open = transform.indexOf('(');

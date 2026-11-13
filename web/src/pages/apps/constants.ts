@@ -105,4 +105,3 @@ export const MOCK_VENUES: Venue[] = [
     cover: 'linear-gradient(135deg,#ba68c8,#6a1b9a)',
   },
 ];
-

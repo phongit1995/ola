@@ -28,7 +28,6 @@ import memberIcon from '@/assets/icons/clan/ic_clan_member.png';
 import visitIcon from '@/assets/icons/clan/ic_clan_visit.png';
 import { CLAN_ROLE, CLAN_SEARCH_DEBOUNCE_MS } from '@constants';
 
-
 interface TopResult {
   q: string;
   items: ClanSummary[];
