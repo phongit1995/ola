@@ -271,7 +271,7 @@ func (r *Repository) ApplyClaim(userID uuid.UUID, chest *models.KenChest, rolled
 			isEmpty = false
 			finalKen = before + amount
 
-			// TODO(ken): tạm tắt ghi ken_transactions cho game Rương Ken — mở lại sau.
+			// TODO(ken): tạm tắt ghi ken_transactions cho game Rương Ken, code bật lại ở docs/hidden-features.md
 			if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("ken", finalKen).Error; err != nil {
 				return err
 			}

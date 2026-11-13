@@ -167,7 +167,7 @@ func (r *Repository) CreateShot(shooterID uuid.UUID, side models.PenSide, bet in
 
 		before := u.Ken
 		after := before - bet
-		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN — mở lại sau.
+		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN, code bật lại ở docs/hidden-features.md
 		if err := tx.Model(&models.User{}).Where("id = ?", shooterID).Update("ken", after).Error; err != nil {
 			return err
 		}
@@ -214,7 +214,7 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 			return ledger.ErrInsufficientKen
 		}
 
-		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN — mở lại sau.
+		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN, code bật lại ở docs/hidden-features.md
 		// applyDelta chỉ cập nhật số dư, không còn tạo bản ghi ken_transactions.
 		applyDelta := func(u *models.User, dir models.KenDirection, txType models.KenTxType, amount int, desc string, actor models.KenActorType) error {
 			after := u.Ken + amount
@@ -312,7 +312,7 @@ func (r *Repository) CancelShot(shooterID, shotID uuid.UUID) (*models.PenShot, i
 
 		before := u.Ken
 		after := before + s.BetAmount
-		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN — mở lại sau.
+		// TODO(ken): tạm tắt ghi ken_transactions cho game PEN, code bật lại ở docs/hidden-features.md
 		if err := tx.Model(&models.User{}).Where("id = ?", shooterID).Update("ken", after).Error; err != nil {
 			return err
 		}

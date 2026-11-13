@@ -159,13 +159,13 @@ func (r *Repository) ApplyDraw(userID uuid.UUID, pack *models.EggPack, outcome D
 		finalKen := afterCost
 
 		var costTxID *uuid.UUID
-		// TODO(ken): tạm tắt ghi ken_transactions cho game EGG — mở lại sau.
+		// TODO(ken): tạm tắt ghi ken_transactions cho game EGG, code bật lại ở docs/hidden-features.md
 
 		newEnd := u.VipEndTime
 		switch outcome.CategoryType {
 		case models.EggCategoryKen:
 			if outcome.KenAmount != nil && *outcome.KenAmount > 0 {
-				// TODO(ken): tạm tắt ghi ken_transactions cho game EGG — mở lại sau.
+				// TODO(ken): tạm tắt ghi ken_transactions cho game EGG, code bật lại ở docs/hidden-features.md
 				finalKen += *outcome.KenAmount
 			}
 		case models.EggCategoryVipIcon:

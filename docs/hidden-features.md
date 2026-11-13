@@ -229,3 +229,116 @@ if (cancelled) {
 ```ts
 void stopCallForegroundService().catch(() => {});
 ```
+
+## Server — Ghi sổ `ken_transactions` cho Đập trứng, Sút pen, Rương Ken
+
+Đang tắt có chủ đích: ba game này vẫn trừ/cộng `users.ken` nhưng không ghi dòng `ken_transactions`, nên lịch sử KEN và dashboard admin chưa thấy dòng tiền của chúng. Chỗ tắt được đánh dấu `// TODO(ken)` trong repository. Bật lại thì thay mỗi dòng `TODO(ken)` bằng đoạn tương ứng dưới đây (dùng `ledger.Record` trong `internal/ledger`, import `"ola-chat-server/internal/ledger"`), chạy trong cùng transaction.
+
+### Đập trứng (`server/internal/modules/egg/egg.repository.go`, `ApplyDraw`)
+
+Trừ phí mở trứng, ngay sau `var costTxID *uuid.UUID`:
+
+```go
+if pack.KenCost > 0 {
+	costTx, err := ledger.Record(tx, userID, models.KenDirectionDebit, pack.KenCost, before, afterCost, ledger.Entry{
+		Type:        models.KenTxTypeEggOpen,
+		Description: pack.Name,
+		RefType:     "egg_draw",
+		ActorType:   models.KenActorUser,
+		ActorID:     &userID,
+	})
+	if err != nil {
+		return err
+	}
+	costTxID = &costTx.ID
+}
+```
+
+Thưởng KEN, trong `case models.EggCategoryKen`, trước `finalKen += *outcome.KenAmount`:
+
+```go
+if _, err := ledger.Record(tx, userID, models.KenDirectionCredit, *outcome.KenAmount, finalKen, finalKen+*outcome.KenAmount, ledger.Entry{
+	Type:        models.KenTxTypeReward,
+	Description: outcome.RewardLabel,
+	RefType:     "egg_draw",
+	ActorType:   models.KenActorSystem,
+}); err != nil {
+	return err
+}
+```
+
+### Sút pen (`server/internal/modules/pen/pen.repository.go`)
+
+`CreateShot`, trước khi cập nhật `ken`:
+
+```go
+shootTx, err := ledger.Record(tx, shooterID, models.KenDirectionDebit, bet, before, after, ledger.Entry{
+	Type:        models.KenTxTypePenShoot,
+	Description: "PEN đặt cược",
+	RefType:     penRefType,
+	RefID:       &shot.ID,
+	ActorType:   models.KenActorUser,
+	ActorID:     &shooterID,
+})
+if err != nil {
+	return err
+}
+if err := tx.Model(&models.PenShot{}).Where("id = ?", shot.ID).Update("shoot_tx_id", shootTx.ID).Error; err != nil {
+	return err
+}
+```
+
+và sau khi cập nhật `ken`: `shot.ShootTxID = &shootTx.ID`.
+
+`CatchShot`, trong closure cộng/trừ từng người, trước `u.Ken = after` (closure cần trả về dòng giao dịch để lấy `catchTx` / `payoutTx`):
+
+```go
+entry := ledger.Entry{Type: txType, Description: desc, RefType: penRefType, RefID: &s.ID, ActorType: actor}
+if actor == models.KenActorUser {
+	entry.ActorID = &u.ID
+}
+if _, err := ledger.Record(tx, u.ID, dir, amount, u.Ken, after, entry); err != nil {
+	return err
+}
+```
+
+rồi thêm `"catch_tx_id": catchTx.ID, "payout_tx_id": payoutTx.ID` vào `updates` và gán `s.CatchTxID` / `s.PayoutTxID`.
+
+`CancelShot`, trước khi cập nhật `ken`:
+
+```go
+refundTx, err := ledger.Record(tx, shooterID, models.KenDirectionCredit, s.BetAmount, before, after, ledger.Entry{
+	Type:        models.KenTxTypePenRefund,
+	Description: "PEN hoàn cược",
+	RefType:     penRefType,
+	RefID:       &s.ID,
+	ActorType:   models.KenActorUser,
+	ActorID:     &shooterID,
+})
+if err != nil {
+	return err
+}
+```
+
+và thêm `"refund_tx_id": refundTx.ID` vào `updates`.
+
+### Rương Ken (`server/internal/modules/kenchest/kenchest.repository.go`, `ApplyClaim`)
+
+Trước khi cập nhật `ken`:
+
+```go
+chestID := chest.ID
+ktx, err := ledger.Record(tx, userID, models.KenDirectionCredit, amount, before, finalKen, ledger.Entry{
+	Type:        models.KenTxTypeKenChest,
+	Description: "Rương Ken",
+	RefType:     "ken_chest",
+	RefID:       &chestID,
+	ActorType:   models.KenActorSystem,
+})
+if err != nil {
+	return err
+}
+kenTxID = &ktx.ID
+```
+
+Game bàn (cờ caro, Tiến Lên, Cờ Tỷ Phú, War God…) chưa từng ghi sổ: cược, thưởng, hoàn trong `server/internal/game/settlement.repository.go` không tạo dòng `ken_transactions` và chưa có loại `GAME_*` trong `KenTxType`.
