@@ -10,7 +10,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-var ErrInsufficientKen = errors.New("insufficient ken balance")
+var (
+	ErrInsufficientKen = errors.New("insufficient ken balance")
+	ErrNegativeAmount  = errors.New("ken amount must not be negative")
+)
 
 type Entry struct {
 	Type        models.KenTxType
@@ -86,6 +89,9 @@ func Record(tx *gorm.DB, userID uuid.UUID, direction models.KenDirection, amount
 }
 
 func apply(tx *gorm.DB, u *models.User, direction models.KenDirection, amount, after int, entry Entry) (*models.KenTransaction, error) {
+	if amount < 0 {
+		return nil, ErrNegativeAmount
+	}
 	if err := tx.Model(&models.User{}).Where("id = ?", u.ID).Update("ken", after).Error; err != nil {
 		return nil, err
 	}

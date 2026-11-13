@@ -119,14 +119,14 @@ func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
 }
 
 func (s *Service) GetByID(id uuid.UUID) (*UserDetail, error) {
-	user, err := s.repo.FindByIDUnscoped(id)
+	u, err := s.repo.FindByIDUnscoped(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
 		return nil, err
 	}
-	return toDetail(user), nil
+	return toDetail(u), nil
 }
 
 func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
@@ -181,11 +181,11 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string, adminID uuid.UUI
 
 	s.logger.Infow("Admin updated username", "user_id", id, "username", username)
 
-	user, err := s.repo.FindByIDUnscoped(id)
+	u, err := s.repo.FindByIDUnscoped(id)
 	if err != nil {
 		return nil, err
 	}
-	return toDetail(user), nil
+	return toDetail(u), nil
 }
 
 func (s *Service) ResetPassword(id uuid.UUID, password string) error {

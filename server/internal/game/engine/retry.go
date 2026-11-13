@@ -3,8 +3,6 @@ package engine
 import (
 	"sync"
 	"time"
-
-	"ola-chat-server/internal/utils"
 )
 
 func nextBackoff(current, limit time.Duration) time.Duration {
@@ -23,12 +21,12 @@ func (e *Engine) runUniqueJob(mu *sync.Mutex, jobs map[string]struct{}, key stri
 	jobs[key] = struct{}{}
 	mu.Unlock()
 
-	utils.SafeGo(e.logger, func() {
+	go func() {
 		defer func() {
 			mu.Lock()
 			delete(jobs, key)
 			mu.Unlock()
 		}()
 		run()
-	})
+	}()
 }

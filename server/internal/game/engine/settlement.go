@@ -10,7 +10,6 @@ import (
 	"ola-chat-server/internal/game/logic"
 	"ola-chat-server/internal/game/progression"
 	"ola-chat-server/internal/game/protocol"
-	"ola-chat-server/internal/utils"
 )
 
 const (
@@ -118,7 +117,7 @@ func (e *Engine) maybeStartSettlementMaintenance() {
 		return
 	}
 	e.maintenanceOnce.Do(func() {
-		utils.SafeGo(e.logger, e.runSettlementMaintenance)
+		go e.runSettlementMaintenance()
 	})
 }
 
@@ -428,8 +427,7 @@ func (e *Engine) emitSettledBalances(balances []SettledBalance, fallbackGameID s
 		}
 		e.toUser(gameID, balance.UserID, protocol.OutEnvelope{Type: protocol.S2CUserInfo, Data: balance.Info})
 		// Async so callers holding engine locks never contend with roomMu here.
-		userID, level := balance.UserID, balance.Info.Level
-		utils.SafeGo(e.logger, func() { e.applySettledLevel(gameID, userID, level) })
+		go e.applySettledLevel(gameID, balance.UserID, balance.Info.Level)
 	}
 }
 

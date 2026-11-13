@@ -116,6 +116,9 @@ func NewServer(
 			next(socket.NewExtendedError("Unauthorized", map[string]string{"code": "AUTH_EXPIRED"}))
 			return
 		}
+		if identity.RevocationCheckErr != nil {
+			server.logger.Warnw("Game socket token revocation check skipped", "user_id", identity.UserID, "error", identity.RevocationCheckErr)
+		}
 		userID := identity.UserID.String()
 		name, _ := auth["name"].(string)
 		if name == "" {

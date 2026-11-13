@@ -138,6 +138,9 @@ func NewServer(
 			next(socket.NewExtendedError("Unauthorized", nil))
 			return
 		}
+		if identity.RevocationCheckErr != nil {
+			server.logger.Warnw("WebSocket token revocation check skipped", "user_id", identity.UserID, "error", identity.RevocationCheckErr)
+		}
 		userID := identity.UserID
 		sessionID := ""
 		if identity.SessionID != uuid.Nil {

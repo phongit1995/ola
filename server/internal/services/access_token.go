@@ -17,13 +17,13 @@ var (
 	ErrAccessTokenNoUserID  = errors.New("id missing from token")
 	ErrAccessTokenUserID    = errors.New("invalid id in token")
 	ErrAccessSessionRevoked = errors.New("session revoked")
-	ErrAuthUnavailable      = errors.New("authentication service unavailable")
 )
 
 type AccessIdentity struct {
-	UserID    uuid.UUID
-	SessionID uuid.UUID
-	Claims    *TokenClaims
+	UserID             uuid.UUID
+	SessionID          uuid.UUID
+	Claims             *TokenClaims
+	RevocationCheckErr error
 }
 
 func AuthenticateUserAccessToken(jwtService *JWTService, cache *CacheService, token string) (*AccessIdentity, error) {
@@ -32,10 +32,11 @@ func AuthenticateUserAccessToken(jwtService *JWTService, cache *CacheService, to
 		return nil, ErrAccessTokenInvalid
 	}
 
+	var revocationErr error
 	if claims.ID != "" {
 		revoked, err := keyExists(cache, fmt.Sprintf(constants.CacheKeyTokenBlacklist, claims.ID))
 		if err != nil {
-			return nil, ErrAuthUnavailable
+			revocationErr = err
 		}
 		if revoked {
 			return nil, ErrAccessTokenRevoked
@@ -66,8 +67,8 @@ func AuthenticateUserAccessToken(jwtService *JWTService, cache *CacheService, to
 	if sidStr, _ := data[ClaimSessionID].(string); sidStr != "" {
 		if sessionID, err := uuid.Parse(sidStr); err == nil {
 			revoked, err := keyExists(cache, fmt.Sprintf(constants.CacheKeySessionRevoked, sessionID.String()))
-			if err != nil {
-				return nil, ErrAuthUnavailable
+			if err != nil && revocationErr == nil {
+				revocationErr = err
 			}
 			if revoked {
 				return nil, ErrAccessSessionRevoked
@@ -75,6 +76,7 @@ func AuthenticateUserAccessToken(jwtService *JWTService, cache *CacheService, to
 			identity.SessionID = sessionID
 		}
 	}
+	identity.RevocationCheckErr = revocationErr
 	return identity, nil
 }
 

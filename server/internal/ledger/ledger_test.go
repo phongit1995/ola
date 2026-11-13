@@ -189,3 +189,16 @@ func TestLockUserPairLocksInStableOrder(t *testing.T) {
 		t.Fatalf("unmet expectations: %v", err)
 	}
 }
+
+func TestNegativeAmountRejectedBeforeAnyWrite(t *testing.T) {
+	u := &models.User{Ken: 100}
+	if _, err := Credit(nil, u, -1, Entry{}); !errors.Is(err, ErrNegativeAmount) {
+		t.Fatalf("credit err = %v", err)
+	}
+	if _, err := Debit(nil, u, -1, Entry{}); !errors.Is(err, ErrNegativeAmount) {
+		t.Fatalf("debit err = %v", err)
+	}
+	if u.Ken != 100 {
+		t.Fatalf("balance mutated: %d", u.Ken)
+	}
+}

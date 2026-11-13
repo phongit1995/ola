@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
@@ -67,14 +66,12 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 
 		identity, err := services.AuthenticateUserAccessToken(m.jwtService, m.cache, token)
 		if err != nil {
-			status := http.StatusUnauthorized
-			if errors.Is(err, services.ErrAuthUnavailable) {
-				m.logger.Errorw("Failed to check token revocation", "error", err.Error())
-				status = http.StatusServiceUnavailable
-			}
-			utils.RespondError(c, status, err.Error())
+			utils.RespondError(c, http.StatusUnauthorized, err.Error())
 			c.Abort()
 			return
+		}
+		if identity.RevocationCheckErr != nil {
+			m.logger.Warnw("Token revocation check skipped", "user_id", identity.UserID, "error", identity.RevocationCheckErr)
 		}
 
 		if identity.SessionID != uuid.Nil {

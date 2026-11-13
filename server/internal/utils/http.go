@@ -2,7 +2,9 @@ package utils
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -10,7 +12,10 @@ import (
 	"ola-chat-server/internal/apperr"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gocql/gocql"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -324,7 +329,18 @@ func HTTPStatusFromError(err error) int {
 }
 
 func isInternalError(err error) bool {
-	return apperr.IsDatabaseError(err) || errors.Is(err, context.DeadlineExceeded)
+	if apperr.IsDatabaseError(err) || errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	var connectErr *pgconn.ConnectError
+	var netErr net.Error
+	return errors.As(err, &connectErr) ||
+		errors.As(err, &netErr) ||
+		errors.Is(err, driver.ErrBadConn) ||
+		errors.Is(err, redis.ErrPoolTimeout) ||
+		errors.Is(err, redis.ErrClosed) ||
+		errors.Is(err, gocql.ErrNoConnections) ||
+		errors.Is(err, gocql.ErrTimeoutNoResponse)
 }
 
 func getOrCreateTraceID(c *gin.Context) string {

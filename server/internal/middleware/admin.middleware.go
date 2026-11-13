@@ -44,10 +44,7 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 			key := fmt.Sprintf(constants.CacheKeyTokenBlacklist, claims.ID)
 			exists, err := m.cache.Exists(key)
 			if err != nil {
-				m.logger.Errorw("Failed to check admin token revocation", "error", err.Error())
-				utils.RespondError(c, http.StatusServiceUnavailable, "authentication service unavailable")
-				c.Abort()
-				return
+				m.logger.Warnw("Admin token revocation check skipped", "error", err.Error())
 			}
 			if exists {
 				utils.RespondError(c, http.StatusUnauthorized, "token has been revoked")

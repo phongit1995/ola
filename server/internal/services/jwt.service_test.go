@@ -1,14 +1,19 @@
 package services
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
 	"ola-chat-server/internal/config"
+	"ola-chat-server/internal/constants"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 const testJWTSecret = "test-secret-test-secret-test-secret-123"
@@ -128,5 +133,51 @@ func TestLegacyTokenClassificationIgnoresServiceAccessExpiry(t *testing.T) {
 	}
 	if _, err := s.VerifyAccessToken(signLegacyToken(t, 720*time.Hour)); !errors.Is(err, ErrWrongTokenUse) {
 		t.Fatalf("legacy refresh token accepted as access: err = %v", err)
+	}
+}
+
+func TestAuthenticateUserAccessTokenRevocation(t *testing.T) {
+	s := newTestJWTService()
+	mr := miniredis.RunT(t)
+	cache := &CacheService{client: redis.NewClient(&redis.Options{Addr: mr.Addr()}), ctx: context.Background()}
+
+	userID, sessionID := uuid.New(), uuid.New()
+	access, _ := s.GenerateTokenWithSession(userID, sessionID)
+	claims, _ := s.VerifyAccessToken(access)
+
+	identity, err := AuthenticateUserAccessToken(s, cache, access)
+	if err != nil || identity.RevocationCheckErr != nil {
+		t.Fatalf("valid token: identity=%+v err=%v", identity, err)
+	}
+
+	if err := mr.Set(fmt.Sprintf(constants.CacheKeySessionRevoked, sessionID.String()), "1"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := AuthenticateUserAccessToken(s, cache, access); !errors.Is(err, ErrAccessSessionRevoked) {
+		t.Fatalf("revoked session: err = %v", err)
+	}
+
+	if err := mr.Set(fmt.Sprintf(constants.CacheKeyTokenBlacklist, claims.ID), "1"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := AuthenticateUserAccessToken(s, cache, access); !errors.Is(err, ErrAccessTokenRevoked) {
+		t.Fatalf("blacklisted token: err = %v", err)
+	}
+}
+
+func TestAuthenticateUserAccessTokenFailsOpenWhenRedisDown(t *testing.T) {
+	s := newTestJWTService()
+	mr := miniredis.RunT(t)
+	cache := &CacheService{client: redis.NewClient(&redis.Options{Addr: mr.Addr(), MaxRetries: -1}), ctx: context.Background()}
+	mr.Close()
+
+	userID := uuid.New()
+	access, _ := s.GenerateTokenWithSession(userID, uuid.New())
+	identity, err := AuthenticateUserAccessToken(s, cache, access)
+	if err != nil {
+		t.Fatalf("redis outage rejected a valid token: %v", err)
+	}
+	if identity.UserID != userID || identity.RevocationCheckErr == nil {
+		t.Fatalf("identity = %+v", identity)
 	}
 }
