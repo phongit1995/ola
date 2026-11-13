@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
 import { ROUTES } from '@constants';
-import { toast } from '@lib';
+import { toast, mapFriendsToContacts } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import addContactIcon from '@/assets/icons/chat/ic_add_contact_gray.png';
@@ -28,7 +28,6 @@ import { ChatBotScreen } from '@/pages/chat-bot/ChatBotScreen';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useLobbyWallpaperStyle } from '@hooks';
-import { mapFriendsToContacts } from './utils';
 import {
   useConversationsWithPresence,
   useFriendsWithPresence,

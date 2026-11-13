@@ -11,8 +11,7 @@ import {
 import { isVipActive, activeVipTypeId, colorForName } from '@lib';
 import { CHAT_BOT_TYPE } from '@ola/shared/constants';
 import { useChatBotConfigStore } from '@ola/shared/stores/chat-bot/chatBotConfigStore';
-import type { AuthUser, ChatBotType, Relationship } from '@app-types';
-import type { Contact } from '../types';
+import type { AuthUser, ChatBotType, Relationship, Contact } from '@app-types';
 
 const REQUEST_PREVIEW_COUNT = 3;
 import { BuddyRow } from './BuddyRow';

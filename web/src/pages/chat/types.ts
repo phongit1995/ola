@@ -1,10 +1,5 @@
 import type { ChatReplySnapshot, GiftMessageMetadata } from '@app-types';
-import type { DeviceType } from '@constants';
 import type { MessageMetadata } from '@lib';
-
-export type { DeviceType };
-
-export type ContactGroup = 'birthday' | 'new' | 'utility' | 'friend';
 
 export type ChatMessageKind =
   | 'text'
@@ -28,22 +23,6 @@ export interface Conversation {
   time: string;
   color: string;
   unread: number;
-}
-
-export interface Contact {
-  id: string;
-  name: string;
-  fullName?: string;
-  status?: string;
-  color: string;
-  avatar?: string;
-  vip: boolean;
-  vipTypeId?: number | null;
-  online: boolean;
-  deviceType: DeviceType;
-  lastActive?: string;
-  statusImage?: string;
-  group: ContactGroup;
 }
 
 export interface SuggestedFriend {

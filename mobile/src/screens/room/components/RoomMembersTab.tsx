@@ -6,9 +6,10 @@ import { FlashList } from '@shopify/flash-list';
 import type { RoomMember } from '@ola/shared/types';
 import { useTabSwipeGesture } from '@hooks/useTabSwipeGesture';
 import { VipAvatar } from '@components/ui/VipAvatar';
-import { DEVICE_ICONS, normalizeDevice } from '@lib/deviceIcons';
+import { DEVICE_ICONS } from '@lib/deviceIcons';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
 import { GENDER } from '@ola/shared/constants';
+import { normalizeDevice } from '@ola/shared/lib';
 
 const maleIcon = require('@assets/icons/chat/ic_indicate_male.png');
 const femaleIcon = require('@assets/icons/chat/ic_indicate_female.png');

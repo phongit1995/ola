@@ -3,10 +3,10 @@ import { withAlpha } from '@ola/shared/lib';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { CachedImage } from '@components/ui/CachedImage';
-import type { Contact } from '../types';
 import { DEVICE_ICONS } from '@lib/deviceIcons';
 import { DIVIDER } from '@constants';
 import { UserName } from '@components/ui/UserName';
+import type { Contact } from '@ola/shared/types';
 
 const birthdayIcon = require('@assets/icons/chat/ic_buddy_birthday.png');
 function SquareAvatar({ name, color, uri, size = 40 }: { name: string; color: string; uri?: string; size?: number }) {

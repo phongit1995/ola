@@ -17,7 +17,7 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useChatBotConfigStore } from '@ola/shared/stores/chat-bot/chatBotConfigStore';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
-import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
+import { activeVipTypeId, colorForName, isVipActive, mapFriendsToContacts } from '@ola/shared/lib';
 import { CHAT_BOT_TYPE } from '@ola/shared/constants';
 import type { ChatStackParamList, RootStackParamList } from '@navigation/types';
 import { CHAT_ROUTES, ROOT_ROUTES } from '@navigation/routes';
@@ -30,13 +30,12 @@ import { MessageActionSheet, type MessageSheetAction } from '@screens/room/compo
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
 import { StatusEditDialog } from './StatusEditDialog';
-import { mapFriendsToContacts } from '../utils';
-import type { Contact } from '../types';
 import { useFriendsStore } from '@ola/shared/stores/friends/friendsStore';
 import { useFriendsWithPresence } from '../usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
 import { BotAvatar } from '@screens/chat-bot/components/BotAvatar';
 import { DIVIDER } from '@constants';
+import type { Contact } from '@ola/shared/types';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 const addContactIcon = require('@assets/icons/chat/ic_add_contact_gray.png');

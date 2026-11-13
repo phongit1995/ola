@@ -1,9 +1,9 @@
 import { useRef } from 'react';
 import { Avatar, PresenceBadge, UserName, VipBadge } from '@components';
 import { useLongPress } from '@hooks';
-import type { Contact } from '../types';
 import birthdayIcon from '@/assets/icons/chat/ic_buddy_birthday.png';
 import { DEVICE_ICONS } from '@constants';
+import type { Contact } from '@app-types';
 
 interface BuddyRowProps {
   contact: Contact;

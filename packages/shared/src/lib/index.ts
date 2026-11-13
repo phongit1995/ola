@@ -51,3 +51,4 @@ export * from './momentReactionBurst';
 export * from './avatarFrameLayout';
 export * from './avatarFrameErrors';
 export * from './avatarFrameText';
+export * from './contacts';

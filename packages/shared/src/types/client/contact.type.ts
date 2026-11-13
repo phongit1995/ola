@@ -1,4 +1,4 @@
-import type { DeviceType } from '@lib/deviceIcons';
+export type DeviceType = 'phone' | 'pc' | 'apple' | 'android' | 'winphone';
 
 export type ContactGroup = 'birthday' | 'new' | 'utility' | 'friend';
 
