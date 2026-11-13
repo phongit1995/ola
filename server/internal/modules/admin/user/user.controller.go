@@ -3,7 +3,6 @@ package adminuser
 import (
 	"net/http"
 	"strings"
-	"time"
 
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
@@ -254,9 +253,9 @@ func (ctrl *Controller) GrantVip(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req GrantVipRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[GrantVipRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := ctrl.service.GrantVip(id, req.VipTypeID)
@@ -313,9 +312,9 @@ func (ctrl *Controller) AddVipDays(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req AddVipDaysRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[AddVipDaysRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := ctrl.service.AddVipDays(id, req.Action, req.Days)
@@ -346,9 +345,9 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req UpdateStatusRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[UpdateStatusRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := ctrl.service.SetStatus(id, *req.IsActive)
@@ -380,9 +379,9 @@ func (ctrl *Controller) UpdateUsername(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req UpdateUsernameRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[UpdateUsernameRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	adminID, ok := middleware.GetAdminID(c)
@@ -418,9 +417,9 @@ func (ctrl *Controller) ResetPassword(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 	}
 
-	var req ResetPasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[ResetPasswordRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	if err := ctrl.service.ResetPassword(id, req.Password); err != nil {
@@ -487,20 +486,11 @@ func (ctrl *Controller) ListUsernameChanges(c *gin.Context) (interface{}, error)
 		}
 		f.UserID = &id
 	}
-	if raw := c.Query("from"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
-		}
-		f.From = &t
+	from, to, err := utils.ParseTimeRange(c)
+	if err != nil {
+		return nil, err
 	}
-	if raw := c.Query("to"); raw != "" {
-		t, err := time.Parse(time.RFC3339, raw)
-		if err != nil {
-			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
-		}
-		f.To = &t
-	}
+	f.From, f.To = from, to
 
 	resp, err := ctrl.service.ListUsernameChanges(f)
 	if err != nil {
