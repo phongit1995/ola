@@ -45,7 +45,8 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
 import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../utils';
-import { usePeerCard } from '../usePeerCard';
+import { usePeerCard } from '@ola/shared/stores/chat/usePeerCard';
+import { peerCardHiddenStorage } from '../hiddenPeerCards';
 import {
   useChatWallpaperStyle,
   useLongPress,
@@ -275,6 +276,7 @@ export function ChatConversationView({
     messagesReady: !loadingMessages,
     peerCardRoll,
     lastMessageId: bubbles.at(-1)?.id,
+    hiddenStorage: peerCardHiddenStorage,
   });
 
   const lastOwnId = useMemo(() => {

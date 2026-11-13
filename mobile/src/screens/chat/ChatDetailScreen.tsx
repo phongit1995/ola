@@ -60,7 +60,8 @@ import { GiftPickerDialog } from '@components/gift/GiftPickerDialog';
 import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 import { DIVIDER } from '@constants';
 import { useChatDetail } from './useChatDetail';
-import { usePeerCard } from './usePeerCard';
+import { usePeerCard } from '@ola/shared/stores/chat/usePeerCard';
+import { peerCardHiddenStorage } from '@store/chatLocalStore';
 import { useIncomingGiftAnimation } from './useIncomingGiftAnimation';
 import { chatMessageAbilities } from './utils';
 import { CHAT_BG } from './constants';
@@ -251,6 +252,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     messagesReady: !loadingMessages,
     peerCardRoll,
     lastMessageId: messages[messages.length - 1]?.id,
+    hiddenStorage: peerCardHiddenStorage,
   });
 
   const closeAttachTab = useCallback(() => setOpenTab(null), []);

@@ -4,7 +4,7 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { MePostCard } from './MePostCard';
 import { MeCommentItem } from './MeCommentItem';
 import { MeCommentComposer } from './MeCommentComposer';
-import { useMeComments } from '../useMeComments';
+import { useMeComments } from '@ola/shared/stores/feed/useMeComments';
 import { createTimeFormatter } from '@lib';
 import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 import type { MePost } from '../types';

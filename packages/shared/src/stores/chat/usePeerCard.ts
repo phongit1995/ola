@@ -1,12 +1,19 @@
 import { useState } from 'react';
-import { hidePeerCard, isPeerCardHidden } from './hiddenPeerCards';
-import type { RelationshipStatus } from '@app-types';
+import { RELATIONSHIP_STATUS } from '../../constants/relationship';
+import type { RelationshipStatus } from '../../types/api/user.type';
 
 const STRANGER_STATUSES: RelationshipStatus[] = [
-  'none',
-  'pending_outgoing',
-  'pending_incoming',
+  RELATIONSHIP_STATUS.none,
+  RELATIONSHIP_STATUS.pendingOutgoing,
+  RELATIONSHIP_STATUS.pendingIncoming,
 ];
+
+const PEER_CARD_MAX_MESSAGES = 10;
+
+export interface PeerCardHiddenStorage {
+  isHidden: (peerId: string) => boolean;
+  hide: (peerId: string) => void;
+}
 
 interface UsePeerCardArgs {
   peerId: string;
@@ -18,10 +25,11 @@ interface UsePeerCardArgs {
   messagesReady: boolean;
   peerCardRoll: boolean;
   lastMessageId: string | undefined;
+  hiddenStorage: PeerCardHiddenStorage;
 }
 
-function initialHiddenFor(peerId: string): string {
-  return peerId !== '' && isPeerCardHidden(peerId) ? peerId : '';
+function initialHiddenFor(peerId: string, hiddenStorage: PeerCardHiddenStorage): string {
+  return peerId !== '' && hiddenStorage.isHidden(peerId) ? peerId : '';
 }
 
 export function usePeerCard({
@@ -34,16 +42,15 @@ export function usePeerCard({
   messagesReady,
   peerCardRoll,
   lastMessageId,
+  hiddenStorage,
 }: UsePeerCardArgs) {
-  const [hiddenFor, setHiddenFor] = useState(() => initialHiddenFor(peerId));
+  const [hiddenFor, setHiddenFor] = useState(() => initialHiddenFor(peerId, hiddenStorage));
   const [trackedPeerId, setTrackedPeerId] = useState(peerId);
-  const [anchor, setAnchor] = useState<{ peerId: string; id: string } | null>(
-    null
-  );
+  const [anchor, setAnchor] = useState<{ peerId: string; id: string } | null>(null);
 
   if (trackedPeerId !== peerId) {
     setTrackedPeerId(peerId);
-    setHiddenFor(initialHiddenFor(peerId));
+    setHiddenFor(initialHiddenFor(peerId, hiddenStorage));
     setAnchor(null);
   }
 
@@ -54,7 +61,7 @@ export function usePeerCard({
     !hidden &&
     blockStatus != null &&
     STRANGER_STATUSES.includes(blockStatus);
-  const sizeAllowsCard = (!hasMore && messageCount < 10) || peerCardRoll;
+  const sizeAllowsCard = (!hasMore && messageCount < PEER_CARD_MAX_MESSAGES) || peerCardRoll;
 
   if (
     isStranger &&
@@ -72,7 +79,7 @@ export function usePeerCard({
     visible: isStranger && anchorId != null,
     hide: () => {
       if (peerId === '') return;
-      hidePeerCard(peerId);
+      hiddenStorage.hide(peerId);
       setHiddenFor(peerId);
     },
   };

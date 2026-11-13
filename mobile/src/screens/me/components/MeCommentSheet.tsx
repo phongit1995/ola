@@ -17,7 +17,7 @@ import {
   MeCommentComposer,
   type MeCommentComposerHandle,
 } from './MeCommentComposer';
-import { useMeComments } from '../useMeComments';
+import { useMeComments } from '@ola/shared/stores/feed/useMeComments';
 
 interface MeCommentSheetProps {
   post: Post;

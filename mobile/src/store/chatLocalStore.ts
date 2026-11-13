@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { sharedPersistStorage } from '@ola/shared/platform';
+import type { PeerCardHiddenStorage } from '@ola/shared/stores/chat/usePeerCard';
 
 interface ChatLocalState {
   hiddenPeerCardIds: string[];
@@ -30,3 +31,8 @@ export function isPeerCardHidden(peerId: string): boolean {
 export function hidePeerCard(peerId: string): void {
   useChatLocalStore.getState().hidePeerCard(peerId);
 }
+
+export const peerCardHiddenStorage: PeerCardHiddenStorage = {
+  isHidden: isPeerCardHidden,
+  hide: hidePeerCard,
+};

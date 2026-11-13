@@ -1,23 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MeService } from '@services';
-import type { PostAuthor, PostComment } from '@app-types';
-import { toApiError, toast } from '@lib';
-import { useAuthStore } from '@ola/shared/stores/auth/authStore';
-import i18n from '@/i18n';
+import i18n from 'i18next';
+import { FEED_TOP_LIKERS_LIMIT, ME_COMMENTS_FETCH_LIMIT } from '../../constants/feed';
+import { toApiError } from '../../lib/apiError';
+import { toast } from '../../lib/toast';
+import { MeService } from '../../services/me.service';
+import type { PostAuthor, PostComment } from '../../types/api/me.type';
+import { selfLiker } from './selfLiker';
 
-const COMMENTS_FETCH_LIMIT = 50;
-const TOP_LIKERS_MAX = 3;
-
-function selfLiker(): PostAuthor | null {
-  const user = useAuthStore.getState().user;
-  if (user == null) return null;
-  return {
-    id: user.id,
-    username: user.username,
-    fullName: user.fullName,
-    avatar: user.avatar ?? undefined,
-    isSelf: true,
-  };
+function selfCommentLiker(): PostAuthor | undefined {
+  const self = selfLiker();
+  return self == null ? undefined : { ...self, isSelf: true };
 }
 
 interface UseMeCommentsOptions {
@@ -47,7 +39,7 @@ export function useMeComments(
     (async () => {
       try {
         const result = await MeService.comments(postId, {
-          limit: COMMENTS_FETCH_LIMIT,
+          limit: ME_COMMENTS_FETCH_LIMIT,
         });
         if (!active) return;
         setComments(result.items);
@@ -102,7 +94,7 @@ export function useMeComments(
       if (target == null) return;
       pendingLikes.current.add(commentId);
 
-      const self = selfLiker();
+      const self = selfCommentLiker();
       const nextLiked = !target.liked;
       const currentLikers = target.topLikers ?? [];
       const nextLikers =
@@ -112,7 +104,7 @@ export function useMeComments(
           ? [
               self,
               ...currentLikers.filter((liker) => liker.id !== self.id),
-            ].slice(0, TOP_LIKERS_MAX)
+            ].slice(0, FEED_TOP_LIKERS_LIMIT)
           : currentLikers.filter((liker) => liker.id !== self.id);
       const optimistic: PostComment = {
         ...target,
