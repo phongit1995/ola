@@ -104,16 +104,14 @@ function useBoardFit(screen: RefObject<HTMLDivElement | null>, chrome: RefObject
 }
 
 function BoardMenu({ onClose }: { onClose: () => void }) {
-  const { speed, autoEnd, spectating, practice, matchBet, spectators, setSpeed, setAutoEnd, setRulesOpen, exitMatch, forfeitMatch } = useTycoon(
+  const { speed, spectating, practice, matchBet, spectators, setSpeed, setRulesOpen, exitMatch, forfeitMatch } = useTycoon(
     useShallow((s) => ({
       speed: s.speed,
-      autoEnd: s.autoEnd,
       spectating: s.spectating,
       practice: s.practice,
       matchBet: s.matchBet,
       spectators: s.spectators,
       setSpeed: s.setSpeed,
-      setAutoEnd: s.setAutoEnd,
       setRulesOpen: s.setRulesOpen,
       exitMatch: s.exitMatch,
       forfeitMatch: s.forfeitMatch,
@@ -150,14 +148,6 @@ function BoardMenu({ onClose }: { onClose: () => void }) {
           ))}
         </span>
       </div>
-      {spectating ? null : (
-        <button type="button" role="menuitemcheckbox" aria-checked={autoEnd} className="ty-popover-row" onClick={() => setAutoEnd(!autoEnd)}>
-          <span>Tự kết thúc lượt</span>
-          <span className={`ty-switch ${autoEnd ? 'ty-switch-on' : ''}`} aria-hidden="true">
-            <i />
-          </span>
-        </button>
-      )}
       <button
         type="button"
         role="menuitem"
@@ -224,6 +214,22 @@ function useAutoUpgrade(): void {
   }, [view, you, myTurn, replaying, movePending, sheet, openSheet]);
 }
 
+const AUTO_END_MS = 700;
+
+function useAutoEndTurn(): void {
+  const { view, you, myTurn, replaying, movePending, turnExpired, sheet, sendMove } = useTycoon(
+    useShallow((s) => ({ view: s.view, you: s.you, myTurn: s.myTurn, replaying: s.replaying, movePending: s.movePending, turnExpired: s.turnExpired, sheet: s.sheet, sendMove: s.sendMove })),
+  );
+  const me = view?.players[you];
+  const ready = !!view && !!me && myTurn && view.phase === 'manage' && !view.finished && !me.bankrupt && !replaying && !movePending && !turnExpired && !sheet;
+  const moveCount = view?.moveCount ?? -1;
+  useEffect(() => {
+    if (!ready) return;
+    const timer = setTimeout(() => sendMove({ type: 'END_TURN' }), AUTO_END_MS);
+    return () => clearTimeout(timer);
+  }, [ready, moveCount, sendMove]);
+}
+
 export function BoardScreen() {
   const state = useTycoon(
     useShallow((s) => ({
@@ -258,6 +264,7 @@ export function BoardScreen() {
   }, []);
   useBoardFit(screen, chrome);
   useAutoUpgrade();
+  useAutoEndTurn();
 
   useEffect(() => (canvas.current ? attachParticles(canvas.current) : undefined), []);
 

@@ -75,11 +75,31 @@ func (s *State) ownedCount(seat int, group string) int {
 	return count
 }
 
+func levelCost(idx, level int) int {
+	return (Board[idx].HouseCost*LevelCostPercent[level-1] + 500) / 1000 * 10
+}
+
+func housesValue(idx, houses int) int {
+	sum := 0
+	for level := 1; level <= houses; level++ {
+		sum += levelCost(idx, level)
+	}
+	return sum
+}
+
+func housesRefund(idx, houses int) int {
+	sum := 0
+	for level := 1; level <= houses; level++ {
+		sum += levelCost(idx, level) / 2
+	}
+	return sum
+}
+
 func (s *State) houseValue(seat int) int {
 	sum := 0
 	for idx, t := range s.Tiles {
 		if t.Owner == seat && t.Houses > 0 {
-			sum += t.Houses * Board[idx].HouseCost
+			sum += housesValue(idx, t.Houses)
 		}
 	}
 	return sum
@@ -92,7 +112,7 @@ func (s *State) Worth(seat int) int {
 	sum := s.Players[seat].Cash
 	for idx, t := range s.Tiles {
 		if t.Owner == seat {
-			sum += Board[idx].Price + t.Houses*Board[idx].HouseCost
+			sum += Board[idx].Price + housesValue(idx, t.Houses)
 		}
 	}
 	return sum
@@ -141,7 +161,7 @@ func (s *State) canBuildError(seat, idx int) string {
 	if t.Houses >= MaxHouses {
 		return ErrMaxHouses
 	}
-	if s.Players[seat].Cash < tile.HouseCost {
+	if s.Players[seat].Cash < levelCost(idx, t.Houses+1) {
 		return ErrNoCash
 	}
 	return ""
@@ -180,7 +200,7 @@ func (s *State) festivalPick(seat int) int {
 }
 
 func (s *State) takeoverPrice(idx int) int {
-	return TakeoverMultiplier * (Board[idx].Price + s.Tiles[idx].Houses*Board[idx].HouseCost)
+	return (Board[idx].Price + housesValue(idx, s.Tiles[idx].Houses)) * TakeoverPercent / 100
 }
 
 func (s *State) canTakeoverError(seat, idx int) string {
@@ -367,7 +387,7 @@ func (s *State) autoSellForDebt(seat int) {
 }
 
 func (s *State) build(seat, idx int) {
-	cost := Board[idx].HouseCost
+	cost := levelCost(idx, s.Tiles[idx].Houses+1)
 	s.Players[seat].Cash -= cost
 	s.Tiles[idx].Houses++
 	s.push(Step{Kind: StepPay, By: seat, Target: intp(-1), Amount: intp(cost), Reason: PayBuild, Tile: intp(idx)})
@@ -375,7 +395,7 @@ func (s *State) build(seat, idx int) {
 }
 
 func (s *State) sellHouse(seat, idx int) {
-	refund := Board[idx].HouseCost / 2
+	refund := levelCost(idx, s.Tiles[idx].Houses) / 2
 	s.Players[seat].Cash += refund
 	s.Tiles[idx].Houses--
 	s.push(Step{Kind: StepSell, By: seat, Tile: intp(idx), Houses: intp(s.Tiles[idx].Houses)})
@@ -592,7 +612,7 @@ func (s *State) bankrupt(seat, creditor, amount int) {
 			continue
 		}
 		if t.Houses > 0 {
-			p.Cash += t.Houses * Board[idx].HouseCost / 2
+			p.Cash += housesRefund(idx, t.Houses)
 			t.Houses = 0
 		}
 		tiles = append(tiles, idx)

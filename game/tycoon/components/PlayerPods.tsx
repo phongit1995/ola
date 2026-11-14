@@ -80,8 +80,30 @@ export function PlayerPods() {
               <img className="ty-s6-av-pawn" src={pawnArt(seat)} alt="" draggable={false} />
             </span>
             <span className="ty-s6-pod-copy">
-              <b className="ty-s6-pod-name">{name}</b>
-              <span className="ty-s6-cash">{player.bankrupt ? 'Phá sản' : <PodCash value={money} />}</span>
+              <b className="ty-s6-pod-name">
+                <img className="ty-s6-pod-vip" src={info.avatar} alt="" draggable={false} />
+                <span>{name}</span>
+              </b>
+              <span className="ty-s6-cash">
+                <span className="ty-s6-cash-num">
+                  {player.bankrupt ? 'Phá sản' : <PodCash value={money} />}
+                  {player.bankrupt ? null : <i className="ui-coin ty-s6-cash-coin" aria-hidden="true" />}
+                  {betFloat > 0 && matchBet > 0 ? (
+                    <span key={betFloat} className="ty-s6-float ty-s6-float-neg ty-s6-float-ken" aria-hidden="true">
+                      −{formatKen(matchBet)}
+                      <img src={kenUrl} alt="" draggable={false} />
+                    </span>
+                  ) : null}
+                  {moneyFloats
+                    .filter((float) => float.seat === seat)
+                    .slice(-1)
+                    .map((float) => (
+                      <span key={float.seq} className={`ty-s6-float ${float.amount < 0 ? 'ty-s6-float-neg' : ''} ${Math.abs(float.amount) >= BIG_FLOAT ? 'ty-s6-float-big' : ''}`}>
+                        {formatDelta(float.amount)}
+                      </span>
+                    ))}
+                </span>
+              </span>
             </span>
             <span className="ty-s6-pod-tags">
               {owned > 0 && !player.bankrupt ? (
@@ -104,19 +126,6 @@ export function PlayerPods() {
             <svg className="ty-s6-crack" data-crack viewBox="0 0 100 60" aria-hidden="true">
               <path d="M58 0 46 18l12 8-14 14 8 20M46 18 26 22M44 40 20 50" />
             </svg>
-            {betFloat > 0 && matchBet > 0 ? (
-              <span key={betFloat} className="ty-s6-float ty-s6-float-neg ty-s6-float-ken" aria-hidden="true">
-                −{formatKen(matchBet)}
-                <img src={kenUrl} alt="" draggable={false} />
-              </span>
-            ) : null}
-            {moneyFloats
-              .filter((float) => float.seat === seat)
-              .map((float) => (
-                <span key={float.seq} className={`ty-s6-float ${float.amount < 0 ? 'ty-s6-float-neg' : ''} ${Math.abs(float.amount) >= BIG_FLOAT ? 'ty-s6-float-big' : ''}`}>
-                  {formatDelta(float.amount)}
-                </span>
-              ))}
           </button>
         );
       })}

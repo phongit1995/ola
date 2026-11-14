@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
 import { GROUPS, LEVEL_NAMES, MAX_HOUSES } from '../logic/constants';
+import { levelCost } from '../logic/engine';
 import { canBuild, canSell, currentRent, worthOf } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { seatColor, SEAT_TINTS } from '../helpers/player';
@@ -99,12 +100,12 @@ export function AssetsSheet({ seat }: { seat: number }) {
                           size="sm"
                           icon="minus"
                           className="ty-holding-sell"
-                          aria-label={`Hạ cấp ${tile.name}, thu về ${formatMoney(Math.floor((tile.houseCost ?? 0) / 2))}`}
+                          aria-label={`Hạ cấp ${tile.name}, thu về ${formatMoney(Math.floor(levelCost(idx, level) / 2))}`}
                           disabled={busy || !sellHint?.ok}
                           title={sellHint && !sellHint.ok ? sellHint.reason : undefined}
                           onClick={() => sendMove({ type: 'SELL_HOUSE', tile: idx })}
                         >
-                          +{Math.floor((tile.houseCost ?? 0) / 2)}
+                          +{Math.floor(levelCost(idx, level) / 2)}
                         </UiButton>
                       ) : null}
                       {full && level < MAX_HOUSES ? (
@@ -112,12 +113,12 @@ export function AssetsSheet({ seat }: { seat: number }) {
                           tone="gold"
                           size="sm"
                           icon="plus"
-                          aria-label={`Nâng cấp ${tile.name}, ${formatMoney(tile.houseCost ?? 0)}`}
+                          aria-label={`Nâng cấp ${tile.name}, ${formatMoney(levelCost(idx, level + 1))}`}
                           disabled={busy || !buildHint?.ok}
                           title={buildHint && !buildHint.ok ? buildHint.reason : undefined}
                           onClick={() => sendMove({ type: 'BUILD', tile: idx })}
                         >
-                          {tile.houseCost ?? 0}
+                          {levelCost(idx, level + 1)}
                         </UiButton>
                       ) : null}
                     </span>

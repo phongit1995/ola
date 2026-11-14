@@ -63,7 +63,9 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
   const choosingFestival = idle && myTurn && view?.phase === 'festival';
   const choosingTravel = idle && myTurn && view?.phase === 'travel';
   const bankrupt = positions.map((_, seat) => Boolean(view?.players[seat]?.bankrupt));
-  const spots = pawnLayout(positions.map((pos) => ((pos % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE), bankrupt, turn);
+  const tilesOf = positions.map((pos) => ((pos % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE);
+  const spots = pawnLayout(tilesOf, bankrupt, turn);
+  const occupied = new Set(tilesOf.filter((_, seat) => !bankrupt[seat]));
 
   return (
     <div className={`ty-s6-board ${choosingFestival || choosingTravel ? 'ty-s6-board-pick' : ''}`} id="ty-s6-board" role="group" aria-label="Bàn cờ tỷ phú">
@@ -102,6 +104,7 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
                 `ty-s6-side-${SIDE_CLASS[rect.side]}`,
                 `ty-s6-kind-${tile.kind}`,
                 owned ? 'ty-s6-owned' : '',
+                occupied.has(tile.idx) ? 'ty-s6-occupied' : '',
                 dim ? 'ty-s6-dim' : '',
                 pickable ? 'ty-s6-pick' : '',
                 festival === tile.idx ? 'ty-s6-festive' : '',
@@ -120,7 +123,12 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
                     <TileMark name={mark} />
                   </span>
                 ) : null}
-                {text ? <span className={`ty-s6-price ${owned ? 'ty-s6-rent' : ''}`}>{text}</span> : null}
+                {text ? (
+                  <span className={`ty-s6-price ${owned ? 'ty-s6-rent' : ''}`}>
+                    {text}
+                    {property || tile.kind === 'go' ? <i className="ui-coin ty-s6-coin" aria-hidden="true" /> : null}
+                  </span>
+                ) : null}
               </span>
               <span className="ty-s6-houses" data-houses>
                 {house ? <img src={house} alt="" draggable={false} /> : null}
@@ -139,6 +147,22 @@ export function Board({ onTileTap, children }: { onTileTap: (idx: number) => voi
                 </span>
               ) : null}
             </button>
+          );
+        })}
+        {BOARD.filter((tile) => occupied.has(tile.idx)).map((tile) => {
+          const rect = tileRect(tile.idx);
+          const owner = tiles[tile.idx]?.owner ?? -1;
+          const owned = owner >= 0 && (tile.kind === 'street' || tile.kind === 'station');
+          const text = owned ? rentLabel(tiles, tile.idx, festival) : caption(tile.idx);
+          if (!text) return null;
+          const style = { left: `${rect.x}%`, top: `${rect.y}%`, width: `${rect.w}%`, height: `${rect.h}%`, ...(owned ? { '--owner': seatColor(owner) } : {}) } as CSSProperties;
+          return (
+            <span key={`price-${tile.idx}`} className="ty-s6-pricelayer" style={style} aria-hidden="true">
+              <span className={`ty-s6-price ty-s6-price-${tile.kind} ${owned ? 'ty-s6-rent' : ''}`}>
+                {text}
+                {tile.kind === 'street' || tile.kind === 'station' || tile.kind === 'go' ? <i className="ui-coin ty-s6-coin" aria-hidden="true" /> : null}
+              </span>
+            </span>
           );
         })}
         {positions.map((pos, seat) => {

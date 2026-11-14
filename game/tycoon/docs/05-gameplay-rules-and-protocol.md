@@ -53,7 +53,7 @@ Loại ô (`kind`): `go`, `street`, `station`, `chance`, `chest`, `tax`, `jail`,
 | 30 | hàng dưới ← | Hà Nội | street | Xanh đậm | 350 | 35 / 190 / 680 / 1.420 | 200 |
 | 31 | hàng dưới ← | TP. Hồ Chí Minh | street | Xanh đậm | 400 | 40 / 210 / 720 / 1.500 | 200 |
 
-Hằng số: `BOARD_SIZE 32`, `START_CASH 1500`, `GO_SALARY 160`, `JAIL_FINE 50`, `JAIL_TILE 8`, `MAX_HOUSES 3` (cấp tối đa), `HOUSE_SELL_RATIO 0.5`, `MAX_ROUNDS 30`, `TIME_LIMIT_MS 25 phút`, `TAKEOVER_MULTIPLIER 2`, `WIN_GROUPS 3`, `FESTIVAL_MULTIPLIER 2`, `TAX_RATE 0.1`, `TURN_SECONDS 30`, `MAX_DOUBLES 3`, `JAIL_MAX_TURNS 3`.
+Hằng số: `BOARD_SIZE 32`, `START_CASH 1500`, `GO_SALARY 160`, `JAIL_FINE 50`, `JAIL_TILE 8`, `MAX_HOUSES 3` (cấp tối đa), `HOUSE_SELL_RATIO 0.5`, `MAX_ROUNDS 30`, `TIME_LIMIT_MS 25 phút`, `TAKEOVER_PERCENT 150`, `LEVEL_COST_PERCENT [75, 100, 125]`, `WIN_GROUPS 3`, `FESTIVAL_MULTIPLIER 2`, `TAX_RATE 0.1`, `TURN_SECONDS 30`, `MAX_DOUBLES 3`, `JAIL_MAX_TURNS 3`.
 
 Tiền thuê đất **chưa nâng cấp** khi sở hữu **trọn nhóm** (cả 2 thành phố) = ×2. Sân bay: tiền thuê theo số sân bay người chủ sở hữu (1→25, 2→50, 3→100, 4→200). Thành phố đang có Lễ hội: thuê (sau khi đã tính ×2 trọn nhóm hoặc theo cấp) ×2 nữa.
 
@@ -135,7 +135,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 
 ### 4.3b Mua lại đất
 - Trả thuê xong (không rơi vào nợ) ở ô **thành phố** (`street`) của người chơi khác còn hoạt động, ô **chưa lên Khách sạn** (cấp < 3) và `cash ≥ giá mua lại` → pha `takeover`.
-- Giá mua lại = `TAKEOVER_MULTIPLIER × (giá đất + cấp × houseCost)` = ×2. Tiền trả **cho chủ cũ**; ô đổi chủ, giữ nguyên cấp nhà.
+- Giá mua lại = `(giá đất + tiền đã nâng) × TAKEOVER_PERCENT / 100` = ×1,5 (đổi 14/11/2026, trước là ×2). Tiền đã nâng = tổng giá các cấp đang có (§4.5). Tiền trả **cho chủ cũ**; ô đổi chủ, giữ nguyên cấp nhà.
 - `TAKEOVER` mua lại, `DECLINE` bỏ qua; hết giờ = `DECLINE`. Sân bay và ô Khách sạn không mua lại được. Sau đó sang `manage`.
 - Chủ ô bỏ cuộc trong pha `takeover`: ô về vô chủ, pha chuyển sang `decide` để người đang đứng mua theo giá gốc hoặc bỏ qua.
 - Bot mua lại khi việc đó giúp nó gom trọn nhóm (còn ≥ 120 tr sau khi trả), hoặc phá nhóm trọn của chủ cũ (còn ≥ 360 tr).
@@ -150,8 +150,8 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 
 ### 4.4 Nâng cấp và hạ cấp
 - Mỗi ô đất có cấp `houses` 0–3: 0 = đất trống, 1 = Nhà, 2 = Biệt thự, 3 = Khách sạn. Tên cấp: `LEVEL_NAMES` trong `constants.ts`.
-- `BUILD {tile}` = nâng 1 cấp (đổi 14/11/2026): ô là `street` của mình **và là ô đang đứng** (`player.pos == tile`, sai → `not_here`), tiền ≥ giá mỗi cấp (`houseCost`), chưa ở cấp 3. **Không** cần trọn nhóm, **không** còn luật nâng đều; gửi nhiều `BUILD` liên tiếp để lên thẳng nhiều cấp. Chỉ nâng trong pha `manage` của lượt mình. **Ô vừa mua (BUY hoặc TAKEOVER) chưa nâng được** (đổi 14/11/2026): `state.bought` giữ idx ô vừa mua, `BUILD` vào ô đó → `just_bought`; `bought` về -1 khi quân di chuyển (gieo, thẻ, Du lịch, vào tù) hoặc sang lượt mới, nên phải đáp lại ô đó ở lượt sau (hoặc đi tiếp nhờ gieo đôi/Du lịch rồi đáp lại) mới nâng. Client tự mở hộp nâng cấp (modal giữa màn hình) khi đáp xuống thành phố của mình, trừ lúc vừa mua. Không giới hạn số nhà của ngân hàng.
-- `SELL_HOUSE {tile}` = hạ 1 cấp, nhận `houseCost × 0.5`, ô nào của mình cũng được (bỏ luật hạ đều 14/11/2026). Được hạ trong pha `manage` và pha `debt` (kể cả ngoài lượt khi bị đòi nợ bởi `collectEach`).
+- `BUILD {tile}` = nâng 1 cấp (đổi 14/11/2026): ô là `street` của mình **và là ô đang đứng** (`player.pos == tile`, sai → `not_here`), tiền ≥ giá của cấp sắp lên, chưa ở cấp 3. **Giá tăng dần theo cấp** (đổi 14/11/2026): `levelCost(cấp) = làm tròn tới 10 của houseCost × LEVEL_COST_PERCENT[cấp-1] / 100` = 75% / 100% / 125%, công thức số nguyên `(houseCost × pct + 500) / 1000 × 10` giống hệt Go và TS. Theo nhóm: houseCost 50 → 40/50/60, 100 → 80/100/130, 150 → 110/150/190, 200 → 150/200/250. **Không** cần trọn nhóm, **không** còn luật nâng đều; gửi nhiều `BUILD` liên tiếp để lên thẳng nhiều cấp. Chỉ nâng trong pha `manage` của lượt mình. **Ô vừa mua (BUY hoặc TAKEOVER) chưa nâng được** (đổi 14/11/2026): `state.bought` giữ idx ô vừa mua, `BUILD` vào ô đó → `just_bought`; `bought` về -1 khi quân di chuyển (gieo, thẻ, Du lịch, vào tù) hoặc sang lượt mới, nên phải đáp lại ô đó ở lượt sau (hoặc đi tiếp nhờ gieo đôi/Du lịch rồi đáp lại) mới nâng. Client tự mở hộp nâng cấp (modal giữa màn hình) khi đáp xuống thành phố của mình, trừ lúc vừa mua. Không giới hạn số nhà của ngân hàng.
+- `SELL_HOUSE {tile}` = hạ 1 cấp, nhận `floor(levelCost(cấp đang có) / 2)`, ô nào của mình cũng được (bỏ luật hạ đều 14/11/2026). Được hạ trong pha `manage` và pha `debt` (kể cả ngoài lượt khi bị đòi nợ bởi `collectEach`).
 
 ### 4.5 Nợ và phá sản
 - Khi phải trả `amount` mà `cash < amount`: state vào `phase: debt {creditor: seat|-1, amount}`. Người nợ có 30 s để `SELL_HOUSE` nhiều lần rồi `PAY_DEBT`, hoặc `DECLARE_BANKRUPT`.
@@ -174,7 +174,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 | 2 người, 1 người quit/forfeit | người còn lại thắng | `forfeit`/`timeout`/`disconnect` | engine quyết |
 | Mọi người còn lại cùng mất kết nối quá hạn (`time`, qua `OnEveryoneLeft`) | như hết vòng, không ai bị tính phá sản | `disconnect` | như hết vòng |
 
-`Tổng tài sản = cash + Σ price(đất sở hữu) + Σ cấp × houseCost`. Khách sạn (cấp 3) tính 3 × houseCost.
+`Tổng tài sản = cash + Σ price(đất sở hữu) + Σ tiền đã nâng` (tổng `levelCost` các cấp đang có). Phá sản về ngân hàng thì mỗi cấp hoàn `floor(levelCost / 2)`.
 
 `winnerIdx` trả về trong `Result` = `rankings[0]`. Không có hòa.
 

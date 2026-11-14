@@ -5,8 +5,8 @@ import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import { vipIconUrl } from '@ola/shared/lib/vip';
 import { bridge, joinGame, SPECTATE_LEFT_REASON, type ChatMessageData, type ErrorData, type GameReactionType, type GameSession, type MatchFoundData, type MatchOverData, type PlayerInfo, type RoomStateData, type StateData } from '../../src/sdk';
 import { BOARD, cardById, GROUP_LABEL, tilesOfGroup } from '../logic/board';
-import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GAME_ID, JAIL_FINE, JAIL_MAX_TURNS, JAIL_TILE, LEVEL_NAMES, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, WIN_GROUPS } from '../logic/constants';
-import { worth } from '../logic/engine';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GAME_ID, JAIL_FINE, JAIL_MAX_TURNS, JAIL_TILE, LEVEL_NAMES, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, WIN_GROUPS, type Group } from '../logic/constants';
+import { housesRefund, worth } from '../logic/engine';
 import { currentRent, winningTiles } from '../logic/rules-hint';
 import type { BotLevel, Move, Step, TileState, TycoonView } from '../logic/types';
 import { MAX_BOTS, botName, type BotSetupItem } from '../helpers/bot';
@@ -148,7 +148,6 @@ interface TycoonState {
   spectators: number;
   soundOn: boolean;
   speed: 1 | 2;
-  autoEnd: boolean;
   rulesOpen: boolean;
   setupOpen: boolean;
   roomsOpen: boolean;
@@ -206,7 +205,6 @@ interface TycoonState {
   sendReaction(type: GameReactionType): void;
   toggleSound(): void;
   setSpeed(speed: 1 | 2): void;
-  setAutoEnd(on: boolean): void;
   skipReplay(): void;
   exitGame(): void;
   setRulesOpen(open: boolean): void;
@@ -236,11 +234,10 @@ interface TycoonState {
 
 const SOUND_KEY = 'ola:tycoon:sound';
 const SPEED_KEY = 'ola:tycoon:speed';
-const AUTO_END_KEY = 'ola:tycoon:auto-end';
 const SKIP_TEMPO = 8;
 const CATCHUP_TEMPO = 4;
 const TOAST_MS = 2400;
-const BET_FLOAT_MS = 1400;
+const BET_FLOAT_MS = 1800;
 const RESULT_REVEAL_MS = 900;
 const WIN_REVEAL_MS = 2400;
 const SPECTATE_ENDED_TEXT = 'Đã thôi xem ván';
@@ -413,7 +410,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     set((state) => ({ moneyFloats: [...state.moneyFloats.slice(-5), float] }));
     scheduleTransient(() => {
       set((state) => ({ moneyFloats: state.moneyFloats.filter((item) => item.seq !== float.seq) }));
-    }, 1100);
+    }, 1600);
   };
 
   const startTimer = () => {
@@ -507,13 +504,16 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
   const withOwner = (tile: number, owner: number) => (tiles: TileState[]) => tiles.map((item, idx) => (idx === tile ? { ...item, owner } : item));
 
-  const stampTile = (tile: number, by: number): Promise<void> => {
+  const completedGroup = (tile: number, by: number): Group | undefined => {
     const group = BOARD[tile].kind === 'street' ? BOARD[tile].group : undefined;
-    const members = group ? tilesOfGroup(group) : [];
-    const complete = group ? members.every((idx) => idx === tile || get().tiles[idx]?.owner === by) : false;
-    if (complete && group) pushLog(`${seatName(by)} gom trọn nhóm ${GROUP_LABEL[group]}, thuê ×2`, by === get().you ? 'up' : 'neutral', { kind: 'group', seat: by });
-    return fx.stampDeed(tile, by, () => commitTiles(withOwner(tile, by)), complete ? members : null);
+    if (!group) return undefined;
+    return tilesOfGroup(group).every((idx) => idx === tile || get().tiles[idx]?.owner === by) ? group : undefined;
   };
+
+  const groupNote = (group: Group | undefined) => (group ? `, gom trọn ${GROUP_LABEL[group]}` : '');
+
+  const stampTile = (tile: number, by: number, group: Group | undefined): Promise<void> =>
+    fx.stampDeed(tile, by, () => commitTiles(withOwner(tile, by)), group ? tilesOfGroup(group) : null);
 
   const bankruptReport = (creditor: number, amount?: number): NoticeState => {
     const { view, tiles, cash, positions, you } = get();
@@ -526,7 +526,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
           ? currentRent({ ...view, tiles }, pos)
           : null);
     const money = cash[you] ?? 0;
-    const houses = tiles.reduce((sum, t, idx) => (t.owner === you ? sum + Math.floor((t.houses * (BOARD[idx].houseCost ?? 0)) / 2) : sum), 0);
+    const houses = tiles.reduce((sum, t, idx) => (t.owner === you ? sum + housesRefund(idx, t.houses) : sum), 0);
     const to = creditor >= 0 ? seatName(creditor) : 'ngân hàng';
     return {
       kind: 'notice',
@@ -619,17 +619,19 @@ export const useTycoon = create<TycoonState>((set, get) => {
       case 'buy': {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
-        pushLog(`${seatName(step.by)} mua ${BOARD[tile].name}`, step.by === you ? 'up' : 'neutral', { kind: 'buy', seat: step.by, money: -(BOARD[tile].price ?? 0) });
-        await stampTile(tile, step.by);
+        const group = completedGroup(tile, step.by);
+        pushLog(`${seatName(step.by)} mua ${BOARD[tile].name}${groupNote(group)}`, step.by === you ? 'up' : 'neutral', { kind: group ? 'group' : 'buy', seat: step.by, money: -(BOARD[tile].price ?? 0) });
+        await stampTile(tile, step.by, group);
         return;
       }
       case 'takeover': {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
         const houses = step.houses ?? 0;
-        pushLog(`${seatName(step.by)} mua lại ${BOARD[tile].name} của ${seatName(step.target ?? -1)}`, step.by === you ? 'up' : step.target === you ? 'down' : 'neutral', { kind: 'takeover', seat: step.by, level: houses });
+        const group = completedGroup(tile, step.by);
+        pushLog(`${seatName(step.by)} mua lại ${BOARD[tile].name} của ${seatName(step.target ?? -1)}${groupNote(group)}`, step.by === you ? 'up' : step.target === you ? 'down' : 'neutral', { kind: 'takeover', seat: step.by, level: houses });
         fx.tileCallout(tile, step.by, step.target === you ? `${seatName(step.by)} mua lại ô của bạn` : `${seatName(step.by)} mua lại`, levelName(houses), step.target === you ? 'down' : step.by === you ? 'up' : 'neutral', houseArt(houses));
-        await stampTile(tile, step.by);
+        await stampTile(tile, step.by, group);
         return;
       }
       case 'card': {
@@ -1168,7 +1170,6 @@ export const useTycoon = create<TycoonState>((set, get) => {
     reactionFx: null,
     soundOn: readSound(),
     speed: readPref(SPEED_KEY) === '2' ? 2 : 1,
-    autoEnd: readPref(AUTO_END_KEY) !== '0',
     rulesOpen: false,
     setupOpen: false,
     roomsOpen: false,
@@ -1293,11 +1294,6 @@ export const useTycoon = create<TycoonState>((set, get) => {
     setSpeed(speed: 1 | 2) {
       writePref(SPEED_KEY, String(speed));
       set({ speed });
-    },
-
-    setAutoEnd(on: boolean) {
-      writePref(AUTO_END_KEY, on ? '1' : '0');
-      set({ autoEnd: on });
     },
 
     skipReplay() {

@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
 import { FESTIVAL_MULTIPLIER, LEVEL_NAMES, STATION_RENT } from '../logic/constants';
+import { housesValue } from '../logic/engine';
 import type { ViewState } from '../logic/types';
 import { seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
@@ -85,7 +86,7 @@ export function landValue(view: ViewState, seat: number): { land: number; houses
     (sum, tile) => {
       const state = view.tiles[tile.idx];
       if (state.owner !== seat) return sum;
-      return { land: sum.land + (tile.price ?? 0), houses: sum.houses + state.houses * (tile.houseCost ?? 0) };
+      return { land: sum.land + (tile.price ?? 0), houses: sum.houses + housesValue(tile.idx, state.houses) };
     },
     { land: 0, houses: 0 },
   );

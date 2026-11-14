@@ -8,6 +8,7 @@ import {
   festivalPick,
   instantWin,
   isOver,
+  levelCost,
   moveOnTimeout,
   ownedCount,
   ownsGroup,
@@ -153,7 +154,7 @@ function normalMove(s: GameState, seat: number): Move | null {
       let best = -1;
       s.tiles.forEach((t, idx) => {
         if (t.owner !== seat || canBuildError(s, seat, idx)) return;
-        if (p.cash - (BOARD[idx].houseCost ?? 0) < CASH_BUFFER * 2) return;
+        if (p.cash - levelCost(idx, t.houses + 1) < CASH_BUFFER * 2) return;
         if (best < 0 || (BOARD[idx].rent?.[t.houses + 1] ?? 0) > (BOARD[best].rent?.[s.tiles[best].houses + 1] ?? 0)) best = idx;
       });
       if (best >= 0) return { type: 'BUILD', tile: best };
@@ -192,7 +193,7 @@ function easyMove(s: GameState, seat: number, rng: BotRng): Move | null {
       if (s.steps.some((st) => st.kind === 'build' && st.by === seat)) return { type: 'END_TURN' };
       const options = s.tiles
         .map((_, idx) => idx)
-        .filter((idx) => !canBuildError(s, seat, idx) && p.cash - (BOARD[idx].houseCost ?? 0) >= CASH_BUFFER * 2);
+        .filter((idx) => !canBuildError(s, seat, idx) && p.cash - levelCost(idx, s.tiles[idx].houses + 1) >= CASH_BUFFER * 2);
       if (options.length === 0 || rng() >= EASY_BUILD_CHANCE) return { type: 'END_TURN' };
       return { type: 'BUILD', tile: pick(options, rng) };
     }
@@ -325,7 +326,7 @@ function hardRule(s: GameState, seat: number): Move | null {
       let bestScore = 0;
       s.tiles.forEach((t, idx) => {
         if (t.owner !== seat || canBuildError(s, seat, idx)) return;
-        if (p.cash - (BOARD[idx].houseCost ?? 0) < reserve - CASH_BUFFER / 2) return;
+        if (p.cash - levelCost(idx, t.houses + 1) < reserve - CASH_BUFFER / 2) return;
         const built = { ...s, tiles: s.tiles.map((x, i) => (i === idx ? { ...x, houses: x.houses + 1 } : x)) };
         const score = (landChance(s, idx, rivals) + base) * (computeRent(built, idx, seat) - computeRent(s, idx, seat));
         if (score > bestScore) [best, bestScore] = [idx, score];

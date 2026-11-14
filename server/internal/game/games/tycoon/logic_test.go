@@ -209,13 +209,13 @@ func TestBuildOnlyWhereStanding(t *testing.T) {
 	expectCode(t, s, 0, Move{Type: MoveBuild, Tile: intp(3)}, ErrNotHere)
 	s = play(t, s, 0, Move{Type: MoveBuild, Tile: intp(1)})
 	s = play(t, s, 0, Move{Type: MoveBuild, Tile: intp(1)})
-	if s.Tiles[1].Houses != 2 || s.Tiles[3].Houses != 0 || s.Players[0].Cash != StartCash-100 {
+	if s.Tiles[1].Houses != 2 || s.Tiles[3].Houses != 0 || s.Players[0].Cash != StartCash-40-50 {
 		t.Fatalf("after build: %+v %+v cash %d", s.Tiles[1], s.Tiles[3], s.Players[0].Cash)
 	}
 	s.Tiles[3] = TileState{Owner: 0, Houses: 1}
 	s = play(t, s, 0, Move{Type: MoveSellHouse, Tile: intp(3)})
 	s = play(t, s, 0, Move{Type: MoveSellHouse, Tile: intp(1)})
-	if s.Tiles[1].Houses != 1 || s.Tiles[3].Houses != 0 || s.Players[0].Cash != StartCash-100+50 {
+	if s.Tiles[1].Houses != 1 || s.Tiles[3].Houses != 0 || s.Players[0].Cash != StartCash-40-50+20+25 {
 		t.Fatalf("after sell: %+v %+v cash %d", s.Tiles[1], s.Tiles[3], s.Players[0].Cash)
 	}
 	s.Players[0].Pos = 6
@@ -262,7 +262,7 @@ func TestTakeoverPaysOwnerAndKeepsHousesAndFestival(t *testing.T) {
 	if s.Tiles[17] != (TileState{Owner: 0, Houses: 1}) || s.Festival != 17 {
 		t.Fatalf("takeover tile %+v festival %d", s.Tiles[17], s.Festival)
 	}
-	if s.Players[0].Cash != StartCash-260-740 || s.Players[1].Cash != StartCash+260+740 {
+	if s.Players[0].Cash != StartCash-260-495 || s.Players[1].Cash != StartCash+260+495 {
 		t.Fatalf("takeover cash %d / %d", s.Players[0].Cash, s.Players[1].Cash)
 	}
 
@@ -302,7 +302,7 @@ func TestSettleDebtSellsHousesOrBankrupts(t *testing.T) {
 	if !broke.Players[0].Bankrupt || broke.Tiles[1] != (TileState{Owner: 1}) || broke.Tiles[3] != (TileState{Owner: 1}) {
 		t.Fatalf("bankrupt transfer: %+v %+v %+v", broke.Players[0], broke.Tiles[1], broke.Tiles[3])
 	}
-	if broke.Players[1].Cash != StartCash+200 || broke.Turn != 1 || broke.Phase != PhaseRoll {
+	if broke.Players[1].Cash != StartCash+100+2*(25+20) || broke.Turn != 1 || broke.Phase != PhaseRoll {
 		t.Fatalf("creditor cash %d turn %d phase %s", broke.Players[1].Cash, broke.Turn, broke.Phase)
 	}
 }

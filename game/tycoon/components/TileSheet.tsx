@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
 import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, MAX_HOUSES, TAX_RATE } from '../logic/constants';
-import { takeoverPrice } from '../logic/engine';
+import { levelCost, takeoverPrice } from '../logic/engine';
 import { buildPlan, canBuild, currentRent, sellPlan } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { BottomSheet } from './BottomSheet';
@@ -56,7 +56,7 @@ export function TileSheet({ idx }: { idx: number }) {
   const street = tile.kind === 'street';
   const property = street || tile.kind === 'station';
   const price = tile.price ?? 0;
-  const houseCost = tile.houseCost ?? 0;
+  const nextCost = street && state.houses < MAX_HOUSES ? levelCost(idx, state.houses + 1) : 0;
   const canBuyHere = myTurn && view.phase === 'decide' && me?.pos === idx && owner < 0;
   const manageAllowed = myTurn && owner === you && street && (view.phase === 'manage' || (view.phase === 'debt' && view.debt?.by === you));
   const buildHint = manageAllowed && view.phase === 'manage' ? canBuild(view, you, idx) : null;
@@ -88,7 +88,7 @@ export function TileSheet({ idx }: { idx: number }) {
       <UiButton tone={selling ? 'red' : 'paper'} gain={sale?.cost} disabled={busy || !sale} onClick={() => sale && run('SELL_HOUSE', sale.tiles)}>
         Bán nhà
       </UiButton>
-      <UiButton tone="gold" price={plan?.cost ?? houseCost} disabled={busy || !plan || short > 0} onClick={() => plan && run('BUILD', plan.tiles)} data-dialog-initial-focus>
+      <UiButton tone="gold" price={plan?.cost ?? nextCost} disabled={busy || !plan || short > 0} onClick={() => plan && run('BUILD', plan.tiles)} data-dialog-initial-focus>
         Nâng cấp
       </UiButton>
     </>
@@ -139,8 +139,10 @@ export function TileSheet({ idx }: { idx: number }) {
       <p className="ty-deed-facts">
         {street && (owner < 0 || owner === you) ? (
           <>
-            <span>Nâng {formatMoney(houseCost)}/cấp</span>
-            <span>Bán +{formatMoney(Math.floor(houseCost / 2))}/cấp</span>
+            <span>
+              Nâng {levelCost(idx, 1)} · {levelCost(idx, 2)} · {formatMoney(levelCost(idx, 3))}
+            </span>
+            <span>Bán lại nửa giá nâng</span>
           </>
         ) : null}
         {street && owner >= 0 && state.houses < MAX_HOUSES ? (

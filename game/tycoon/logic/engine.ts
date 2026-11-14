@@ -12,8 +12,9 @@ import {
   MAX_ROUNDS,
   SIDE_TILES,
   START_CASH,
+  LEVEL_COST_PERCENT,
   STATION_RENT,
-  TAKEOVER_MULTIPLIER,
+  TAKEOVER_PERCENT,
   TAX_RATE,
   WIN_GROUPS,
   type EndReason,
@@ -128,14 +129,30 @@ export function ownedCount(s: ViewState, seat: number, group: string): number {
   return tilesOfGroup(group).filter((idx) => s.tiles[idx].owner === seat).length;
 }
 
+export function levelCost(idx: number, level: number): number {
+  return Math.floor(((BOARD[idx].houseCost ?? 0) * (LEVEL_COST_PERCENT[level - 1] ?? 0) + 500) / 1000) * 10;
+}
+
+export function housesValue(idx: number, houses: number): number {
+  let sum = 0;
+  for (let level = 1; level <= houses; level++) sum += levelCost(idx, level);
+  return sum;
+}
+
+export function housesRefund(idx: number, houses: number): number {
+  let sum = 0;
+  for (let level = 1; level <= houses; level++) sum += Math.floor(levelCost(idx, level) / 2);
+  return sum;
+}
+
 export function houseValue(s: ViewState, seat: number): number {
-  return s.tiles.reduce((sum, t, idx) => (t.owner === seat && t.houses > 0 ? sum + t.houses * (BOARD[idx].houseCost ?? 0) : sum), 0);
+  return s.tiles.reduce((sum, t, idx) => (t.owner === seat && t.houses > 0 ? sum + housesValue(idx, t.houses) : sum), 0);
 }
 
 export function worth(s: ViewState, seat: number): number {
   const p = s.players[seat];
   if (!p || p.bankrupt) return 0;
-  return s.tiles.reduce((sum, t, idx) => (t.owner === seat ? sum + (BOARD[idx].price ?? 0) + t.houses * (BOARD[idx].houseCost ?? 0) : sum), p.cash);
+  return s.tiles.reduce((sum, t, idx) => (t.owner === seat ? sum + (BOARD[idx].price ?? 0) + housesValue(idx, t.houses) : sum), p.cash);
 }
 
 export function liquidationValue(s: ViewState, seat: number): number {
@@ -166,7 +183,7 @@ export function canBuildError(s: GameState, seat: number, idx: number): string |
   if (s.players[seat].pos !== idx) return 'not_here';
   if (s.bought === idx) return 'just_bought';
   if (t.houses >= MAX_HOUSES) return 'max_houses';
-  if (s.players[seat].cash < (tile.houseCost ?? 0)) return 'no_cash';
+  if (s.players[seat].cash < levelCost(idx, t.houses + 1)) return 'no_cash';
   return null;
 }
 
@@ -193,7 +210,7 @@ export function festivalPick(s: GameState, seat: number): number {
 }
 
 export function takeoverPrice(s: ViewState, idx: number): number {
-  return TAKEOVER_MULTIPLIER * ((BOARD[idx].price ?? 0) + s.tiles[idx].houses * (BOARD[idx].houseCost ?? 0));
+  return Math.floor((((BOARD[idx].price ?? 0) + housesValue(idx, s.tiles[idx].houses)) * TAKEOVER_PERCENT) / 100);
 }
 
 export function canTakeoverError(s: GameState, seat: number, idx: number): string | null {
@@ -333,7 +350,7 @@ function autoSellForDebt(s: GameState, seat: number): void {
 }
 
 function build(s: GameState, seat: number, idx: number): void {
-  const cost = BOARD[idx].houseCost ?? 0;
+  const cost = levelCost(idx, s.tiles[idx].houses + 1);
   s.players[seat].cash -= cost;
   s.tiles[idx].houses++;
   push(s, { kind: 'pay', by: seat, target: -1, amount: cost, reason: 'build', tile: idx });
@@ -341,7 +358,7 @@ function build(s: GameState, seat: number, idx: number): void {
 }
 
 function sellHouse(s: GameState, seat: number, idx: number): void {
-  const refund = Math.floor((BOARD[idx].houseCost ?? 0) / 2);
+  const refund = Math.floor(levelCost(idx, s.tiles[idx].houses) / 2);
   s.players[seat].cash += refund;
   s.tiles[idx].houses--;
   push(s, { kind: 'sell', by: seat, tile: idx, houses: s.tiles[idx].houses });
@@ -536,7 +553,7 @@ export function bankrupt(s: GameState, seat: number, creditor: number, amount = 
   s.tiles.forEach((t, idx) => {
     if (t.owner !== seat) return;
     if (t.houses > 0) {
-      p.cash += Math.floor((t.houses * (BOARD[idx].houseCost ?? 0)) / 2);
+      p.cash += housesRefund(idx, t.houses);
       t.houses = 0;
     }
     tiles.push(idx);

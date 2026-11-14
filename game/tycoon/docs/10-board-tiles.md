@@ -96,7 +96,7 @@ Sân bay: không mua lại, không chịu Lễ hội. Thẻ Cơ hội "Đi đế
 
 ## 3. Cách tính từng loại ô
 
-- **Thành phố:** đáp vào thành phố của mình thì nâng được ô đó (không cần trọn nhóm, không nâng đều), tối đa 3 cấp Nhà → Biệt thự → Khách sạn; hộp nâng cấp hiện dạng modal giữa màn hình. Vừa mua xong thì chưa nâng, lần sau đáp lại mới nâng. Hạ cấp hoàn nửa giá, ô nào cũng bán được. Trả thuê xong được mua lại với giá ×2 (giá đất + tiền nâng cấp), trừ ô đã lên Khách sạn.
+- **Thành phố:** đáp vào thành phố của mình thì nâng được ô đó (không cần trọn nhóm, không nâng đều), tối đa 3 cấp Nhà → Biệt thự → Khách sạn; hộp nâng cấp hiện dạng modal giữa màn hình. Vừa mua xong thì chưa nâng, lần sau đáp lại mới nâng. Giá nâng tăng dần theo cấp: cấp 1 = 75%, cấp 2 = 100%, cấp 3 = 125% giá nâng của nhóm (ví dụ nhóm 200: 150 · 200 · 250). Hạ cấp hoàn nửa giá của cấp đó, ô nào cũng bán được. Trả thuê xong được mua lại với giá ×1,5 (giá đất + tiền đã nâng), trừ ô đã lên Khách sạn.
 - **Sân bay:** thuê theo số sân bay chủ đang có: 1 → 25, 2 → 50, 3 → 100, 4 → 200. Không nâng cấp, không mua lại. Đủ 4 sân bay là thắng ngay.
 - **Lễ hội (16):** đáp vào mà có ít nhất 1 thành phố thì chọn một thành phố của mình để tổ chức Lễ hội: thuê ô đó ×2. Cả bàn chỉ có một Lễ hội — người sau tổ chức thì Lễ hội chuyển đi. Không chọn trong 30 giây thì hệ thống chọn ô có tiền thuê cao nhất.
 - **Du lịch (24):** đáp vào là chọn ô và đi ngay trong lượt đó: chạm ô trên bàn là quân đi luôn (không mở bảng thông tin ô), đi từng bước qua các ô theo chiều kim đồng hồ, xử lý ô đáp như thường. Đáp xuống thành phố của mình thì tự mở hộp nâng cấp. Bay qua Xuất phát vẫn nhận 160. Có thể bấm "Không bay, ở lại"; hết giờ cũng là ở lại. Đổi 14/11/2026, trước đó phải chờ lượt sau mới bay.

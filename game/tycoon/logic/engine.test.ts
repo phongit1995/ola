@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BOARD, CARDS } from './board';
 import { botMove } from './bot';
-import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, JAIL_TILE, MAX_HOUSES, MAX_ROUNDS, START_CASH, TAKEOVER_MULTIPLIER } from './constants';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, JAIL_TILE, MAX_HOUSES, MAX_ROUNDS, START_CASH, TAKEOVER_PERCENT } from './constants';
 import { applyMove, computeRent, endByTime, isNewTurn, isOver, moveOnTimeout, newGame, quitPlayer, rankings, takeoverPrice, taxAmount, worth } from './engine';
 import { canSell } from './rules-hint';
 import type { GameState, Move } from './types';
@@ -126,9 +126,9 @@ describe('tycoon engine', () => {
     s = play(s, 0, { type: 'BUILD', tile: 17 });
     expect(s.tiles[17].houses).toBe(2);
     expect(s.tiles[19].houses).toBe(0);
-    expect(s.players[0].cash).toBe(START_CASH - 2 * 150);
+    expect(s.players[0].cash).toBe(START_CASH - 110 - 150);
     s = play(s, 0, { type: 'SELL_HOUSE', tile: 17 });
-    expect(s.players[0].cash).toBe(START_CASH - 2 * 150 + 75);
+    expect(s.players[0].cash).toBe(START_CASH - 110 - 150 + 75);
     s = play(s, 0, { type: 'BUILD', tile: 17 });
     s = play(s, 0, { type: 'BUILD', tile: 17 });
     expect(s.tiles[17].houses).toBe(MAX_HOUSES);
@@ -189,7 +189,7 @@ describe('tycoon engine', () => {
     const settled = play(indebted, 0, { type: 'SETTLE_DEBT' });
     expect(settled.phase).toBe('manage');
     expect(settled.players[1].cash).toBe(START_CASH + 1500);
-    expect(settled.players[0].cash).toBe(10);
+    expect(settled.players[0].cash).toBe(1210 + 2 * (95 + 75) - 1500);
 
     const poor = withPhase(newGame(1, 3), 'card');
     poor.card = { deck: 'chance', id: 'ch02' };
@@ -376,12 +376,12 @@ describe('tycoon takeover and instant win', () => {
     return s;
   }
 
-  it('takes over a city for twice land + upgrades, paying the old owner', () => {
+  it('takes over a city for 1.5× land + upgrades, paying the old owner', () => {
     const s = own(newGame(3, 2), 1, [1], 1);
     s.players[0].pos = 1;
     const next = play(withPhase(s, 'takeover'), 0, { type: 'TAKEOVER' });
     const price = takeoverPrice(s, 1);
-    expect(price).toBe(TAKEOVER_MULTIPLIER * (60 + 50));
+    expect(price).toBe((TAKEOVER_PERCENT * (60 + 40)) / 100);
     expect(next.tiles[1]).toEqual({ owner: 0, houses: 1 });
     expect(next.players[0].cash).toBe(START_CASH - price);
     expect(next.players[1].cash).toBe(START_CASH + price);

@@ -66,7 +66,7 @@ func renderConstants() ([]byte, error) {
 		{"MAX_HOUSES", tycoon.MaxHouses},
 		{"MAX_ROUNDS", tycoon.MaxRounds},
 		{"TIME_LIMIT_MS", int(tycoon.TimeLimit.Milliseconds())},
-		{"TAKEOVER_MULTIPLIER", tycoon.TakeoverMultiplier},
+		{"TAKEOVER_PERCENT", tycoon.TakeoverPercent},
 		{"WIN_GROUPS", tycoon.WinGroups},
 		{"MAX_DOUBLES", tycoon.MaxDoubles},
 		{"JAIL_MAX_TURNS", tycoon.JailMaxTurns},
@@ -84,6 +84,11 @@ func renderConstants() ([]byte, error) {
 		rent[i] = fmt.Sprint(value)
 	}
 	fmt.Fprintf(&out, "export const STATION_RENT = [%s] as const;\n", strings.Join(rent, ", "))
+	levels := make([]string, len(tycoon.LevelCostPercent))
+	for i, value := range tycoon.LevelCostPercent {
+		levels[i] = fmt.Sprint(value)
+	}
+	fmt.Fprintf(&out, "export const LEVEL_COST_PERCENT = [%s] as const;\n", strings.Join(levels, ", "))
 
 	writeList := func(name, typeName string, values []string) {
 		fmt.Fprintf(&out, "\nexport const %s = [\n", name)

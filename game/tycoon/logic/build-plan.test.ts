@@ -16,7 +16,7 @@ function owning(houses: [number, number], pos = 30): GameState {
 
 describe('buildPlan', () => {
   it('builds only the tile you stand on, straight to the chosen level', () => {
-    expect(buildPlan(owning([0, 0]), 0, 30, 2)).toEqual({ tiles: [30, 30], cost: 400 });
+    expect(buildPlan(owning([0, 0]), 0, 30, 2)).toEqual({ tiles: [30, 30], cost: 150 + 200 });
   });
 
   it('returns null away from the tile or past the top level', () => {
@@ -37,7 +37,7 @@ describe('buildPlan', () => {
 
 describe('sellPlan', () => {
   it('sells only the chosen tile down to the chosen level', () => {
-    expect(sellPlan(owning([3, 3]), 0, 30, 1)).toEqual({ tiles: [30, 30], cost: 200 });
+    expect(sellPlan(owning([3, 3]), 0, 30, 1)).toEqual({ tiles: [30, 30], cost: 125 + 100 });
   });
 
   it('returns null when nothing to sell', () => {

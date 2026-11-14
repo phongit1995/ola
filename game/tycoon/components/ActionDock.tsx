@@ -1,34 +1,13 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { JAIL_MAX_TURNS } from '../logic/constants';
-import { canBuild } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
 import { UiAvatar, UiButton } from './Ui';
 
-const AUTO_END_MS = 2000;
-
-function AutoEndButton({ label, onEnd, auto }: { label: string; onEnd: () => void; auto: boolean }) {
-  const [armed, setArmed] = useState(auto);
-  const latest = useRef(onEnd);
-  useLayoutEffect(() => {
-    latest.current = onEnd;
-  });
-  useEffect(() => {
-    if (!armed) return;
-    const timer = setTimeout(() => latest.current(), AUTO_END_MS);
-    return () => clearTimeout(timer);
-  }, [armed]);
-  return (
-    <UiButton tone="gold" size="lg" block className={armed ? 'ty-dock-auto' : ''} style={{ '--auto-ms': `${AUTO_END_MS}ms` } as CSSProperties} onClick={onEnd} onPointerDown={() => setArmed(false)}>
-      {label}
-    </UiButton>
-  );
-}
-
 export function ActionDock() {
-  const { view, you, players, myTurn, replaying, movePending, turnExpired, autoEnd, sendMove, openSheet } = useTycoon(
+  const { view, you, players, myTurn, replaying, movePending, turnExpired, sendMove } = useTycoon(
     useShallow((s) => ({
       view: s.view,
       you: s.you,
@@ -37,9 +16,7 @@ export function ActionDock() {
       replaying: s.replaying,
       movePending: s.movePending,
       turnExpired: s.turnExpired,
-      autoEnd: s.autoEnd,
       sendMove: s.sendMove,
-      openSheet: s.openSheet,
     })),
   );
   if (!view) return <div className="ty-dock" />;
@@ -103,23 +80,8 @@ export function ActionDock() {
           </UiButton>
         </div>
       );
-    case 'manage': {
-      const again = me.doubles > 0 && !me.inJail;
-      const upgrade = canBuild(view, you, me.pos).ok;
-      const auto = autoEnd && !again && !upgrade;
-      const end = <AutoEndButton key={view.moveCount} label={again ? 'Gieo tiếp (đôi!)' : 'Kết thúc lượt'} auto={auto} onEnd={() => sendMove({ type: 'END_TURN' })} />;
-      if (!upgrade) return <div className="ty-dock">{end}</div>;
-      return (
-        <div className="ty-dock">
-          <div className="ty-dock-row ty-dock-row-end">
-            <UiButton icon="house" onClick={() => openSheet({ kind: 'tile', idx: me.pos })}>
-              Nâng cấp
-            </UiButton>
-            {end}
-          </div>
-        </div>
-      );
-    }
+    case 'manage':
+      return waiting(you, me.doubles > 0 && !me.inJail ? 'Được đôi, chuẩn bị gieo tiếp' : 'Hết lượt, sang người tiếp theo');
     case 'debt':
       return (
         <div className="ty-dock ty-dock-wait">

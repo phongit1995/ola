@@ -19,5 +19,5 @@ export const DIE_FACES = [
 export function cubeTransform(value: number, index: number, spinX = 0, spinY = 0): string {
   const [x, y] = FACE_TURN[value] ?? FACE_TURN[1];
   const side = index ? -1 : 1;
-  return `rotateX(-12deg) rotateY(${side * 13}deg) rotateX(${x + spinX * 360}deg) rotateY(${y + spinY * 360 * side}deg)`;
+  return `rotateX(${x + spinX * 360}deg) rotateY(${y + spinY * 360 * side}deg)`;
 }

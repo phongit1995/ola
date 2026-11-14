@@ -91,6 +91,8 @@ Hiển thị cấp trên ô: cấp 1 = 1 nhà xanh ngọc, cấp 2 = 2 nhà, c�
 
 So với luật cũ (§5): số vòng gần như cũ (18/16 → 17/17). Nhà lên cấp chậm vì phải đáp lại đúng ô, nên ván 2 người ít nhà to (thuê lớn nhất trung vị chỉ 64) và mua lại đất vẫn thường xuyên. Bản đo trước khi chặn nâng ô vừa mua (cùng ngày): 11/13 vòng, 9%/38% ván có mua lại, 83% ván 2 người kết thúc do phá sản. Máy Khó thắng máy Thường ~58% (400 ván), Thường thắng Dễ ~81%, Khó thắng Dễ ~85%; dự phòng khi nâng của máy Khó bớt `CASH_BUFFER / 2`. Muốn nhà lên nhanh hơn thì có thể giảm `houseCost`.
 
+Cùng ngày đổi tiếp: mua lại ×2 → ×1,5 và giá nâng tăng dần 75% / 100% / 125%. Đo lại 300 ván: 2 người 90% phân thắng bại, 40% thắng ngay, 64% ván có mua lại (trước 57%), 17 vòng; 4 người 94% / 84% / 95% (trước 93%), 17 vòng. Tỷ lệ dẵm vào đất trống vẫn ~91% (2 người), tiền thuê mỗi lần trung vị 28: hai thay đổi này không làm tiền thuê cao lên, chỉ làm mua lại rẻ hơn. Máy Khó thắng Thường ~59%, Thường thắng Dễ ~82%, Khó thắng Dễ ~89% (400 ván).
+
 ## 5. Kết quả mô phỏng — luật hiện tại (mua lại ×2, thắng ngay, Lễ hội / Du lịch / Thuế, 30 vòng / 25 phút)
 
 1.000 ván bot mỗi cấu hình, chốt 20/10/2026 sau khi đổi 4 ô (Lễ hội, Du lịch, Thuế, thêm Cơ hội). Thời gian theo giả định ở cuối §5b. Cột "trước" là bàn ngay trước đó (Bãi đỗ xe, Vào tù, 2 tiện ích) cùng luật mua lại / thắng ngay / 4 sân bay. Sau khi dời 4 sân bay khỏi giữa cạnh (6, 10, 22, 26) chạy lại 1.000 ván: số vòng 18 / 16 / 15, online nhanh 6,6 / 8,9 / 10,9 phút, tỉ lệ các cách kết thúc lệch ≤ 2 điểm % — coi như không đổi.

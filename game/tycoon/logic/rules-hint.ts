@@ -1,6 +1,6 @@
 import { BOARD, tilesOfGroup } from './board';
 import { FESTIVAL_MULTIPLIER, MAX_HOUSES, STATION_RENT, WIN_GROUPS, type EndReason } from './constants';
-import { SIDE_STREETS, STREET_GROUPS } from './engine';
+import { housesRefund, housesValue, levelCost, SIDE_STREETS, STREET_GROUPS } from './engine';
 import type { PlayerState, TileState, ViewState } from './types';
 
 export type RuleHint = { ok: true } | { ok: false; reason: string };
@@ -22,7 +22,7 @@ export function canBuild(view: ViewState, seat: number, idx: number): RuleHint {
   if (view.players[seat].pos !== idx) return { ok: false, reason: 'Đứng vào ô này mới nâng cấp được' };
   if (view.bought === idx) return { ok: false, reason: 'Vừa mua, lần sau đáp lại mới nâng cấp được' };
   if (state.houses >= MAX_HOUSES) return { ok: false, reason: 'Đã lên Khách sạn, cấp cao nhất' };
-  if (view.players[seat].cash < (tile.houseCost ?? 0)) return { ok: false, reason: 'Không đủ tiền nâng cấp' };
+  if (view.players[seat].cash < levelCost(idx, state.houses + 1)) return { ok: false, reason: 'Không đủ tiền nâng cấp' };
   return { ok: true };
 }
 
@@ -58,7 +58,7 @@ export function worthOf(view: ViewState, seat: number): number {
   let total = player.cash;
   view.tiles.forEach((state, idx) => {
     if (state.owner !== seat) return;
-    total += (BOARD[idx].price ?? 0) + state.houses * (BOARD[idx].houseCost ?? 0);
+    total += (BOARD[idx].price ?? 0) + housesValue(idx, state.houses);
   });
   return total;
 }
@@ -78,7 +78,7 @@ export function buildPlan(view: ViewState, seat: number, idx: number, target: nu
   if (tile.kind !== 'street' || state.owner !== seat || view.players[seat]?.pos !== idx || view.bought === idx) return null;
   if (target > MAX_HOUSES || target <= state.houses) return null;
   const steps = target - state.houses;
-  return { tiles: Array.from({ length: steps }, () => idx), cost: steps * (tile.houseCost ?? 0) };
+  return { tiles: Array.from({ length: steps }, () => idx), cost: housesValue(idx, target) - housesValue(idx, state.houses) };
 }
 
 export function sellPlan(view: ViewState, seat: number, idx: number, target: number): BuildPlan | null {
@@ -87,7 +87,7 @@ export function sellPlan(view: ViewState, seat: number, idx: number, target: num
   if (tile.kind !== 'street' || state.owner !== seat) return null;
   if (target < 0 || target >= state.houses) return null;
   const steps = state.houses - target;
-  return { tiles: Array.from({ length: steps }, () => idx), cost: steps * Math.floor((tile.houseCost ?? 0) / 2) };
+  return { tiles: Array.from({ length: steps }, () => idx), cost: housesRefund(idx, state.houses) - housesRefund(idx, target) };
 }
 
 export type WinKind = 'groups' | 'line' | 'airports';

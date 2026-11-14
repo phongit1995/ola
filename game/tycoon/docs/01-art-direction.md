@@ -177,7 +177,7 @@ Stroke 2 px, cap tròn, grid 24 cho icon điều khiển; glyph ô bàn cờ là
 
 | Chuyển động | Thông số |
 |---|---|
-| Xúc xắc lăn (O1) | 2 viên xoay 3D giả bằng đổi mặt mỗi 80 ms trong 720 ms, dừng lệch nhau 120 ms, tổng hiện 200 ms sau |
+| Xúc xắc lăn (O1) | khối lập phương 3D 6 mặt (CSS preserve-3d, `helpers/dice.ts`) ném vào từ hai bên, lộn 2–3 vòng, nảy 2 lần trong ~820 ms, viên sau trễ 60 ms; dừng thì thay bằng mặt phẳng ngửa thẳng mặt số (viền navy, sắc nét, không thấy mặt bên); tổng hiện ngay sau |
 | Quân nhảy từng ô | 140 ms/ô, cubic-bezier(.3,.9,.4,1), scale 1.15 ở đỉnh; 12 ô ≈ 1.7 s; quân của mình cùng tốc độ (không skip). Mọi lần đổi ô đều nhảy từng ô, không bay thẳng (14/11/2026): gieo xúc xắc, thẻ Cơ hội/Khí vận "đi tới ô X" / "tới sân bay gần nhất", Du lịch, vào tù |
 | Qua Xuất phát | ô 0 nháy gold 300 ms + float `+160 tr` lên 24 px 900 ms |
 | Đáp ô | ô fill `--ty-landing` 240 ms rồi giữ đến hết lượt |

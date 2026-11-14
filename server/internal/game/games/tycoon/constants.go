@@ -17,7 +17,7 @@ const (
 	MaxHouses          = 3
 	MaxRounds          = 30
 	TimeLimit          = 25 * time.Minute
-	TakeoverMultiplier = 2
+	TakeoverPercent    = 150
 	WinGroups          = 3
 	MaxDoubles         = 3
 	JailMaxTurns       = 3
@@ -28,6 +28,8 @@ const (
 )
 
 var StationRent = [...]int{0, 25, 50, 100, 200}
+
+var LevelCostPercent = [...]int{75, 100, 125}
 
 const (
 	PhaseRoll     = "roll"

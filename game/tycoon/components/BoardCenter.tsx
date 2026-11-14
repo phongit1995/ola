@@ -21,20 +21,28 @@ function Dice({ hidden }: { hidden: boolean }) {
       {diceFx.values.map((value, index) => (
         <span className="ty-s6-dwrap" data-die key={index}>
           <span className="ty-s6-dshadow" data-die-shadow />
-          <span className="ty-s6-dbody">
-          <span className="ty-s6-cube" data-cube style={{ transform: cubeTransform(value, index) }}>
-            {CORE_PLANES.map((plane) => (
-              <span key={plane} className="ty-s6-core" style={{ transform: plane }} />
-            ))}
-            {DIE_FACES.map((face) => (
-              <span key={face.value} className="ty-s6-die" data-face={face.value} style={{ transform: `${face.transform} translateZ(calc(var(--die-half) - 0.5px))` }}>
-                {CELLS.map((cell) => (
-                  <i key={cell} />
+          {diceFx.rolling ? (
+            <span className="ty-s6-dbody">
+              <span className="ty-s6-cube" data-cube style={{ transform: cubeTransform(value, index) }}>
+                {CORE_PLANES.map((plane) => (
+                  <span key={plane} className="ty-s6-core" style={{ transform: plane }} />
+                ))}
+                {DIE_FACES.map((face) => (
+                  <span key={face.value} className="ty-s6-die" data-face={face.value} style={{ transform: `${face.transform} translateZ(calc(var(--die-half) - 0.5px))` }}>
+                    {CELLS.map((cell) => (
+                      <i key={cell} />
+                    ))}
+                  </span>
                 ))}
               </span>
-            ))}
-          </span>
-          </span>
+            </span>
+          ) : (
+            <span className="ty-s6-die ty-s6-die-flat" data-face={value}>
+              {CELLS.map((cell) => (
+                <i key={cell} />
+              ))}
+            </span>
+          )}
         </span>
       ))}
       <span className={`ty-s6-dtotal ${diceFx.double ? 'ty-s6-dtotal-double' : ''}`} id="ty-s6-dice-total" hidden={!diceFx.showTotal}>

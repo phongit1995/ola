@@ -39,7 +39,8 @@ type ParityConstants struct {
 	JailTile           int      `json:"jailTile"`
 	MaxHouses          int      `json:"maxHouses"`
 	MaxRounds          int      `json:"maxRounds"`
-	TakeoverMultiplier int      `json:"takeoverMultiplier"`
+	TakeoverPercent    int      `json:"takeoverPercent"`
+	LevelCostPercent   []int    `json:"levelCostPercent"`
 	WinGroups          int      `json:"winGroups"`
 	MaxDoubles         int      `json:"maxDoubles"`
 	JailMaxTurns       int      `json:"jailMaxTurns"`
@@ -232,7 +233,8 @@ func newParityFixture() ParityFixture {
 			JailTile:           JailTile,
 			MaxHouses:          MaxHouses,
 			MaxRounds:          MaxRounds,
-			TakeoverMultiplier: TakeoverMultiplier,
+			TakeoverPercent:    TakeoverPercent,
+			LevelCostPercent:   LevelCostPercent[:],
 			WinGroups:          WinGroups,
 			MaxDoubles:         MaxDoubles,
 			JailMaxTurns:       JailMaxTurns,
