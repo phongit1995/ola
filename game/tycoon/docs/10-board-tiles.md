@@ -49,7 +49,7 @@ Tiền thuê thành phố theo cấp: đất trống / Nhà / Biệt thự / Kh�
 | 21 | cột phải ↓ | Hạ Long | thành phố | Duyên hải Bắc Bộ (vàng) | 260 | 26 / 145 / 500 / 1060 | 150 |
 | 22 | cột phải ↓ | Sân bay | sân bay | Sân bay | 200 | theo số sân bay | — |
 | 23 | cột phải ↓ | Hải Phòng | thành phố | Duyên hải Bắc Bộ (vàng) | 280 | 28 / 150 / 520 / 1100 | 150 |
-| 24 | góc dưới-phải | Du lịch | góc | — | — | lượt sau bay tới ô bất kỳ | — |
+| 24 | góc dưới-phải | Du lịch | góc | — | — | bay ngay tới ô bất kỳ | — |
 | 25 | hàng dưới ← | Vũng Tàu | thành phố | Thành phố biển (xanh lá) | 300 | 30 / 175 / 630 / 1350 | 200 |
 | 26 | hàng dưới ← | Sân bay | sân bay | Sân bay | 200 | theo số sân bay | — |
 | 27 | hàng dưới ← | Đà Nẵng | thành phố | Thành phố biển (xanh lá) | 320 | 32 / 180 / 650 / 1380 | 200 |
@@ -81,7 +81,7 @@ Tính từ bảng §2, đơn vị tr. **Trọn nhóm** = đất trống khi ch�
 | 30 | Hà Nội | 70 | 700 / 1.100 / 1.500 | 100 | 140 / 380 / 1.360 / 2.840 |
 | 31 | TP. Hồ Chí Minh | 80 | 800 / 1.200 / 1.600 | 100 | 160 / 420 / 1.440 / 3.000 |
 
-Sân bay: không mua lại, không chịu Lễ hội. Thẻ Cơ hội "Bay đến sân bay gần nhất" bắt trả ×2: 50 / 100 / 200 / 400 theo số sân bay chủ có.
+Sân bay: không mua lại, không chịu Lễ hội. Thẻ Cơ hội "Đi đến sân bay gần nhất" bắt trả ×2: 50 / 100 / 200 / 400 theo số sân bay chủ có.
 
 ## 2c. Các khoản tiền khác
 
@@ -96,13 +96,13 @@ Sân bay: không mua lại, không chịu Lễ hội. Thẻ Cơ hội "Bay đế
 
 ## 3. Cách tính từng loại ô
 
-- **Thành phố:** trọn nhóm (2 ô) mới được nâng cấp, tối đa 3 cấp Nhà → Biệt thự → Khách sạn, nâng đều giữa 2 ô; hạ cấp hoàn nửa giá. Trả thuê xong được mua lại với giá ×2 (giá đất + tiền nâng cấp), trừ ô đã lên Khách sạn.
+- **Thành phố:** đáp vào thành phố của mình thì nâng được ô đó (không cần trọn nhóm, không nâng đều), tối đa 3 cấp Nhà → Biệt thự → Khách sạn; hộp nâng cấp hiện dạng modal giữa màn hình. Vừa mua xong thì chưa nâng, lần sau đáp lại mới nâng. Hạ cấp hoàn nửa giá, ô nào cũng bán được. Trả thuê xong được mua lại với giá ×2 (giá đất + tiền nâng cấp), trừ ô đã lên Khách sạn.
 - **Sân bay:** thuê theo số sân bay chủ đang có: 1 → 25, 2 → 50, 3 → 100, 4 → 200. Không nâng cấp, không mua lại. Đủ 4 sân bay là thắng ngay.
 - **Lễ hội (16):** đáp vào mà có ít nhất 1 thành phố thì chọn một thành phố của mình để tổ chức Lễ hội: thuê ô đó ×2. Cả bàn chỉ có một Lễ hội — người sau tổ chức thì Lễ hội chuyển đi. Không chọn trong 30 giây thì hệ thống chọn ô có tiền thuê cao nhất.
-- **Du lịch (24):** đáp vào là hết lượt; lượt sau được bay thẳng tới ô bất kỳ (chạm ô trên bàn → "Bay tới đây") thay vì gieo. Bay qua Xuất phát vẫn nhận 160. Có thể bỏ quyền bay và gieo bình thường; hết giờ cũng là gieo bình thường. Bị đưa vào tù trước lượt đó thì mất quyền bay.
+- **Du lịch (24):** đáp vào là chọn ô và đi ngay trong lượt đó: chạm ô trên bàn là quân đi luôn (không mở bảng thông tin ô), đi từng bước qua các ô theo chiều kim đồng hồ, xử lý ô đáp như thường. Đáp xuống thành phố của mình thì tự mở hộp nâng cấp. Bay qua Xuất phát vẫn nhận 160. Có thể bấm "Không bay, ở lại"; hết giờ cũng là ở lại. Đổi 14/11/2026, trước đó phải chờ lượt sau mới bay.
 - **Thuế (12):** đóng 10% tổng tài sản (tiền mặt + giá đất + tiền nâng cấp), làm tròn. Thiếu tiền thì hạ cấp nhà hoặc phá sản như nợ ngân hàng.
-- **Cơ hội / Khí vận:** mỗi bộ 12 thẻ. Cơ hội thiên về di chuyển (về Xuất phát, tới TP. HCM / Huế / Cần Thơ, tới sân bay gần nhất trả thuê ×2, đi dự Lễ hội), Khí vận thiên về tiền. Cả hai có thẻ ra tù, vào tù, sửa nhà theo số cấp. Danh sách thẻ: §2 trong [05](./05-gameplay-rules-and-protocol.md).
-- **Nhà tù (8):** đáp vào chỉ là thăm tù. Chỉ vào tù khi rút thẻ Vào tù hoặc gieo đôi 3 lần liên tiếp. Ra tù bằng gieo đôi, nộp 50 hoặc dùng thẻ ra tù; đến lượt thứ 3 bắt buộc nộp phạt.
+- **Cơ hội / Khí vận:** mỗi bộ 12 thẻ. Cơ hội thiên về di chuyển (về Xuất phát, tới TP. HCM / Huế / Cần Thơ, tới sân bay gần nhất trả thuê ×2, đi dự Lễ hội), Khí vận thiên về tiền. Cả hai có thẻ ra tù, vào tù, sửa nhà theo số cấp. Thẻ di chuyển cho quân đi từng ô theo chiều kim đồng hồ (không bay thẳng); thẻ vào tù cho quân đi từng ô về Nhà tù theo chiều gần hơn. Danh sách thẻ: §2 trong [05](./05-gameplay-rules-and-protocol.md).
+- **Nhà tù (8):** đáp vào chỉ là thăm tù. Chỉ vào tù khi rút thẻ Vào tù hoặc gieo đôi 3 lần liên tiếp; quân đi từng ô về đây theo chiều gần hơn, có thể đi lùi. Ra tù bằng gieo đôi, nộp 50 hoặc dùng thẻ ra tù; đến lượt thứ 3 bắt buộc nộp phạt.
 
 ## 4. Thắng ngay theo ô
 

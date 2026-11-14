@@ -67,6 +67,7 @@ export interface GameState {
   pendingDebts: Debt[];
   card: CardRef | null;
   festival: number;
+  bought: number;
   chanceDeck: number[];
   chestDeck: number[];
   rng: bigint;

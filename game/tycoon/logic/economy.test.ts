@@ -47,20 +47,20 @@ function run(players: number, games: number) {
   };
 }
 
-// Dải chấp nhận lấy từ mô phỏng 1.000 ván/cấu hình (docs/09-economy.md §5); lệch khỏi dải = luật hoặc bảng giá đã mất cân bằng.
-describe('tycoon economy (bot vs bot, mua lại ×2, thắng ngay, 30 vòng)', () => {
+// Dải chấp nhận lấy từ mô phỏng 300 ván/cấu hình sau luật nâng nhà tại chỗ 14/11/2026 (docs/09-economy.md §5c); lệch khỏi dải = luật hoặc bảng giá đã mất cân bằng.
+describe('tycoon economy (bot vs bot, mua lại ×2, thắng ngay, nâng nhà tại chỗ, 30 vòng)', () => {
   it('2 người: phần lớn ván phân thắng bại trước 30 vòng', () => {
     const r = run(2, 300);
-    expect(r.monopoly).toBeGreaterThan(0.85);
-    expect(r.decided).toBeGreaterThan(0.6);
-    expect(r.takeoverGames).toBeGreaterThan(0.3);
+    expect(r.monopoly).toBeGreaterThan(0.8);
+    expect(r.decided).toBeGreaterThan(0.85);
+    expect(r.takeoverGames).toBeGreaterThan(0.03);
   });
 
-  it('4 người: đa số ván kết thúc bằng thắng ngay, hiếm khi phải chơi hết 30 vòng', () => {
+  it('4 người: gần như mọi ván phân thắng bại trước 30 vòng, gần nửa bằng thắng ngay', () => {
     const r = run(4, 300);
-    expect(r.instantWin).toBeGreaterThan(0.7);
-    expect(r.decided).toBeGreaterThan(0.8);
-    expect(r.takeoverGames).toBeGreaterThan(0.7);
+    expect(r.instantWin).toBeGreaterThan(0.45);
+    expect(r.decided).toBeGreaterThan(0.9);
+    expect(r.takeoverGames).toBeGreaterThan(0.25);
     expect(r.maxRent).toBeGreaterThanOrEqual(300);
     expect(r.margin).toBeGreaterThan(0.25);
   });

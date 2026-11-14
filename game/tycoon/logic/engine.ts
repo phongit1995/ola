@@ -64,6 +64,7 @@ export function newGame(seed: number, playerCount: number): GameState {
     pendingDebts: [],
     card: null,
     festival: -1,
+    bought: -1,
     chanceDeck: CHANCE.map((_, i) => i),
     chestDeck: CHEST.map((_, i) => i),
     rng: BigInt(Math.floor(seed)) & MASK,
@@ -162,10 +163,10 @@ export function canBuildError(s: GameState, seat: number, idx: number): string |
   const t = s.tiles[idx];
   if (tile.kind !== 'street' || !tile.group) return 'not_street';
   if (t.owner !== seat) return 'not_owner';
-  if (!ownsGroup(s, seat, tile.group)) return 'not_group_owner';
+  if (s.players[seat].pos !== idx) return 'not_here';
+  if (s.bought === idx) return 'just_bought';
   if (t.houses >= MAX_HOUSES) return 'max_houses';
   if (s.players[seat].cash < (tile.houseCost ?? 0)) return 'no_cash';
-  for (const g of tilesOfGroup(tile.group)) if (t.houses > s.tiles[g].houses) return 'build_uneven';
   return null;
 }
 
@@ -175,7 +176,6 @@ export function canSellError(s: GameState, seat: number, idx: number): string | 
   if (tile.kind !== 'street' || !tile.group) return 'not_street';
   if (t.owner !== seat) return 'not_owner';
   if (t.houses <= 0) return 'no_houses';
-  for (const g of tilesOfGroup(tile.group)) if (s.tiles[g].owner === seat && t.houses < s.tiles[g].houses) return 'sell_uneven';
   return null;
 }
 
@@ -249,11 +249,11 @@ function leaveJail(s: GameState, seat: number, how: string): void {
 function sendToJail(s: GameState, seat: number, how: string): void {
   const p = s.players[seat];
   const from = p.pos;
+  s.bought = -1;
   p.pos = JAIL_TILE;
   p.inJail = true;
   p.jailTurns = 0;
   p.doubles = 0;
-  p.travel = false;
   push(s, { kind: 'teleport', by: seat, from, to: JAIL_TILE });
   push(s, { kind: 'jail-in', by: seat, how });
 }
@@ -459,9 +459,9 @@ function land(s: GameState, seat: number, rentMul: number): void {
       if (festivalPick(s, seat) >= 0) s.phase = 'festival';
       return;
     case 'travel':
-      p.travel = true;
       p.doubles = 0;
       push(s, { kind: 'travel', by: seat, tile: p.pos });
+      s.phase = 'travel';
       return;
   }
 }
@@ -471,18 +471,20 @@ function movePlayer(s: GameState, seat: number, steps: number): void {
   const from = p.pos;
   const to = (from + steps) % BOARD_SIZE;
   const passedGo = to < from;
+  s.bought = -1;
   p.pos = to;
   push(s, { kind: 'move', by: seat, from, to, passedGo });
   if (passedGo) paySalary(s, seat);
   land(s, seat, 1);
 }
 
-function teleport(s: GameState, seat: number, to: number, passGo: boolean, rentMul: number): void {
+function teleport(s: GameState, seat: number, to: number, passGo: boolean, rentMul: number, how?: string): void {
   const p = s.players[seat];
   const from = p.pos;
   const passed = passGo && to < from;
+  s.bought = -1;
   p.pos = to;
-  push(s, { kind: 'teleport', by: seat, from, to, passedGo: passed });
+  push(s, { kind: 'teleport', by: seat, from, to, passedGo: passed, ...(how ? { how } : {}) });
   if (passed) paySalary(s, seat);
   land(s, seat, rentMul);
 }
@@ -586,9 +588,10 @@ function advanceTurn(s: GameState): void {
     }
   }
   s.turn = next;
+  s.bought = -1;
   const p = s.players[next];
   p.doubles = 0;
-  s.phase = p.inJail ? 'jail' : p.travel ? 'travel' : 'roll';
+  s.phase = p.inJail ? 'jail' : 'roll';
 }
 
 function finish(s: GameState, reason: EndReason): void {
@@ -626,8 +629,7 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
   };
   switch (mv.type) {
     case 'ROLL':
-      needPhase('roll', 'travel');
-      p.travel = false;
+      needPhase('roll');
       rollAndMove(s, seat);
       break;
     case 'JAIL_ROLL':
@@ -656,6 +658,7 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
       if (p.cash < price) throw new RuleError('no_cash');
       p.cash -= price;
       s.tiles[p.pos].owner = seat;
+      s.bought = p.pos;
       push(s, { kind: 'pay', by: seat, target: -1, amount: price, reason: 'buy', tile: p.pos });
       push(s, { kind: 'buy', by: seat, tile: p.pos });
       s.phase = 'manage';
@@ -672,6 +675,7 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
       p.cash -= price;
       s.players[owner].cash += price;
       s.tiles[idx].owner = seat;
+      s.bought = idx;
       push(s, { kind: 'pay', by: seat, target: owner, amount: price, reason: 'takeover', tile: idx });
       push(s, { kind: 'takeover', by: seat, tile: idx, target: owner, houses: s.tiles[idx].houses });
       s.phase = 'manage';
@@ -692,12 +696,11 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
       needPhase('travel');
       const idx = needTile();
       if (idx === p.pos) throw new RuleError('invalid_tile');
-      p.travel = false;
-      teleport(s, seat, idx, true, 1);
+      teleport(s, seat, idx, true, 1, 'travel');
       break;
     }
     case 'DECLINE':
-      needPhase('decide', 'takeover', 'festival');
+      needPhase('decide', 'takeover', 'festival', 'travel');
       s.phase = 'manage';
       break;
     case 'CARD_ACK': {
@@ -763,7 +766,6 @@ export function moveOnTimeout(s: GameState, seat: number): Move | null {
   if (s.finished || !isActive(s, seat) || s.turn !== seat) return null;
   switch (s.phase) {
     case 'roll':
-    case 'travel':
       return { type: 'ROLL' };
     case 'jail':
       return { type: 'JAIL_ROLL' };
@@ -771,6 +773,7 @@ export function moveOnTimeout(s: GameState, seat: number): Move | null {
       return { type: 'FESTIVAL', tile: festivalPick(s, seat) };
     case 'decide':
     case 'takeover':
+    case 'travel':
       return { type: 'DECLINE' };
     case 'card':
       return { type: 'CARD_ACK' };
@@ -790,7 +793,7 @@ export function quitPlayer(input: GameState, seat: number): GameState {
 }
 
 export function isNewTurn(prev: GameState, next: GameState): boolean {
-  return next.turn !== prev.turn && (next.phase === 'roll' || next.phase === 'jail' || next.phase === 'travel');
+  return next.turn !== prev.turn && (next.phase === 'roll' || next.phase === 'jail');
 }
 
 export function isOver(s: GameState): boolean {

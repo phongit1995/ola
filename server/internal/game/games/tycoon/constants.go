@@ -184,11 +184,10 @@ const (
 	ErrNoJailCard    = "no_jail_card"
 	ErrNotStreet     = "not_street"
 	ErrNotOwner      = "not_owner"
-	ErrNotGroupOwner = "not_group_owner"
+	ErrNotHere       = "not_here"
+	ErrJustBought    = "just_bought"
 	ErrMaxHouses     = "max_houses"
-	ErrBuildUneven   = "build_uneven"
 	ErrNoHouses      = "no_houses"
-	ErrSellUneven    = "sell_uneven"
 	ErrNotTakeover   = "not_takeover"
 	ErrTakeoverHotel = "takeover_hotel"
 )

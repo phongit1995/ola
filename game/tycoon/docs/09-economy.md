@@ -17,7 +17,7 @@ Chốt ngày 19/10/2026. Dữ liệu nằm ở `logic/board.json`, `logic/cards.
 | Mua lại đất | trả thuê xong được mua lại thành phố chưa lên Khách sạn, giá ×2 (đất + nâng cấp), trả cho chủ cũ — chốt 20/10/2026 |
 | Thắng ngay | trọn 3 nhóm màu, trọn 4 thành phố một cạnh bàn, hoặc cả 4 sân bay |
 | Giới hạn ván | 30 vòng hoặc 25 phút (kiểu ZingPlay), sau đó xếp theo tổng tài sản |
-| Ô đặc biệt kiểu ZingPlay | Lễ hội: thuê 1 thành phố ×2 · Du lịch: lượt sau bay tới ô bất kỳ · Thuế 10% tài sản — chốt 20/10/2026, danh sách ô ở [10-board-tiles.md](./10-board-tiles.md) |
+| Ô đặc biệt kiểu ZingPlay | Lễ hội: thuê 1 thành phố ×2 · Du lịch: bay ngay tới ô bất kỳ (từ 14/11/2026; số mô phỏng dưới đây đo với luật cũ bay ở lượt sau) · Thuế 10% tài sản — chốt 20/10/2026, danh sách ô ở [10-board-tiles.md](./10-board-tiles.md) |
 
 Ô cạnh tại màn 390 rộng 38 px (bàn 40 ô chỉ 29,6 px), đủ chỗ cho tên thành phố, tranh nhỏ và giá.
 
@@ -74,6 +74,22 @@ Vì tính trên tổng vốn đã bỏ ra, mọi nhóm có cùng "tỷ suất": 
 Hạ cấp hoàn 50% giá mỗi cấp. Thẻ sửa nhà tính theo **tổng số cấp** người rút đang có: ch10 25 tr/cấp, cm12 40 tr/cấp.
 
 Hiển thị cấp trên ô: cấp 1 = 1 nhà xanh ngọc, cấp 2 = 2 nhà, cấp 3 = 1 khách sạn san hô (`MAX_HOUSES = 3`).
+
+## 5c. Luật nâng nhà tại chỗ (14/11/2026)
+
+Đổi luật: chỉ nâng được thành phố mình đang đứng, không cần trọn nhóm, bỏ nâng/bán đều; ô vừa mua chưa nâng được, phải đáp lại lần sau; Du lịch bay ngay trong lượt. Đo lại 300 ván bot Thường mỗi cấu hình (`logic/economy.test.ts`, script đo cùng công thức):
+
+| | 2 người | 4 người |
+|---|---|---|
+| Ván phân thắng bại trước 30 vòng | 91% | 91% |
+| Thắng ngay (3 nhóm / trọn cạnh) | 37% | 82% |
+| Ván có mua lại đất | 57% | 93% |
+| Kết thúc do phá sản | 50% | 4% |
+| Số vòng trung vị | 17 | 17 |
+| Tiền thuê lớn nhất trung vị | 64 | 660 |
+| Số lần nâng cấp trung vị mỗi ván | 6 | 12 |
+
+So với luật cũ (§5): số vòng gần như cũ (18/16 → 17/17). Nhà lên cấp chậm vì phải đáp lại đúng ô, nên ván 2 người ít nhà to (thuê lớn nhất trung vị chỉ 64) và mua lại đất vẫn thường xuyên. Bản đo trước khi chặn nâng ô vừa mua (cùng ngày): 11/13 vòng, 9%/38% ván có mua lại, 83% ván 2 người kết thúc do phá sản. Máy Khó thắng máy Thường ~58% (400 ván), Thường thắng Dễ ~81%, Khó thắng Dễ ~85%; dự phòng khi nâng của máy Khó bớt `CASH_BUFFER / 2`. Muốn nhà lên nhanh hơn thì có thể giảm `houseCost`.
 
 ## 5. Kết quả mô phỏng — luật hiện tại (mua lại ×2, thắng ngay, Lễ hội / Du lịch / Thuế, 30 vòng / 25 phút)
 

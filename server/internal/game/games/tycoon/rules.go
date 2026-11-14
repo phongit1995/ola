@@ -132,19 +132,17 @@ func (s *State) canBuildError(seat, idx int) string {
 	if t.Owner != seat {
 		return ErrNotOwner
 	}
-	if !s.ownsGroup(seat, tile.Group) {
-		return ErrNotGroupOwner
+	if s.Players[seat].Pos != idx {
+		return ErrNotHere
+	}
+	if s.Bought == idx {
+		return ErrJustBought
 	}
 	if t.Houses >= MaxHouses {
 		return ErrMaxHouses
 	}
 	if s.Players[seat].Cash < tile.HouseCost {
 		return ErrNoCash
-	}
-	for _, g := range tilesOfGroup(tile.Group) {
-		if t.Houses > s.Tiles[g].Houses {
-			return ErrBuildUneven
-		}
 	}
 	return ""
 }
@@ -160,11 +158,6 @@ func (s *State) canSellError(seat, idx int) string {
 	}
 	if t.Houses <= 0 {
 		return ErrNoHouses
-	}
-	for _, g := range tilesOfGroup(tile.Group) {
-		if s.Tiles[g].Owner == seat && t.Houses < s.Tiles[g].Houses {
-			return ErrSellUneven
-		}
 	}
 	return ""
 }
@@ -273,11 +266,11 @@ func (s *State) leaveJail(seat int, how string) {
 func (s *State) sendToJail(seat int, how string) {
 	p := &s.Players[seat]
 	from := p.Pos
+	s.Bought = -1
 	p.Pos = JailTile
 	p.InJail = true
 	p.JailTurns = 0
 	p.Doubles = 0
-	p.Travel = false
 	s.push(Step{Kind: StepTeleport, By: seat, From: intp(from), To: intp(JailTile)})
 	s.push(Step{Kind: StepJailIn, By: seat, How: how})
 }
@@ -448,9 +441,9 @@ func (s *State) applyCard(seat int, card Card) {
 	p := &s.Players[seat]
 	switch card.Effect {
 	case EffectMoveTo:
-		s.teleport(seat, card.Tile, true, 1)
+		s.teleport(seat, card.Tile, true, 1, "")
 	case EffectMoveToNearest:
-		s.teleport(seat, nearestTile(p.Pos, card.Kind), true, card.Amount)
+		s.teleport(seat, nearestTile(p.Pos, card.Kind), true, card.Amount, "")
 	case EffectCash:
 		if card.Amount >= 0 {
 			p.Cash += card.Amount
@@ -516,9 +509,9 @@ func (s *State) land(seat, rentMul int) {
 			s.Phase = PhaseFestival
 		}
 	case KindTravel:
-		p.Travel = true
 		p.Doubles = 0
 		s.push(Step{Kind: StepTravel, By: seat, Tile: intp(p.Pos)})
+		s.Phase = PhaseTravel
 	}
 }
 
@@ -527,6 +520,7 @@ func (s *State) movePlayer(seat, steps int) {
 	from := p.Pos
 	to := (from + steps) % BoardSize
 	passedGo := to < from
+	s.Bought = -1
 	p.Pos = to
 	s.push(Step{Kind: StepMove, By: seat, From: intp(from), To: intp(to), PassedGo: boolp(passedGo)})
 	if passedGo {
@@ -535,12 +529,13 @@ func (s *State) movePlayer(seat, steps int) {
 	s.land(seat, 1)
 }
 
-func (s *State) teleport(seat, to int, passGo bool, rentMul int) {
+func (s *State) teleport(seat, to int, passGo bool, rentMul int, how string) {
 	p := &s.Players[seat]
 	from := p.Pos
 	passed := passGo && to < from
+	s.Bought = -1
 	p.Pos = to
-	s.push(Step{Kind: StepTeleport, By: seat, From: intp(from), To: intp(to), PassedGo: boolp(passed)})
+	s.push(Step{Kind: StepTeleport, By: seat, From: intp(from), To: intp(to), PassedGo: boolp(passed), How: how})
 	if passed {
 		s.paySalary(seat)
 	}
@@ -677,14 +672,12 @@ func (s *State) advanceTurn() {
 		}
 	}
 	s.Turn = next
+	s.Bought = -1
 	p := &s.Players[next]
 	p.Doubles = 0
-	switch {
-	case p.InJail:
+	if p.InJail {
 		s.Phase = PhaseJail
-	case p.Travel:
-		s.Phase = PhaseTravel
-	default:
+	} else {
 		s.Phase = PhaseRoll
 	}
 }
@@ -728,7 +721,7 @@ func (s *State) isOver() bool {
 }
 
 func isNewTurn(prev, next *State) bool {
-	return next.Turn != prev.Turn && (next.Phase == PhaseRoll || next.Phase == PhaseJail || next.Phase == PhaseTravel)
+	return next.Turn != prev.Turn && (next.Phase == PhaseRoll || next.Phase == PhaseJail)
 }
 
 func applyMove(input *State, seat int, mv Move) (*State, error) {
@@ -757,10 +750,9 @@ func applyMove(input *State, seat int, mv Move) (*State, error) {
 	}
 	switch mv.Type {
 	case MoveRoll:
-		if err := needPhase(PhaseRoll, PhaseTravel); err != nil {
+		if err := needPhase(PhaseRoll); err != nil {
 			return nil, err
 		}
-		p.Travel = false
 		s.rollAndMove(seat)
 	case MoveJailRoll:
 		if err := needPhase(PhaseJail); err != nil {
@@ -800,6 +792,7 @@ func applyMove(input *State, seat int, mv Move) (*State, error) {
 		}
 		p.Cash -= price
 		s.Tiles[p.Pos].Owner = seat
+		s.Bought = p.Pos
 		s.push(Step{Kind: StepPay, By: seat, Target: intp(-1), Amount: intp(price), Reason: PayBuy, Tile: intp(p.Pos)})
 		s.push(Step{Kind: StepBuy, By: seat, Tile: intp(p.Pos)})
 		s.Phase = PhaseManage
@@ -817,6 +810,7 @@ func applyMove(input *State, seat int, mv Move) (*State, error) {
 		p.Cash -= price
 		s.Players[owner].Cash += price
 		s.Tiles[idx].Owner = seat
+		s.Bought = idx
 		s.push(Step{Kind: StepPay, By: seat, Target: intp(owner), Amount: intp(price), Reason: PayTakeover, Tile: intp(idx)})
 		s.push(Step{Kind: StepTakeover, By: seat, Tile: intp(idx), Target: intp(owner), Houses: intp(s.Tiles[idx].Houses)})
 		s.Phase = PhaseManage
@@ -849,10 +843,9 @@ func applyMove(input *State, seat int, mv Move) (*State, error) {
 		if idx == p.Pos {
 			return nil, ruleError(ErrInvalidTile)
 		}
-		p.Travel = false
-		s.teleport(seat, idx, true, 1)
+		s.teleport(seat, idx, true, 1, StepTravel)
 	case MoveDecline:
-		if err := needPhase(PhaseDecide, PhaseTakeover, PhaseFestival); err != nil {
+		if err := needPhase(PhaseDecide, PhaseTakeover, PhaseFestival, PhaseTravel); err != nil {
 			return nil, err
 		}
 		s.Phase = PhaseManage
@@ -947,13 +940,13 @@ func moveOnTimeout(s *State, seat int) (Move, bool) {
 		return Move{}, false
 	}
 	switch s.Phase {
-	case PhaseRoll, PhaseTravel:
+	case PhaseRoll:
 		return Move{Type: MoveRoll}, true
 	case PhaseJail:
 		return Move{Type: MoveJailRoll}, true
 	case PhaseFestival:
 		return Move{Type: MoveFestival, Tile: intp(s.festivalPick(seat))}, true
-	case PhaseDecide, PhaseTakeover:
+	case PhaseDecide, PhaseTakeover, PhaseTravel:
 		return Move{Type: MoveDecline}, true
 	case PhaseCard:
 		return Move{Type: MoveCardAck}, true

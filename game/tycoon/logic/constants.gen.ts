@@ -141,11 +141,10 @@ export const ERROR_CODES = [
   "no_jail_card",
   "not_street",
   "not_owner",
-  "not_group_owner",
+  "not_here",
+  "just_bought",
   "max_houses",
-  "build_uneven",
   "no_houses",
-  "sell_uneven",
   "not_takeover",
   "takeover_hotel",
 ] as const;
@@ -497,7 +496,7 @@ export const CARD_DATA = [
   {
     "id": "ch05",
     "deck": "chance",
-    "text": "Bay đến sân bay gần nhất. Nếu có chủ, trả gấp đôi tiền thuê.",
+    "text": "Đi đến sân bay gần nhất. Nếu có chủ, trả gấp đôi tiền thuê.",
     "effect": "moveToNearest",
     "kind": "station",
     "amount": 2

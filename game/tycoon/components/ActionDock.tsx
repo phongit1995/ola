@@ -1,19 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { BOARD } from '../logic/board';
-import { JAIL_FINE, JAIL_MAX_TURNS } from '../logic/constants';
-import { canBuild, hasAnyFullGroup } from '../logic/rules-hint';
-import type { ViewState } from '../logic/types';
+import { JAIL_MAX_TURNS } from '../logic/constants';
+import { canBuild } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
 import { UiAvatar, UiButton } from './Ui';
 
 const AUTO_END_MS = 2000;
-
-function canBuildAny(view: ViewState, seat: number): boolean {
-  return BOARD.some((tile) => view.tiles[tile.idx].owner === seat && tile.kind === 'street' && canBuild(view, seat, tile.idx).ok);
-}
 
 function AutoEndButton({ label, onEnd, auto }: { label: string; onEnd: () => void; auto: boolean }) {
   const [armed, setArmed] = useState(auto);
@@ -34,12 +28,11 @@ function AutoEndButton({ label, onEnd, auto }: { label: string; onEnd: () => voi
 }
 
 export function ActionDock() {
-  const { view, you, players, cash, myTurn, replaying, movePending, turnExpired, autoEnd, sendMove, openSheet } = useTycoon(
+  const { view, you, players, myTurn, replaying, movePending, turnExpired, autoEnd, sendMove, openSheet } = useTycoon(
     useShallow((s) => ({
       view: s.view,
       you: s.you,
       players: s.players,
-      cash: s.cash,
       myTurn: s.myTurn,
       replaying: s.replaying,
       movePending: s.movePending,
@@ -53,7 +46,6 @@ export function ActionDock() {
   const me = view.players[you];
   const busy = movePending || replaying;
   const canAct = myTurn && !busy && !me?.bankrupt && !turnExpired;
-  const myCash = cash[you] ?? me?.cash ?? 0;
 
   const waiting = (seat: number, text: string) => (
     <div className="ty-dock ty-dock-wait" style={{ '--seat': seatColor(seat) } as CSSProperties}>
@@ -82,21 +74,10 @@ export function ActionDock() {
       );
     case 'jail':
       return (
-        <div className="ty-dock">
-          <p className="ty-dock-say">Đang ở tù · lần {me.jailTurns + 1}/{JAIL_MAX_TURNS}</p>
-          <div className={`ty-dock-row ${me.jailCards.length > 0 ? 'ty-dock-row-3' : ''}`}>
-            <UiButton tone="gold" icon="dice" onClick={() => sendMove({ type: 'JAIL_ROLL' })}>
-              Gieo đôi
-            </UiButton>
-            <UiButton price={JAIL_FINE} disabled={myCash < JAIL_FINE} onClick={() => sendMove({ type: 'JAIL_PAY' })}>
-              Nộp
-            </UiButton>
-            {me.jailCards.length > 0 ? (
-              <UiButton icon="key" aria-label={`Dùng thẻ ra tù, còn ${me.jailCards.length} thẻ`} onClick={() => sendMove({ type: 'JAIL_CARD' })}>
-                Thẻ
-              </UiButton>
-            ) : null}
-          </div>
+        <div className="ty-dock ty-dock-wait">
+          <span className="ty-dock-wait-text">
+            Đang ở tù · lần {me.jailTurns + 1}/{JAIL_MAX_TURNS}
+          </span>
         </div>
       );
     case 'decide':
@@ -117,21 +98,21 @@ export function ActionDock() {
     case 'travel':
       return (
         <div className="ty-dock">
-          <UiButton block icon="dice" onClick={() => sendMove({ type: 'ROLL' })}>
-            Không bay, gieo xúc xắc
+          <UiButton block onClick={() => sendMove({ type: 'DECLINE' })}>
+            Không bay, ở lại
           </UiButton>
         </div>
       );
     case 'manage': {
       const again = me.doubles > 0 && !me.inJail;
-      const upgrade = hasAnyFullGroup(view, you);
-      const auto = autoEnd && !again && !canBuildAny(view, you);
+      const upgrade = canBuild(view, you, me.pos).ok;
+      const auto = autoEnd && !again && !upgrade;
       const end = <AutoEndButton key={view.moveCount} label={again ? 'Gieo tiếp (đôi!)' : 'Kết thúc lượt'} auto={auto} onEnd={() => sendMove({ type: 'END_TURN' })} />;
       if (!upgrade) return <div className="ty-dock">{end}</div>;
       return (
         <div className="ty-dock">
           <div className="ty-dock-row ty-dock-row-end">
-            <UiButton icon="house" onClick={() => openSheet({ kind: 'assets', seat: you })}>
+            <UiButton icon="house" onClick={() => openSheet({ kind: 'tile', idx: me.pos })}>
               Nâng cấp
             </UiButton>
             {end}

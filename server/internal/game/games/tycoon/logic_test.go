@@ -112,11 +112,10 @@ func TestDoublesRollAgainAndThirdDoubleJails(t *testing.T) {
 	}
 
 	s.Players[0].Doubles = MaxDoubles - 1
-	s.Players[0].Travel = true
 	setDice(t, s, 2, 2)
 	s = play(t, s, 0, Move{Type: MoveRoll})
 	p := s.Players[0]
-	if !p.InJail || p.Pos != JailTile || p.Doubles != 0 || p.Travel || s.Phase != PhaseManage {
+	if !p.InJail || p.Pos != JailTile || p.Doubles != 0 || s.Phase != PhaseManage {
 		t.Fatalf("third double: %+v phase %s", p, s.Phase)
 	}
 	s = play(t, s, 0, Move{Type: MoveEndTurn})
@@ -179,56 +178,73 @@ func TestTravel(t *testing.T) {
 	s.Players[0].Pos = 22
 	setDice(t, s, 1, 1)
 	s = play(t, s, 0, Move{Type: MoveRoll})
-	if !s.Players[0].Travel || s.Players[0].Doubles != 0 || !hasStep(s, StepTravel) {
-		t.Fatalf("landing on travel: %+v", s.Players[0])
-	}
-	s = play(t, s, 0, Move{Type: MoveEndTurn})
-	if s.Turn != 1 {
-		t.Fatalf("landing on travel kept the double: turn %d", s.Turn)
-	}
-	s.Phase = PhaseManage
-	s = play(t, s, 1, Move{Type: MoveEndTurn})
-	if s.Turn != 0 || s.Phase != PhaseTravel {
-		t.Fatalf("travel turn starts in %s for %d", s.Phase, s.Turn)
+	if s.Turn != 0 || s.Phase != PhaseTravel || s.Players[0].Doubles != 0 || !hasStep(s, StepTravel) {
+		t.Fatalf("landing on travel: turn %d phase %s %+v", s.Turn, s.Phase, s.Players[0])
 	}
 	expectCode(t, s, 0, Move{Type: MoveTravel, Tile: intp(24)}, ErrInvalidTile)
+	expectCode(t, s, 0, Move{Type: MoveRoll}, ErrWrongPhase)
+	if mv, ok := moveOnTimeout(s, 0); !ok || mv.Type != MoveDecline {
+		t.Fatalf("travel timeout: %+v", mv)
+	}
 	flown := play(t, s, 0, Move{Type: MoveTravel, Tile: intp(3)})
-	if flown.Players[0].Pos != 3 || flown.Players[0].Cash != StartCash+GoSalary || flown.Players[0].Travel || flown.Phase != PhaseDecide {
+	if flown.Players[0].Pos != 3 || flown.Players[0].Cash != StartCash+GoSalary || flown.Phase != PhaseDecide || flown.Turn != 0 {
 		t.Fatalf("travel flight: %+v phase %s", flown.Players[0], flown.Phase)
 	}
-	setDice(t, s, 1, 2)
-	rolled := play(t, s, 0, Move{Type: MoveRoll})
-	if rolled.Players[0].Travel || rolled.Players[0].Pos != 27 {
-		t.Fatalf("roll from travel phase: %+v", rolled.Players[0])
+	stayed := play(t, s, 0, Move{Type: MoveDecline})
+	if stayed.Players[0].Pos != 24 || stayed.Phase != PhaseManage {
+		t.Fatalf("decline travel: %+v phase %s", stayed.Players[0], stayed.Phase)
 	}
-
-	s.Phase = PhaseCard
-	s.Card = &CardRef{Deck: DeckChance, ID: "ch09"}
-	jailed := play(t, s, 0, Move{Type: MoveCardAck})
-	if jailed.Players[0].Travel || !jailed.Players[0].InJail {
-		t.Fatalf("jail card kept travel: %+v", jailed.Players[0])
+	stayed = play(t, stayed, 0, Move{Type: MoveEndTurn})
+	if stayed.Turn != 1 || stayed.Phase != PhaseRoll {
+		t.Fatalf("landing on travel kept the double: turn %d phase %s", stayed.Turn, stayed.Phase)
 	}
 }
 
-func TestBuildAndSellStayEven(t *testing.T) {
+func TestBuildOnlyWhereStanding(t *testing.T) {
 	s := testState(2)
 	s.Phase = PhaseManage
 	s.Tiles[1] = TileState{Owner: 0}
-	expectCode(t, s, 0, Move{Type: MoveBuild, Tile: intp(1)}, ErrNotGroupOwner)
 	s.Tiles[3] = TileState{Owner: 0}
+	s.Players[0].Pos = 1
+	expectCode(t, s, 0, Move{Type: MoveBuild, Tile: intp(3)}, ErrNotHere)
 	s = play(t, s, 0, Move{Type: MoveBuild, Tile: intp(1)})
-	expectCode(t, s, 0, Move{Type: MoveBuild, Tile: intp(1)}, ErrBuildUneven)
-	s = play(t, s, 0, Move{Type: MoveBuild, Tile: intp(3)})
-	s = play(t, s, 0, Move{Type: MoveBuild, Tile: intp(3)})
-	expectCode(t, s, 0, Move{Type: MoveSellHouse, Tile: intp(1)}, ErrSellUneven)
-	s = play(t, s, 0, Move{Type: MoveSellHouse, Tile: intp(3)})
-	if s.Tiles[1].Houses != 1 || s.Tiles[3].Houses != 1 || s.Players[0].Cash != StartCash-150+25 {
-		t.Fatalf("after build/sell: %+v %+v cash %d", s.Tiles[1], s.Tiles[3], s.Players[0].Cash)
+	s = play(t, s, 0, Move{Type: MoveBuild, Tile: intp(1)})
+	if s.Tiles[1].Houses != 2 || s.Tiles[3].Houses != 0 || s.Players[0].Cash != StartCash-100 {
+		t.Fatalf("after build: %+v %+v cash %d", s.Tiles[1], s.Tiles[3], s.Players[0].Cash)
 	}
+	s.Tiles[3] = TileState{Owner: 0, Houses: 1}
+	s = play(t, s, 0, Move{Type: MoveSellHouse, Tile: intp(3)})
+	s = play(t, s, 0, Move{Type: MoveSellHouse, Tile: intp(1)})
+	if s.Tiles[1].Houses != 1 || s.Tiles[3].Houses != 0 || s.Players[0].Cash != StartCash-100+50 {
+		t.Fatalf("after sell: %+v %+v cash %d", s.Tiles[1], s.Tiles[3], s.Players[0].Cash)
+	}
+	s.Players[0].Pos = 6
 	expectCode(t, s, 0, Move{Type: MoveBuild, Tile: intp(6)}, ErrNotStreet)
 	expectCode(t, s, 0, Move{Type: MoveBuild}, ErrInvalidTile)
+	s.Players[0].Pos = 1
 	s.Players[0].Cash = 10
 	expectCode(t, s, 0, Move{Type: MoveBuild, Tile: intp(1)}, ErrNoCash)
+}
+
+func TestNoBuildOnJustBoughtTile(t *testing.T) {
+	s := testState(2)
+	s.Phase = PhaseDecide
+	s.Players[0].Pos = 17
+	s = play(t, s, 0, Move{Type: MoveBuy})
+	if s.Bought != 17 {
+		t.Fatalf("bought %d", s.Bought)
+	}
+	expectCode(t, s, 0, Move{Type: MoveBuild, Tile: intp(17)}, ErrJustBought)
+	s = play(t, s, 0, Move{Type: MoveEndTurn})
+	if s.Bought != -1 {
+		t.Fatalf("bought after turn %d", s.Bought)
+	}
+	s.Turn = 0
+	s.Phase = PhaseManage
+	s = play(t, s, 0, Move{Type: MoveBuild, Tile: intp(17)})
+	if s.Tiles[17].Houses != 1 {
+		t.Fatalf("houses %d", s.Tiles[17].Houses)
+	}
 }
 
 func TestTakeoverPaysOwnerAndKeepsHousesAndFestival(t *testing.T) {
@@ -405,8 +421,8 @@ func TestMoveOnTimeoutCoversEveryPhase(t *testing.T) {
 	cases := map[string]func(*State) string{
 		PhaseRoll: func(s *State) string { return MoveRoll },
 		PhaseTravel: func(s *State) string {
-			s.Players[0].Travel = true
-			return MoveRoll
+			s.Players[0].Pos = 24
+			return MoveDecline
 		},
 		PhaseJail: func(s *State) string {
 			s.Players[0].InJail = true

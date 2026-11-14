@@ -5,6 +5,7 @@ import { AssetsSheet } from '../components/AssetsSheet';
 import { Board } from '../components/Board';
 import { BoardCenter } from '../components/BoardCenter';
 import { BuyModal } from '../components/BuyModal';
+import { JailModal } from '../components/JailModal';
 import { DebtModal } from '../components/DebtModal';
 import { ChatSheet, ReactionBubbles } from '../components/MatchChat';
 import { TyIcon } from '../components/TyIcon';
@@ -14,13 +15,16 @@ import { TileSheet } from '../components/TileSheet';
 import { LogSheet } from '../components/LogSheet';
 import { attachParticles } from '../fx/particles';
 import { MAX_ROUNDS, TIME_LIMIT_MS } from '../logic/constants';
+import { canBuild } from '../logic/rules-hint';
 import { logLineText, useTycoon } from '../store/useTycoon';
 import bgUrl from '../assets/lobby/bg-board-pixel.webp';
 import logoUrl from '../assets/lobby/logo.webp';
 
 const BOARD_MIN = 260;
 const BOARD_MAX = 600;
-const DOCK_RESERVE = 112;
+const DOCK_RESERVE = 56;
+const FLOW_GAPS = 4;
+const BOARD_FRAME = 12;
 
 function ConnectionBanner() {
   const { awaySeats, selfDisconnected, players, you, spectating, spectators, result } = useTycoon(
@@ -85,7 +89,10 @@ function useBoardFit(screen: RefObject<HTMLDivElement | null>, chrome: RefObject
       const style = getComputedStyle(root);
       const width = root.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
       const height = root.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-      const fixed = chrome.current.reduce((sum, el) => sum + (el?.offsetHeight ?? 0), 0) + DOCK_RESERVE + 52;
+      const dock = root.querySelector<HTMLElement>('.ty-s6-dockwrap');
+      const dockReserve = dock ? parseFloat(getComputedStyle(dock).minHeight) || DOCK_RESERVE : DOCK_RESERVE;
+      const gaps = (parseFloat(style.rowGap) || 8) * FLOW_GAPS;
+      const fixed = chrome.current.reduce((sum, el) => sum + (el?.offsetHeight ?? 0), 0) + dockReserve + gaps + BOARD_FRAME;
       const size = Math.floor(Math.max(BOARD_MIN, Math.min(width, height - fixed, BOARD_MAX)) / 2) * 2;
       root.style.setProperty('--b', `${size}px`);
     };
@@ -188,6 +195,35 @@ function BoardMenu({ onClose }: { onClose: () => void }) {
   );
 }
 
+function tapTile(idx: number): void {
+  const s = useTycoon.getState();
+  const me = s.view?.players[s.you];
+  if (s.myTurn && !s.replaying && !s.movePending && s.view?.phase === 'travel' && me && me.pos !== idx) {
+    s.sendMove({ type: 'TRAVEL', tile: idx });
+    return;
+  }
+  s.openSheet({ kind: 'tile', idx });
+}
+
+function useAutoUpgrade(): void {
+  const { view, you, myTurn, replaying, movePending, sheet, openSheet } = useTycoon(
+    useShallow((s) => ({ view: s.view, you: s.you, myTurn: s.myTurn, replaying: s.replaying, movePending: s.movePending, sheet: s.sheet, openSheet: s.openSheet })),
+  );
+  const handled = useRef('');
+  useEffect(() => {
+    const me = view?.players[you];
+    if (!view || !me || !myTurn || replaying || movePending || me.bankrupt) return;
+    const key = `${view.round}:${view.turn}:${me.pos}:${me.doubles}`;
+    if (view.phase === 'decide' || view.phase === 'takeover') {
+      handled.current = key;
+      return;
+    }
+    if (view.phase !== 'manage' || sheet || handled.current === key) return;
+    handled.current = key;
+    if (canBuild(view, you, me.pos).ok) openSheet({ kind: 'tile', idx: me.pos });
+  }, [view, you, myTurn, replaying, movePending, sheet, openSheet]);
+}
+
 export function BoardScreen() {
   const state = useTycoon(
     useShallow((s) => ({
@@ -221,6 +257,7 @@ export function BoardScreen() {
     chrome.current = [top.current, pods.current, foot.current];
   }, []);
   useBoardFit(screen, chrome);
+  useAutoUpgrade();
 
   useEffect(() => (canvas.current ? attachParticles(canvas.current) : undefined), []);
 
@@ -251,7 +288,7 @@ export function BoardScreen() {
       </header>
 
       <div className="ty-s6-boardwrap" onPointerDownCapture={state.replaying ? state.skipReplay : undefined}>
-        <Board onTileTap={(idx) => state.openSheet({ kind: 'tile', idx })}>
+        <Board onTileTap={tapTile}>
           <BoardCenter />
         </Board>
       </div>
@@ -295,6 +332,7 @@ export function BoardScreen() {
       {!state.result && state.sheet?.kind === 'chat' ? <ChatSheet /> : null}
       <ReactionBubbles />
       {!state.result ? <BuyModal /> : null}
+      {!state.result ? <JailModal /> : null}
       {!state.result ? <DebtModal /> : null}
     </div>
   );

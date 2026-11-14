@@ -117,27 +117,42 @@ describe('tycoon engine', () => {
     expect(next.steps.some((st) => st.kind === 'pay' && st.reason === 'salary')).toBe(true);
   });
 
-  it('enforces even building and selling', () => {
+  it('builds only on the tile you stand on, no group or even rule', () => {
     let s = withPhase(newGame(1, 2), 'manage');
     for (const idx of [17, 19]) s.tiles[idx].owner = 0;
+    s.players[0].pos = 17;
+    expect(() => play(s, 0, { type: 'BUILD', tile: 19 })).toThrow('not_here');
     s = play(s, 0, { type: 'BUILD', tile: 17 });
-    expect(() => play(s, 0, { type: 'BUILD', tile: 17 })).toThrow('build_uneven');
-    s = play(s, 0, { type: 'BUILD', tile: 19 });
     s = play(s, 0, { type: 'BUILD', tile: 17 });
     expect(s.tiles[17].houses).toBe(2);
-    expect(s.players[0].cash).toBe(START_CASH - 3 * 150);
-    expect(() => play(s, 0, { type: 'SELL_HOUSE', tile: 19 })).toThrow('sell_uneven');
+    expect(s.tiles[19].houses).toBe(0);
+    expect(s.players[0].cash).toBe(START_CASH - 2 * 150);
     s = play(s, 0, { type: 'SELL_HOUSE', tile: 17 });
-    expect(s.players[0].cash).toBe(START_CASH - 3 * 150 + 75);
+    expect(s.players[0].cash).toBe(START_CASH - 2 * 150 + 75);
     s = play(s, 0, { type: 'BUILD', tile: 17 });
-    s = play(s, 0, { type: 'BUILD', tile: 19 });
     s = play(s, 0, { type: 'BUILD', tile: 17 });
-    s = play(s, 0, { type: 'BUILD', tile: 19 });
     expect(s.tiles[17].houses).toBe(MAX_HOUSES);
     expect(() => play(s, 0, { type: 'BUILD', tile: 17 })).toThrow('max_houses');
     s.tiles[1].owner = 0;
-    expect(() => play(s, 0, { type: 'BUILD', tile: 1 })).toThrow('not_group_owner');
+    s.players[0].pos = 1;
+    s = play(s, 0, { type: 'BUILD', tile: 1 });
+    expect(s.tiles[1].houses).toBe(1);
+    s.players[0].pos = 4;
     expect(() => play(s, 0, { type: 'BUILD', tile: 4 })).toThrow('not_street');
+  });
+
+  it('does not let you upgrade the city you just bought until you land on it again', () => {
+    let s = withPhase(newGame(1, 2), 'decide');
+    s.players[0].pos = 17;
+    s = play(s, 0, { type: 'BUY' });
+    expect(s.bought).toBe(17);
+    expect(() => play(s, 0, { type: 'BUILD', tile: 17 })).toThrow('just_bought');
+    s = play(s, 0, { type: 'END_TURN' });
+    expect(s.bought).toBe(-1);
+    s = withPhase(s, 'manage');
+    s.turn = 0;
+    s = play(s, 0, { type: 'BUILD', tile: 17 });
+    expect(s.tiles[17].houses).toBe(1);
   });
 
   it('sells evenly only against own cities when a rival holds part of the group', () => {
@@ -490,30 +505,31 @@ describe('tycoon festival, travel and tax', () => {
     expect(at.phase).not.toBe('festival');
   });
 
-  it('flies a traveller to any tile next turn, paying salary when passing go', () => {
+  it('flies a traveller right away, paying salary when passing go', () => {
     const at = landOn(newGame(13, 2), 0, 24);
-    expect(at.players[0].travel).toBe(true);
+    expect(at.phase).toBe('travel');
+    expect(at.turn).toBe(0);
     expect(at.players[0].doubles).toBe(0);
     expect(at.steps.some((st) => st.kind === 'travel')).toBe(true);
-    const ready: GameState = { ...at, phase: 'travel' };
-    expect(() => play(ready, 0, { type: 'TRAVEL', tile: 24 })).toThrow('invalid_tile');
-    const cash = ready.players[0].cash;
-    const flown = play(ready, 0, { type: 'TRAVEL', tile: 3 });
+    expect(() => play(at, 0, { type: 'TRAVEL', tile: 24 })).toThrow('invalid_tile');
+    expect(() => play(at, 0, { type: 'ROLL' })).toThrow('wrong_phase');
+    const cash = at.players[0].cash;
+    const flown = play(at, 0, { type: 'TRAVEL', tile: 3 });
     expect(flown.players[0].pos).toBe(3);
-    expect(flown.players[0].travel).toBe(false);
     expect(flown.players[0].cash).toBe(cash + GO_SALARY);
     expect(flown.phase).toBe('decide');
-    expect(moveOnTimeout(ready, 0)).toEqual({ type: 'ROLL' });
-    expect(play(ready, 0, { type: 'ROLL' }).players[0].travel).toBe(false);
+    expect(flown.turn).toBe(0);
+    expect(moveOnTimeout(at, 0)).toEqual({ type: 'DECLINE' });
   });
 
-  it('starts the traveller in the travel phase after the others move', () => {
-    let s = landOn(newGame(13, 2), 0, 24);
-    s = play({ ...s, phase: 'manage' }, 0, { type: 'END_TURN' });
+  it('lets the traveller stay and ends the turn normally', () => {
+    const at = landOn(newGame(13, 2), 0, 24);
+    let s = play(at, 0, { type: 'DECLINE' });
+    expect(s.players[0].pos).toBe(24);
+    expect(s.phase).toBe('manage');
+    s = play(s, 0, { type: 'END_TURN' });
     expect(s.turn).toBe(1);
-    s = play({ ...s, phase: 'manage' }, 1, { type: 'END_TURN' });
-    expect(s.turn).toBe(0);
-    expect(s.phase).toBe('travel');
+    expect(s.phase).toBe('roll');
   });
 
   it('taxes ten percent of total worth', () => {

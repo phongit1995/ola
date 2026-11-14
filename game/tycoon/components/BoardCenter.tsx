@@ -1,14 +1,16 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { cardById } from '../logic/board';
-import { animate, reducedMotion } from '../fx/runtime';
+import { animate } from '../fx/runtime';
+import { cubeTransform, DIE_FACES } from '../helpers/dice';
 import { seatColor } from '../helpers/player';
-import { useTycoon } from '../store/useTycoon';
+import { useTycoon, type FeedLine } from '../store/useTycoon';
 import { cardArt } from './art';
 import { TurnRing, URGENT_SECONDS } from './TurnRing';
 import { MoneyBadge, UiAvatar, UiButton } from './Ui';
 
 const CELLS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const CORE_PLANES = ['none', 'rotateX(90deg)', 'rotateY(90deg)'];
 const NO_DICE_PHASES = new Set(['festival', 'travel']);
 
 function Dice({ hidden }: { hidden: boolean }) {
@@ -19,10 +21,19 @@ function Dice({ hidden }: { hidden: boolean }) {
       {diceFx.values.map((value, index) => (
         <span className="ty-s6-dwrap" data-die key={index}>
           <span className="ty-s6-dshadow" data-die-shadow />
-          <span className="ty-s6-die" data-face={value}>
-            {CELLS.map((cell) => (
-              <i key={cell} />
+          <span className="ty-s6-dbody">
+          <span className="ty-s6-cube" data-cube style={{ transform: cubeTransform(value, index) }}>
+            {CORE_PLANES.map((plane) => (
+              <span key={plane} className="ty-s6-core" style={{ transform: plane }} />
             ))}
+            {DIE_FACES.map((face) => (
+              <span key={face.value} className="ty-s6-die" data-face={face.value} style={{ transform: `${face.transform} translateZ(calc(var(--die-half) - 0.5px))` }}>
+                {CELLS.map((cell) => (
+                  <i key={cell} />
+                ))}
+              </span>
+            ))}
+          </span>
           </span>
         </span>
       ))}
@@ -77,34 +88,34 @@ function TurnChip() {
   );
 }
 
-function Feed({ hidden }: { hidden: boolean }) {
-  const feed = useTycoon((s) => s.feed);
-  const box = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const root = box.current;
-    if (!root) return;
-    if (!feed || reducedMotion()) root.replaceChildren();
-    else
-      Array.from(root.children).forEach((old) => {
-        void animate(old, [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-60%)', opacity: 0 }], { duration: 150, easing: 'cubic-bezier(.22,1.2,.36,1)', fill: 'forwards' }).then(() => old.remove());
-      });
-    if (!feed || feed.text.startsWith('Vòng ')) return;
-    const line = document.createElement('div');
-    line.className = `ty-s6-fline ty-s6-fline-${feed.tone}`;
-    const avatar = feed.seat >= 0 ? useTycoon.getState().players[feed.seat]?.avatar : undefined;
-    if (avatar) {
-      const img = document.createElement('img');
-      img.src = avatar;
-      img.alt = '';
-      line.append(img);
-    }
-    const text = document.createElement('span');
-    text.textContent = feed.text;
-    line.append(text);
-    root.append(line);
-    animate(line, [{ transform: 'translateY(60%)', opacity: 0 }, { transform: 'translateY(-8%)', opacity: 1, offset: 0.7 }, { transform: 'none', opacity: 1 }], { duration: 200, easing: 'cubic-bezier(.22,1.2,.36,1)' });
-  }, [feed]);
-  return <div ref={box} className="ty-s6-feed" hidden={hidden} aria-live="polite" />;
+const FEED_KEEP = 3;
+
+function Feed() {
+  const { feed, players, matchSeq } = useTycoon(useShallow((s) => ({ feed: s.feed, players: s.players, matchSeq: s.matchSeq })));
+  const [items, setItems] = useState<FeedLine[]>([]);
+  const [seenMatch, setSeenMatch] = useState(matchSeq);
+  const [seenFeed, setSeenFeed] = useState<FeedLine | null>(null);
+  if (seenMatch !== matchSeq) {
+    setSeenMatch(matchSeq);
+    setItems([]);
+  }
+  if (feed !== seenFeed) {
+    setSeenFeed(feed);
+    if (feed && !items.some((item) => item.seq === feed.seq)) setItems([...items, feed].slice(-FEED_KEEP));
+  }
+  return (
+    <ol className="ty-s6-feed" aria-live="polite">
+      {items.map((item, i) => {
+        const avatar = item.seat >= 0 ? players[item.seat]?.avatar : undefined;
+        return (
+          <li key={item.seq} className={`ty-s6-fline ty-s6-fline-${item.tone} ${i === items.length - 1 ? 'ty-s6-fline-new' : 'ty-s6-fline-old'}`}>
+            {avatar ? <img src={avatar} alt="" draggable={false} /> : null}
+            <span>{item.text}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
 }
 
 function CardBox() {
@@ -157,8 +168,8 @@ export function BoardCenter() {
       </div>
       <TurnChip />
       <Dice hidden={hideDice} />
-      {hideDice ? <p className="ty-s6-say">{view.phase === 'festival' ? 'Chạm thành phố của bạn để mở Lễ hội · thuê ×2' : 'Chạm ô bất kỳ để bay tới'}</p> : null}
-      <Feed hidden={false} />
+      {hideDice ? <p className="ty-s6-say">{view.phase === 'festival' ? 'Chạm thành phố của bạn để mở Lễ hội · thuê ×2' : 'Chạm ô bất kỳ để đi tới'}</p> : null}
+      <Feed />
       <CardBox />
     </div>
   );

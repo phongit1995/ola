@@ -8,6 +8,7 @@ import { viewFor } from '../logic/view';
 const sessionHandlers = vi.hoisted(() => new Map<string, Set<(data: unknown) => void>>());
 const sessionCalls = vi.hoisted(() => [] as Array<[string, unknown[]]>);
 const bridgeCalls = vi.hoisted(() => [] as Array<[string, unknown[]]>);
+const walks = vi.hoisted(() => [] as Array<{ seat: number; from: number; count: number; dir?: number; commit: () => void }>);
 
 vi.mock('../../src/sdk', async () => {
   const actual = { ...(await import('../../src/sdk/protocol')), ...(await import('../../src/sdk/progression')) };
@@ -36,7 +37,14 @@ vi.mock('../../src/sdk', async () => {
 
 vi.mock('../fx/boardFx', () =>
   Object.fromEntries(
-    ['clearMovingPawns', 'rollDice', 'revealDiceTotal', 'walkPawn', 'flyPawn', 'policeWhistle', 'landOnTile', 'payMoney', 'stampDeed', 'tileCallout', 'buildHouse', 'sellHouse', 'celebrateFestival', 'travelWiggle', 'shakeDeck', 'flyCardIn', 'flyCardBack', 'jailDoorClose', 'jailDoorOpen', 'bankruptSeat', 'debtAlarm', 'flipRound', 'showTurnBanner', 'celebrateResult', 'winBanner'].map((name) => [name, () => Promise.resolve()]),
+    [
+      ['walkPawn', (walk: (typeof walks)[number]) => {
+        walks.push(walk);
+        walk.commit();
+        return Promise.resolve();
+      }],
+      ...['clearMovingPawns', 'rollDice', 'revealDiceTotal', 'policeWhistle', 'landOnTile', 'payMoney', 'stampDeed', 'tileCallout', 'buildHouse', 'sellHouse', 'celebrateFestival', 'travelWiggle', 'shakeDeck', 'flyCardIn', 'flyCardBack', 'jailDoorClose', 'jailDoorOpen', 'bankruptSeat', 'debtAlarm', 'flipRound', 'showTurnBanner', 'celebrateResult', 'winBanner'].map((name) => [name, () => Promise.resolve()]),
+    ],
   ),
 );
 vi.mock('../fx/runtime', () => ({ setTempo: () => undefined, sleep: () => Promise.resolve() }));
@@ -90,6 +98,7 @@ describe('useTycoon online session', () => {
     sessionHandlers.clear();
     sessionCalls.length = 0;
     bridgeCalls.length = 0;
+    walks.length = 0;
     matchCount += 1;
     currentMatch = `m${matchCount}`;
   });
@@ -129,6 +138,26 @@ describe('useTycoon online session', () => {
     sendState(next, 0, { type: 'ROLL' });
     await vi.waitFor(() => expect(useTycoon.getState().view?.moveCount).toBe(next.moveCount));
     expect(useTycoon.getState().movePending).toBe(false);
+  });
+
+  it('walks the pawn tile by tile for card moves and jail, never jumping', async () => {
+    await connect();
+    const first = startOn(1);
+    await startMatch(first);
+    const next = { ...first, moveCount: first.moveCount + 1, steps: [
+      { kind: 'teleport', by: 1, from: 4, to: 31, passedGo: false },
+      { kind: 'teleport', by: 2, from: 29, to: 8 },
+      { kind: 'teleport', by: 2, from: 4, to: 8 },
+      { kind: 'teleport', by: 1, from: 20, to: 8 },
+    ] } as GameState;
+    sendState(next, 1, { type: 'CARD_ACK' });
+    await vi.waitFor(() => expect(walks).toHaveLength(4));
+    expect(walks.map(({ seat, from, count, dir }) => ({ seat, from, count, dir }))).toEqual([
+      { seat: 1, from: 4, count: 27, dir: 1 },
+      { seat: 2, from: 29, count: 11, dir: 1 },
+      { seat: 2, from: 4, count: 4, dir: 1 },
+      { seat: 1, from: 20, count: 12, dir: -1 },
+    ]);
   });
 
   it('sends batched moves one by one and stops on an error', async () => {

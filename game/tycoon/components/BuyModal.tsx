@@ -1,13 +1,10 @@
 import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { BOARD, GROUP_LABEL, tilesOfGroup } from '../logic/board';
-import { LEVEL_NAMES } from '../logic/constants';
+import { BOARD, GROUP_LABEL } from '../logic/board';
 import { takeoverPrice } from '../logic/engine';
-import { currentRent } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { useTycoon } from '../store/useTycoon';
-import { groupColor, RentLadder, SeatTag, TileThumb } from './DeedParts';
-import { houseArt } from './art';
+import { groupColor, TileThumb } from './DeedParts';
 import { MoneyBadge, UiButton, UiModal } from './Ui';
 
 export function BuyModal() {
@@ -30,14 +27,9 @@ export function BuyModal() {
   const idx = me.pos;
   const tile = BOARD[idx];
   const takeover = view.phase === 'takeover';
-  const owner = view.tiles[idx].owner;
-  const houses = view.tiles[idx].houses;
-  const art = houseArt(houses);
   const price = takeover ? takeoverPrice(view, idx) : tile.price ?? 0;
   const myCash = cash[you] ?? me.cash;
   const short = myCash < price;
-  const members = tile.group ? tilesOfGroup(tile.group) : [];
-  const mine = members.filter((m) => view.tiles[m].owner === you).length;
 
   return (
     <UiModal
@@ -57,42 +49,9 @@ export function BuyModal() {
     >
       <div className="ty-buy" style={{ '--group': groupColor(idx) } as CSSProperties}>
         <div className="ty-buy-meta">
-          {takeover ? (
-            <>
-              <SeatTag seat={owner} />
-              <span>
-                Vừa trả thuê <b>{formatMoney(currentRent(view, idx))}</b>
-              </span>
-            </>
-          ) : (
-            <>
-              <MoneyBadge amount={price} className="ty-buy-price" />
-              {members.length > 1 ? (
-                <span className="ty-buy-group" aria-label={`Bạn có ${mine} trên ${members.length} ô của nhóm`}>
-                  {members.map((m) => (
-                    <i key={m} className={view.tiles[m].owner === you ? 'ty-buy-dot-have' : m === idx ? 'ty-buy-dot-here' : undefined} />
-                  ))}
-                  <small>
-                    {mine}/{members.length}
-                  </small>
-                </span>
-              ) : null}
-            </>
-          )}
+          <MoneyBadge amount={price} className="ty-buy-price" />
         </div>
-        {takeover ? (
-          <p className="ty-buy-take">
-            {houses > 0 ? (
-              <>
-                {art ? <img src={art} alt="" draggable={false} /> : null}
-                Nhận luôn <b>{LEVEL_NAMES[houses]}</b>
-              </>
-            ) : (
-              <>Nhận đất trống, chưa có nhà</>
-            )}
-          </p>
-        ) : null}
-        <RentLadder view={view} idx={idx} />
+        <p className="ty-buy-ask">{takeover ? `Bạn có muốn mua lại ${tile.name} không?` : `Bạn có muốn mua ${tile.kind === 'station' ? 'sân bay này' : tile.name} không?`}</p>
         {short ? <p className="ty-buy-note">Thiếu {formatMoney(price - myCash)}</p> : null}
       </div>
     </UiModal>

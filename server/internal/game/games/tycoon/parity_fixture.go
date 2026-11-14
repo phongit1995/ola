@@ -327,7 +327,7 @@ func (e *explorer) pick(s *State) Move {
 		if e.chance(explorerTravelPct) {
 			return Move{Type: MoveTravel, Tile: intp(e.intn(BoardSize))}
 		}
-		return Move{Type: MoveRoll}
+		return Move{Type: MoveDecline}
 	case PhaseJail:
 		if len(p.JailCards) > 0 && e.chance(explorerJailCard) {
 			return Move{Type: MoveJailCard}
@@ -384,14 +384,14 @@ func (e *explorer) pick(s *State) Move {
 	return Move{Type: MoveRoll}
 }
 
-func ownedStreets(s *State, seat int, fullGroup, withHouses bool) []int {
+func ownedStreets(s *State, seat int, here, withHouses bool) []int {
 	var tiles []int
 	for idx, t := range s.Tiles {
 		tile := Board[idx]
 		if t.Owner != seat || tile.Kind != KindStreet {
 			continue
 		}
-		if fullGroup && !s.ownsGroup(seat, tile.Group) {
+		if here && s.Players[seat].Pos != idx {
 			continue
 		}
 		if withHouses && t.Houses == 0 {

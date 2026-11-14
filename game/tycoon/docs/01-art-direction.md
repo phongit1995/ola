@@ -178,14 +178,14 @@ Stroke 2 px, cap tròn, grid 24 cho icon điều khiển; glyph ô bàn cờ là
 | Chuyển động | Thông số |
 |---|---|
 | Xúc xắc lăn (O1) | 2 viên xoay 3D giả bằng đổi mặt mỗi 80 ms trong 720 ms, dừng lệch nhau 120 ms, tổng hiện 200 ms sau |
-| Quân nhảy từng ô | 140 ms/ô, cubic-bezier(.3,.9,.4,1), scale 1.15 ở đỉnh; 12 ô ≈ 1.7 s; quân của mình cùng tốc độ (không skip) |
+| Quân nhảy từng ô | 140 ms/ô, cubic-bezier(.3,.9,.4,1), scale 1.15 ở đỉnh; 12 ô ≈ 1.7 s; quân của mình cùng tốc độ (không skip). Mọi lần đổi ô đều nhảy từng ô, không bay thẳng (14/11/2026): gieo xúc xắc, thẻ Cơ hội/Khí vận "đi tới ô X" / "tới sân bay gần nhất", Du lịch, vào tù |
 | Qua Xuất phát | ô 0 nháy gold 300 ms + float `+160 tr` lên 24 px 900 ms |
 | Đáp ô | ô fill `--ty-landing` 240 ms rồi giữ đến hết lượt |
 | Trả tiền (step `pay`) | số tiền pod người trả giảm đếm 500 ms coral; pod người nhận tăng đếm jade; chip "tiền thuê" bay từ pod này sang pod kia 400 ms |
 | Lật thẻ (O2) | flip 3D 360 ms, giữ tới khi bấm Tiếp tục hoặc 6 s |
 | Nâng cấp | nhà pop scale 0→1 160 ms; lên cấp 3 thì 2 nhà gộp thành 1 khách sạn 220 ms |
 | Bán nhà | chấm fade 160 ms + float `+x tr` |
-| Vào tù | quân bay cung 420 ms sang ô 8, song sắt (glyph) nháy 2 lần |
+| Vào tù | còi + viền đỏ, quân nhảy từng ô về ô 8 theo chiều gần hơn (có thể đi lùi), song sắt (glyph) nháy 2 lần |
 | Phá sản | pod chuyển `--ty-bankrupt` 400 ms, quân fade, các ô thuộc người đó mất chấm chủ sở hữu stagger 30 ms |
 | Turn announce | fade-scale 300 ms, giữ 900 ms |
 | Timer ≤10 s | pulse màu `--ty-danger` mỗi 1 s |

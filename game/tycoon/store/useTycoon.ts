@@ -5,7 +5,7 @@ import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import { vipIconUrl } from '@ola/shared/lib/vip';
 import { bridge, joinGame, SPECTATE_LEFT_REASON, type ChatMessageData, type ErrorData, type GameReactionType, type GameSession, type MatchFoundData, type MatchOverData, type PlayerInfo, type RoomStateData, type StateData } from '../../src/sdk';
 import { BOARD, cardById, GROUP_LABEL, tilesOfGroup } from '../logic/board';
-import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GAME_ID, JAIL_TILE, LEVEL_NAMES, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, WIN_GROUPS } from '../logic/constants';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GAME_ID, JAIL_FINE, JAIL_MAX_TURNS, JAIL_TILE, LEVEL_NAMES, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, WIN_GROUPS } from '../logic/constants';
 import { worth } from '../logic/engine';
 import { currentRent, winningTiles } from '../logic/rules-hint';
 import type { BotLevel, Move, Step, TileState, TycoonView } from '../logic/types';
@@ -246,7 +246,7 @@ const WIN_REVEAL_MS = 2400;
 const SPECTATE_ENDED_TEXT = 'Đã thôi xem ván';
 const SCREEN_IN_MS = 260;
 const STEP_MS = { land: 300, debt: 320, round: 240 };
-const SILENT_PAY_REASONS = new Set(['buy', 'takeover', 'build', 'sell']);
+const SILENT_PAY_REASONS = new Set(['buy', 'takeover', 'build', 'sell', 'fine']);
 
 function emptyDice(): DiceFx {
   return { values: [1, 1], rolling: false, double: false, showTotal: false, seq: 0 };
@@ -471,7 +471,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
   const turnTip = (state: TycoonView): string => {
     if (state.phase === 'jail') return 'Bạn đang ở tù, chọn cách ra';
-    if (state.phase === 'travel') return 'Chọn ô để bay tới';
+    if (state.phase === 'travel') return 'Chọn ô để đi tới';
     return 'Gieo xúc xắc để đi';
   };
 
@@ -540,14 +540,16 @@ export const useTycoon = create<TycoonState>((set, get) => {
     };
   };
 
-  const replayStep = async (step: Step, epoch: number, levelChange?: LevelChange): Promise<void> => {
+  const replayStep = async (step: Step, epoch: number, levelChange?: LevelChange, jailLeft?: number): Promise<void> => {
     const alive = () => refs.replayEpoch === epoch;
     const you = get().you;
     switch (step.kind) {
       case 'roll': {
         const values = step.dice ?? [1, 1];
         const double = Boolean(step.double);
-        pushLog(`${seatName(step.by)} gieo ${values[0]} + ${values[1]}${double ? ' (đôi!)' : ''}`, 'neutral', { kind: 'dice', seat: step.by });
+        const rolled = `${seatName(step.by)} gieo ${values[0]} + ${values[1]}${double ? ' (đôi!)' : ''}`;
+        if (jailLeft != null) pushLog(`${rolled}, chưa ra tù · còn ${jailLeft} lượt`, step.by === you ? 'down' : 'neutral', { kind: 'jail', seat: step.by, feed: `${seatName(step.by)} chưa ra tù · còn ${jailLeft} lượt` });
+        else pushLog(rolled, 'neutral', { kind: 'dice', seat: step.by });
         flushSync(() => set({ diceFx: { values, rolling: true, double, showTotal: false, seq: nextSeq() } }));
         await fx.rollDice(values);
         if (!alive()) return;
@@ -573,9 +575,23 @@ export const useTycoon = create<TycoonState>((set, get) => {
       }
       case 'teleport': {
         const to = step.to ?? get().positions[step.by];
-        const toJail = to === JAIL_TILE && step.from !== JAIL_TILE;
+        const from = step.from ?? get().positions[step.by];
+        const toJail = to === JAIL_TILE && from !== JAIL_TILE && step.how !== 'travel';
+        const ahead = (to - from + BOARD_SIZE) % BOARD_SIZE;
+        const back = toJail && BOARD_SIZE - ahead < ahead;
         if (toJail) fx.policeWhistle(step.by);
-        await fx.flyPawn(step.by, toJail ? '#E4573D' : '#F2B807', () => commitPosition(step.by, to));
+        const { positions, view } = get();
+        await fx.walkPawn({
+          seat: step.by,
+          from,
+          count: back ? BOARD_SIZE - ahead : ahead,
+          dir: back ? -1 : 1,
+          positions,
+          bankrupt: view?.players.map((p) => p.bankrupt) ?? [],
+          turn: view?.turn ?? -1,
+          commit: () => commitPosition(step.by, to),
+          alive,
+        });
         return;
       }
       case 'land': {
@@ -629,12 +645,14 @@ export const useTycoon = create<TycoonState>((set, get) => {
       case 'jail-in': {
         commitPosition(step.by, JAIL_TILE);
         flushSync(() => set({ barsOn: true }));
-        pushLog(`${seatName(step.by)} vào tù`, step.by === you ? 'down' : 'neutral', { kind: 'jail', seat: step.by });
+        pushLog(`${seatName(step.by)} vào tù ${step.how === 'dice3' ? 'vì gieo đôi 3 lần' : 'vì rút thẻ'} · tối đa ${JAIL_MAX_TURNS} lượt`, step.by === you ? 'down' : 'neutral', { kind: 'jail', seat: step.by, feed: `${seatName(step.by)} vào tù · tối đa ${JAIL_MAX_TURNS} lượt` });
         await fx.jailDoorClose(step.by);
         return;
       }
       case 'jail-out': {
-        pushLog(`${seatName(step.by)} ra tù`, 'neutral', { kind: 'jail', seat: step.by });
+        const paid = step.how === 'pay' || step.how === 'forced';
+        const how = step.how === 'double' ? 'ra tù nhờ gieo đôi' : step.how === 'card' ? 'dùng thẻ ra tù' : step.how === 'forced' ? `hết ${JAIL_MAX_TURNS} lượt, nộp phạt ra tù` : 'nộp phạt ra tù';
+        pushLog(`${seatName(step.by)} ${how}`, step.by === you && !paid ? 'up' : 'neutral', { kind: 'jail', seat: step.by, ...(paid ? { money: -JAIL_FINE } : {}) });
         await fx.jailDoorOpen();
         const stillJailed = get().view?.players.some((p, seat) => seat !== step.by && p.inJail && !p.bankrupt) ?? false;
         set({ barsOn: stillJailed });
@@ -673,7 +691,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
         return;
       }
       case 'travel': {
-        pushLog(`${seatName(step.by)} được đi Du lịch — lượt sau bay tới ô bất kỳ`, step.by === you ? 'up' : 'neutral', { kind: 'travel', seat: step.by });
+        pushLog(`${seatName(step.by)} được đi Du lịch`, step.by === you ? 'up' : 'neutral', { kind: 'travel', seat: step.by });
         await fx.travelWiggle();
         return;
       }
@@ -742,10 +760,19 @@ export const useTycoon = create<TycoonState>((set, get) => {
         if (entry) levelChanges.set(i, { from: entry.from, to: steps[i].houses ?? 0, amount: entry.amount });
       });
     }
+    const jailMiss = new Map<number, number>();
+    const finalPlayers = refs.incoming?.players ?? get().view?.players;
+    steps.forEach((step, i) => {
+      if (step.kind !== 'roll' || step.by < 0) return;
+      const after = finalPlayers?.[step.by];
+      if (!after?.inJail) return;
+      if (steps.slice(i + 1).some((next) => next.by === step.by && (next.kind === 'jail-in' || next.kind === 'jail-out'))) return;
+      jailMiss.set(i, Math.max(0, JAIL_MAX_TURNS - after.jailTurns));
+    });
     for (const [i, step] of steps.entries()) {
       if (refs.replayEpoch !== epoch) return;
       refs.feedSeat = step.kind === 'pay' && step.by < 0 ? step.target ?? -1 : step.by ?? -1;
-      await replayStep(step, epoch, levelChanges.get(i));
+      await replayStep(step, epoch, levelChanges.get(i), jailMiss.get(i));
     }
     fx.clearMovingPawns();
   };
@@ -894,6 +921,10 @@ export const useTycoon = create<TycoonState>((set, get) => {
       ...(data.matchId === get().matchId ? {} : { matchChat: [], chatUnread: false, reactionFx: null }),
     });
     snapState(data.state);
+    if (!data.resumed && !spectating) {
+      refs.feedSeat = data.state.turn;
+      pushLog(`Ván bắt đầu · ${seatName(data.state.turn)} đi trước`, 'neutral', { kind: 'info' });
+    }
     startTimer();
     playSound('click');
     if (!spectating && !data.resumed && (data.bet ?? 0) > 0) {

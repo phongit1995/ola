@@ -232,7 +232,7 @@
   flex: none;
   display: inline-block;
   overflow: hidden;
-  border-radius: 50%;
+  border-radius: 28%;
   background: var(--ty-paper-light);
   box-shadow: 0 0 0 2px var(--ring);
 }
@@ -240,7 +240,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .ui-scrim {
@@ -266,6 +266,12 @@
   overflow: auto;
   padding: 16px;
   animation: ui-pop 320ms var(--ui-spring) both;
+}
+.ui-modal-wide {
+  width: min(100%, 420px);
+}
+.ui-modal-closable .ui-modal-head {
+  padding-right: 38px;
 }
 .ui-modal-head {
   display: flex;

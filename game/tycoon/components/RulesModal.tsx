@@ -118,9 +118,10 @@ const TABS: RuleTab[] = [
         tone: 'mint',
         title: 'Nâng cấp',
         lines: [
-          'Cần đủ 2 thành phố cùng nhóm màu.',
-          `${LEVEL_NAMES.slice(1).join(' → ')}, tối đa ${MAX_HOUSES} cấp; nâng đều trong lượt của mình.`,
-          'Hạ cấp hoàn 50% giá nâng cấp, hạ đều giữa các ô cùng nhóm còn giữ.',
+          'Đáp vào thành phố của mình thì nâng được ô đó, không cần đủ nhóm.',
+          'Vừa mua xong thì chưa nâng được, lần sau đáp lại ô đó mới nâng.',
+          `${LEVEL_NAMES.slice(1).join(' → ')}, tối đa ${MAX_HOUSES} cấp; chọn thẳng cấp muốn lên.`,
+          'Bán nhà hoàn 50% giá nâng cấp, bán ô nào cũng được.',
         ],
       },
       {
@@ -152,7 +153,7 @@ const TABS: RuleTab[] = [
         tone: 'sky',
         title: 'Du lịch',
         lines: [
-          'Lượt sau bay tới ô bất kỳ trừ ô đang đứng, hoặc gieo bình thường.',
+          'Đáp vào là bay ngay tới ô bất kỳ trừ ô đang đứng, hoặc ở lại.',
           `Qua Xuất phát vẫn nhận ${money(GO_SALARY)}; ô đáp xử lý như thường.`,
         ],
       },

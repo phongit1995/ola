@@ -325,7 +325,7 @@ function hardRule(s: GameState, seat: number): Move | null {
       let bestScore = 0;
       s.tiles.forEach((t, idx) => {
         if (t.owner !== seat || canBuildError(s, seat, idx)) return;
-        if (p.cash - (BOARD[idx].houseCost ?? 0) < reserve) return;
+        if (p.cash - (BOARD[idx].houseCost ?? 0) < reserve - CASH_BUFFER / 2) return;
         const built = { ...s, tiles: s.tiles.map((x, i) => (i === idx ? { ...x, houses: x.houses + 1 } : x)) };
         const score = (landChance(s, idx, rivals) + base) * (computeRent(built, idx, seat) - computeRent(s, idx, seat));
         if (score > bestScore) [best, bestScore] = [idx, score];

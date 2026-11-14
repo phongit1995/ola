@@ -28,7 +28,6 @@ function pickMove(state, you) {
   const me = state.players[you];
   switch (state.phase) {
     case 'roll':
-    case 'travel':
       return { type: 'ROLL' };
     case 'jail':
       return me.cash > 400 ? { type: 'JAIL_PAY' } : { type: 'JAIL_ROLL' };
@@ -36,6 +35,7 @@ function pickMove(state, you) {
       return me.cash > 350 ? { type: 'BUY' } : { type: 'DECLINE' };
     case 'takeover':
     case 'festival':
+    case 'travel':
       return { type: 'DECLINE' };
     case 'card':
       return { type: 'CARD_ACK' };

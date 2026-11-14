@@ -101,8 +101,8 @@ func renderConstants() ([]byte, error) {
 	writeList("END_REASONS", "EndReason", tycoon.EndReasons)
 	writeList("ERROR_CODES", "ErrorCode", []string{
 		tycoon.ErrFinished, tycoon.ErrNotActive, tycoon.ErrNotYourTurn, tycoon.ErrWrongPhase, tycoon.ErrInvalidTile, tycoon.ErrInvalidMove,
-		tycoon.ErrUnknownMove, tycoon.ErrNoCash, tycoon.ErrNoJailCard, tycoon.ErrNotStreet, tycoon.ErrNotOwner, tycoon.ErrNotGroupOwner,
-		tycoon.ErrMaxHouses, tycoon.ErrBuildUneven, tycoon.ErrNoHouses, tycoon.ErrSellUneven, tycoon.ErrNotTakeover, tycoon.ErrTakeoverHotel,
+		tycoon.ErrUnknownMove, tycoon.ErrNoCash, tycoon.ErrNoJailCard, tycoon.ErrNotStreet, tycoon.ErrNotOwner, tycoon.ErrNotHere, tycoon.ErrJustBought,
+		tycoon.ErrMaxHouses, tycoon.ErrNoHouses, tycoon.ErrNotTakeover, tycoon.ErrTakeoverHotel,
 	})
 
 	board, err := json.MarshalIndent(tycoon.Board, "", "  ")

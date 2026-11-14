@@ -60,7 +60,7 @@ var Cards = []Card{
 	{ID: "ch02", Deck: DeckChance, Text: "Đi đến TP. Hồ Chí Minh. Qua Xuất phát nhận 160 tr.", Effect: EffectMoveTo, Tile: 31},
 	{ID: "ch03", Deck: DeckChance, Text: "Đi đến Huế. Qua Xuất phát nhận 160 tr.", Effect: EffectMoveTo, Tile: 19},
 	{ID: "ch04", Deck: DeckChance, Text: "Đi đến Cần Thơ. Qua Xuất phát nhận 160 tr.", Effect: EffectMoveTo, Tile: 9},
-	{ID: "ch05", Deck: DeckChance, Text: "Bay đến sân bay gần nhất. Nếu có chủ, trả gấp đôi tiền thuê.", Effect: EffectMoveToNearest, Kind: KindStation, Amount: 2},
+	{ID: "ch05", Deck: DeckChance, Text: "Đi đến sân bay gần nhất. Nếu có chủ, trả gấp đôi tiền thuê.", Effect: EffectMoveToNearest, Kind: KindStation, Amount: 2},
 	{ID: "ch06", Deck: DeckChance, Text: "Đi dự Lễ hội. Qua Xuất phát nhận 160 tr.", Effect: EffectMoveTo, Tile: 16},
 	{ID: "ch07", Deck: DeckChance, Text: "Ngân hàng trả cổ tức 50 tr.", Effect: EffectCash, Amount: 50},
 	{ID: "ch08", Deck: DeckChance, Text: "Thẻ ra tù miễn phí. Giữ đến khi dùng.", Effect: EffectJailCard},
