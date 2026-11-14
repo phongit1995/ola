@@ -93,6 +93,20 @@ So với luật cũ (§5): số vòng gần như cũ (18/16 → 17/17). Nhà lê
 
 Cùng ngày đổi tiếp: mua lại ×2 → ×1,5 và giá nâng tăng dần 75% / 100% / 125%. Đo lại 300 ván: 2 người 90% phân thắng bại, 40% thắng ngay, 64% ván có mua lại (trước 57%), 17 vòng; 4 người 94% / 84% / 95% (trước 93%), 17 vòng. Tỷ lệ dẵm vào đất trống vẫn ~91% (2 người), tiền thuê mỗi lần trung vị 28: hai thay đổi này không làm tiền thuê cao lên, chỉ làm mua lại rẻ hơn. Máy Khó thắng Thường ~59%, Thường thắng Dễ ~82%, Khó thắng Dễ ~89% (400 ván).
 
+**15/11/2026: mua xong được xây Nhà ngay** (Biệt thự, Khách sạn vẫn phải đáp lại). Thử 7 phương án trên bản sao engine trước khi chọn: tăng thuê đất trống lên 20–25% giá gần như không đổi cảm giác (vẫn ~90% lần dẵm là đất trống), bỏ hẳn luật vừa mua thì ván còn 11–13 vòng và 86% ván 2 người kết thúc vì phá sản. Phương án chốt, đo 300 ván bot Thường mỗi cấu hình:
+
+| | 2 người | 4 người |
+|---|---|---|
+| Dẵm vào đất trống / Nhà / Biệt thự / Khách sạn | 20% / 74% / 3% / 4% | 13% / 79% / 2% / 6% |
+| Tiền thuê mỗi lần trung vị · 10% đắt nhất từ | 85 · 190 | 90 · 210 |
+| Số vòng trung vị | 19 | 17 |
+| Phân thắng bại trước 30 vòng | 88% | 93% |
+| Thắng ngay | 43% | 91% |
+| Kết thúc do phá sản | 45% | 3% |
+| Ván có mua lại đất | 43% | 91% |
+
+Máy Khó thắng Thường ~59%, Thường thắng Dễ ~79%, Khó thắng Dễ ~83% (400 ván).
+
 ## 5. Kết quả mô phỏng — luật hiện tại (mua lại ×2, thắng ngay, Lễ hội / Du lịch / Thuế, 30 vòng / 25 phút)
 
 1.000 ván bot mỗi cấu hình, chốt 20/10/2026 sau khi đổi 4 ô (Lễ hội, Du lịch, Thuế, thêm Cơ hội). Thời gian theo giả định ở cuối §5b. Cột "trước" là bàn ngay trước đó (Bãi đỗ xe, Vào tù, 2 tiện ích) cùng luật mua lại / thắng ngay / 4 sân bay. Sau khi dời 4 sân bay khỏi giữa cạnh (6, 10, 22, 26) chạy lại 1.000 ván: số vòng 18 / 16 / 15, online nhanh 6,6 / 8,9 / 10,9 phút, tỉ lệ các cách kết thúc lệch ≤ 2 điểm % — coi như không đổi.

@@ -117,6 +117,7 @@ describe('practice session', () => {
       const deadline = session.idle();
       if (deadline > 0) vi.advanceTimersByTime(30_000);
       else vi.advanceTimersByTime(Math.max(...Object.values(BOT_DELAY_MS)));
+      if (overs.length > 0) break;
       expect(states.length).toBeGreaterThan(seen);
       seen = states.length;
     }

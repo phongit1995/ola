@@ -181,7 +181,7 @@ export function canBuildError(s: GameState, seat: number, idx: number): string |
   if (tile.kind !== 'street' || !tile.group) return 'not_street';
   if (t.owner !== seat) return 'not_owner';
   if (s.players[seat].pos !== idx) return 'not_here';
-  if (s.bought === idx) return 'just_bought';
+  if (s.bought === idx && t.houses >= 1) return 'just_bought';
   if (t.houses >= MAX_HOUSES) return 'max_houses';
   if (s.players[seat].cash < levelCost(idx, t.houses + 1)) return 'no_cash';
   return null;

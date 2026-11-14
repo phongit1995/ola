@@ -155,7 +155,7 @@ func (s *State) canBuildError(seat, idx int) string {
 	if s.Players[seat].Pos != idx {
 		return ErrNotHere
 	}
-	if s.Bought == idx {
+	if s.Bought == idx && t.Houses >= 1 {
 		return ErrJustBought
 	}
 	if t.Houses >= MaxHouses {

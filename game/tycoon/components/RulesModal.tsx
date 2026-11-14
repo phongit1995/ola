@@ -119,7 +119,7 @@ const TABS: RuleTab[] = [
         title: 'Nâng cấp',
         lines: [
           'Đáp vào thành phố của mình thì nâng được ô đó, không cần đủ nhóm.',
-          'Vừa mua xong thì chưa nâng được, lần sau đáp lại ô đó mới nâng.',
+          'Vừa mua xong được xây ngay Nhà; Biệt thự, Khách sạn thì lần sau đáp lại ô đó mới nâng.',
           `${LEVEL_NAMES.slice(1).join(' → ')}, tối đa ${MAX_HOUSES} cấp; chọn thẳng cấp muốn lên.`,
           'Giá nâng tăng dần: cấp 1 rẻ nhất, cấp 3 đắt nhất (xem trong hộp nâng cấp).',
           'Bán nhà hoàn 50% giá của cấp đó, bán ô nào cũng được.',

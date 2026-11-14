@@ -7,6 +7,7 @@ import { buildPlan, canBuild, currentRent, sellPlan } from '../logic/rules-hint'
 import { formatMoney } from '../helpers/format';
 import { BottomSheet } from './BottomSheet';
 import { groupColor, GroupTag, RentLadder, SeatTag, TileThumb, type LadderPick } from './DeedParts';
+import { levelArt } from './art';
 import { MoneyBadge, UiButton, UiModal } from './Ui';
 import { useTycoon } from '../store/useTycoon';
 
@@ -156,6 +157,40 @@ export function TileSheet({ idx }: { idx: number }) {
     </>
   ) : null;
   const festivalNote = view.festival === idx ? <p className="ty-deed-note ty-deed-note-gold">Đang có Lễ hội · thuê ×{FESTIVAL_MULTIPLIER}</p> : null;
+
+  if (upgradeHere && view.bought === idx && state.houses === 0 && canUpgrade) {
+    const housePlan = buildPlan(view, you, idx, 1);
+    const houseShort = housePlan ? Math.max(0, housePlan.cost - myCash) : 0;
+    return (
+      <UiModal
+        closable
+        onClose={closeSheet}
+        kicker={<GroupTag idx={idx} />}
+        title={tile.name}
+        icon={<TileThumb idx={idx} className="ty-buy-thumb" />}
+        actions={
+          <>
+            <UiButton disabled={busy} onClick={closeSheet}>
+              Để sau
+            </UiButton>
+            <UiButton tone="gold" price={housePlan?.cost ?? nextCost} disabled={busy || !housePlan || houseShort > 0} onClick={() => housePlan && run('BUILD', housePlan.tiles)} data-dialog-initial-focus>
+              Xây Nhà
+            </UiButton>
+          </>
+        }
+      >
+        <div className="ty-buildnow" style={{ '--accent': groupColor(idx) } as CSSProperties}>
+          <img className="ty-buildnow-art" src={levelArt(1)} alt="" draggable={false} />
+          <p className="ty-buy-ask">Xây Nhà luôn không?</p>
+          <p className="ty-buildnow-rent">
+            Người khác dẵm vào trả <b>{formatMoney(tile.rent?.[1] ?? 0)}</b> thay vì {formatMoney(currentRent(view, idx))}
+          </p>
+          <p className="ty-buildnow-note">Biệt thự, Khách sạn: lần sau đáp lại ô này mới nâng tiếp.</p>
+          {houseShort > 0 ? <p className="ty-sheet-reason">Thiếu {formatMoney(houseShort)}</p> : null}
+        </div>
+      </UiModal>
+    );
+  }
 
   if (upgradeHere) {
     return (

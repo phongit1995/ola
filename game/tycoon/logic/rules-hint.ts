@@ -20,7 +20,7 @@ export function canBuild(view: ViewState, seat: number, idx: number): RuleHint {
   if (tile.kind !== 'street' || !tile.group) return { ok: false, reason: 'Chỉ nâng cấp được ô thành phố' };
   if (state.owner !== seat) return { ok: false, reason: 'Ô này không phải của bạn' };
   if (view.players[seat].pos !== idx) return { ok: false, reason: 'Đứng vào ô này mới nâng cấp được' };
-  if (view.bought === idx) return { ok: false, reason: 'Vừa mua, lần sau đáp lại mới nâng cấp được' };
+  if (view.bought === idx && state.houses >= 1) return { ok: false, reason: 'Vừa mua chỉ xây được Nhà, lần sau đáp lại mới nâng tiếp' };
   if (state.houses >= MAX_HOUSES) return { ok: false, reason: 'Đã lên Khách sạn, cấp cao nhất' };
   if (view.players[seat].cash < levelCost(idx, state.houses + 1)) return { ok: false, reason: 'Không đủ tiền nâng cấp' };
   return { ok: true };
@@ -75,8 +75,8 @@ export interface BuildPlan {
 export function buildPlan(view: ViewState, seat: number, idx: number, target: number): BuildPlan | null {
   const tile = BOARD[idx];
   const state = view.tiles[idx];
-  if (tile.kind !== 'street' || state.owner !== seat || view.players[seat]?.pos !== idx || view.bought === idx) return null;
-  if (target > MAX_HOUSES || target <= state.houses) return null;
+  if (tile.kind !== 'street' || state.owner !== seat || view.players[seat]?.pos !== idx) return null;
+  if (target > (view.bought === idx ? 1 : MAX_HOUSES) || target <= state.houses) return null;
   const steps = target - state.houses;
   return { tiles: Array.from({ length: steps }, () => idx), cost: housesValue(idx, target) - housesValue(idx, state.houses) };
 }

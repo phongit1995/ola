@@ -234,6 +234,7 @@ func TestNoBuildOnJustBoughtTile(t *testing.T) {
 	if s.Bought != 17 {
 		t.Fatalf("bought %d", s.Bought)
 	}
+	s = play(t, s, 0, Move{Type: MoveBuild, Tile: intp(17)})
 	expectCode(t, s, 0, Move{Type: MoveBuild, Tile: intp(17)}, ErrJustBought)
 	s = play(t, s, 0, Move{Type: MoveEndTurn})
 	if s.Bought != -1 {
@@ -242,7 +243,7 @@ func TestNoBuildOnJustBoughtTile(t *testing.T) {
 	s.Turn = 0
 	s.Phase = PhaseManage
 	s = play(t, s, 0, Move{Type: MoveBuild, Tile: intp(17)})
-	if s.Tiles[17].Houses != 1 {
+	if s.Tiles[17].Houses != 2 {
 		t.Fatalf("houses %d", s.Tiles[17].Houses)
 	}
 }

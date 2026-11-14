@@ -204,10 +204,6 @@ function useAutoUpgrade(): void {
     const me = view?.players[you];
     if (!view || !me || !myTurn || replaying || movePending || me.bankrupt) return;
     const key = `${view.round}:${view.turn}:${me.pos}:${me.doubles}`;
-    if (view.phase === 'decide' || view.phase === 'takeover') {
-      handled.current = key;
-      return;
-    }
     if (view.phase !== 'manage' || sheet || handled.current === key) return;
     handled.current = key;
     if (canBuild(view, you, me.pos).ok) openSheet({ kind: 'tile', idx: me.pos });

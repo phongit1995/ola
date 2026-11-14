@@ -12,7 +12,7 @@ const RULE_TEXT: Record<string, string> = {
   not_street: 'Chỉ xây được trên ô thành phố',
   not_owner: 'Ô này không phải của bạn',
   not_here: 'Chỉ nâng cấp được ô bạn đang đứng',
-  just_bought: 'Vừa mua, lần sau đáp lại mới nâng cấp được',
+  just_bought: 'Vừa mua chỉ xây được Nhà, lần sau đáp lại mới nâng tiếp',
   max_houses: 'Đã đạt cấp tối đa',
   no_houses: 'Ô này đang là đất trống',
   invalid_tile: 'Ô không hợp lệ',

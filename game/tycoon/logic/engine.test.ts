@@ -141,18 +141,20 @@ describe('tycoon engine', () => {
     expect(() => play(s, 0, { type: 'BUILD', tile: 4 })).toThrow('not_street');
   });
 
-  it('does not let you upgrade the city you just bought until you land on it again', () => {
+  it('lets you add a house right after buying, higher levels only after landing again', () => {
     let s = withPhase(newGame(1, 2), 'decide');
     s.players[0].pos = 17;
     s = play(s, 0, { type: 'BUY' });
     expect(s.bought).toBe(17);
+    s = play(s, 0, { type: 'BUILD', tile: 17 });
+    expect(s.tiles[17].houses).toBe(1);
     expect(() => play(s, 0, { type: 'BUILD', tile: 17 })).toThrow('just_bought');
     s = play(s, 0, { type: 'END_TURN' });
     expect(s.bought).toBe(-1);
     s = withPhase(s, 'manage');
     s.turn = 0;
     s = play(s, 0, { type: 'BUILD', tile: 17 });
-    expect(s.tiles[17].houses).toBe(1);
+    expect(s.tiles[17].houses).toBe(2);
   });
 
   it('sells evenly only against own cities when a rival holds part of the group', () => {

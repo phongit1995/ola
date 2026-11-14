@@ -2891,3 +2891,34 @@ button.ty-level-card:focus-visible {
 .ty-upgrade .ty-deed-facts {
   margin-bottom: 0;
 }
+
+.ty-buildnow {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.ty-buildnow-art {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+.ty-buildnow-rent {
+  margin: 0;
+  font-family: var(--ty-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ui-ink-2);
+}
+.ty-buildnow-rent b {
+  color: var(--ty-jade);
+}
+.ty-buildnow-note {
+  margin: 0;
+  font-family: var(--ty-font);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ui-ink-3, var(--ui-ink-2));
+  opacity: 0.8;
+}
