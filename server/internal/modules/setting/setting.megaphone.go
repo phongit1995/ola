@@ -13,6 +13,9 @@ import (
 const (
 	KeyMegaphone = "megaphone"
 
+	MegaphoneSenderDisplayVip    = "vip"
+	MegaphoneSenderDisplayAvatar = "avatar"
+
 	MegaphoneKenPriceMax        = 1000000
 	MegaphoneMaxLengthLimit     = 200
 	MegaphoneDisplaySecondsMin  = 3
@@ -59,16 +62,18 @@ type MegaphoneConfig struct {
 	RepeatBaseSeconds int                 `json:"repeatBaseSeconds"`
 	MessageWeight     int                 `json:"messageWeight"`
 	GiftTiers         []MegaphoneGiftTier `json:"giftTiers"`
+	SenderDisplay     string              `json:"senderDisplay"`
 }
 
 type MegaphonePublicConfig struct {
-	Enabled         bool `json:"enabled"`
-	KenPrice        int  `json:"kenPrice"`
-	MaxLength       int  `json:"maxLength"`
-	DisplaySeconds  int  `json:"displaySeconds"`
-	LiveMinutes     int  `json:"liveMinutes"`
-	CooldownSeconds int  `json:"cooldownSeconds"`
-	DailyLimit      int  `json:"dailyLimit"`
+	Enabled         bool   `json:"enabled"`
+	KenPrice        int    `json:"kenPrice"`
+	MaxLength       int    `json:"maxLength"`
+	DisplaySeconds  int    `json:"displaySeconds"`
+	LiveMinutes     int    `json:"liveMinutes"`
+	CooldownSeconds int    `json:"cooldownSeconds"`
+	DailyLimit      int    `json:"dailyLimit"`
+	SenderDisplay   string `json:"senderDisplay"`
 }
 
 func DefaultMegaphoneConfig() MegaphoneConfig {
@@ -89,6 +94,7 @@ func DefaultMegaphoneConfig() MegaphoneConfig {
 			{MinKen: 1000, Weight: 3},
 			{MinKen: 20000, Weight: 6},
 		},
+		SenderDisplay: MegaphoneSenderDisplayVip,
 	}
 }
 
@@ -105,6 +111,7 @@ func (c MegaphoneConfig) PublicFor(client Client) MegaphonePublicConfig {
 		LiveMinutes:     c.LiveMinutes,
 		CooldownSeconds: c.CooldownSeconds,
 		DailyLimit:      c.DailyLimit,
+		SenderDisplay:   c.SenderDisplay,
 	}
 }
 
@@ -184,6 +191,9 @@ func validateMegaphoneConfig(cfg MegaphoneConfig) error {
 	if cfg.MessageWeight < 1 || cfg.MessageWeight > MegaphoneWeightMax {
 		return fmt.Errorf("trọng số loa phải từ 1 đến %d", MegaphoneWeightMax)
 	}
+	if cfg.SenderDisplay != MegaphoneSenderDisplayVip && cfg.SenderDisplay != MegaphoneSenderDisplayAvatar {
+		return errors.New("hiển thị người gửi phải là vip hoặc avatar")
+	}
 	return validateMegaphoneGiftTiers(cfg.GiftTiers)
 }
 
@@ -223,6 +233,7 @@ func ValidateMegaphoneValue(value models.JSONB) error {
 		RepeatBaseSeconds *int                `json:"repeatBaseSeconds"`
 		MessageWeight     *int                `json:"messageWeight"`
 		GiftTiers         []MegaphoneGiftTier `json:"giftTiers"`
+		SenderDisplay     *string             `json:"senderDisplay"`
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()
@@ -251,5 +262,13 @@ func ValidateMegaphoneValue(value models.JSONB) error {
 		RepeatBaseSeconds: *cfg.RepeatBaseSeconds,
 		MessageWeight:     *cfg.MessageWeight,
 		GiftTiers:         cfg.GiftTiers,
+		SenderDisplay:     senderDisplayOrDefault(cfg.SenderDisplay),
 	})
+}
+
+func senderDisplayOrDefault(value *string) string {
+	if value == nil {
+		return MegaphoneSenderDisplayVip
+	}
+	return *value
 }

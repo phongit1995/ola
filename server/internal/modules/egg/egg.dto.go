@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/setting"
 	userModule "ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
@@ -34,18 +35,22 @@ type SaveConfigRequest struct {
 }
 
 type CreatePackRequest struct {
-	Name       string          `json:"name" binding:"required,max=100"`
-	KenCost    int             `json:"kenCost" binding:"gte=0"`
-	IsEnabled  bool            `json:"isEnabled"`
-	SortOrder  int             `json:"sortOrder"`
-	Categories []CategoryInput `json:"categories"`
+	Name             string          `json:"name" binding:"required,max=100"`
+	KenCost          int             `json:"kenCost" binding:"gte=0"`
+	IsEnabled        bool            `json:"isEnabled"`
+	SortOrder        int             `json:"sortOrder"`
+	Categories       []CategoryInput `json:"categories"`
+	MegaphoneEnabled *bool           `json:"megaphoneEnabled"`
+	OddsVisibility   models.JSONB    `json:"oddsVisibility" swaggertype:"object"`
 }
 
 type UpdatePackRequest struct {
-	Name      *string `json:"name"`
-	KenCost   *int    `json:"kenCost"`
-	IsEnabled *bool   `json:"isEnabled"`
-	SortOrder *int    `json:"sortOrder"`
+	Name             *string      `json:"name"`
+	KenCost          *int         `json:"kenCost"`
+	IsEnabled        *bool        `json:"isEnabled"`
+	SortOrder        *int         `json:"sortOrder"`
+	MegaphoneEnabled *bool        `json:"megaphoneEnabled"`
+	OddsVisibility   models.JSONB `json:"oddsVisibility" swaggertype:"object"`
 }
 
 type OpenPackRequest struct {
@@ -75,12 +80,14 @@ type CategoryView struct {
 }
 
 type PackView struct {
-	ID         uuid.UUID      `json:"id"`
-	Name       string         `json:"name"`
-	KenCost    int            `json:"kenCost"`
-	IsEnabled  bool           `json:"isEnabled"`
-	SortOrder  int            `json:"sortOrder"`
-	Categories []CategoryView `json:"categories,omitempty"`
+	ID               uuid.UUID             `json:"id"`
+	Name             string                `json:"name"`
+	KenCost          int                   `json:"kenCost"`
+	IsEnabled        bool                  `json:"isEnabled"`
+	SortOrder        int                   `json:"sortOrder"`
+	Categories       []CategoryView        `json:"categories,omitempty"`
+	MegaphoneEnabled bool                  `json:"megaphoneEnabled"`
+	OddsVisibility   setting.PlatformRules `json:"oddsVisibility"`
 }
 
 type PackListResponse struct {
@@ -88,12 +95,12 @@ type PackListResponse struct {
 }
 
 type GiftRewardView struct {
-	Label        string  `json:"label"`
-	VipTypeID    *int16  `json:"vipTypeId,omitempty"`
-	KenAmount    *int    `json:"kenAmount,omitempty"`
-	VipDays      *int    `json:"vipDays,omitempty"`
-	IsSuperLucky bool    `json:"isSuperLucky"`
-	Percent      float64 `json:"percent"`
+	Label        string   `json:"label"`
+	VipTypeID    *int16   `json:"vipTypeId,omitempty"`
+	KenAmount    *int     `json:"kenAmount,omitempty"`
+	VipDays      *int     `json:"vipDays,omitempty"`
+	IsSuperLucky bool     `json:"isSuperLucky"`
+	Percent      *float64 `json:"percent,omitempty"`
 }
 
 type GiftSectionView struct {
@@ -103,7 +110,16 @@ type GiftSectionView struct {
 
 type GiftListResponse struct {
 	Items       []GiftSectionView `json:"items"`
-	MissPercent float64           `json:"missPercent"`
+	MissPercent *float64          `json:"missPercent,omitempty"`
+}
+
+func (r *GiftListResponse) HideOdds() {
+	r.MissPercent = nil
+	for i := range r.Items {
+		for j := range r.Items[i].Rewards {
+			r.Items[i].Rewards[j].Percent = nil
+		}
+	}
 }
 
 type OpenResult struct {

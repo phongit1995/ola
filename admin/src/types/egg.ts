@@ -1,3 +1,5 @@
+import type { PlatformRules } from './common'
+
 export type EggCategoryType = 'nothing' | 'vip_icon' | 'ken' | 'vip_days'
 
 export interface EggReward {
@@ -28,6 +30,8 @@ export interface EggPack {
   kenCost: number
   isEnabled: boolean
   sortOrder: number
+  megaphoneEnabled: boolean
+  oddsVisibility: PlatformRules
   categories: EggCategory[]
 }
 
@@ -36,6 +40,8 @@ export interface CreateEggPackRequest {
   kenCost: number
   isEnabled: boolean
   sortOrder: number
+  megaphoneEnabled: boolean
+  oddsVisibility: PlatformRules
   categories?: EggCategoryInput[]
 }
 
@@ -44,6 +50,8 @@ export interface UpdateEggPackRequest {
   kenCost?: number
   isEnabled?: boolean
   sortOrder?: number
+  megaphoneEnabled?: boolean
+  oddsVisibility?: PlatformRules
 }
 
 export interface EggRewardInput {

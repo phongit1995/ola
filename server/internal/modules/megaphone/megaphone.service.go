@@ -259,8 +259,8 @@ type GiftAnnouncement struct {
 func giftContent(sender, receiver megaphoneEvents.Sender, giftName string, quantity int) string {
 	content := fmt.Sprintf("%s đã tặng %s %s ×%d", senderName(sender), senderName(receiver), giftName, quantity)
 	runes := []rune(content)
-	if len(runes) > giftContentRunes {
-		return string(runes[:giftContentRunes])
+	if len(runes) > systemContentRunes {
+		return string(runes[:systemContentRunes])
 	}
 	return content
 }
@@ -279,9 +279,12 @@ func (s *Service) AnnounceGift(in GiftAnnouncement) bool {
 	}
 	now := time.Now().UTC()
 	people := s.senders([]uuid.UUID{in.SenderID, in.ReceiverID})
-	record, err := s.repo.CreateGift(GiftParams{
+	txID := in.TransactionID
+	record, err := s.repo.CreateSystem(SystemParams{
+		Type:              models.MegaphoneTypeGift,
 		SenderID:          in.SenderID,
-		GiftTransactionID: in.TransactionID,
+		ClientRequestID:   giftRequestPrefix + txID.String(),
+		GiftTransactionID: &txID,
 		Content:           giftContent(people[in.SenderID], people[in.ReceiverID], in.GiftName, in.Quantity),
 		Weight:            cfg.GiftWeight(in.TotalKen),
 		DisplaySeconds:    cfg.DisplaySeconds,
@@ -412,6 +415,7 @@ func (s *Service) toViews(items []models.Megaphone) []megaphoneEvents.Megaphone 
 	out := make([]megaphoneEvents.Megaphone, 0, len(items))
 	for i := range items {
 		view := toView(&items[i], people[items[i].SenderID])
+		view.Lucky = luckyInfoFrom(items[i].LuckyReward)
 		if items[i].GiftTransactionID != nil {
 			if tx, ok := txs[*items[i].GiftTransactionID]; ok {
 				receiver := people[tx.ReceiverID]

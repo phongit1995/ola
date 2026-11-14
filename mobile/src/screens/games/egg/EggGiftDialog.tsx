@@ -116,6 +116,12 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
     };
   }, [packId]);
 
+  const hasOdds =
+    missPercent != null ||
+    sections.some((section) =>
+      section.rewards.some((reward) => formatOddsPercent(reward.percent) != null)
+    );
+
   return (
     <Dialog visible onClose={onClose} avoidKeyboard={false} bare maxWidth={448}>
       <View style={{ paddingTop: 30 }}>
@@ -247,7 +253,7 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
                 );
               })
             )}
-            {!error && !loading && sections.length > 0 && (
+            {!error && !loading && sections.length > 0 && hasOdds && (
               <View style={{ marginTop: 4, paddingHorizontal: 4, gap: 2 }}>
                 {missPercent != null && missPercent > 0 && (
                   <Text className="text-center text-xs" style={{ color: '#8a8a8c' }}>

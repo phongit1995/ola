@@ -1,4 +1,6 @@
-import type { EggPack as ApiEggPack, SaveEggConfigRequest } from '@/types'
+import type { EggPack as ApiEggPack, PlatformRules, SaveEggConfigRequest } from '@/types'
+import { normalizePlatformRules } from '@/lib/platformRules'
+import { DEFAULT_ODDS_VISIBILITY } from '../constants'
 import type { CategoryTemplate, EggCategory, EggCategoryType, EggReward } from './types'
 import { CATEGORY_TEMPLATES, EDITOR_PACK_ID } from './constants'
 
@@ -61,11 +63,21 @@ export function loadPack(pack: ApiEggPack | null): {
   name: string
   kenCost: number
   isEnabled: boolean
+  megaphoneEnabled: boolean
+  oddsVisibility: PlatformRules
   categories: EggCategory[]
   rewards: EggReward[]
 } {
   if (!pack) {
-    return { name: 'Gói mới', kenCost: 100, isEnabled: true, categories: [], rewards: [] }
+    return {
+      name: 'Gói mới',
+      kenCost: 100,
+      isEnabled: true,
+      megaphoneEnabled: true,
+      oddsVisibility: DEFAULT_ODDS_VISIBILITY,
+      categories: [],
+      rewards: [],
+    }
   }
   const categories: EggCategory[] = []
   const rewards: EggReward[] = []
@@ -93,7 +105,15 @@ export function loadPack(pack: ApiEggPack | null): {
       })
     }
   }
-  return { name: pack.name, kenCost: pack.kenCost, isEnabled: pack.isEnabled, categories, rewards }
+  return {
+    name: pack.name,
+    kenCost: pack.kenCost,
+    isEnabled: pack.isEnabled,
+    megaphoneEnabled: pack.megaphoneEnabled,
+    oddsVisibility: pack.oddsVisibility ? normalizePlatformRules(pack.oddsVisibility) : DEFAULT_ODDS_VISIBILITY,
+    categories,
+    rewards,
+  }
 }
 
 export function validateConfig(name: string, categories: EggCategory[], rewards: EggReward[]): string | null {

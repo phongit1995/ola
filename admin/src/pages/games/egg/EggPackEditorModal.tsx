@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
-import { App, Divider, Input, InputNumber, Modal, Switch, Typography } from 'antd'
+import { App, Divider, Form, Input, InputNumber, Modal, Switch, Typography } from 'antd'
 import {
   useCreateEggPack,
   useSaveEggConfig,
   useUpdateEggPack,
 } from './useEggQueries'
 import { errorMessage } from '@/lib/apiError'
+import { cleanPlatformRules } from '@/lib/platformRules'
 import { kenNumberInputProps } from '@/lib/format'
 import type { EggPack as ApiEggPack } from '@/types'
+import { DEFAULT_ODDS_VISIBILITY } from '../constants'
+import { OddsVisibilityField, type OddsVisibilityValues } from '../OddsVisibilityField'
 import { EggPackBuilder } from './EggPackBuilder'
 import { EggRewardFormModal } from './EggRewardFormModal'
 import type { EggItemFormValues } from './types'
@@ -40,6 +43,10 @@ export function EggPackEditorModal({ open, pack, nextSortOrder, onClose }: EggPa
   const [name, setName] = useState('Gói mới')
   const [kenCost, setKenCost] = useState(100)
   const [isEnabled, setIsEnabled] = useState(true)
+  const [megaphoneEnabled, setMegaphoneEnabled] = useState(true)
+  const [oddsVisibility, setOddsVisibility] = useState(DEFAULT_ODDS_VISIBILITY)
+  const [loadCount, setLoadCount] = useState(0)
+  const [oddsForm] = Form.useForm<OddsVisibilityValues>()
   const [categories, setCategories] = useState<EggCategory[]>([])
   const [rewards, setRewards] = useState<EggReward[]>([])
 
@@ -54,6 +61,9 @@ export function EggPackEditorModal({ open, pack, nextSortOrder, onClose }: EggPa
       setName(loaded.name)
       setKenCost(loaded.kenCost)
       setIsEnabled(loaded.isEnabled)
+      setMegaphoneEnabled(loaded.megaphoneEnabled)
+      setOddsVisibility(loaded.oddsVisibility)
+      setLoadCount((count) => count + 1)
       setCategories(loaded.categories)
       setRewards(loaded.rewards)
     }
@@ -168,8 +178,15 @@ export function EggPackEditorModal({ open, pack, nextSortOrder, onClose }: EggPa
       return
     }
     const payload = toConfigRequest(categories, rewards)
-    const meta = { name: name.trim(), kenCost, isEnabled }
     try {
+      const odds = await oddsForm.validateFields()
+      const meta = {
+        name: name.trim(),
+        kenCost,
+        isEnabled,
+        megaphoneEnabled,
+        oddsVisibility: cleanPlatformRules(odds.oddsVisibility),
+      }
       if (pack) {
         await updatePack.mutateAsync({ id: pack.id, payload: meta })
         await saveConfig.mutateAsync({ id: pack.id, payload })
@@ -217,9 +234,19 @@ export function EggPackEditorModal({ open, pack, nextSortOrder, onClose }: EggPa
           </Typography.Text>
           <Switch checked={isEnabled} onChange={setIsEnabled} />
         </div>
+        <div>
+          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
+            Phát loa khi trúng Siêu may mắn
+          </Typography.Text>
+          <Switch checked={megaphoneEnabled} onChange={setMegaphoneEnabled} />
+        </div>
       </div>
 
       <Divider style={{ margin: '12px 0 16px' }} />
+
+      <OddsVisibilityField key={loadCount} form={oddsForm} initial={oddsVisibility} />
+
+      <Divider style={{ margin: '16px 0' }} />
 
       <EggPackBuilder
         categories={categories}

@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Spinner, VipIcon } from '@components';
-import { EGG_GIFT_FIXTURE, portalRoot, eggRewardText } from '@lib';
+import {
+  EGG_GIFT_FIXTURE,
+  formatOddsPercent,
+  portalRoot,
+  eggRewardText,
+} from '@lib';
 import { EggService } from '@services';
 import type {
   EggCategoryKind,
@@ -75,6 +80,7 @@ function RewardIcon({
 export function EggGiftDialog({ open, packId, onClose }: EggGiftDialogProps) {
   const { t } = useTranslation();
   const [sections, setSections] = useState<EggGiftSection[]>([]);
+  const [missPercent, setMissPercent] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -100,13 +106,17 @@ export function EggGiftDialog({ open, packId, onClose }: EggGiftDialogProps) {
     };
     // eslint-disable-next-line react-hooks/set-state-in-effect -- mở dialog mới nạp danh sách quà; setState chạy sau await
     setError(false);
+    setMissPercent(null);
     if (!packId) {
       applyItems([]);
       return;
     }
     setLoading(true);
     EggService.listGifts(packId)
-      .then((result) => applyItems(result?.items ?? []))
+      .then((result) => {
+        applyItems(result?.items ?? []);
+        if (alive) setMissPercent(result?.missPercent ?? null);
+      })
       .catch(() => {
         if (!alive) return;
         if (import.meta.env.DEV) {
@@ -124,6 +134,14 @@ export function EggGiftDialog({ open, packId, onClose }: EggGiftDialogProps) {
   }, [open, packId]);
 
   if (!open) return null;
+
+  const hasOdds =
+    missPercent != null ||
+    sections.some((section) =>
+      section.rewards.some(
+        (reward) => formatOddsPercent(reward.percent) != null
+      )
+    );
 
   return createPortal(
     <div
@@ -180,6 +198,11 @@ export function EggGiftDialog({ open, packId, onClose }: EggGiftDialogProps) {
                             >
                               {label}
                             </span>
+                            {formatOddsPercent(reward.percent) != null && (
+                              <span className="text-center text-[10px] font-bold text-[#8a8a8c]">
+                                {formatOddsPercent(reward.percent)}
+                              </span>
+                            )}
                           </div>
                         );
                       })}
@@ -187,6 +210,20 @@ export function EggGiftDialog({ open, packId, onClose }: EggGiftDialogProps) {
                   </section>
                 );
               })
+            )}
+            {!error && !loading && hasOdds && (
+              <div className="mt-1 flex flex-col gap-0.5 px-1">
+                {missPercent != null && missPercent > 0 && (
+                  <p className="text-center text-xs text-[#8a8a8c]">
+                    {t('eggGame.gifts.missRate', {
+                      percent: formatOddsPercent(missPercent) ?? '0%',
+                    })}
+                  </p>
+                )}
+                <p className="text-center text-[10px] text-[#a5a5a7]">
+                  {t('eggGame.gifts.oddsNote')}
+                </p>
+              </div>
             )}
           </div>
         </div>

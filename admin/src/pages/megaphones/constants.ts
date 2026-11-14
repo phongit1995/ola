@@ -2,6 +2,7 @@ import { OPEN_PLATFORM_RULES } from '@/lib/platformRules'
 import type {
   ContentCheckReason,
   ContentFilterSetting,
+  MegaphoneSenderDisplay,
   MegaphoneSetting,
   MegaphoneStatus,
   MegaphoneType,
@@ -27,7 +28,13 @@ export const DEFAULT_MEGAPHONE_SETTING: MegaphoneSetting = {
     { minKen: 1000, weight: 3 },
     { minKen: 20000, weight: 6 },
   ],
+  senderDisplay: 'vip',
 }
+
+export const MEGAPHONE_SENDER_DISPLAY_OPTIONS: { value: MegaphoneSenderDisplay; label: string }[] = [
+  { value: 'vip', label: 'Icon VIP' },
+  { value: 'avatar', label: 'Avatar (kèm khung)' },
+]
 
 export const DEFAULT_CONTENT_FILTER_SETTING: ContentFilterSetting = {
   bannedWords: [],
@@ -63,6 +70,7 @@ export const MEGAPHONE_STATUS_TAG: Record<MegaphoneStatus, { label: string; colo
 export const MEGAPHONE_TYPE_TAG: Record<MegaphoneType, { label: string; color: string }> = {
   message: { label: 'Loa thường', color: 'blue' },
   gift: { label: 'Loa quà', color: 'magenta' },
+  lucky: { label: 'Loa trúng thưởng', color: 'gold' },
 }
 
 export const MEGAPHONE_TYPE_OPTIONS = [

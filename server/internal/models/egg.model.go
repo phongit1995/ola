@@ -17,10 +17,12 @@ const (
 
 type EggPack struct {
 	BaseModel
-	Name      string `gorm:"type:varchar(100);not null" json:"name"`
-	KenCost   int    `gorm:"not null;default:0" json:"kenCost"`
-	IsEnabled bool   `gorm:"not null;default:true" json:"isEnabled"`
-	SortOrder int    `gorm:"not null;default:0" json:"sortOrder"`
+	Name             string `gorm:"type:varchar(100);not null" json:"name"`
+	KenCost          int    `gorm:"not null;default:0" json:"kenCost"`
+	IsEnabled        bool   `gorm:"not null;default:true" json:"isEnabled"`
+	SortOrder        int    `gorm:"not null;default:0" json:"sortOrder"`
+	MegaphoneEnabled bool   `gorm:"not null" json:"megaphoneEnabled"`
+	OddsVisibility   JSONB  `gorm:"type:jsonb;not null" json:"oddsVisibility"`
 }
 
 func (EggPack) TableName() string {

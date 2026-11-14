@@ -2698,6 +2698,8 @@
     "menuTitle": "Megaphone",
     "dismiss": "Hide this megaphone",
     "giftVerb": "gave",
+    "luckyEggVerb": "just cracked an egg and won",
+    "luckyWheelVerb": "just spun and won",
     "compose": "Megaphone",
     "composeTitle": "Broadcast to everyone",
     "placeholder": "Say something to all of Ola…",

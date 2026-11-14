@@ -1,6 +1,7 @@
 package wheel
 
 import (
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -28,7 +29,7 @@ func (ctrl *Controller) GetConfig(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.PlayerConfig(userID)
+	resp, err := ctrl.service.PlayerConfig(setting.ClientFrom(c), userID)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -53,7 +54,7 @@ func (ctrl *Controller) Spin(c *gin.Context) (interface{}, error) {
 	var req SpinRequest
 	_ = c.ShouldBindJSON(&req)
 
-	result, err := ctrl.service.SpinFirstEnabled(userID, req.IdempotencyKey)
+	result, err := ctrl.service.SpinFirstEnabled(setting.ClientFrom(c), userID, req.IdempotencyKey)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

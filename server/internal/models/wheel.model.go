@@ -24,6 +24,8 @@ type Wheel struct {
 	FreeDailyEnabled bool   `gorm:"not null;default:false" json:"freeDailyEnabled"`
 	IsEnabled        bool   `gorm:"not null;default:true" json:"isEnabled"`
 	SortOrder        int    `gorm:"not null;default:0" json:"sortOrder"`
+	MegaphoneEnabled bool   `gorm:"not null" json:"megaphoneEnabled"`
+	OddsVisibility   JSONB  `gorm:"type:jsonb;not null" json:"oddsVisibility"`
 }
 
 func (Wheel) TableName() string {

@@ -1,7 +1,9 @@
 import type { TFunction } from 'i18next';
-import { MEGAPHONE_ERROR_KEYS } from '../constants/megaphone';
-import type { Megaphone } from '../types/api/megaphone.type';
+import { MEGAPHONE_ERROR_KEYS, MEGAPHONE_LUCKY_GAME } from '../constants/megaphone';
+import type { Megaphone, MegaphoneLucky } from '../types/api/megaphone.type';
 import { ApiError } from './apiError';
+import { formatKen } from './number';
+import { vipName } from './vip';
 
 const ASCII_SPACE = 0x20;
 const ASCII_DELETE = 0x7f;
@@ -44,4 +46,14 @@ export function megaphoneErrorText(t: TFunction, error: unknown): string {
     if (key != null) return t(key);
   }
   return t('megaphone.errors.failed');
+}
+
+export function megaphoneLuckyVerb(t: TFunction, lucky: MegaphoneLucky): string {
+  return lucky.game === MEGAPHONE_LUCKY_GAME.wheel ? t('megaphone.luckyWheelVerb') : t('megaphone.luckyEggVerb');
+}
+
+export function megaphoneLuckyRewardText(lucky: MegaphoneLucky): string {
+  if (lucky.kenAmount != null && lucky.kenAmount > 0) return `${formatKen(lucky.kenAmount)} Ken`;
+  if (lucky.vipTypeId != null && lucky.vipDays == null) return vipName(lucky.vipTypeId);
+  return lucky.label;
 }

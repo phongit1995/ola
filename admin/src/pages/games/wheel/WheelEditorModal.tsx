@@ -1,9 +1,12 @@
 import { useState } from 'react'
-import { App, Divider, Input, InputNumber, Modal, Switch, Typography } from 'antd'
+import { App, Divider, Form, Input, InputNumber, Modal, Switch, Typography } from 'antd'
 import { useCreateWheel, useSaveWheelConfig, useUpdateWheel } from './useWheelQueries'
 import { errorMessage } from '@/lib/apiError'
+import { cleanPlatformRules } from '@/lib/platformRules'
 import { kenNumberInputProps } from '@/lib/format'
 import type { Wheel, WheelSegment } from '@/types'
+import { DEFAULT_ODDS_VISIBILITY } from '../constants'
+import { OddsVisibilityField, type OddsVisibilityValues } from '../OddsVisibilityField'
 import { WheelBuilder } from './WheelBuilder'
 import { loadWheel, toConfigRequest, validate } from './utils'
 
@@ -24,6 +27,9 @@ export function WheelEditorModal({ open, wheel, nextSortOrder, onClose }: WheelE
   const [kenCost, setKenCost] = useState(5000)
   const [freeDailyEnabled, setFreeDailyEnabled] = useState(true)
   const [isEnabled, setIsEnabled] = useState(true)
+  const [megaphoneEnabled, setMegaphoneEnabled] = useState(true)
+  const [oddsVisibility, setOddsVisibility] = useState(DEFAULT_ODDS_VISIBILITY)
+  const [oddsForm] = Form.useForm<OddsVisibilityValues>()
   const [segments, setSegments] = useState<WheelSegment[]>([])
 
   const loadKey = open ? (wheel?.id ?? 'new') : null
@@ -36,6 +42,8 @@ export function WheelEditorModal({ open, wheel, nextSortOrder, onClose }: WheelE
       setKenCost(loaded.kenCost)
       setFreeDailyEnabled(loaded.freeDailyEnabled)
       setIsEnabled(loaded.isEnabled)
+      setMegaphoneEnabled(loaded.megaphoneEnabled)
+      setOddsVisibility(loaded.oddsVisibility)
       setSegments(loaded.segments)
     }
   }
@@ -49,8 +57,16 @@ export function WheelEditorModal({ open, wheel, nextSortOrder, onClose }: WheelE
       return
     }
     const payload = toConfigRequest(segments)
-    const meta = { name: name.trim(), kenCost, freeDailyEnabled, isEnabled }
     try {
+      const odds = await oddsForm.validateFields()
+      const meta = {
+        name: name.trim(),
+        kenCost,
+        freeDailyEnabled,
+        isEnabled,
+        megaphoneEnabled,
+        oddsVisibility: cleanPlatformRules(odds.oddsVisibility),
+      }
       if (wheel) {
         await updateWheel.mutateAsync({ id: wheel.id, payload: meta })
         await saveConfig.mutateAsync({ id: wheel.id, payload })
@@ -104,9 +120,19 @@ export function WheelEditorModal({ open, wheel, nextSortOrder, onClose }: WheelE
           </Typography.Text>
           <Switch checked={isEnabled} onChange={setIsEnabled} />
         </div>
+        <div>
+          <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
+            Phát loa khi trúng Siêu may mắn
+          </Typography.Text>
+          <Switch checked={megaphoneEnabled} onChange={setMegaphoneEnabled} />
+        </div>
       </div>
 
       <Divider style={{ margin: '12px 0 16px' }} />
+
+      <OddsVisibilityField key={loadedKey ?? 'closed'} form={oddsForm} initial={oddsVisibility} />
+
+      <Divider style={{ margin: '16px 0' }} />
 
       <WheelBuilder segments={segments} onChange={setSegments} />
     </Modal>

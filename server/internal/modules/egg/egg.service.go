@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/megaphone"
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
@@ -38,15 +40,17 @@ type Service struct {
 	userCache *user.CacheService
 	cache     *services.CacheService
 	wsServer  *websocket.Server
+	megaphone *megaphone.Service
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, megaphoneService *megaphone.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		userCache: userCache,
 		cache:     cache,
 		wsServer:  wsServer,
+		megaphone: megaphoneService,
 		logger:    logger.Named("[egg_service]"),
 	}
 }
@@ -113,7 +117,7 @@ func giftIdentity(catType models.EggCategoryType, rw models.EggReward) string {
 	return fmt.Sprintf("%s:%s", catType, rw.Label)
 }
 
-func (s *Service) ListGifts(packID uuid.UUID) (*GiftListResponse, error) {
+func (s *Service) ListGifts(client setting.Client, packID uuid.UUID) (*GiftListResponse, error) {
 	pack, err := s.repo.FindPack(packID)
 	if err != nil || !pack.IsEnabled {
 		return nil, ErrPackNotFound
@@ -176,7 +180,7 @@ func (s *Service) ListGifts(packID uuid.UUID) (*GiftListResponse, error) {
 			winPercent += percent
 			key := giftIdentity(c.Type, rw)
 			if idx, ok := seenIndex[key]; ok {
-				byType[seenType[key]][idx].Percent += percent
+				*byType[seenType[key]][idx].Percent += percent
 				continue
 			}
 			seenIndex[key] = len(byType[c.Type])
@@ -187,7 +191,7 @@ func (s *Service) ListGifts(packID uuid.UUID) (*GiftListResponse, error) {
 				KenAmount:    rw.KenAmount,
 				VipDays:      rw.VipDays,
 				IsSuperLucky: rw.IsSuperLucky,
-				Percent:      percent,
+				Percent:      &percent,
 			})
 		}
 	}
@@ -205,7 +209,11 @@ func (s *Service) ListGifts(packID uuid.UUID) (*GiftListResponse, error) {
 			missPercent = 0
 		}
 	}
-	return &GiftListResponse{Items: items, MissPercent: missPercent}, nil
+	resp := &GiftListResponse{Items: items, MissPercent: &missPercent}
+	if !setting.OddsRulesFrom(pack.OddsVisibility).EnabledForClient(client) {
+		resp.HideOdds()
+	}
+	return resp, nil
 }
 
 func (s *Service) ListAllPacks() (*PackListResponse, error) {
@@ -250,11 +258,17 @@ func (s *Service) CreatePack(req CreatePackRequest) (*PackView, error) {
 		return nil, err
 	}
 	pack := models.EggPack{
-		Name:      req.Name,
-		KenCost:   req.KenCost,
-		IsEnabled: req.IsEnabled,
-		SortOrder: req.SortOrder,
+		Name:             req.Name,
+		KenCost:          req.KenCost,
+		IsEnabled:        req.IsEnabled,
+		SortOrder:        req.SortOrder,
+		MegaphoneEnabled: req.MegaphoneEnabled == nil || *req.MegaphoneEnabled,
 	}
+	odds, err := setting.OddsRulesValue(req.OddsVisibility)
+	if err != nil {
+		return nil, err
+	}
+	pack.OddsVisibility = odds
 	cats, rewardsByCat := buildConfigModels(req.Categories)
 	if err := s.repo.CreatePackWithConfig(&pack, cats, rewardsByCat); err != nil {
 		return nil, err
@@ -278,6 +292,16 @@ func (s *Service) UpdatePack(id uuid.UUID, req UpdatePackRequest) (*PackView, er
 	}
 	if req.SortOrder != nil {
 		fields["sort_order"] = *req.SortOrder
+	}
+	if req.MegaphoneEnabled != nil {
+		fields["megaphone_enabled"] = *req.MegaphoneEnabled
+	}
+	if req.OddsVisibility != nil {
+		odds, err := setting.OddsRulesValue(req.OddsVisibility)
+		if err != nil {
+			return nil, err
+		}
+		fields["odds_visibility"] = odds
 	}
 	if len(fields) > 0 {
 		if err := s.repo.UpdatePack(id, fields); err != nil {
@@ -368,7 +392,7 @@ func (s *Service) getPackView(packID uuid.UUID) (*PackView, error) {
 	return &views[0], nil
 }
 
-func (s *Service) OpenPack(userID, packID uuid.UUID, idempotencyKey string) (*OpenResult, error) {
+func (s *Service) OpenPack(client setting.Client, userID, packID uuid.UUID, idempotencyKey string) (*OpenResult, error) {
 	pack, err := s.repo.FindPack(packID)
 	if err != nil || !pack.IsEnabled {
 		return nil, ErrPackNotFound
@@ -399,6 +423,7 @@ func (s *Service) OpenPack(userID, packID uuid.UUID, idempotencyKey string) (*Op
 
 	s.invalidateUser(userID)
 	s.wsServer.EmitKenUpdate(userID, updatedUser.Ken)
+	s.announceLucky(client, pack, draw)
 
 	return &OpenResult{
 		DrawID:       draw.ID,
@@ -414,6 +439,28 @@ func (s *Service) OpenPack(userID, packID uuid.UUID, idempotencyKey string) (*Op
 		KenAmount:    draw.KenAmount,
 		VipDays:      draw.VipDays,
 	}, nil
+}
+
+func (s *Service) announceLucky(client setting.Client, pack *models.EggPack, draw *models.EggDraw) {
+	if !pack.MegaphoneEnabled || !draw.IsSuperLucky || draw.RewardType == nil {
+		return
+	}
+	label := ""
+	if draw.RewardLabel != nil {
+		label = *draw.RewardLabel
+	}
+	s.megaphone.AnnounceLuckyLater(megaphone.LuckyAnnouncement{
+		Client:   client,
+		Game:     megaphone.LuckyGameEgg,
+		PlayID:   draw.ID,
+		PlayerID: draw.UserID,
+		Reward: megaphone.LuckyReward{
+			Label:     label,
+			KenAmount: draw.KenAmount,
+			VipDays:   draw.VipDays,
+			VipTypeID: draw.VipTypeID,
+		},
+	})
 }
 
 func (s *Service) draw(cats []models.EggCategory, rewards []models.EggReward) (DrawOutcome, bool) {
@@ -639,12 +686,14 @@ func buildPackViews(packs []models.EggPack, cats []models.EggCategory, rewards [
 			}
 		}
 		views[i] = PackView{
-			ID:         p.ID,
-			Name:       p.Name,
-			KenCost:    p.KenCost,
-			IsEnabled:  p.IsEnabled,
-			SortOrder:  p.SortOrder,
-			Categories: list,
+			ID:               p.ID,
+			Name:             p.Name,
+			KenCost:          p.KenCost,
+			IsEnabled:        p.IsEnabled,
+			SortOrder:        p.SortOrder,
+			Categories:       list,
+			MegaphoneEnabled: p.MegaphoneEnabled,
+			OddsVisibility:   setting.OddsRulesFrom(p.OddsVisibility),
 		}
 	}
 	return views
