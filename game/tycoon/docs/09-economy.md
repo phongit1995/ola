@@ -107,6 +107,17 @@ Cùng ngày đổi tiếp: mua lại ×2 → ×1,5 và giá nâng tăng dần 75
 
 Máy Khó thắng Thường ~59%, Thường thắng Dễ ~79%, Khó thắng Dễ ~83% (400 ván).
 
+**Thời gian một ván (đo lại 15/11/2026).** Chạy thật trên Chrome ở tốc độ ×1, có đủ animation hiện tại (xúc xắc 3D, quân đi từng ô kể cả thẻ/Du lịch/vào tù, hộp Xây Nhà, tự hết lượt 0,7 s, nhịp chờ của máy `BOT_DELAY_MS`). Người chơi tự động nghĩ theo giả định §5b. Đo được 20,4 giây/vòng (2 người, 27 vòng) và 40,3 giây/vòng (4 người, 14 vòng). Tách ra thì phần animation + mạng khoảng 11,3 / 26,8 giây mỗi vòng; ván 3 người nội suy. Online thay nhịp chờ của máy bằng thời gian nghĩ của người thật (12,8 / 23,7 giây mỗi vòng) và cộng 0,15 giây mạng mỗi nước. Số vòng lấy từ 300 ván bot: 2 người 10 / 19 / 30 (10% ngắn nhất / trung vị / 10% dài nhất), 3 người 11 / 18 / 30, 4 người 10 / 17 / 28.
+
+| | 2 người | 3 người | 4 người |
+|---|---|---|---|
+| 1 người + máy (trung vị · 10% ngắn · 10% dài) | 6,5 · 3,4 · 10,2 phút | 9,0 · 5,5 · 15,0 phút | 11,4 · 6,7 · 18,8 phút |
+| Online, bấm bình thường | 7,9 · 4,2 · 12,6 phút | 11,6 · 7,1 · 19,3 phút | 14,8 · 8,7 · 24,5 phút |
+| Online, bấm chậm (×1,8) | 11,2 · 5,9 · 17,7 phút | 16,0 · 9,8 · chạm 25 phút | 20,2 · 11,9 · chạm 25 phút |
+| Chờ giữa 2 lượt của mình (online bình thường) | ~13 giây | ~26 giây | ~39 giây |
+
+So với 20/10 (online bấm nhanh 6,6 / 8,8 / 11,1 phút), ván dài hơn khoảng 20–35%: thêm 1–2 vòng, quân đi từng ô thay vì bay, hộp Xây Nhà sau mỗi lần mua. Ván 3–4 người chơi chậm có thể chạm giới hạn 25 phút.
+
 ## 5. Kết quả mô phỏng — luật hiện tại (mua lại ×2, thắng ngay, Lễ hội / Du lịch / Thuế, 30 vòng / 25 phút)
 
 1.000 ván bot mỗi cấu hình, chốt 20/10/2026 sau khi đổi 4 ô (Lễ hội, Du lịch, Thuế, thêm Cơ hội). Thời gian theo giả định ở cuối §5b. Cột "trước" là bàn ngay trước đó (Bãi đỗ xe, Vào tù, 2 tiện ích) cùng luật mua lại / thắng ngay / 4 sân bay. Sau khi dời 4 sân bay khỏi giữa cạnh (6, 10, 22, 26) chạy lại 1.000 ván: số vòng 18 / 16 / 15, online nhanh 6,6 / 8,9 / 10,9 phút, tỉ lệ các cách kết thúc lệch ≤ 2 điểm % — coi như không đổi.
