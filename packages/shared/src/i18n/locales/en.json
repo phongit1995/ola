@@ -2774,5 +2774,16 @@
       "rateLimited": "You are going too fast, try again in a few minutes",
       "failed": "Could not claim the gift, try again later"
     }
+  },
+  "socialLimit": {
+    "title": "Daily limit reached",
+    "newChat": "You've messaged {{limit}}/{{limit}} new people today.",
+    "newChatReached": "You've used up today's messages to new people.",
+    "friendRequest": "You've sent {{limit}}/{{limit}} friend requests today.",
+    "friendRequestReached": "You've used up today's friend requests.",
+    "vipHint": "Upgrade to VIP to unlock the limit.",
+    "tomorrow": "Come back tomorrow.",
+    "confirm": "OK",
+    "buyVip": "Buy VIP days"
   }
 }

@@ -3,6 +3,7 @@ import { CHAT_POLICY_ERROR_CODES } from '../../constants/chat';
 import { toApiError } from '../../lib/apiError';
 import { toast } from '../../lib/toast';
 import { HTTP_STATUS } from '../../constants/http';
+import { showSocialLimitNotice } from '../socialLimit';
 
 export function showMessageDeleteError(error: unknown): void {
   const expired =
@@ -13,6 +14,7 @@ export function showMessageDeleteError(error: unknown): void {
 }
 
 export function showMessagingPolicyError(error: unknown): boolean {
+  if (showSocialLimitNotice(error)) return true;
   const apiError = toApiError(error);
   if (
     apiError.code === CHAT_POLICY_ERROR_CODES.messageBlocked ||

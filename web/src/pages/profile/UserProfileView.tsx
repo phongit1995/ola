@@ -3,6 +3,7 @@ import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 import { ProfilePage } from './ProfilePage';
 import { useUserProfile } from './useUserProfile';
 import type { ProfileFriend } from './types';
+import { useCloseOnSocialLimitBuy } from '@ola/shared/stores/socialLimit';
 
 interface UserProfileViewProps {
   username: string;
@@ -20,6 +21,7 @@ export function UserProfileView({
   z = 40,
 }: UserProfileViewProps) {
   const { t } = useTranslation();
+  useCloseOnSocialLimitBuy(onClose);
   const {
     profile,
     userId,

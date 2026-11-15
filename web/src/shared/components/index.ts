@@ -50,3 +50,4 @@ export * from './ui/FloatingBubble';
 export * from './gift/GiftPickerDialog';
 export * from './gift/CharmIcon';
 export * from './gift/GiftAnimationOverlay';
+export * from './SocialLimitDialog';

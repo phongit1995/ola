@@ -10,6 +10,7 @@ import {
 import { useThemeColors } from '@hooks/useThemeColors';
 import { AppLockOverlaySlot, useBlockedByAppLock } from '@components/applock/appLockModal';
 import { useTrackOpenModal } from '@store/openModalStore';
+import { SocialLimitOverlaySlot } from '@components/socialLimit/socialLimitSlot';
 import { KeyboardView } from '@components/KeyboardView';
 import { ToastHost } from './ToastHost';
 
@@ -32,11 +33,10 @@ interface DialogProps {
   footer?: ReactNode;
 }
 
-export function Dialog({
-  visible,
+type DialogFrameProps = Omit<DialogProps, 'visible' | 'onDismiss' | 'onShow' | 'showToasts'>;
+
+export function DialogFrame({
   onClose,
-  onDismiss,
-  onShow,
   title,
   icon,
   showClose = false,
@@ -44,22 +44,12 @@ export function Dialog({
   avoidKeyboard = true,
   bare = false,
   maxWidth = 384,
-  showToasts = false,
   children,
   footer,
-}: DialogProps) {
+}: DialogFrameProps) {
   const Body = avoidKeyboard ? KeyboardView : View;
-  const blockedByAppLock = useBlockedByAppLock();
-  useTrackOpenModal(visible);
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={blockedByAppLock ? noop : onClose}
-      onDismiss={onDismiss}
-      onShow={onShow}
-    >
+    <>
       <Pressable
         className="absolute inset-0"
         style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
@@ -136,7 +126,32 @@ export function Dialog({
           </View>
         </View>
       </Body>
+    </>
+  );
+}
+
+export function Dialog({
+  visible,
+  onClose,
+  onDismiss,
+  onShow,
+  showToasts = false,
+  ...frame
+}: DialogProps) {
+  const blockedByAppLock = useBlockedByAppLock();
+  useTrackOpenModal(visible);
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={blockedByAppLock ? noop : onClose}
+      onDismiss={onDismiss}
+      onShow={onShow}
+    >
+      <DialogFrame onClose={onClose} {...frame} />
       {showToasts && <ToastHost />}
+      <SocialLimitOverlaySlot />
       <AppLockOverlaySlot />
     </Modal>
   );

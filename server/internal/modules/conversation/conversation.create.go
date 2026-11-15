@@ -97,11 +97,21 @@ func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*Convers
 	if err != nil {
 		return nil, err
 	}
+	release := func() {}
 	if existingID == nil {
 		if err := BlockIfPrivateFromStranger(s.userSettingSvc, s.relRepo, user1ID, user2ID); err != nil {
 			return nil, err
 		}
+		if release, err = ConsumeNewChatQuota(context.Background(), s.limits, s.relRepo, user1ID, user2ID); err != nil {
+			return nil, err
+		}
 	}
+	created := false
+	defer func() {
+		if !created {
+			release()
+		}
+	}()
 
 	now := time.Now()
 	conversationID := uuid.New()
@@ -184,6 +194,7 @@ func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*Convers
 	if err := s.repo.ExecuteBatch(batch); err != nil {
 		return nil, fmt.Errorf("failed to create direct conversation: %w", err)
 	}
+	created = true
 
 	members := []ConversationMember{*member1, *member2}
 	s.cacheAndPublishDirectCreated(conversationID, user1ID, user2ID, user1, otherUser, members, now)

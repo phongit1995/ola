@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,9 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 }
 
 func conversationPolicyHTTPError(err error) *utils.HTTPError {
+	if limitErr := sociallimit.HTTPError(err); limitErr != nil {
+		return limitErr
+	}
 	switch {
 	case errors.Is(err, ErrBlocked):
 		return utils.NewHTTPErrorWithCode(http.StatusForbidden, err.Error(), ErrorCodeMessageBlocked)

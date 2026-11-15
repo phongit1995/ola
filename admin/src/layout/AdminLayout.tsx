@@ -61,6 +61,7 @@ const MENU_ITEMS = [
       { key: '/users/ken-transfers', icon: <TransactionOutlined />, label: 'Chuyển Ken' },
       { key: '/users/topups', icon: <DollarOutlined />, label: 'Nạp KEN' },
       { key: '/users/username-changes', icon: <EditOutlined />, label: 'Đổi nickname' },
+      { key: '/users/settings', icon: <SettingOutlined />, label: 'Cài đặt' },
     ],
   },
   {
@@ -179,6 +180,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/users/ken-transfers': 'Lịch sử chuyển Ken',
   '/users/topups': 'Lịch sử nạp KEN',
   '/users/username-changes': 'Lịch sử đổi nickname',
+  '/users/settings': 'Cài đặt người dùng',
   '/posts': 'Quản lý bài đăng',
   '/stories': 'Quản lý truyện',
   '/stories/settings': 'Cài đặt truyện',

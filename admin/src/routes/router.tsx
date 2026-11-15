@@ -3,6 +3,7 @@ import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import { AnalyticsPage } from '@/pages/analytics/AnalyticsPage'
 import { UsersPage } from '@/pages/users/UsersPage'
+import { UserSettingsPage } from '@/pages/users/UserSettingsPage'
 import { MarriagesPage } from '@/pages/social/MarriagesPage'
 import { RelationshipsPage } from '@/pages/social/RelationshipsPage'
 import { RoomsPage } from '@/pages/rooms/RoomsPage'
@@ -75,6 +76,7 @@ export const router = createBrowserRouter([
       { path: 'users', element: <UsersPage /> },
       { path: 'users/marriages', element: <MarriagesPage /> },
       { path: 'users/relationships', element: <RelationshipsPage /> },
+      { path: 'users/settings', element: <UserSettingsPage /> },
       { path: 'rooms', element: <RoomsPage /> },
       { path: 'rooms/word-chain', element: <WordChainPage /> },
       { path: 'clans', element: <ClansPage /> },

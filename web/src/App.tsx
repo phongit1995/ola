@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { ReconnectingBanner, ToastViewport } from '@components';
+import { ReconnectingBanner, SocialLimitDialog, ToastViewport } from '@components';
 import { CALL_MODE } from '@constants';
 import {
   useSoundUnlock,
@@ -114,6 +114,7 @@ function App() {
         <ReconnectingBanner />
         <ToastViewport />
         <div id="ola-portal" />
+        <SocialLimitDialog />
         <GlobalKenTreasure />
         <GlobalArcade />
         <GlobalCall />

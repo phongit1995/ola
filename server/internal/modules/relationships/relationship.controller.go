@@ -2,6 +2,7 @@ package relationships
 
 import (
 	"net/http"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -59,6 +60,9 @@ func (ctrl *Controller) SendFriendRequest(c *gin.Context) (interface{}, error) {
 	)
 
 	response, err := ctrl.service.SendFriendRequest(userID, addresseeID)
+	if limitErr := sociallimit.HTTPError(err); limitErr != nil {
+		return nil, limitErr
+	}
 	if err != nil {
 		ctrl.logger.Warnw("Failed to send friend request",
 			"requester_id", userID,

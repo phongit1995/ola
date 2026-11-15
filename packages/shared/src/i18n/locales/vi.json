@@ -2774,5 +2774,16 @@
       "rateLimited": "Bạn thao tác quá nhanh, thử lại sau ít phút",
       "failed": "Không nhận được quà, thử lại sau"
     }
+  },
+  "socialLimit": {
+    "title": "Đã đạt giới hạn hôm nay",
+    "newChat": "Hôm nay bạn đã nhắn tin với {{limit}}/{{limit}} người mới.",
+    "newChatReached": "Hôm nay bạn đã hết lượt nhắn tin với người mới.",
+    "friendRequest": "Hôm nay bạn đã gửi {{limit}}/{{limit}} lời mời kết bạn.",
+    "friendRequestReached": "Hôm nay bạn đã hết lượt gửi lời mời kết bạn.",
+    "vipHint": "Nâng cấp VIP để có thể mở khóa giới hạn.",
+    "tomorrow": "Quay lại vào ngày mai nhé.",
+    "confirm": "Xác nhận",
+    "buyVip": "Mua ngày VIP"
   }
 }

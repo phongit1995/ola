@@ -2,6 +2,7 @@ import { RelationshipService } from '../../services/relationship.service';
 import type { ChatRelationshipActions } from '../../types/client/chat.type';
 import type { ChatGet, ChatSet } from './chatState';
 import { RELATIONSHIP_STATUS } from '../../constants/relationship';
+import { showSocialLimitNotice } from '../socialLimit';
 
 export function createChatRelationshipActions(
   set: ChatSet,
@@ -96,8 +97,8 @@ export function createChatRelationshipActions(
           return 'unfriend';
         }
         return 'none';
-      } catch {
-        return 'error';
+      } catch (error) {
+        return showSocialLimitNotice(error) ? 'none' : 'error';
       }
     },
   };

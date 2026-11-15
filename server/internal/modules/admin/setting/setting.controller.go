@@ -236,6 +236,10 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateStoryReadingValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeySocialLimit:
+		if err := setting.ValidateSocialLimitValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
 	case setting.KeyGift:
 		kept, err := ctrl.service.KeepStoredPlatforms(setting.KeyGift, value)
 		if err != nil {

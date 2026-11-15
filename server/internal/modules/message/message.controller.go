@@ -8,6 +8,7 @@ import (
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/media"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -48,6 +49,9 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 }
 
 func (ctrl *Controller) messageHTTPError(err error, fallback, logMessage string) *utils.HTTPError {
+	if limitErr := sociallimit.HTTPError(err); limitErr != nil {
+		return limitErr
+	}
 	status := httpStatusForError(err)
 	message := err.Error()
 	if status == http.StatusInternalServerError {

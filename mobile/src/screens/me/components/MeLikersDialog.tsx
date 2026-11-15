@@ -11,6 +11,7 @@ import { Dialog } from '@components/ui/Dialog';
 import { LIKERS_PAGE_SIZE } from '../constants';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
+import { showSocialLimitNotice, useCloseOnSocialLimitBuy } from '@ola/shared/stores/socialLimit';
 
 interface MeLikersDialogProps {
   postId: string;
@@ -21,6 +22,7 @@ interface MeLikersDialogProps {
 
 export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: MeLikersDialogProps) {
   const { t } = useTranslation();
+  useCloseOnSocialLimitBuy(onClose);
   const colors = useThemeColors();
   const push = useToastStore((s) => s.push);
   const [requested, setRequested] = useState<Record<string, boolean>>({});
@@ -53,8 +55,8 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
       await RelationshipService.sendRequest(user.id);
       setRequested((current) => ({ ...current, [user.id]: true }));
       push('success', t('me.friendRequestSent'));
-    } catch {
-      push('error', t('me.makeFriendError'));
+    } catch (err) {
+      if (!showSocialLimitNotice(err)) push('error', t('me.makeFriendError'));
     }
   }
 
