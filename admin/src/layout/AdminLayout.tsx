@@ -15,7 +15,6 @@ import {
   EditOutlined,
   FileSearchOutlined,
   GiftOutlined,
-  HeartOutlined,
   LineChartOutlined,
   LockOutlined,
   LogoutOutlined,
@@ -30,7 +29,6 @@ import {
   PictureOutlined,
   ReadOutlined,
   TeamOutlined,
-  TransactionOutlined,
   UnorderedListOutlined,
   UsergroupAddOutlined,
   UserOutlined,
@@ -57,10 +55,7 @@ const MENU_ITEMS = [
     children: [
       { key: '/users', icon: <TeamOutlined />, label: 'Danh sách' },
       { key: '/users/relationships', icon: <UsergroupAddOutlined />, label: 'Quan hệ' },
-      { key: '/users/marriages', icon: <HeartOutlined />, label: 'Kết hôn' },
-      { key: '/users/ken-transfers', icon: <TransactionOutlined />, label: 'Chuyển Ken' },
-      { key: '/users/topups', icon: <DollarOutlined />, label: 'Nạp KEN' },
-      { key: '/users/username-changes', icon: <EditOutlined />, label: 'Đổi nickname' },
+      { key: '/users/topups', icon: <DollarOutlined />, label: 'KEN' },
       { key: '/users/settings', icon: <SettingOutlined />, label: 'Cài đặt' },
     ],
   },
@@ -133,6 +128,8 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
 const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones', '/avatar-frames', '/gift-codes']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
+  '/users/marriages': '/users/relationships',
+  '/users/ken-transfers': '/users/topups',
   '/games/matches': '/games/mini-game',
   '/settings/push-campaigns': '/settings/notification',
   '/vip-shop': '/vip-packages',
@@ -179,7 +176,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/games/matches/stats': 'Thống kê trận & cược',
   '/users/ken-transfers': 'Lịch sử chuyển Ken',
   '/users/topups': 'Lịch sử nạp KEN',
-  '/users/username-changes': 'Lịch sử đổi nickname',
   '/users/settings': 'Cài đặt người dùng',
   '/posts': 'Quản lý bài đăng',
   '/stories': 'Quản lý truyện',

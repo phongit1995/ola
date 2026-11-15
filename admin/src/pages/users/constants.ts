@@ -124,4 +124,4 @@ export const DEFAULT_SOCIAL_LIMIT_SETTING: SocialLimitSetting = {
   vip: { newChatsPerDay: 20, friendRequestsPerDay: 20, maxFriends: 200, maxPendingRequests: 200 },
 }
 
-export const USER_SETTINGS_TAB_KEYS = ['social-limit'] as const
+export const USER_SETTINGS_TAB_KEYS = ['social-limit', 'username-changes'] as const

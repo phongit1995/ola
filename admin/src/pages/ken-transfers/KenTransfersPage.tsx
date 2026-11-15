@@ -24,6 +24,8 @@ import { NetText } from '@/components/NetText'
 import { UserBriefCell } from '@/components/UserBriefCell'
 import { PAGE_SIZE } from '@/lib/constants'
 import { USER_PAGE_SIZE, USER_STATS_SORTS } from './constants'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { USER_KEN_LINKS } from '@/pages/users/sections'
 
 const transferColumns: ColumnsType<KenTransferItem> = [
   {
@@ -184,6 +186,7 @@ export function KenTransfersPage() {
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <ShopSectionNav links={USER_KEN_LINKS} />
       <Card>
         <Space wrap>
           <Input.Search
