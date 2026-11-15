@@ -325,6 +325,14 @@ func (r *Repository) BatchUpdateInbox(entries []*ConversationInboxUpdate) error 
 	                   updated_at = ?
 	               WHERE user_id = ? AND conversation_id = ?`
 
+	const keepUnreadQuery = `UPDATE conversations_by_user
+	               SET last_message_at = ?,
+	                   last_message_id = ?,
+	                   last_message_preview = ?,
+	                   last_message_sender = ?,
+	                   updated_at = ?
+	               WHERE user_id = ? AND conversation_id = ?`
+
 	for _, entry := range entries {
 		gocqlUserID, _ := utils.ToGocqlUUID(entry.UserID)
 		gocqlConvID, _ := utils.ToGocqlUUID(entry.ConversationID)
@@ -335,6 +343,14 @@ func (r *Repository) BatchUpdateInbox(entries []*ConversationInboxUpdate) error 
 			gocqlLastMessageSender = &id
 		}
 
+		if entry.KeepUnreadCount {
+			batch.Query(keepUnreadQuery,
+				entry.LastMessageAt, entry.LastMessageID, entry.LastMessagePreview,
+				gocqlLastMessageSender, entry.UpdatedAt,
+				gocqlUserID, gocqlConvID,
+			)
+			continue
+		}
 		batch.Query(query,
 			entry.LastMessageAt, entry.LastMessageID, entry.LastMessagePreview,
 			gocqlLastMessageSender, entry.UnreadCount, entry.UpdatedAt,
@@ -423,6 +439,7 @@ type ConversationInboxUpdate struct {
 	LastMessagePreview string
 	LastMessageSender  *uuid.UUID
 	UnreadCount        int
+	KeepUnreadCount    bool
 	LastReadMessageID  *gocql.UUID
 	LastReadAt         *time.Time
 	UpdatedAt          *time.Time

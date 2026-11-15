@@ -182,15 +182,23 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 		return nil
 	}
 
+	if counter, cacheErr := s.cache.GetUnreadCount(conversationID, userID); cacheErr == nil && counter != userConv.UnreadCount {
+		s.logger.Warnw("Unread counter drift on mark read",
+			"user_id", userID, "conversation_id", conversationID,
+			"redis_unread", counter, "scylla_unread", userConv.UnreadCount)
+	}
+	if err := s.cache.ResetUnreadCount(conversationID, userID); err != nil {
+		s.logger.Warnw("Failed to reset unread counter", "user_id", userID, "conversation_id", conversationID, "error", err)
+	}
+	s.InvalidateUserConversationsCache([]uuid.UUID{userID})
+
 	utils.SafeGo(s.logger, func() {
-		s.cache.ResetUnreadCount(conversationID, userID)
 		if err := s.cache.ClearPendingPush(conversationID, userID); err != nil {
 			s.logger.Warnw("Failed to clear pending dm push", "user_id", userID, "conversation_id", conversationID, "error", err)
 		}
 		if lastReadMessageID != nil {
 			s.cache.SetLastRead(conversationID, userID, lastReadMessageID.String())
 		}
-		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
 	})
 
 	if userConv.LastMessageSender != nil && userConv.OtherUserID != nil {

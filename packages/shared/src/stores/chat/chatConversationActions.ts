@@ -81,6 +81,9 @@ export function createChatConversationActions(
           conversations: result.conversations,
           loadingConversations: false,
         });
+        const openId = get().currentConversationId;
+        const open = result.conversations.find((item) => item.id === openId);
+        if (openId != null && (open?.unreadCount ?? 0) > 0) void get().markRead(openId);
       } catch {
         set({ loadingConversations: false });
       }
@@ -110,10 +113,7 @@ export function createChatConversationActions(
           hasMore: result.hasMore ?? result.messages.length >= CHAT_MESSAGE_PAGE_SIZE,
           messagesCursor: result.nextBefore ?? null,
         });
-        const conversation = get().conversations.find(
-          (item) => item.id === conversationId
-        );
-        if ((conversation?.unreadCount ?? 0) > 0) void get().markRead(conversationId);
+        void get().markRead(conversationId);
       } catch {
         return;
       }
@@ -200,9 +200,7 @@ export function createChatConversationActions(
           messagesCursor: result.nextBefore ?? null,
           loadingMessages: false,
         });
-        if ((conversation?.unreadCount ?? 0) > 0) {
-          void get().markRead(conversationId);
-        }
+        void get().markRead(conversationId);
       } catch {
         if (get().currentConversationId === conversationId) {
           set({ loadingMessages: false });
@@ -351,7 +349,7 @@ export function createChatConversationActions(
         set((state) => ({
           conversations: state.conversations.map((item) =>
             item.id === conversationId
-              ? { ...item, unreadCount: 0, seen: true }
+              ? { ...item, unreadCount: 0, seen: item.isLastMessageFromMe ? item.seen : true }
               : item
           ),
         }));
