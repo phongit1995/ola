@@ -9,6 +9,7 @@ import (
 	messageEvents "ola-chat-server/internal/domain/message"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/relationships"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	userModule "ola-chat-server/internal/modules/user"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/services"
@@ -28,6 +29,7 @@ type Service struct {
 	userSettingSvc *usersetting.Service
 	relRepo        *relationships.Repository
 	relSvc         conversation.BlockChecker
+	limits         *sociallimit.Service
 	kafkaProducer  *kafka.Producer
 	s3             *services.S3Service
 	redis          *services.CacheService
@@ -35,7 +37,7 @@ type Service struct {
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, userSettingSvc *usersetting.Service, relRepo *relationships.Repository, relSvc *relationships.Service, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, userSettingSvc *usersetting.Service, relRepo *relationships.Repository, relSvc *relationships.Service, limits *sociallimit.Service, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		cache:          cache,
@@ -45,6 +47,7 @@ func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Re
 		userSettingSvc: userSettingSvc,
 		relRepo:        relRepo,
 		relSvc:         relSvc,
+		limits:         limits,
 		kafkaProducer:  kafkaProducer,
 		s3:             s3,
 		redis:          redis,

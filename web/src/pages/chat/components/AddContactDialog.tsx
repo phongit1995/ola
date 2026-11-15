@@ -9,6 +9,7 @@ import {
   useUserSearch,
   USER_SEARCH_TYPING_DEBOUNCE_MS,
 } from '@ola/shared/stores/user/useUserSearch';
+import { showSocialLimitNotice, useCloseOnSocialLimitBuy } from '@ola/shared/stores/socialLimit';
 
 interface AddContactDialogProps {
   open: boolean;
@@ -22,6 +23,7 @@ export function AddContactDialog({
   onOpenProfile,
 }: AddContactDialogProps) {
   const { t } = useTranslation();
+  useCloseOnSocialLimitBuy(onClose);
   const [query, setQuery] = useState('');
   const [sentIds, setSentIds] = useState<string[]>([]);
   const [acceptedIds, setAcceptedIds] = useState<string[]>([]);
@@ -39,8 +41,8 @@ export function AddContactDialog({
       await RelationshipService.sendRequest(user.id);
       setSentIds((ids) => [...ids, user.id]);
       toast.success(t('chat.friendRequestSent'));
-    } catch {
-      toast.error(t('chat.actionError'));
+    } catch (error) {
+      if (!showSocialLimitNotice(error)) toast.error(t('chat.actionError'));
     } finally {
       setBusyId(null);
     }

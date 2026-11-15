@@ -13,7 +13,7 @@ export const JAIL_TILE = 8;
 export const MAX_HOUSES = 3;
 export const MAX_ROUNDS = 30;
 export const TIME_LIMIT_MS = 1500000;
-export const TAKEOVER_MULTIPLIER = 2;
+export const TAKEOVER_PERCENT = 150;
 export const WIN_GROUPS = 3;
 export const MAX_DOUBLES = 3;
 export const JAIL_MAX_TURNS = 3;
@@ -22,6 +22,7 @@ export const FESTIVAL_MULTIPLIER = 2;
 export const TAX_RATE = 0.1;
 export const ERROR_PREFIX = "tycoon:";
 export const STATION_RENT = [0, 25, 50, 100, 200] as const;
+export const LEVEL_COST_PERCENT = [75, 100, 125] as const;
 
 export const PHASES = [
   "roll",
@@ -141,11 +142,10 @@ export const ERROR_CODES = [
   "no_jail_card",
   "not_street",
   "not_owner",
-  "not_group_owner",
+  "not_here",
+  "just_bought",
   "max_houses",
-  "build_uneven",
   "no_houses",
-  "sell_uneven",
   "not_takeover",
   "takeover_hotel",
 ] as const;
@@ -497,7 +497,7 @@ export const CARD_DATA = [
   {
     "id": "ch05",
     "deck": "chance",
-    "text": "Bay đến sân bay gần nhất. Nếu có chủ, trả gấp đôi tiền thuê.",
+    "text": "Đi đến sân bay gần nhất. Nếu có chủ, trả gấp đôi tiền thuê.",
     "effect": "moveToNearest",
     "kind": "station",
     "amount": 2

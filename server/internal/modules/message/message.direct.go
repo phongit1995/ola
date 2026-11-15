@@ -17,6 +17,14 @@ import (
 )
 
 func (s *Service) SendDirectMessage(senderID, recipientID uuid.UUID, messageType, content, metadata, clientMsgID string) (*MessageResponse, error) {
+	return s.sendDirectMessage(senderID, recipientID, messageType, content, metadata, clientMsgID, true)
+}
+
+func (s *Service) SendDirectMessageWithoutDailyLimit(senderID, recipientID uuid.UUID, messageType, content, metadata, clientMsgID string) (*MessageResponse, error) {
+	return s.sendDirectMessage(senderID, recipientID, messageType, content, metadata, clientMsgID, false)
+}
+
+func (s *Service) sendDirectMessage(senderID, recipientID uuid.UUID, messageType, content, metadata, clientMsgID string, dailyLimited bool) (*MessageResponse, error) {
 	if senderID == recipientID {
 		return nil, fmt.Errorf("cannot send direct message to yourself")
 	}
@@ -33,15 +41,25 @@ func (s *Service) SendDirectMessage(senderID, recipientID uuid.UUID, messageType
 	if err != nil {
 		return nil, err
 	}
+	release := func() {}
 	if existingID == nil {
 		if err := conversation.BlockIfPrivateFromStranger(s.userSettingSvc, s.relRepo, senderID, recipientID); err != nil {
 			return nil, err
+		}
+		if dailyLimited {
+			if release, err = conversation.ConsumeNewChatQuota(context.Background(), s.limits, s.relRepo, senderID, recipientID); err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	conversationID, isNew, err := s.convRepo.GetOrCreateDirectConversation(userA, userB)
 	if err != nil {
+		release()
 		return nil, fmt.Errorf("failed to get/create conversation: %w", err)
+	}
+	if !isNew {
+		release()
 	}
 
 	if isNew {

@@ -306,7 +306,7 @@ func (s *Service) sendGiftMessage(gift *models.Gift, tx *models.GiftTransaction)
 		s.logger.Errorw("Failed to marshal gift message metadata", "transaction_id", tx.ID, "error", err.Error())
 		return
 	}
-	msg, err := s.msgService.SendDirectMessage(
+	msg, err := s.msgService.SendDirectMessageWithoutDailyLimit(
 		tx.SenderID,
 		tx.ReceiverID,
 		constants.MessageTypeGift,

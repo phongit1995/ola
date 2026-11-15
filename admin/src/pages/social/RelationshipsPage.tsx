@@ -36,6 +36,8 @@ import { toIsoRange } from '@/lib/dateRange'
 import { UserBriefCell } from '@/components/UserBriefCell'
 import { PAGE_SIZE } from '@/lib/constants'
 import { RELATIONSHIP_STATUS_META, USER_STATS_SORTS, UUID_RE } from './constants'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { USER_RELATION_LINKS } from '@/pages/users/sections'
 
 const relationshipColumns: ColumnsType<RelationshipItem> = [
   {
@@ -248,6 +250,7 @@ export function RelationshipsPage() {
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <ShopSectionNav links={USER_RELATION_LINKS} />
       <Card>
         <Space wrap>
           <DateRangeFilter

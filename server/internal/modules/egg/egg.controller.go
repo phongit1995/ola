@@ -1,6 +1,7 @@
 package egg
 
 import (
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,7 @@ func (ctrl *Controller) ListGifts(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.ListGifts(packID)
+	resp, err := ctrl.service.ListGifts(setting.ClientFrom(c), packID)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -73,7 +74,7 @@ func (ctrl *Controller) Draw(c *gin.Context) (interface{}, error) {
 	var req OpenPackRequest
 	_ = c.ShouldBindJSON(&req)
 
-	result, err := ctrl.service.OpenPack(userID, packID, req.IdempotencyKey)
+	result, err := ctrl.service.OpenPack(setting.ClientFrom(c), userID, packID, req.IdempotencyKey)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

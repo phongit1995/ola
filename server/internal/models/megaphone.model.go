@@ -12,6 +12,7 @@ const (
 
 	MegaphoneTypeMessage = "message"
 	MegaphoneTypeGift    = "gift"
+	MegaphoneTypeLucky   = "lucky"
 )
 
 type Megaphone struct {
@@ -31,6 +32,7 @@ type Megaphone struct {
 	RemovedAt         *time.Time
 	ClientRequestID   string     `gorm:"type:varchar(64);not null"`
 	GiftTransactionID *uuid.UUID `gorm:"type:uuid"`
+	LuckyReward       JSONB      `gorm:"type:jsonb"`
 	CreatedAt         time.Time  `gorm:"not null;default:CURRENT_TIMESTAMP"`
 }
 

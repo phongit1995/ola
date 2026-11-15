@@ -1,3 +1,5 @@
+import type { PlatformRules } from './common'
+
 export type WheelSegmentKind =
   | 'miss'
   | 'ken_fixed'
@@ -40,6 +42,8 @@ export interface Wheel {
   freeDailyEnabled: boolean
   isEnabled: boolean
   sortOrder: number
+  megaphoneEnabled: boolean
+  oddsVisibility: PlatformRules
   segments: WheelSegment[]
 }
 
@@ -74,6 +78,8 @@ export interface CreateWheelRequest {
   freeDailyEnabled: boolean
   isEnabled: boolean
   sortOrder: number
+  megaphoneEnabled: boolean
+  oddsVisibility: PlatformRules
   segments?: WheelSegmentInput[]
 }
 
@@ -83,6 +89,8 @@ export interface UpdateWheelRequest {
   freeDailyEnabled?: boolean
   isEnabled?: boolean
   sortOrder?: number
+  megaphoneEnabled?: boolean
+  oddsVisibility?: PlatformRules
 }
 
 export interface SaveWheelConfigRequest {

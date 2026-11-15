@@ -21,6 +21,9 @@ const (
 
 	KenRefTypeMegaphone = "megaphone"
 
+	LuckyGameEgg   = "egg"
+	LuckyGameWheel = "wheel"
+
 	CacheKeyMegaphoneSchedule    = "MEGAPHONE:SCHEDULE"
 	CacheKeyMegaphoneItem        = "MEGAPHONE:ITEM:%s"
 	CacheKeyMegaphoneVirtualPass = "MEGAPHONE:VIRTUAL_PASS"
@@ -28,7 +31,9 @@ const (
 	CacheKeyMegaphoneLock        = "MEGAPHONE:LOCK"
 
 	giftRequestPrefix      = "gift:"
-	giftContentRunes       = 200
+	luckyRequestPrefix     = "lucky:"
+	systemContentRunes     = 200
+	luckyAnnounceDelay     = 5 * time.Second
 	queueAdvisoryLockKey   = int64(0x4d45474150484f4e)
 	publishTimeout         = 5 * time.Second
 	unknownSenderNameRunes = 8

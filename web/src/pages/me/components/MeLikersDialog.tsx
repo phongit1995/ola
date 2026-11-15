@@ -8,6 +8,7 @@ import { MeService, RelationshipService } from '@services';
 import type { PostAuthor } from '@app-types';
 import { PAGE_SIZE } from '../constants';
 import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
+import { showSocialLimitNotice, useCloseOnSocialLimitBuy } from '@ola/shared/stores/socialLimit';
 
 interface MeLikersDialogProps {
   postId: string;
@@ -23,6 +24,7 @@ export function MeLikersDialog({
   onOpenProfile,
 }: MeLikersDialogProps) {
   const { t } = useTranslation();
+  useCloseOnSocialLimitBuy(onClose);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -74,8 +76,8 @@ export function MeLikersDialog({
       await RelationshipService.sendRequest(user.id);
       setRequested((current) => ({ ...current, [user.id]: true }));
       toast.success(t('me.friendRequestSent'));
-    } catch {
-      toast.error(t('me.makeFriendError'));
+    } catch (error) {
+      if (!showSocialLimitNotice(error)) toast.error(t('me.makeFriendError'));
     }
   }
 

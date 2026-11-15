@@ -58,7 +58,7 @@ CREATE INDEX idx_megaphones_active_expires ON megaphones (expires_at) WHERE stat
 gifts.announce_enabled boolean NOT NULL DEFAULT false
 ```
 
-- `type`: `message` (loa thường) | `gift` (loa quà).
+- `type`: `message` (loa thường) | `gift` (loa quà) | `lucky` (loa trúng thưởng, xem 4.4d).
 - `status`: `active` | `removed`. Không xoá dòng: admin cần tra lại khi có khiếu nại.
 - `weight`: trọng số chốt lúc tạo, admin đổi mốc sau đó không ảnh hưởng tin đang chạy.
 - `first_played_at`: lúc server phát lượt đầu. Còn `NULL` nghĩa là tin đang chờ lượt đầu, dùng để tính trần tải (4.4) và lịch sử chỉ hiện loa thường đã phát.
@@ -208,6 +208,34 @@ expectedWait = số tin active, first_played_at NULL, còn hạn × slot
 **Nguyên tắc:** không phát được loa thì **quà vẫn phải tặng thành công**. Điều kiện nào không đạt chỉ trả `announced: false`. Khoá hàng đợi chỉ lấy khi quà đủ điều kiện 1 đến 3, để quà thường không phải chờ khoá.
 
 Quà tặng ở chat 1-1 vẫn được phát loa nếu đủ các điều kiện trên.
+
+### 4.4d Loa trúng thưởng (Đập trứng, Vòng quay)
+
+Người chơi trúng phần thưởng có cờ **Siêu may mắn** thì server tự phát loa, kiểu `lucky`, người gửi là người trúng.
+
+**Điều kiện, phải đủ cả 5:**
+
+1. Phần thưởng đập trứng (`egg_rewards.is_super_lucky`) hoặc ô vòng quay (`wheel_segments.is_super_lucky`) được tick Siêu may mắn.
+2. Gói trứng (`egg_packs.megaphone_enabled`) hoặc vòng quay (`wheels.megaphone_enabled`) đang bật "Phát loa khi trúng Siêu may mắn". Cột thêm ở migration `20261114000001_egg_wheel_odds_lucky_megaphones`, mặc định `true`, admin bật tắt trong form sửa gói/vòng quay.
+3. Loa đang bật cho nền tảng của người chơi (`MegaphoneConfig.EnabledFor`).
+4. Loa trúng thưởng gần nhất của người này đã quá `cooldownSeconds` (tính riêng theo `type = 'lucky'`).
+5. Chưa chạm trần tải (dùng chung `GiftQueueLimit` với loa quà).
+
+**Luồng:** lượt chơi lưu xong mới gọi `megaphone.AnnounceLuckyLater`, chờ 5 giây (`luckyAnnounceDelay`) để người trúng xem hết hiệu ứng rồi mới tạo loa bằng `CreateSystem` (hàm chung với loa quà). `client_request_id = 'lucky:<egg|wheel>:<drawId|spinId>'` nên gửi lại lượt chơi cùng `idempotencyKey` không tạo loa trùng. Không phát được loa thì lượt chơi vẫn thành công. Máy chết trong 5 giây chờ thì mất loa, chấp nhận được vì loa miễn phí.
+
+**Nội dung:** `content` là câu tiếng Việt không có tên người: `vừa đập trứng trúng <phần thưởng> 🎉` / `vừa quay trúng <phần thưởng> 🎉`. Tên phần thưởng: có số KEN thì `150,000 Ken` (vòng quay KEN ngẫu nhiên ra đúng số trúng), không thì nhãn admin đặt, cuối cùng `N ngày VIP` / `VIP <id>`. Trọng số = `messageWeight`, không trừ KEN, không có trong lịch sử màn Loa.
+
+**Dữ liệu phần thưởng:** cột `megaphones.lucky_reward` (JSONB) lưu `{ game, label, kenAmount?, vipDays?, vipTypeId? }`, API/socket trả ở trường `lucky` của `megaphone`.
+
+**Client:** app mới không hiện avatar, chỉ huy hiệu VIP của người trúng, `@username`, câu "vừa đập trứng trúng" / "vừa quay trúng" (i18n `megaphone.luckyEggVerb` / `luckyWheelVerb`), rồi hình phần thưởng (đồng Ken, icon VIP trúng được, hoặc icon ngày VIP) và tên phần thưởng màu `ola-megaphone-ink` kèm 🎉. Tên: Ken thì số Ken, icon VIP (không kèm số ngày) thì tên VIP trong danh mục (`vipName`, giống danh sách quà Đập trứng), còn lại là nhãn admin đặt. Thiếu `lucky` thì hiện `content`. App cũ không biết `lucky` nên hiện như loa thường `@username: vừa đập trứng trúng …`, vẫn đọc được. Admin lọc được loại "Loa trúng thưởng".
+
+### 4.4e Hiển thị trước tên người gửi
+
+Setting `megaphone.senderDisplay`: `vip` (mặc định) hoặc `avatar`, admin chọn ở trang Cài đặt loa, trả cho app qua `/settings/app` (`configs.megaphone.senderDisplay`). Áp dụng cho cả loa thường, loa quà (người tặng và người nhận) và loa trúng thưởng, ở viên loa lẫn danh sách lịch sử.
+
+- `vip`: chỉ icon VIP đang dùng; chưa có VIP hoặc hết hạn thì hiện icon mặc định `ola_smiley_online.png` (logic có sẵn trong `VipBadge`).
+- `avatar`: chỉ avatar kèm khung đang đeo (`AvatarWithFrame`, cỡ 24), không hiện icon VIP.
+- Client đọc bằng `selectMegaphoneSenderDisplay` (`megaphoneConfigStore`), thiếu trường thì coi là `vip`. App bản cũ chưa có phần này giữ cách hiển thị cũ.
 
 ### 4.4c Realtime
 

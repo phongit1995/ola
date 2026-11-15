@@ -7,7 +7,4 @@ const (
 	CacheTTLRelationship        = 86400
 	CacheTTLRelationshipAllowed = 300
 	CacheTTLFriendList          = 60
-
-	MaxFriendsPerUser      = 100
-	MaxPendingSentRequests = 200
 )

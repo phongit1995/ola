@@ -2,11 +2,12 @@ import { BOARD_SIZE, JAIL_TILE } from '../logic/constants';
 import { seatColor, SEAT_TINTS } from '../helpers/player';
 import { pawnLayout, type PawnSpot } from '../helpers/pawnLayout';
 import { tileCenter } from '../helpers/boardGeometry';
+import { cubeTransform } from '../helpers/dice';
 import { playSound } from '../audio';
 import { coinFlight, coinFountain, confettiBurst, confettiRain, dust, ring, shards, sparks } from './particles';
 import { animate, boardCenter, boardUnit, byId, centerOf, pawnEl, pawnFoot, podEl, reducedMotion, scaled, seatPoint, sleep, tileEl, tilePoint, type Point } from './runtime';
 import charUrls from './charArt';
-import { houseArt } from '../components/art';
+import { levelArt } from '../components/art';
 import { MAX_HOUSES } from '../logic/constants';
 
 const EASE_UP = 'cubic-bezier(.33,.66,.66,1)';
@@ -88,35 +89,63 @@ function diceWraps(): HTMLElement[] {
   return Array.from(document.querySelectorAll<HTMLElement>('[data-die]'));
 }
 
+const ROLL_MS = 820;
+
 export async function rollDice(values: [number, number]): Promise<void> {
   const wraps = diceWraps();
   const unit = boardUnit();
-  const faces = wraps.map((wrap) => wrap.querySelector<HTMLElement>('[data-face]'));
   playSound('shake');
-  const spin = reducedMotion()
-    ? 0
-    : setInterval(() => faces.forEach((face) => face && (face.dataset.face = String(1 + Math.floor(Math.random() * 6)))), scaled(70));
-  setTimeout(() => playSound('roll'), scaled(260));
+  setTimeout(() => playSound('roll'), scaled(ROLL_MS * 0.42));
   await Promise.all(
     wraps.map((wrap, index) => {
       const dir = index ? 1 : -1;
-      return animate(
-        wrap,
-        [
-          { transform: `translate(${dir * unit * 8}px,${unit * 3}px) rotate(${dir * -90}deg)` },
-          { transform: `translate(${dir * unit * 4}px,${-unit * 12}px) rotate(${dir * -45}deg) scale(1.2)`, offset: 0.34 },
-          { transform: 'translate(0,0) rotate(0deg) scale(1.18,.82)', offset: 0.6 },
-          { transform: `translate(0,${-unit * 3.5}px) scale(1.04)`, offset: 0.76 },
-          { transform: 'translate(0,0) scale(1.1,.9)', offset: 0.9 },
-          { transform: 'none' },
-        ],
-        { duration: 600, delay: index * 70, easing: 'cubic-bezier(.2,.75,.3,1)' },
-      );
+      const value = values[index] ?? 1;
+      const cube = wrap.querySelector('[data-cube]');
+      const shadow = wrap.querySelector('[data-die-shadow]');
+      const spinX = 2 + index;
+      const spinY = 1 + ((value + index) % 2);
+      const delay = index * 60;
+      const options = { duration: ROLL_MS, delay, fill: 'backwards' as const };
+      setTimeout(() => dust({ x: centerOf(wrap).x, y: wrap.getBoundingClientRect().bottom }, 4), scaled(delay + ROLL_MS * 0.46));
+      return Promise.all([
+        animate(
+          wrap,
+          [
+            { transform: `translate(${dir * unit * 12}px,${unit * 2}px) scale(.6)`, opacity: 0, easing: 'cubic-bezier(.3,.6,.5,1)' },
+            { transform: `translate(${dir * unit * 7}px,${-unit * 2.5}px) scale(1.04)`, opacity: 1, offset: 0.22, easing: 'cubic-bezier(.55,0,.9,.45)' },
+            { transform: 'translate(0,0) scale(1.08,.9)', offset: 0.46, easing: 'cubic-bezier(.2,.6,.4,1)' },
+            { transform: `translate(${-dir * unit * 0.6}px,${-unit * 2}px) scale(1)`, offset: 0.64, easing: 'cubic-bezier(.6,0,.9,.5)' },
+            { transform: 'translate(0,0) scale(1.04,.96)', offset: 0.8, easing: 'ease-out' },
+            { transform: `translate(0,${-unit * 1}px) scale(1)`, offset: 0.89, easing: 'ease-in' },
+            { transform: 'translate(0,0) scale(1)' },
+          ],
+          options,
+        ),
+        animate(
+          cube,
+          [
+            { transform: cubeTransform(value, index, spinX, spinY), easing: 'cubic-bezier(.25,.5,.45,1)' },
+            { transform: cubeTransform(value, index, spinX * 0.32, spinY * 0.3), offset: 0.46, easing: 'cubic-bezier(.3,.6,.4,1)' },
+            { transform: cubeTransform(value, index, 0.06, -0.04), offset: 0.8, easing: 'ease-out' },
+            { transform: cubeTransform(value, index) },
+          ],
+          options,
+        ),
+        animate(
+          shadow,
+          [
+            { transform: 'scale(.4)', opacity: 0 },
+            { transform: 'scale(.55)', opacity: 0.35, offset: 0.22 },
+            { transform: 'scale(1.1)', opacity: 1, offset: 0.46 },
+            { transform: 'scale(.8)', opacity: 0.6, offset: 0.64 },
+            { transform: 'scale(1.05)', opacity: 1, offset: 0.8 },
+            { transform: 'scale(1)', opacity: 1 },
+          ],
+          options,
+        ),
+      ]);
     }),
   );
-  if (spin) clearInterval(spin);
-  faces.forEach((face, index) => face && (face.dataset.face = String(values[index])));
-  wraps.forEach((wrap) => dust({ x: centerOf(wrap).x, y: wrap.getBoundingClientRect().bottom }, 5));
 }
 
 export async function revealDiceTotal(double: boolean): Promise<void> {
@@ -150,6 +179,7 @@ export interface WalkOptions {
   turn: number;
   commit: () => void;
   alive: () => boolean;
+  dir?: 1 | -1;
 }
 
 function hopDurations(count: number): number[] {
@@ -172,9 +202,10 @@ function fireLanding(tile: number): void {
 }
 
 // Cả quãng đường là một animation liền, không ghép từng bước, để không có khoảng hở giữa các ô.
-export async function walkPawn({ seat, from, count, positions, bankrupt, turn, commit, alive }: WalkOptions): Promise<void> {
+export async function walkPawn({ seat, from, count, positions, bankrupt, turn, commit, alive, dir = 1 }: WalkOptions): Promise<void> {
   const pawn = pawnEl(seat);
-  const to = (from + count) % BOARD_SIZE;
+  const tileAt = (i: number) => (((from + dir * i) % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE;
+  const to = tileAt(count);
   const start: PawnSpot | undefined = pawnLayout(positions, bankrupt, turn)[seat];
   const landing = [...positions];
   landing[seat] = to;
@@ -201,7 +232,7 @@ export async function walkPawn({ seat, from, count, positions, bankrupt, turn, c
 
   const points: Point[] = [{ x: 0, y: 0 }];
   for (let i = 1; i < count; i++) {
-    const center = tileCenter((from + i) % BOARD_SIZE);
+    const center = tileCenter(tileAt(i));
     points.push({ x: (center.x - start.x) * perX, y: (center.y - start.y) * perY });
   }
   points.push({ x: (end.x - start.x) * perX, y: (end.y - start.y) * perY });
@@ -229,7 +260,7 @@ export async function walkPawn({ seat, from, count, positions, bankrupt, turn, c
   let next = 1;
   const watch = () => {
     const now = Number(moving.currentTime ?? 0);
-    while (next <= count && now >= times[next] - 8) fireLanding((from + next++) % BOARD_SIZE);
+    while (next <= count && now >= times[next] - 8) fireLanding(tileAt(next++));
     if (next <= count && moving.playState === 'running') requestAnimationFrame(watch);
   };
   requestAnimationFrame(watch);
@@ -238,38 +269,6 @@ export async function walkPawn({ seat, from, count, positions, bankrupt, turn, c
   commit();
   moving.cancel();
   dust(pawnFoot(seat), 4);
-}
-
-export async function flyPawn(seat: number, color: string, commit: () => void): Promise<void> {
-  const pawn = pawnEl(seat);
-  if (!pawn || reducedMotion()) {
-    commit();
-    return;
-  }
-  const unit = boardUnit();
-  const before = pawn.getBoundingClientRect();
-  setMoving(pawn, true);
-  commit();
-  const after = pawn.getBoundingClientRect();
-  const duration = 640;
-  animate(pawn.querySelector('[data-pawn-shadow]'), [{ opacity: 1 }, { opacity: 0.2, offset: 0.5 }, { opacity: 1 }], { duration });
-  animate(pawn.querySelector('[data-pawn-move]'), [{ transform: `translate(${before.left - after.left}px,${before.top - after.top}px)` }, { transform: 'translate(0,0)' }], { duration, easing: 'cubic-bezier(.45,.05,.55,.95)' });
-  const trail = setInterval(() => sparks(pawnFoot(seat), 1, color, 1.2), 90);
-  await animate(
-    pawn.querySelector('[data-pawn-body]'),
-    [
-      { transform: 'translateY(0) scale(1)', easing: EASE_UP },
-      { transform: `translateY(${-unit * 15}px) scale(1.3)`, offset: 0.48, easing: EASE_DOWN },
-      { transform: 'translateY(0) scale(1.16,.84)', offset: 0.88, easing: 'ease-out' },
-      { transform: 'translateY(0) scale(1)' },
-    ],
-    { duration },
-  );
-  clearInterval(trail);
-  setMoving(pawn, false);
-  dust(pawnFoot(seat), 7);
-  const tile = pawn.dataset.pawnTile;
-  if (tile != null) ring(tilePoint(Number(tile)), unit * 11, color);
 }
 
 export function policeWhistle(seat: number): void {
@@ -387,7 +386,7 @@ export function tileCallout(tile: number, seat: number, title: string, value: st
   const bounds = host.getBoundingClientRect();
   const half = tag.offsetWidth / 2 + 6;
   tag.style.left = `${Math.min(Math.max(at.x, bounds.left + half), bounds.right - half)}px`;
-  const hold = Math.max(700, scaled(1300));
+  const hold = Math.max(900, scaled(1600));
   const remove = () => tag.remove();
   if (reducedMotion()) {
     setTimeout(remove, hold);
@@ -407,13 +406,97 @@ export function tileCallout(tile: number, seat: number, title: string, value: st
     .finished.then(remove, remove);
 }
 
-export async function buildHouse(tile: number, houses: number, seat: number, levelUp?: { from: number; to: number }): Promise<void> {
+export interface LevelCallout {
+  who: string;
+  action: string;
+  place: string;
+  money: string;
+  from: number;
+  to: number;
+  label: string;
+}
+
+const ARROW_SVG = '<svg viewBox="0 0 16 12" aria-hidden="true"><path d="M1 6h11M8 1.5 12.5 6 8 10.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function levelCallout(tile: number, seat: number, info: LevelCallout, tone: 'up' | 'down'): void {
+  const host = document.querySelector('.ty-board-screen');
+  const grid = byId('ty-s6-grid');
+  if (!host || !grid) return;
+  host.querySelectorAll(`.ty-lvl-call[data-callout="${tile}"]`).forEach((old) => old.remove());
+  const card = document.createElement('div');
+  card.className = `ty-lvl-call ty-lvl-call-${tone}`;
+  card.dataset.callout = String(tile);
+  card.style.setProperty('--seat', seatColor(seat));
+  const head = document.createElement('div');
+  head.className = 'ty-lvl-call-head';
+  const who = document.createElement('span');
+  who.className = 'ty-lvl-call-who';
+  who.textContent = info.who;
+  const action = document.createElement('span');
+  action.className = 'ty-lvl-call-act';
+  action.textContent = info.action;
+  const money = document.createElement('b');
+  money.className = 'ty-lvl-call-money';
+  money.textContent = info.money;
+  head.append(who, action, money);
+  const body = document.createElement('div');
+  body.className = 'ty-lvl-call-body';
+  const from = document.createElement('img');
+  from.className = 'ty-lvl-call-from';
+  from.src = levelArt(info.from);
+  from.alt = '';
+  const arrow = document.createElement('i');
+  arrow.innerHTML = ARROW_SVG;
+  const to = document.createElement('img');
+  to.className = 'ty-lvl-call-to';
+  to.src = levelArt(info.to);
+  to.alt = '';
+  const text = document.createElement('span');
+  text.className = 'ty-lvl-call-text';
+  const label = document.createElement('strong');
+  label.textContent = info.label;
+  const place = document.createElement('small');
+  place.textContent = info.place;
+  text.append(label, place);
+  body.append(from, arrow, to, text);
+  card.append(head, body);
+  host.append(card);
+  const rect = grid.getBoundingClientRect();
+  const inset = tileEl(0)?.getBoundingClientRect().width ?? boardUnit() * 13;
+  const at = tilePoint(tile);
+  const halfW = card.offsetWidth / 2 + 6;
+  const halfH = card.offsetHeight / 2 + 6;
+  const x = Math.min(Math.max(at.x, rect.left + inset + halfW), rect.right - inset - halfW);
+  const y = Math.min(Math.max(at.y, rect.top + inset + halfH), rect.bottom - inset - halfH);
+  card.style.left = `${x}px`;
+  card.style.top = `${y}px`;
+  const hold = Math.max(1100, scaled(1800));
+  const remove = () => card.remove();
+  if (reducedMotion()) {
+    setTimeout(remove, hold);
+    return;
+  }
+  card
+    .animate(
+      [
+        { transform: 'translate(-50%, -30%) scale(.7)', opacity: 0 },
+        { transform: 'translate(-50%, -50%) scale(1.04)', opacity: 1, offset: 0.1 },
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1, offset: 0.16 },
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1, offset: 0.88 },
+        { transform: 'translate(-50%, -62%) scale(.97)', opacity: 0 },
+      ],
+      { duration: hold, easing: 'cubic-bezier(.22,1,.36,1)' },
+    )
+    .finished.then(remove, remove);
+}
+
+export async function buildHouse(tile: number, houses: number, seat: number, callout?: LevelCallout): Promise<void> {
   const hotel = houses >= MAX_HOUSES;
   const el = tileEl(tile);
   const at = tilePoint(tile);
   const unit = boardUnit();
   playSound(hotel ? 'double' : 'pop');
-  if (levelUp) tileCallout(tile, seat, 'Nâng cấp', `Lv${levelUp.from} → Lv${levelUp.to}`, 'up', houseArt(levelUp.to));
+  if (callout) levelCallout(tile, seat, callout, 'up');
   dust({ x: at.x, y: at.y + unit }, 7);
   sparks(at, hotel ? 10 : 3, hotel ? '#E4573D' : '#2FA86F', 2.6);
   await animate(
@@ -432,9 +515,9 @@ export async function buildHouse(tile: number, houses: number, seat: number, lev
   }
 }
 
-export async function sellHouse(tile: number, seat: number, levelDown?: { from: number; to: number }): Promise<void> {
+export async function sellHouse(tile: number, seat: number, callout?: LevelCallout): Promise<void> {
   const at = tilePoint(tile);
-  if (levelDown) tileCallout(tile, seat, 'Hạ cấp', `Lv${levelDown.from} → Lv${levelDown.to}`, 'down', houseArt(levelDown.from));
+  if (callout) levelCallout(tile, seat, callout, 'down');
   shards(at, 6, '#2FA86F');
   coinFlight(at, seatPoint(seat), 3);
   playSound('crack');

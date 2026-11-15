@@ -324,6 +324,7 @@ func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversat
 			LastMessagePreview: shortContent,
 			LastMessageSender:  &senderID,
 			UnreadCount:        newUnread,
+			KeepUnreadCount:    member.UserID == senderID,
 			UpdatedAt:          &now,
 		})
 	}

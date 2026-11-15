@@ -4299,7 +4299,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Loại tin: message, gift",
+                        "description": "Loại tin: message, gift, lucky",
                         "name": "type",
                         "in": "query"
                     },
@@ -28241,8 +28241,14 @@ const docTemplate = `{
                 "kenCost": {
                     "type": "integer"
                 },
+                "megaphoneEnabled": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "oddsVisibility": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_setting.PlatformRules"
                 },
                 "sortOrder": {
                     "type": "integer"
@@ -35401,6 +35407,31 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_domain_megaphone.LuckyInfo": {
+            "type": "object",
+            "properties": {
+                "game": {
+                    "type": "string",
+                    "example": "egg"
+                },
+                "kenAmount": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "label": {
+                    "type": "string",
+                    "example": "Icon VIP Kim Cương"
+                },
+                "vipDays": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "vipTypeId": {
+                    "type": "integer",
+                    "example": 7
+                }
+            }
+        },
         "ola-chat-server_internal_domain_megaphone.Megaphone": {
             "type": "object",
             "properties": {
@@ -35426,6 +35457,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "lucky": {
+                    "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.LuckyInfo"
                 },
                 "receiver": {
                     "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Sender"
@@ -36291,9 +36325,15 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 0
                 },
+                "megaphoneEnabled": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string",
                     "maxLength": 100
+                },
+                "oddsVisibility": {
+                    "type": "object"
                 },
                 "sortOrder": {
                     "type": "integer"
@@ -36350,8 +36390,14 @@ const docTemplate = `{
                 "kenCost": {
                     "type": "integer"
                 },
+                "megaphoneEnabled": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "oddsVisibility": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_setting.PlatformRules"
                 },
                 "sortOrder": {
                     "type": "integer"
@@ -36599,8 +36645,14 @@ const docTemplate = `{
                 "kenCost": {
                     "type": "integer"
                 },
+                "megaphoneEnabled": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "oddsVisibility": {
+                    "type": "object"
                 },
                 "sortOrder": {
                     "type": "integer"
@@ -38521,6 +38573,34 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_modules_setting.PlatformRule": {
+            "type": "object",
+            "properties": {
+                "disableVersions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_setting.PlatformRules": {
+            "type": "object",
+            "properties": {
+                "android": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_setting.PlatformRule"
+                },
+                "ios": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_setting.PlatformRule"
+                },
+                "web": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_setting.PlatformRule"
+                }
+            }
+        },
         "ola-chat-server_internal_modules_setting.StoryCookie": {
             "type": "object",
             "properties": {
@@ -39772,9 +39852,15 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 0
                 },
+                "megaphoneEnabled": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string",
                     "maxLength": 100
+                },
+                "oddsVisibility": {
+                    "type": "object"
                 },
                 "segments": {
                     "type": "array",
@@ -40158,8 +40244,14 @@ const docTemplate = `{
                 "kenCost": {
                     "type": "integer"
                 },
+                "megaphoneEnabled": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "oddsVisibility": {
+                    "type": "object"
                 },
                 "sortOrder": {
                     "type": "integer"
@@ -40192,8 +40284,14 @@ const docTemplate = `{
                 "kenCost": {
                     "type": "integer"
                 },
+                "megaphoneEnabled": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "oddsVisibility": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_setting.PlatformRules"
                 },
                 "segments": {
                     "type": "array",

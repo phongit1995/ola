@@ -17,7 +17,7 @@ Chốt ngày 19/10/2026. Dữ liệu nằm ở `logic/board.json`, `logic/cards.
 | Mua lại đất | trả thuê xong được mua lại thành phố chưa lên Khách sạn, giá ×2 (đất + nâng cấp), trả cho chủ cũ — chốt 20/10/2026 |
 | Thắng ngay | trọn 3 nhóm màu, trọn 4 thành phố một cạnh bàn, hoặc cả 4 sân bay |
 | Giới hạn ván | 30 vòng hoặc 25 phút (kiểu ZingPlay), sau đó xếp theo tổng tài sản |
-| Ô đặc biệt kiểu ZingPlay | Lễ hội: thuê 1 thành phố ×2 · Du lịch: lượt sau bay tới ô bất kỳ · Thuế 10% tài sản — chốt 20/10/2026, danh sách ô ở [10-board-tiles.md](./10-board-tiles.md) |
+| Ô đặc biệt kiểu ZingPlay | Lễ hội: thuê 1 thành phố ×2 · Du lịch: bay ngay tới ô bất kỳ (từ 14/11/2026; số mô phỏng dưới đây đo với luật cũ bay ở lượt sau) · Thuế 10% tài sản — chốt 20/10/2026, danh sách ô ở [10-board-tiles.md](./10-board-tiles.md) |
 
 Ô cạnh tại màn 390 rộng 38 px (bàn 40 ô chỉ 29,6 px), đủ chỗ cho tên thành phố, tranh nhỏ và giá.
 
@@ -74,6 +74,49 @@ Vì tính trên tổng vốn đã bỏ ra, mọi nhóm có cùng "tỷ suất": 
 Hạ cấp hoàn 50% giá mỗi cấp. Thẻ sửa nhà tính theo **tổng số cấp** người rút đang có: ch10 25 tr/cấp, cm12 40 tr/cấp.
 
 Hiển thị cấp trên ô: cấp 1 = 1 nhà xanh ngọc, cấp 2 = 2 nhà, cấp 3 = 1 khách sạn san hô (`MAX_HOUSES = 3`).
+
+## 5c. Luật nâng nhà tại chỗ (14/11/2026)
+
+Đổi luật: chỉ nâng được thành phố mình đang đứng, không cần trọn nhóm, bỏ nâng/bán đều; ô vừa mua chưa nâng được, phải đáp lại lần sau; Du lịch bay ngay trong lượt. Đo lại 300 ván bot Thường mỗi cấu hình (`logic/economy.test.ts`, script đo cùng công thức):
+
+| | 2 người | 4 người |
+|---|---|---|
+| Ván phân thắng bại trước 30 vòng | 91% | 91% |
+| Thắng ngay (3 nhóm / trọn cạnh) | 37% | 82% |
+| Ván có mua lại đất | 57% | 93% |
+| Kết thúc do phá sản | 50% | 4% |
+| Số vòng trung vị | 17 | 17 |
+| Tiền thuê lớn nhất trung vị | 64 | 660 |
+| Số lần nâng cấp trung vị mỗi ván | 6 | 12 |
+
+So với luật cũ (§5): số vòng gần như cũ (18/16 → 17/17). Nhà lên cấp chậm vì phải đáp lại đúng ô, nên ván 2 người ít nhà to (thuê lớn nhất trung vị chỉ 64) và mua lại đất vẫn thường xuyên. Bản đo trước khi chặn nâng ô vừa mua (cùng ngày): 11/13 vòng, 9%/38% ván có mua lại, 83% ván 2 người kết thúc do phá sản. Máy Khó thắng máy Thường ~58% (400 ván), Thường thắng Dễ ~81%, Khó thắng Dễ ~85%; dự phòng khi nâng của máy Khó bớt `CASH_BUFFER / 2`. Muốn nhà lên nhanh hơn thì có thể giảm `houseCost`.
+
+Cùng ngày đổi tiếp: mua lại ×2 → ×1,5 và giá nâng tăng dần 75% / 100% / 125%. Đo lại 300 ván: 2 người 90% phân thắng bại, 40% thắng ngay, 64% ván có mua lại (trước 57%), 17 vòng; 4 người 94% / 84% / 95% (trước 93%), 17 vòng. Tỷ lệ dẵm vào đất trống vẫn ~91% (2 người), tiền thuê mỗi lần trung vị 28: hai thay đổi này không làm tiền thuê cao lên, chỉ làm mua lại rẻ hơn. Máy Khó thắng Thường ~59%, Thường thắng Dễ ~82%, Khó thắng Dễ ~89% (400 ván).
+
+**15/11/2026: mua xong được xây Nhà ngay** (Biệt thự, Khách sạn vẫn phải đáp lại). Thử 7 phương án trên bản sao engine trước khi chọn: tăng thuê đất trống lên 20–25% giá gần như không đổi cảm giác (vẫn ~90% lần dẵm là đất trống), bỏ hẳn luật vừa mua thì ván còn 11–13 vòng và 86% ván 2 người kết thúc vì phá sản. Phương án chốt, đo 300 ván bot Thường mỗi cấu hình:
+
+| | 2 người | 4 người |
+|---|---|---|
+| Dẵm vào đất trống / Nhà / Biệt thự / Khách sạn | 20% / 74% / 3% / 4% | 13% / 79% / 2% / 6% |
+| Tiền thuê mỗi lần trung vị · 10% đắt nhất từ | 85 · 190 | 90 · 210 |
+| Số vòng trung vị | 19 | 17 |
+| Phân thắng bại trước 30 vòng | 88% | 93% |
+| Thắng ngay | 43% | 91% |
+| Kết thúc do phá sản | 45% | 3% |
+| Ván có mua lại đất | 43% | 91% |
+
+Máy Khó thắng Thường ~59%, Thường thắng Dễ ~79%, Khó thắng Dễ ~83% (400 ván).
+
+**Thời gian một ván (đo lại 15/11/2026).** Chạy thật trên Chrome ở tốc độ ×1, có đủ animation hiện tại (xúc xắc 3D, quân đi từng ô kể cả thẻ/Du lịch/vào tù, hộp Xây Nhà, tự hết lượt 0,7 s, nhịp chờ của máy `BOT_DELAY_MS`). Người chơi tự động nghĩ theo giả định §5b. Đo được 20,4 giây/vòng (2 người, 27 vòng) và 40,3 giây/vòng (4 người, 14 vòng). Tách ra thì phần animation + mạng khoảng 11,3 / 26,8 giây mỗi vòng; ván 3 người nội suy. Online thay nhịp chờ của máy bằng thời gian nghĩ của người thật (12,8 / 23,7 giây mỗi vòng) và cộng 0,15 giây mạng mỗi nước. Số vòng lấy từ 300 ván bot: 2 người 10 / 19 / 30 (10% ngắn nhất / trung vị / 10% dài nhất), 3 người 11 / 18 / 30, 4 người 10 / 17 / 28.
+
+| | 2 người | 3 người | 4 người |
+|---|---|---|---|
+| 1 người + máy (trung vị · 10% ngắn · 10% dài) | 6,5 · 3,4 · 10,2 phút | 9,0 · 5,5 · 15,0 phút | 11,4 · 6,7 · 18,8 phút |
+| Online, bấm bình thường | 7,9 · 4,2 · 12,6 phút | 11,6 · 7,1 · 19,3 phút | 14,8 · 8,7 · 24,5 phút |
+| Online, bấm chậm (×1,8) | 11,2 · 5,9 · 17,7 phút | 16,0 · 9,8 · chạm 25 phút | 20,2 · 11,9 · chạm 25 phút |
+| Chờ giữa 2 lượt của mình (online bình thường) | ~13 giây | ~26 giây | ~39 giây |
+
+So với 20/10 (online bấm nhanh 6,6 / 8,8 / 11,1 phút), ván dài hơn khoảng 20–35%: thêm 1–2 vòng, quân đi từng ô thay vì bay, hộp Xây Nhà sau mỗi lần mua. Ván 3–4 người chơi chậm có thể chạm giới hạn 25 phút.
 
 ## 5. Kết quả mô phỏng — luật hiện tại (mua lại ×2, thắng ngay, Lễ hội / Du lịch / Thuế, 30 vòng / 25 phút)
 

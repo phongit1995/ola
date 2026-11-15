@@ -75,6 +75,7 @@ type State struct {
 	PendingDebts  []Debt        `json:"pendingDebts"`
 	Card          *CardRef      `json:"card"`
 	Festival      int           `json:"festival"`
+	Bought        int           `json:"bought"`
 	ChanceDeck    []int         `json:"chanceDeck"`
 	ChestDeck     []int         `json:"chestDeck"`
 	Rng           string        `json:"rng"`
@@ -100,6 +101,7 @@ func newState(seed int64, playerCount int) *State {
 		Phase:         PhaseRoll,
 		PendingDebts:  []Debt{},
 		Festival:      -1,
+		Bought:        -1,
 		ChanceDeck:    deckOrder(len(chanceCards)),
 		ChestDeck:     deckOrder(len(chestCards)),
 		Rng:           strconv.FormatUint(uint64(seed), 10),
@@ -231,6 +233,9 @@ func validateState(s *State) error {
 	}
 	if s.Festival < -1 || s.Festival >= BoardSize {
 		return fmt.Errorf("invalid festival %d", s.Festival)
+	}
+	if s.Bought < -1 || s.Bought >= BoardSize {
+		return fmt.Errorf("invalid bought %d", s.Bought)
 	}
 	if s.Round < 1 {
 		return fmt.Errorf("invalid round %d", s.Round)

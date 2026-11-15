@@ -105,7 +105,7 @@ func TestGiftContentIsCutToColumnSize(t *testing.T) {
 	}
 	sender := megaphoneEvents.Sender{Username: string(long)}
 	receiver := megaphoneEvents.Sender{Username: "b", FullName: "Bình"}
-	if got := []rune(giftContent(sender, receiver, "Hoa", 1)); len(got) != giftContentRunes {
+	if got := []rune(giftContent(sender, receiver, "Hoa", 1)); len(got) != systemContentRunes {
 		t.Fatalf("content has %d runes", len(got))
 	}
 	if got := giftContent(megaphoneEvents.Sender{Username: "an"}, receiver, "Hoa", 5); got != "an đã tặng Bình Hoa ×5" {

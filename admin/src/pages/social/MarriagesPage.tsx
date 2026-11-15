@@ -29,6 +29,8 @@ import { UserBriefCell } from '@/components/UserBriefCell'
 import { PAGE_SIZE } from '@/lib/constants'
 import { MARRIAGE_STATUS_META, PROPOSAL_STATUS_META } from './constants'
 import { daysBetween, divorcedByName } from './utils'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { USER_RELATION_LINKS } from '@/pages/users/sections'
 
 const marriageColumns: ColumnsType<MarriageItem> = [
   {
@@ -178,6 +180,7 @@ export function MarriagesPage() {
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <ShopSectionNav links={USER_RELATION_LINKS} />
       <Card>
         <Space wrap>
           <DateRangeFilter

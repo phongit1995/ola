@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { BOARD, tilesOfGroup } from '../logic/board';
+import { BOARD } from '../logic/board';
 import { FESTIVAL_MULTIPLIER, GO_SALARY, JAIL_FINE, MAX_HOUSES, TAX_RATE } from '../logic/constants';
-import { takeoverPrice } from '../logic/engine';
+import { levelCost, takeoverPrice } from '../logic/engine';
 import { buildPlan, canBuild, currentRent, sellPlan } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { BottomSheet } from './BottomSheet';
 import { groupColor, GroupTag, RentLadder, SeatTag, TileThumb, type LadderPick } from './DeedParts';
-import { MoneyBadge, UiButton } from './Ui';
+import { levelArt } from './art';
+import { MoneyBadge, UiButton, UiModal } from './Ui';
 import { useTycoon } from '../store/useTycoon';
 
 function specialDescription(idx: number): string {
@@ -56,7 +57,7 @@ export function TileSheet({ idx }: { idx: number }) {
   const street = tile.kind === 'street';
   const property = street || tile.kind === 'station';
   const price = tile.price ?? 0;
-  const houseCost = tile.houseCost ?? 0;
+  const nextCost = street && state.houses < MAX_HOUSES ? levelCost(idx, state.houses + 1) : 0;
   const canBuyHere = myTurn && view.phase === 'decide' && me?.pos === idx && owner < 0;
   const manageAllowed = myTurn && owner === you && street && (view.phase === 'manage' || (view.phase === 'debt' && view.debt?.by === you));
   const buildHint = manageAllowed && view.phase === 'manage' ? canBuild(view, you, idx) : null;
@@ -70,11 +71,6 @@ export function TileSheet({ idx }: { idx: number }) {
   const plan = canUpgrade && !selling ? buildPlan(view, you, idx, target) : null;
   const sale = canDowngrade ? sellPlan(view, you, idx, selling ? target : state.houses - 1) : null;
   const short = plan ? Math.max(0, plan.cost - myCash) : 0;
-  const alongside = (moves: number[], dir: 1 | -1) =>
-    tilesOfGroup(tile.group ?? '')
-      .filter((g) => g !== idx && moves.includes(g))
-      .map((g) => `${BOARD[g].name} ${dir > 0 ? 'lên' : 'xuống'} Lv${view.tiles[g].houses + dir * moves.filter((t) => t === g).length}`);
-  const sideNote = selling && sale ? alongside(sale.tiles, -1) : plan ? alongside(plan.tiles, 1) : [];
   const pick: LadderPick | undefined =
     canUpgrade || canDowngrade ? { target, can: (houses) => houses !== state.houses && (houses > state.houses ? canUpgrade : canDowngrade), onPick: setWant, selling } : undefined;
   const run = (type: 'BUILD' | 'SELL_HOUSE', tiles: number[]) => {
@@ -86,6 +82,24 @@ export function TileSheet({ idx }: { idx: number }) {
     sendMove(move);
     closeSheet();
   };
+
+  const upgradeHere = manageAllowed && view.phase === 'manage' && me?.pos === idx;
+  const manageButtons = (
+    <>
+      <UiButton tone={selling ? 'red' : 'paper'} gain={sale?.cost} disabled={busy || !sale} onClick={() => sale && run('SELL_HOUSE', sale.tiles)}>
+        Bán nhà
+      </UiButton>
+      <UiButton tone="gold" price={plan?.cost ?? nextCost} disabled={busy || !plan || short > 0} onClick={() => plan && run('BUILD', plan.tiles)} data-dialog-initial-focus>
+        Nâng cấp
+      </UiButton>
+    </>
+  );
+  const manageReasons = (
+    <>
+      {plan && short > 0 ? <p className="ty-sheet-reason">Thiếu {formatMoney(short)}</p> : null}
+      {!canUpgrade && buildHint && !buildHint.ok && !selling ? <p className="ty-sheet-reason">{buildHint.reason}</p> : null}
+    </>
+  );
 
   const footer =
     canBuyHere || canFestivalHere || canTravelHere || manageAllowed ? (
@@ -107,26 +121,88 @@ export function TileSheet({ idx }: { idx: number }) {
         ) : null}
         {canTravelHere ? (
           <UiButton tone="gold" block disabled={busy} onClick={() => act({ type: 'TRAVEL', tile: idx })}>
-            Bay tới đây{passesGo ? ` · +${formatMoney(GO_SALARY)}` : ''}
+            Đi tới đây{passesGo ? ` · +${formatMoney(GO_SALARY)}` : ''}
           </UiButton>
         ) : null}
         {manageAllowed ? (
           <>
-            <div className="ui-actions ty-manage-actions">
-              <UiButton tone={selling ? 'red' : 'paper'} gain={sale?.cost} disabled={busy || !sale} onClick={() => sale && run('SELL_HOUSE', sale.tiles)}>
-                {selling ? `Hạ Lv${target}` : 'Hạ'}
-              </UiButton>
-              <UiButton tone="gold" price={plan?.cost ?? houseCost} disabled={busy || !plan || short > 0} onClick={() => plan && run('BUILD', plan.tiles)}>
-                {plan ? `Lên Lv${target}` : 'Nâng'}
-              </UiButton>
-            </div>
-            {sideNote.length > 0 ? <p className="ty-sheet-reason ty-sheet-reason-info">Đều cả nhóm: {sideNote.join(', ')}</p> : null}
-            {plan && short > 0 ? <p className="ty-sheet-reason">Thiếu {formatMoney(short)}</p> : null}
-            {!canUpgrade && buildHint && !buildHint.ok && !selling ? <p className="ty-sheet-reason">{buildHint.reason}</p> : null}
+            <div className="ui-actions ty-manage-actions">{manageButtons}</div>
+            {manageReasons}
           </>
         ) : null}
       </>
     ) : null;
+
+  const ladder = property ? (
+    <>
+      {pick ? <p className="ty-ladder-hint">Chạm vào cấp muốn nâng lên hoặc bán xuống</p> : null}
+      <RentLadder view={view} idx={idx} pick={pick} />
+      <p className="ty-deed-facts">
+        {street && (owner < 0 || owner === you) ? (
+          <>
+            <span>
+              Nâng {levelCost(idx, 1)} · {levelCost(idx, 2)} · {formatMoney(levelCost(idx, 3))}
+            </span>
+            <span>Bán lại nửa giá nâng</span>
+          </>
+        ) : null}
+        {street && owner >= 0 && state.houses < MAX_HOUSES ? (
+          <span>
+            {owner === you ? 'Người khác mua lại' : 'Mua lại'} {formatMoney(takeoverPrice(view, idx))}
+          </span>
+        ) : null}
+        {street && owner >= 0 && state.houses >= MAX_HOUSES ? <span>Khách sạn không mua lại được</span> : null}
+        {street && owner < 0 ? <span>Trọn nhóm thuê ×2</span> : null}
+      </p>
+    </>
+  ) : null;
+  const festivalNote = view.festival === idx ? <p className="ty-deed-note ty-deed-note-gold">Đang có Lễ hội · thuê ×{FESTIVAL_MULTIPLIER}</p> : null;
+
+  if (upgradeHere && view.bought === idx && state.houses === 0 && canUpgrade) {
+    const housePlan = buildPlan(view, you, idx, 1);
+    const houseShort = housePlan ? Math.max(0, housePlan.cost - myCash) : 0;
+    return (
+      <UiModal
+        closable
+        onClose={closeSheet}
+        kicker={<GroupTag idx={idx} />}
+        title={tile.name}
+        icon={<TileThumb idx={idx} className="ty-buy-thumb" />}
+        actions={
+          <>
+            <UiButton disabled={busy} onClick={closeSheet}>
+              Để sau
+            </UiButton>
+            <UiButton tone="gold" price={housePlan?.cost ?? nextCost} disabled={busy || !housePlan || houseShort > 0} onClick={() => housePlan && run('BUILD', housePlan.tiles)} data-dialog-initial-focus>
+              Xây Nhà
+            </UiButton>
+          </>
+        }
+      >
+        <div className="ty-buildnow" style={{ '--accent': groupColor(idx) } as CSSProperties}>
+          <img className="ty-buildnow-art" src={levelArt(1)} alt="" draggable={false} />
+          <p className="ty-buy-ask">Xây Nhà luôn không?</p>
+          <p className="ty-buildnow-rent">
+            Người khác dẵm vào trả <b>{formatMoney(tile.rent?.[1] ?? 0)}</b> thay vì {formatMoney(currentRent(view, idx))}
+          </p>
+          <p className="ty-buildnow-note">Biệt thự, Khách sạn: lần sau đáp lại ô này mới nâng tiếp.</p>
+          {houseShort > 0 ? <p className="ty-sheet-reason">Thiếu {formatMoney(houseShort)}</p> : null}
+        </div>
+      </UiModal>
+    );
+  }
+
+  if (upgradeHere) {
+    return (
+      <UiModal wide closable onClose={closeSheet} kicker={<GroupTag idx={idx} />} title={tile.name} icon={<TileThumb idx={idx} className="ty-buy-thumb" />} actions={manageButtons}>
+        <div className="ty-upgrade" style={{ '--accent': groupColor(idx) } as CSSProperties}>
+          {festivalNote}
+          {ladder}
+          {manageReasons}
+        </div>
+      </UiModal>
+    );
+  }
 
   return (
     <BottomSheet onClose={closeSheet} title={tile.name} accent={groupColor(idx)} footer={footer}>
@@ -139,7 +215,7 @@ export function TileSheet({ idx }: { idx: number }) {
         </span>
       </header>
 
-      {view.festival === idx ? <p className="ty-deed-note ty-deed-note-gold">Đang có Lễ hội · thuê ×{FESTIVAL_MULTIPLIER}</p> : null}
+      {festivalNote}
 
       {property && owner >= 0 && owner !== you ? (
         <p className="ty-deed-note ty-deed-note-coral">
@@ -148,25 +224,7 @@ export function TileSheet({ idx }: { idx: number }) {
       ) : null}
 
       {property ? (
-        <>
-          {pick ? <p className="ty-ladder-hint">Chạm cấp muốn nâng hoặc hạ</p> : null}
-          <RentLadder view={view} idx={idx} pick={pick} />
-          <p className="ty-deed-facts">
-            {street && (owner < 0 || owner === you) ? (
-              <>
-                <span>Nâng {formatMoney(houseCost)}/cấp</span>
-                <span>Hạ +{formatMoney(Math.floor(houseCost / 2))}/cấp</span>
-              </>
-            ) : null}
-            {street && owner >= 0 && state.houses < MAX_HOUSES ? (
-              <span>
-                {owner === you ? 'Người khác mua lại' : 'Mua lại'} {formatMoney(takeoverPrice(view, idx))}
-              </span>
-            ) : null}
-            {street && owner >= 0 && state.houses >= MAX_HOUSES ? <span>Khách sạn không mua lại được</span> : null}
-            {street && owner < 0 ? <span>Trọn nhóm thuê ×2</span> : null}
-          </p>
-        </>
+        ladder
       ) : (
         <p className="ty-deed-desc">{specialDescription(idx)}</p>
       )}

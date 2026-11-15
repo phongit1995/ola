@@ -53,3 +53,16 @@ export interface ChatBotSetting {
 export interface ContentFilterSetting {
   bannedWords: string[]
 }
+
+export interface SocialLimitTier {
+  newChatsPerDay: number
+  friendRequestsPerDay: number
+  maxFriends: number
+  maxPendingRequests: number
+}
+
+export interface SocialLimitSetting {
+  enabled: boolean
+  normal: SocialLimitTier
+  vip: SocialLimitTier
+}

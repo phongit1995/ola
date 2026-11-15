@@ -1,4 +1,4 @@
-import type { WheelSegment, WheelSegmentKind } from '@/types'
+import type { PlatformRules, WheelSegment, WheelSegmentKind } from '@/types'
 
 export interface WheelKindMeta {
   kind: WheelSegmentKind
@@ -30,5 +30,7 @@ export interface LoadedWheel {
   kenCost: number
   freeDailyEnabled: boolean
   isEnabled: boolean
+  megaphoneEnabled: boolean
+  oddsVisibility: PlatformRules
   segments: WheelSegment[]
 }

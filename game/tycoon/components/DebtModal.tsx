@@ -2,6 +2,7 @@ import { useEffect, useId, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BOARD } from '../logic/board';
 import { LEVEL_NAMES } from '../logic/constants';
+import { housesRefund, levelCost } from '../logic/engine';
 import { canSell } from '../logic/rules-hint';
 import { formatMoney } from '../helpers/format';
 import { SeatTag, TileThumb } from './DeedParts';
@@ -41,7 +42,7 @@ export function DebtModal() {
   const myCash = cash[you] ?? view.players[you].cash;
   const busy = movePending || replaying;
   const houses = view.tiles.map((t, idx) => ({ idx, ...t })).filter((t) => t.owner === you && t.houses > 0);
-  const liquidation = houses.reduce((sum, t) => sum + (t.houses * (BOARD[t.idx].houseCost ?? 0)) / 2, 0);
+  const liquidation = houses.reduce((sum, t) => sum + housesRefund(t.idx, t.houses), 0);
   const canPay = myCash >= debt.amount;
   const hopeless = myCash + liquidation < debt.amount;
   const seconds = Math.max(0, Math.ceil(timerLeftMs / 1000));
@@ -108,7 +109,7 @@ export function DebtModal() {
                     <small>{LEVEL_NAMES[t.houses]}</small>
                   </span>
                   {art ? <img className="ty-debt-house" src={art} alt="" draggable={false} /> : null}
-                  <UiButton size="sm" price={(BOARD[t.idx].houseCost ?? 0) / 2} disabled={busy || !hint.ok} title={hint.ok ? undefined : hint.reason} aria-label={`Bán một cấp ${BOARD[t.idx].name}`} onClick={() => sendMove({ type: 'SELL_HOUSE', tile: t.idx })}>
+                  <UiButton size="sm" price={Math.floor(levelCost(t.idx, t.houses) / 2)} disabled={busy || !hint.ok} title={hint.ok ? undefined : hint.reason} aria-label={`Bán một cấp ${BOARD[t.idx].name}`} onClick={() => sendMove({ type: 'SELL_HOUSE', tile: t.idx })}>
                     Bán
                   </UiButton>
                 </li>

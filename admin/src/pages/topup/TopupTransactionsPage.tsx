@@ -37,6 +37,8 @@ import { DateRangeFilter } from '@/components/DateRangeFilter'
 import { toIsoRange } from '@/lib/dateRange'
 import { PAGE_SIZE } from '@/lib/constants'
 import { CREDITABLE_STATUSES, STATUS_META } from './constants'
+import { ShopSectionNav } from '@/pages/shop/ShopSectionNav'
+import { USER_KEN_LINKS } from '@/pages/users/sections'
 
 export function TopupTransactionsPage() {
   const { message } = App.useApp()
@@ -204,6 +206,7 @@ export function TopupTransactionsPage() {
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <ShopSectionNav links={USER_KEN_LINKS} />
       <Row gutter={[16, 16]}>
         <Col xs={12} lg={6}>
           <Card>

@@ -1,5 +1,5 @@
 import { VIP_CATALOG } from '@/lib/vipCatalog'
-import type { UserAvatarFrameSource, ViolationSource } from '@/types'
+import type { SocialLimitSetting, UserAvatarFrameSource, ViolationSource } from '@/types'
 import type {
   UserFramePurchaseRole,
   UserFramesTab,
@@ -112,3 +112,16 @@ export const VIOLATION_STATE_TAG: Record<ViolationState, { label: string; color:
   expired: { label: 'Hết hạn', color: 'default' },
   revoked: { label: 'Đã gỡ', color: 'default' },
 }
+
+export const SOCIAL_LIMIT_SETTING_KEY = 'social_limit'
+
+export const SOCIAL_DAILY_MAX = 1000
+export const SOCIAL_FRIENDS_MAX = 10000
+
+export const DEFAULT_SOCIAL_LIMIT_SETTING: SocialLimitSetting = {
+  enabled: true,
+  normal: { newChatsPerDay: 5, friendRequestsPerDay: 5, maxFriends: 100, maxPendingRequests: 200 },
+  vip: { newChatsPerDay: 20, friendRequestsPerDay: 20, maxFriends: 200, maxPendingRequests: 200 },
+}
+
+export const USER_SETTINGS_TAB_KEYS = ['social-limit', 'username-changes'] as const

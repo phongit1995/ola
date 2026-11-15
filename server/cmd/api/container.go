@@ -37,6 +37,7 @@ import (
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/setting"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	"ola-chat-server/internal/modules/story"
 	"ola-chat-server/internal/modules/topup"
 	"ola-chat-server/internal/modules/user"
@@ -90,6 +91,7 @@ func NewContainer(opts ...dig.Option) (*dig.Container, error) {
 		user.Provider,
 		usersetting.Provider,
 		notification.Provider,
+		sociallimit.Provider,
 		relationships.Provider,
 		conversation.Provider,
 		message.Provider,

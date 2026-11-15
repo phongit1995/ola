@@ -39,9 +39,12 @@ type SendParams struct {
 	Now             time.Time
 }
 
-type GiftParams struct {
+type SystemParams struct {
+	Type              string
 	SenderID          uuid.UUID
-	GiftTransactionID uuid.UUID
+	ClientRequestID   string
+	GiftTransactionID *uuid.UUID
+	LuckyReward       models.JSONB
 	Content           string
 	Weight            int
 	DisplaySeconds    int
@@ -243,14 +246,18 @@ func (r *Repository) FindByGiftTransaction(txID uuid.UUID) (*models.Megaphone, e
 	return &item, nil
 }
 
-func (r *Repository) CreateGift(p GiftParams) (*models.Megaphone, error) {
+func (r *Repository) CreateSystem(p SystemParams) (*models.Megaphone, error) {
 	var created *models.Megaphone
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := lockQueue(tx); err != nil {
 			return err
 		}
+		existing, err := findByClientRequest(tx, p.SenderID, p.ClientRequestID)
+		if err != nil || existing != nil {
+			return err
+		}
 		if p.Cooldown > 0 {
-			last, err := lastSentAt(tx, p.SenderID, models.MegaphoneTypeGift)
+			last, err := lastSentAt(tx, p.SenderID, p.Type)
 			if err != nil {
 				return err
 			}
@@ -265,19 +272,19 @@ func (r *Repository) CreateGift(p GiftParams) (*models.Megaphone, error) {
 		if waiting >= p.QueueLimit {
 			return nil
 		}
-		txID := p.GiftTransactionID
 		record := models.Megaphone{
 			ID:                uuid.New(),
 			SenderID:          p.SenderID,
-			Type:              models.MegaphoneTypeGift,
+			Type:              p.Type,
 			Content:           p.Content,
 			Weight:            p.Weight,
 			ShowAt:            p.Now,
 			DisplaySeconds:    p.DisplaySeconds,
 			ExpiresAt:         p.ExpiresAt,
 			Status:            models.MegaphoneStatusActive,
-			ClientRequestID:   giftRequestPrefix + txID.String(),
-			GiftTransactionID: &txID,
+			ClientRequestID:   p.ClientRequestID,
+			GiftTransactionID: p.GiftTransactionID,
+			LuckyReward:       p.LuckyReward,
 			CreatedAt:         p.Now,
 		}
 		if err := tx.Create(&record).Error; err != nil {

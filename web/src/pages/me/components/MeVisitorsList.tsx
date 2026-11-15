@@ -11,6 +11,7 @@ import {
 import { RELATIONSHIP_STATUS } from '@constants';
 import { RelationshipService, UserService } from '@services';
 import type { RelationshipStatus, VisitorUser } from '@app-types';
+import { showSocialLimitNotice } from '@ola/shared/stores/socialLimit';
 
 const VISITOR_PAGE_SIZE = 40;
 
@@ -121,8 +122,8 @@ export function MeVisitorsList({
       await RelationshipService.sendRequest(row.id);
       setRequested((current) => ({ ...current, [row.id]: true }));
       toast.success(t('me.friendRequestSent'));
-    } catch {
-      toast.error(t('me.makeFriendError'));
+    } catch (error) {
+      if (!showSocialLimitNotice(error)) toast.error(t('me.makeFriendError'));
     }
   }
 

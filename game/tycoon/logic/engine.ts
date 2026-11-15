@@ -12,8 +12,9 @@ import {
   MAX_ROUNDS,
   SIDE_TILES,
   START_CASH,
+  LEVEL_COST_PERCENT,
   STATION_RENT,
-  TAKEOVER_MULTIPLIER,
+  TAKEOVER_PERCENT,
   TAX_RATE,
   WIN_GROUPS,
   type EndReason,
@@ -64,6 +65,7 @@ export function newGame(seed: number, playerCount: number): GameState {
     pendingDebts: [],
     card: null,
     festival: -1,
+    bought: -1,
     chanceDeck: CHANCE.map((_, i) => i),
     chestDeck: CHEST.map((_, i) => i),
     rng: BigInt(Math.floor(seed)) & MASK,
@@ -127,14 +129,30 @@ export function ownedCount(s: ViewState, seat: number, group: string): number {
   return tilesOfGroup(group).filter((idx) => s.tiles[idx].owner === seat).length;
 }
 
+export function levelCost(idx: number, level: number): number {
+  return Math.floor(((BOARD[idx].houseCost ?? 0) * (LEVEL_COST_PERCENT[level - 1] ?? 0) + 500) / 1000) * 10;
+}
+
+export function housesValue(idx: number, houses: number): number {
+  let sum = 0;
+  for (let level = 1; level <= houses; level++) sum += levelCost(idx, level);
+  return sum;
+}
+
+export function housesRefund(idx: number, houses: number): number {
+  let sum = 0;
+  for (let level = 1; level <= houses; level++) sum += Math.floor(levelCost(idx, level) / 2);
+  return sum;
+}
+
 export function houseValue(s: ViewState, seat: number): number {
-  return s.tiles.reduce((sum, t, idx) => (t.owner === seat && t.houses > 0 ? sum + t.houses * (BOARD[idx].houseCost ?? 0) : sum), 0);
+  return s.tiles.reduce((sum, t, idx) => (t.owner === seat && t.houses > 0 ? sum + housesValue(idx, t.houses) : sum), 0);
 }
 
 export function worth(s: ViewState, seat: number): number {
   const p = s.players[seat];
   if (!p || p.bankrupt) return 0;
-  return s.tiles.reduce((sum, t, idx) => (t.owner === seat ? sum + (BOARD[idx].price ?? 0) + t.houses * (BOARD[idx].houseCost ?? 0) : sum), p.cash);
+  return s.tiles.reduce((sum, t, idx) => (t.owner === seat ? sum + (BOARD[idx].price ?? 0) + housesValue(idx, t.houses) : sum), p.cash);
 }
 
 export function liquidationValue(s: ViewState, seat: number): number {
@@ -162,10 +180,10 @@ export function canBuildError(s: GameState, seat: number, idx: number): string |
   const t = s.tiles[idx];
   if (tile.kind !== 'street' || !tile.group) return 'not_street';
   if (t.owner !== seat) return 'not_owner';
-  if (!ownsGroup(s, seat, tile.group)) return 'not_group_owner';
+  if (s.players[seat].pos !== idx) return 'not_here';
+  if (s.bought === idx && t.houses >= 1) return 'just_bought';
   if (t.houses >= MAX_HOUSES) return 'max_houses';
-  if (s.players[seat].cash < (tile.houseCost ?? 0)) return 'no_cash';
-  for (const g of tilesOfGroup(tile.group)) if (t.houses > s.tiles[g].houses) return 'build_uneven';
+  if (s.players[seat].cash < levelCost(idx, t.houses + 1)) return 'no_cash';
   return null;
 }
 
@@ -175,7 +193,6 @@ export function canSellError(s: GameState, seat: number, idx: number): string | 
   if (tile.kind !== 'street' || !tile.group) return 'not_street';
   if (t.owner !== seat) return 'not_owner';
   if (t.houses <= 0) return 'no_houses';
-  for (const g of tilesOfGroup(tile.group)) if (s.tiles[g].owner === seat && t.houses < s.tiles[g].houses) return 'sell_uneven';
   return null;
 }
 
@@ -193,7 +210,7 @@ export function festivalPick(s: GameState, seat: number): number {
 }
 
 export function takeoverPrice(s: ViewState, idx: number): number {
-  return TAKEOVER_MULTIPLIER * ((BOARD[idx].price ?? 0) + s.tiles[idx].houses * (BOARD[idx].houseCost ?? 0));
+  return Math.floor((((BOARD[idx].price ?? 0) + housesValue(idx, s.tiles[idx].houses)) * TAKEOVER_PERCENT) / 100);
 }
 
 export function canTakeoverError(s: GameState, seat: number, idx: number): string | null {
@@ -249,11 +266,11 @@ function leaveJail(s: GameState, seat: number, how: string): void {
 function sendToJail(s: GameState, seat: number, how: string): void {
   const p = s.players[seat];
   const from = p.pos;
+  s.bought = -1;
   p.pos = JAIL_TILE;
   p.inJail = true;
   p.jailTurns = 0;
   p.doubles = 0;
-  p.travel = false;
   push(s, { kind: 'teleport', by: seat, from, to: JAIL_TILE });
   push(s, { kind: 'jail-in', by: seat, how });
 }
@@ -333,7 +350,7 @@ function autoSellForDebt(s: GameState, seat: number): void {
 }
 
 function build(s: GameState, seat: number, idx: number): void {
-  const cost = BOARD[idx].houseCost ?? 0;
+  const cost = levelCost(idx, s.tiles[idx].houses + 1);
   s.players[seat].cash -= cost;
   s.tiles[idx].houses++;
   push(s, { kind: 'pay', by: seat, target: -1, amount: cost, reason: 'build', tile: idx });
@@ -341,7 +358,7 @@ function build(s: GameState, seat: number, idx: number): void {
 }
 
 function sellHouse(s: GameState, seat: number, idx: number): void {
-  const refund = Math.floor((BOARD[idx].houseCost ?? 0) / 2);
+  const refund = Math.floor(levelCost(idx, s.tiles[idx].houses) / 2);
   s.players[seat].cash += refund;
   s.tiles[idx].houses--;
   push(s, { kind: 'sell', by: seat, tile: idx, houses: s.tiles[idx].houses });
@@ -459,9 +476,9 @@ function land(s: GameState, seat: number, rentMul: number): void {
       if (festivalPick(s, seat) >= 0) s.phase = 'festival';
       return;
     case 'travel':
-      p.travel = true;
       p.doubles = 0;
       push(s, { kind: 'travel', by: seat, tile: p.pos });
+      s.phase = 'travel';
       return;
   }
 }
@@ -471,18 +488,20 @@ function movePlayer(s: GameState, seat: number, steps: number): void {
   const from = p.pos;
   const to = (from + steps) % BOARD_SIZE;
   const passedGo = to < from;
+  s.bought = -1;
   p.pos = to;
   push(s, { kind: 'move', by: seat, from, to, passedGo });
   if (passedGo) paySalary(s, seat);
   land(s, seat, 1);
 }
 
-function teleport(s: GameState, seat: number, to: number, passGo: boolean, rentMul: number): void {
+function teleport(s: GameState, seat: number, to: number, passGo: boolean, rentMul: number, how?: string): void {
   const p = s.players[seat];
   const from = p.pos;
   const passed = passGo && to < from;
+  s.bought = -1;
   p.pos = to;
-  push(s, { kind: 'teleport', by: seat, from, to, passedGo: passed });
+  push(s, { kind: 'teleport', by: seat, from, to, passedGo: passed, ...(how ? { how } : {}) });
   if (passed) paySalary(s, seat);
   land(s, seat, rentMul);
 }
@@ -534,7 +553,7 @@ export function bankrupt(s: GameState, seat: number, creditor: number, amount = 
   s.tiles.forEach((t, idx) => {
     if (t.owner !== seat) return;
     if (t.houses > 0) {
-      p.cash += Math.floor((t.houses * (BOARD[idx].houseCost ?? 0)) / 2);
+      p.cash += housesRefund(idx, t.houses);
       t.houses = 0;
     }
     tiles.push(idx);
@@ -586,9 +605,10 @@ function advanceTurn(s: GameState): void {
     }
   }
   s.turn = next;
+  s.bought = -1;
   const p = s.players[next];
   p.doubles = 0;
-  s.phase = p.inJail ? 'jail' : p.travel ? 'travel' : 'roll';
+  s.phase = p.inJail ? 'jail' : 'roll';
 }
 
 function finish(s: GameState, reason: EndReason): void {
@@ -626,8 +646,7 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
   };
   switch (mv.type) {
     case 'ROLL':
-      needPhase('roll', 'travel');
-      p.travel = false;
+      needPhase('roll');
       rollAndMove(s, seat);
       break;
     case 'JAIL_ROLL':
@@ -656,6 +675,7 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
       if (p.cash < price) throw new RuleError('no_cash');
       p.cash -= price;
       s.tiles[p.pos].owner = seat;
+      s.bought = p.pos;
       push(s, { kind: 'pay', by: seat, target: -1, amount: price, reason: 'buy', tile: p.pos });
       push(s, { kind: 'buy', by: seat, tile: p.pos });
       s.phase = 'manage';
@@ -672,6 +692,7 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
       p.cash -= price;
       s.players[owner].cash += price;
       s.tiles[idx].owner = seat;
+      s.bought = idx;
       push(s, { kind: 'pay', by: seat, target: owner, amount: price, reason: 'takeover', tile: idx });
       push(s, { kind: 'takeover', by: seat, tile: idx, target: owner, houses: s.tiles[idx].houses });
       s.phase = 'manage';
@@ -692,12 +713,11 @@ export function applyMove(input: GameState, seat: number, mv: Move): GameState {
       needPhase('travel');
       const idx = needTile();
       if (idx === p.pos) throw new RuleError('invalid_tile');
-      p.travel = false;
-      teleport(s, seat, idx, true, 1);
+      teleport(s, seat, idx, true, 1, 'travel');
       break;
     }
     case 'DECLINE':
-      needPhase('decide', 'takeover', 'festival');
+      needPhase('decide', 'takeover', 'festival', 'travel');
       s.phase = 'manage';
       break;
     case 'CARD_ACK': {
@@ -763,7 +783,6 @@ export function moveOnTimeout(s: GameState, seat: number): Move | null {
   if (s.finished || !isActive(s, seat) || s.turn !== seat) return null;
   switch (s.phase) {
     case 'roll':
-    case 'travel':
       return { type: 'ROLL' };
     case 'jail':
       return { type: 'JAIL_ROLL' };
@@ -771,6 +790,7 @@ export function moveOnTimeout(s: GameState, seat: number): Move | null {
       return { type: 'FESTIVAL', tile: festivalPick(s, seat) };
     case 'decide':
     case 'takeover':
+    case 'travel':
       return { type: 'DECLINE' };
     case 'card':
       return { type: 'CARD_ACK' };
@@ -790,7 +810,7 @@ export function quitPlayer(input: GameState, seat: number): GameState {
 }
 
 export function isNewTurn(prev: GameState, next: GameState): boolean {
-  return next.turn !== prev.turn && (next.phase === 'roll' || next.phase === 'jail' || next.phase === 'travel');
+  return next.turn !== prev.turn && (next.phase === 'roll' || next.phase === 'jail');
 }
 
 export function isOver(s: GameState): boolean {

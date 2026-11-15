@@ -5734,8 +5734,12 @@ definitions:
         type: boolean
       kenCost:
         type: integer
+      megaphoneEnabled:
+        type: boolean
       name:
         type: string
+      oddsVisibility:
+        $ref: '#/definitions/ola-chat-server_internal_modules_setting.PlatformRules'
       sortOrder:
         type: integer
     type: object
@@ -10611,6 +10615,24 @@ definitions:
         example: 5
         type: integer
     type: object
+  ola-chat-server_internal_domain_megaphone.LuckyInfo:
+    properties:
+      game:
+        example: egg
+        type: string
+      kenAmount:
+        example: 5000
+        type: integer
+      label:
+        example: Icon VIP Kim Cương
+        type: string
+      vipDays:
+        example: 30
+        type: integer
+      vipTypeId:
+        example: 7
+        type: integer
+    type: object
   ola-chat-server_internal_domain_megaphone.Megaphone:
     properties:
       content:
@@ -10630,6 +10652,8 @@ definitions:
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
+      lucky:
+        $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.LuckyInfo'
       receiver:
         $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Sender'
       sender:
@@ -11222,9 +11246,13 @@ definitions:
       kenCost:
         minimum: 0
         type: integer
+      megaphoneEnabled:
+        type: boolean
       name:
         maxLength: 100
         type: string
+      oddsVisibility:
+        type: object
       sortOrder:
         type: integer
     required:
@@ -11264,8 +11292,12 @@ definitions:
         type: boolean
       kenCost:
         type: integer
+      megaphoneEnabled:
+        type: boolean
       name:
         type: string
+      oddsVisibility:
+        $ref: '#/definitions/ola-chat-server_internal_modules_setting.PlatformRules'
       sortOrder:
         type: integer
     type: object
@@ -11427,8 +11459,12 @@ definitions:
         type: boolean
       kenCost:
         type: integer
+      megaphoneEnabled:
+        type: boolean
       name:
         type: string
+      oddsVisibility:
+        type: object
       sortOrder:
         type: integer
     type: object
@@ -12720,6 +12756,24 @@ definitions:
       points:
         type: integer
     type: object
+  ola-chat-server_internal_modules_setting.PlatformRule:
+    properties:
+      disableVersions:
+        items:
+          type: string
+        type: array
+      enabled:
+        type: boolean
+    type: object
+  ola-chat-server_internal_modules_setting.PlatformRules:
+    properties:
+      android:
+        $ref: '#/definitions/ola-chat-server_internal_modules_setting.PlatformRule'
+      ios:
+        $ref: '#/definitions/ola-chat-server_internal_modules_setting.PlatformRule'
+      web:
+        $ref: '#/definitions/ola-chat-server_internal_modules_setting.PlatformRule'
+    type: object
   ola-chat-server_internal_modules_setting.StoryCookie:
     properties:
       cookie:
@@ -13559,9 +13613,13 @@ definitions:
       kenCost:
         minimum: 0
         type: integer
+      megaphoneEnabled:
+        type: boolean
       name:
         maxLength: 100
         type: string
+      oddsVisibility:
+        type: object
       segments:
         items:
           $ref: '#/definitions/ola-chat-server_internal_modules_wheel.SegmentInput'
@@ -13817,8 +13875,12 @@ definitions:
         type: boolean
       kenCost:
         type: integer
+      megaphoneEnabled:
+        type: boolean
       name:
         type: string
+      oddsVisibility:
+        type: object
       sortOrder:
         type: integer
     type: object
@@ -13839,8 +13901,12 @@ definitions:
         type: boolean
       kenCost:
         type: integer
+      megaphoneEnabled:
+        type: boolean
       name:
         type: string
+      oddsVisibility:
+        $ref: '#/definitions/ola-chat-server_internal_modules_setting.PlatformRules'
       segments:
         items:
           $ref: '#/definitions/ola-chat-server_internal_modules_wheel.SegmentView'
@@ -18697,7 +18763,7 @@ paths:
         in: query
         name: status
         type: string
-      - description: 'Loại tin: message, gift'
+      - description: 'Loại tin: message, gift, lucky'
         in: query
         name: type
         type: string

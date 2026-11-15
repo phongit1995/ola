@@ -39,7 +39,8 @@ type ParityConstants struct {
 	JailTile           int      `json:"jailTile"`
 	MaxHouses          int      `json:"maxHouses"`
 	MaxRounds          int      `json:"maxRounds"`
-	TakeoverMultiplier int      `json:"takeoverMultiplier"`
+	TakeoverPercent    int      `json:"takeoverPercent"`
+	LevelCostPercent   []int    `json:"levelCostPercent"`
 	WinGroups          int      `json:"winGroups"`
 	MaxDoubles         int      `json:"maxDoubles"`
 	JailMaxTurns       int      `json:"jailMaxTurns"`
@@ -232,7 +233,8 @@ func newParityFixture() ParityFixture {
 			JailTile:           JailTile,
 			MaxHouses:          MaxHouses,
 			MaxRounds:          MaxRounds,
-			TakeoverMultiplier: TakeoverMultiplier,
+			TakeoverPercent:    TakeoverPercent,
+			LevelCostPercent:   LevelCostPercent[:],
 			WinGroups:          WinGroups,
 			MaxDoubles:         MaxDoubles,
 			JailMaxTurns:       JailMaxTurns,
@@ -327,7 +329,7 @@ func (e *explorer) pick(s *State) Move {
 		if e.chance(explorerTravelPct) {
 			return Move{Type: MoveTravel, Tile: intp(e.intn(BoardSize))}
 		}
-		return Move{Type: MoveRoll}
+		return Move{Type: MoveDecline}
 	case PhaseJail:
 		if len(p.JailCards) > 0 && e.chance(explorerJailCard) {
 			return Move{Type: MoveJailCard}
@@ -384,14 +386,14 @@ func (e *explorer) pick(s *State) Move {
 	return Move{Type: MoveRoll}
 }
 
-func ownedStreets(s *State, seat int, fullGroup, withHouses bool) []int {
+func ownedStreets(s *State, seat int, here, withHouses bool) []int {
 	var tiles []int
 	for idx, t := range s.Tiles {
 		tile := Board[idx]
 		if t.Owner != seat || tile.Kind != KindStreet {
 			continue
 		}
-		if fullGroup && !s.ownsGroup(seat, tile.Group) {
+		if here && s.Players[seat].Pos != idx {
 			continue
 		}
 		if withHouses && t.Houses == 0 {

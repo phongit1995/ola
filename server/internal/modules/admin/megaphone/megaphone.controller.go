@@ -23,6 +23,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 var megaphoneTypes = map[string]bool{
 	models.MegaphoneTypeMessage: true,
 	models.MegaphoneTypeGift:    true,
+	models.MegaphoneTypeLucky:   true,
 }
 
 var megaphoneStatuses = map[string]bool{
@@ -36,7 +37,7 @@ var megaphoneStatuses = map[string]bool{
 // @Security     BearerAuth
 // @Param        senderId query string false "Người phát"
 // @Param        status   query string false "active, removed"
-// @Param        type     query string false "Loại tin: message, gift"
+// @Param        type     query string false "Loại tin: message, gift, lucky"
 // @Param        q        query string false "Tìm trong nội dung"
 // @Param        from     query string false "Từ thời gian (RFC3339)"
 // @Param        to       query string false "Đến thời gian (RFC3339)"

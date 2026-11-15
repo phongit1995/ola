@@ -11,6 +11,7 @@ type PlayerView struct {
 	PendingDebts  []Debt        `json:"pendingDebts"`
 	Card          *CardRef      `json:"card"`
 	Festival      int           `json:"festival"`
+	Bought        int           `json:"bought"`
 	ChanceLeft    int           `json:"chanceLeft"`
 	ChestLeft     int           `json:"chestLeft"`
 	Round         int           `json:"round"`
@@ -47,6 +48,7 @@ func viewFor(s *State, playerIdx int) PlayerView {
 		PendingDebts:  snapshot.PendingDebts,
 		Card:          snapshot.Card,
 		Festival:      snapshot.Festival,
+		Bought:        snapshot.Bought,
 		ChanceLeft:    len(s.ChanceDeck),
 		ChestLeft:     len(s.ChestDeck),
 		Round:         snapshot.Round,

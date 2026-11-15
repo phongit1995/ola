@@ -5,8 +5,8 @@ import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import { vipIconUrl } from '@ola/shared/lib/vip';
 import { bridge, joinGame, SPECTATE_LEFT_REASON, type ChatMessageData, type ErrorData, type GameReactionType, type GameSession, type MatchFoundData, type MatchOverData, type PlayerInfo, type RoomStateData, type StateData } from '../../src/sdk';
 import { BOARD, cardById, GROUP_LABEL, tilesOfGroup } from '../logic/board';
-import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GAME_ID, JAIL_TILE, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, WIN_GROUPS } from '../logic/constants';
-import { worth } from '../logic/engine';
+import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GAME_ID, JAIL_FINE, JAIL_MAX_TURNS, JAIL_TILE, LEVEL_NAMES, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, WIN_GROUPS, type Group } from '../logic/constants';
+import { housesRefund, worth } from '../logic/engine';
 import { currentRent, winningTiles } from '../logic/rules-hint';
 import type { BotLevel, Move, Step, TileState, TycoonView } from '../logic/types';
 import { MAX_BOTS, botName, type BotSetupItem } from '../helpers/bot';
@@ -67,10 +67,30 @@ export interface ReactionFloat {
   type: GameReactionType;
 }
 
+export type LogKind = 'round' | 'dice' | 'pay' | 'buy' | 'takeover' | 'build' | 'sell' | 'card' | 'jail' | 'festival' | 'travel' | 'debt' | 'bankrupt' | 'group' | 'info';
+
 export interface LogLine {
   seq: number;
   text: string;
   tone: 'up' | 'down' | 'neutral';
+  kind?: LogKind;
+  seat?: number;
+  who?: string;
+  money?: number;
+  level?: number;
+  round?: number;
+}
+
+interface LogExtra {
+  feed?: string;
+  kind?: LogKind;
+  seat?: number;
+  money?: number;
+  level?: number;
+}
+
+export function logLineText(line: LogLine): string {
+  return line.money ? `${line.text} · ${line.money > 0 ? '+' : '−'}${formatMoney(Math.abs(line.money))}` : line.text;
 }
 
 export interface RankRow {
@@ -128,7 +148,6 @@ interface TycoonState {
   spectators: number;
   soundOn: boolean;
   speed: 1 | 2;
-  autoEnd: boolean;
   rulesOpen: boolean;
   setupOpen: boolean;
   roomsOpen: boolean;
@@ -186,7 +205,6 @@ interface TycoonState {
   sendReaction(type: GameReactionType): void;
   toggleSound(): void;
   setSpeed(speed: 1 | 2): void;
-  setAutoEnd(on: boolean): void;
   skipReplay(): void;
   exitGame(): void;
   setRulesOpen(open: boolean): void;
@@ -216,18 +234,16 @@ interface TycoonState {
 
 const SOUND_KEY = 'ola:tycoon:sound';
 const SPEED_KEY = 'ola:tycoon:speed';
-const AUTO_END_KEY = 'ola:tycoon:auto-end';
-const BOT_TEMPO = 1.8;
 const SKIP_TEMPO = 8;
 const CATCHUP_TEMPO = 4;
 const TOAST_MS = 2400;
-const BET_FLOAT_MS = 1400;
+const BET_FLOAT_MS = 1800;
 const RESULT_REVEAL_MS = 900;
 const WIN_REVEAL_MS = 2400;
 const SPECTATE_ENDED_TEXT = 'Đã thôi xem ván';
 const SCREEN_IN_MS = 260;
 const STEP_MS = { land: 300, debt: 320, round: 240 };
-const SILENT_PAY_REASONS = new Set(['buy', 'takeover', 'build', 'sell']);
+const SILENT_PAY_REASONS = new Set(['buy', 'takeover', 'build', 'sell', 'fine']);
 
 function emptyDice(): DiceFx {
   return { values: [1, 1], rolling: false, double: false, showTotal: false, seq: 0 };
@@ -298,6 +314,20 @@ function reasonLabel(reason: string | undefined, amount: number, tile?: number):
 interface LevelChange {
   from: number;
   to: number;
+  amount: number;
+}
+
+interface BatchLevel {
+  from: number;
+  amount: number;
+}
+
+function levelKey(kind: string, tile: number): string {
+  return `${kind}:${tile}`;
+}
+
+function levelName(level: number): string {
+  return LEVEL_NAMES[Math.min(Math.max(level, 0), LEVEL_NAMES.length - 1)];
 }
 
 export const useTycoon = create<TycoonState>((set, get) => {
@@ -313,7 +343,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     incoming: null as TycoonView | null,
     queuedStates: 0,
     pendingMoves: [] as Move[],
-    batchLevels: new Map<string, number>(),
+    batchLevels: new Map<string, BatchLevel>(),
     replayChain: Promise.resolve(),
     replayEpoch: 0,
     timer: 0 as ReturnType<typeof setInterval> | 0,
@@ -363,9 +393,15 @@ export const useTycoon = create<TycoonState>((set, get) => {
     return get().players[seat]?.name ?? '?';
   };
 
-  const pushLog = (text: string, tone: LogLine['tone'] = 'neutral') => {
+  const pushLog = (text: string, tone: LogLine['tone'] = 'neutral', extra: LogExtra = {}) => {
     const seq = nextSeq();
-    set((state) => ({ log: [...state.log.slice(-79), { seq, text, tone }], feed: { seq, text, tone, seat: refs.feedSeat } }));
+    const { feed, seat, ...rest } = extra;
+    const line: LogLine = { seq, text, tone, ...rest, round: get().view?.round };
+    if (seat != null && seat >= 0) {
+      line.seat = seat;
+      line.who = seatName(seat);
+    }
+    set((state) => ({ log: [...state.log.slice(-79), line], feed: { seq, text: feed ?? logLineText(line), tone, seat: refs.feedSeat } }));
   };
 
   const floatMoney = (seat: number, amount: number) => {
@@ -374,7 +410,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     set((state) => ({ moneyFloats: [...state.moneyFloats.slice(-5), float] }));
     scheduleTransient(() => {
       set((state) => ({ moneyFloats: state.moneyFloats.filter((item) => item.seq !== float.seq) }));
-    }, 1100);
+    }, 1600);
   };
 
   const startTimer = () => {
@@ -432,7 +468,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
   const turnTip = (state: TycoonView): string => {
     if (state.phase === 'jail') return 'Bạn đang ở tù, chọn cách ra';
-    if (state.phase === 'travel') return 'Chọn ô để bay tới';
+    if (state.phase === 'travel') return 'Chọn ô để đi tới';
     return 'Gieo xúc xắc để đi';
   };
 
@@ -468,13 +504,16 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
   const withOwner = (tile: number, owner: number) => (tiles: TileState[]) => tiles.map((item, idx) => (idx === tile ? { ...item, owner } : item));
 
-  const stampTile = (tile: number, by: number): Promise<void> => {
+  const completedGroup = (tile: number, by: number): Group | undefined => {
     const group = BOARD[tile].kind === 'street' ? BOARD[tile].group : undefined;
-    const members = group ? tilesOfGroup(group) : [];
-    const complete = group ? members.every((idx) => idx === tile || get().tiles[idx]?.owner === by) : false;
-    if (complete && group) pushLog(`${seatName(by)} gom trọn nhóm ${GROUP_LABEL[group]}, thuê ×2`, by === get().you ? 'up' : 'neutral');
-    return fx.stampDeed(tile, by, () => commitTiles(withOwner(tile, by)), complete ? members : null);
+    if (!group) return undefined;
+    return tilesOfGroup(group).every((idx) => idx === tile || get().tiles[idx]?.owner === by) ? group : undefined;
   };
+
+  const groupNote = (group: Group | undefined) => (group ? `, gom trọn ${GROUP_LABEL[group]}` : '');
+
+  const stampTile = (tile: number, by: number, group: Group | undefined): Promise<void> =>
+    fx.stampDeed(tile, by, () => commitTiles(withOwner(tile, by)), group ? tilesOfGroup(group) : null);
 
   const bankruptReport = (creditor: number, amount?: number): NoticeState => {
     const { view, tiles, cash, positions, you } = get();
@@ -487,7 +526,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
           ? currentRent({ ...view, tiles }, pos)
           : null);
     const money = cash[you] ?? 0;
-    const houses = tiles.reduce((sum, t, idx) => (t.owner === you ? sum + Math.floor((t.houses * (BOARD[idx].houseCost ?? 0)) / 2) : sum), 0);
+    const houses = tiles.reduce((sum, t, idx) => (t.owner === you ? sum + housesRefund(idx, t.houses) : sum), 0);
     const to = creditor >= 0 ? seatName(creditor) : 'ngân hàng';
     return {
       kind: 'notice',
@@ -501,14 +540,16 @@ export const useTycoon = create<TycoonState>((set, get) => {
     };
   };
 
-  const replayStep = async (step: Step, epoch: number, levelChange?: LevelChange): Promise<void> => {
+  const replayStep = async (step: Step, epoch: number, levelChange?: LevelChange, jailLeft?: number): Promise<void> => {
     const alive = () => refs.replayEpoch === epoch;
     const you = get().you;
     switch (step.kind) {
       case 'roll': {
         const values = step.dice ?? [1, 1];
         const double = Boolean(step.double);
-        pushLog(`${seatName(step.by)} gieo ${values[0]} + ${values[1]}${double ? ' (đôi!)' : ''}`);
+        const rolled = `${seatName(step.by)} gieo ${values[0]} + ${values[1]}${double ? ' (đôi!)' : ''}`;
+        if (jailLeft != null) pushLog(`${rolled}, chưa ra tù · còn ${jailLeft} lượt`, step.by === you ? 'down' : 'neutral', { kind: 'jail', seat: step.by, feed: `${seatName(step.by)} chưa ra tù · còn ${jailLeft} lượt` });
+        else pushLog(rolled, 'neutral', { kind: 'dice', seat: step.by });
         flushSync(() => set({ diceFx: { values, rolling: true, double, showTotal: false, seq: nextSeq() } }));
         await fx.rollDice(values);
         if (!alive()) return;
@@ -534,9 +575,23 @@ export const useTycoon = create<TycoonState>((set, get) => {
       }
       case 'teleport': {
         const to = step.to ?? get().positions[step.by];
-        const toJail = to === JAIL_TILE && step.from !== JAIL_TILE;
+        const from = step.from ?? get().positions[step.by];
+        const toJail = to === JAIL_TILE && from !== JAIL_TILE && step.how !== 'travel';
+        const ahead = (to - from + BOARD_SIZE) % BOARD_SIZE;
+        const back = toJail && BOARD_SIZE - ahead < ahead;
         if (toJail) fx.policeWhistle(step.by);
-        await fx.flyPawn(step.by, toJail ? '#E4573D' : '#F2B807', () => commitPosition(step.by, to));
+        const { positions, view } = get();
+        await fx.walkPawn({
+          seat: step.by,
+          from,
+          count: back ? BOARD_SIZE - ahead : ahead,
+          dir: back ? -1 : 1,
+          positions,
+          bankrupt: view?.players.map((p) => p.bankrupt) ?? [],
+          turn: view?.turn ?? -1,
+          commit: () => commitPosition(step.by, to),
+          alive,
+        });
         return;
       }
       case 'land': {
@@ -552,9 +607,9 @@ export const useTycoon = create<TycoonState>((set, get) => {
         const label = reasonLabel(step.reason, amount, step.tile);
         if (SILENT_PAY_REASONS.has(step.reason ?? '')) {
           // Bước mua/nâng ngay sau đã tự ghi diễn biến, không ghi trùng.
-        } else if (from >= 0 && to >= 0) pushLog(`${seatName(from)} trả ${seatName(to)} ${formatMoney(amount)} ${label}`, from === you ? 'down' : to === you ? 'up' : 'neutral');
-        else if (from >= 0) pushLog(`${seatName(from)} trả ${formatMoney(amount)} ${label}`, from === you ? 'down' : 'neutral');
-        else if (to >= 0) pushLog(`${seatName(to)} nhận ${formatMoney(amount)} ${label}`, to === you ? 'up' : 'neutral');
+        } else if (from >= 0 && to >= 0) pushLog(`${seatName(from)} trả ${seatName(to)} ${label}`, from === you ? 'down' : to === you ? 'up' : 'neutral', { kind: 'pay', seat: from, money: -amount });
+        else if (from >= 0) pushLog(`${seatName(from)} trả ${label}`, from === you ? 'down' : 'neutral', { kind: 'pay', seat: from, money: -amount });
+        else if (to >= 0) pushLog(step.reason === 'salary' ? `${seatName(to)} qua Xuất phát` : `${seatName(to)} nhận tiền ${label}`, to === you ? 'up' : 'neutral', { kind: 'pay', seat: to, money: amount });
         const payerPos = step.reason === 'rent' && from >= 0 ? get().positions[from] : undefined;
         const rentTile = payerPos != null ? ((payerPos % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE : undefined;
         if (rentTile != null) fx.tileCallout(rentTile, to, `${seatName(from)} trả thuê`, formatMoney(amount), from === you ? 'down' : to === you ? 'up' : 'neutral');
@@ -564,23 +619,25 @@ export const useTycoon = create<TycoonState>((set, get) => {
       case 'buy': {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
-        pushLog(`${seatName(step.by)} mua ${BOARD[tile].name}`, step.by === you ? 'up' : 'neutral');
-        await stampTile(tile, step.by);
+        const group = completedGroup(tile, step.by);
+        pushLog(`${seatName(step.by)} mua ${BOARD[tile].name}${groupNote(group)}`, step.by === you ? 'up' : 'neutral', { kind: group ? 'group' : 'buy', seat: step.by, money: -(BOARD[tile].price ?? 0) });
+        await stampTile(tile, step.by, group);
         return;
       }
       case 'takeover': {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
         const houses = step.houses ?? 0;
-        pushLog(`${seatName(step.by)} mua lại ${BOARD[tile].name} của ${seatName(step.target ?? -1)}`, step.by === you ? 'up' : step.target === you ? 'down' : 'neutral');
-        fx.tileCallout(tile, step.by, step.target === you ? `${seatName(step.by)} mua lại ô của bạn` : `${seatName(step.by)} mua lại`, `Lv${houses}`, step.target === you ? 'down' : step.by === you ? 'up' : 'neutral', houseArt(houses));
-        await stampTile(tile, step.by);
+        const group = completedGroup(tile, step.by);
+        pushLog(`${seatName(step.by)} mua lại ${BOARD[tile].name} của ${seatName(step.target ?? -1)}${groupNote(group)}`, step.by === you ? 'up' : step.target === you ? 'down' : 'neutral', { kind: 'takeover', seat: step.by, level: houses });
+        fx.tileCallout(tile, step.by, step.target === you ? `${seatName(step.by)} mua lại ô của bạn` : `${seatName(step.by)} mua lại`, levelName(houses), step.target === you ? 'down' : step.by === you ? 'up' : 'neutral', houseArt(houses));
+        await stampTile(tile, step.by, group);
         return;
       }
       case 'card': {
         if (!step.deck || !step.card) return;
         const { deck, card } = step;
-        pushLog(`${seatName(step.by)} rút ${deck === 'chance' ? 'Cơ hội' : 'Khí vận'}: ${cardById(card)?.text ?? ''}`);
+        pushLog(`${seatName(step.by)} rút ${deck === 'chance' ? 'Cơ hội' : 'Khí vận'}: ${cardById(card)?.text ?? ''}`, 'neutral', { kind: 'card', seat: step.by });
         await fx.shakeDeck(deck);
         if (!alive()) return;
         flushSync(() => set({ cardFx: { deck, id: card, seq: nextSeq() } }));
@@ -590,12 +647,14 @@ export const useTycoon = create<TycoonState>((set, get) => {
       case 'jail-in': {
         commitPosition(step.by, JAIL_TILE);
         flushSync(() => set({ barsOn: true }));
-        pushLog(`${seatName(step.by)} vào tù`, step.by === you ? 'down' : 'neutral');
+        pushLog(`${seatName(step.by)} vào tù ${step.how === 'dice3' ? 'vì gieo đôi 3 lần' : 'vì rút thẻ'} · tối đa ${JAIL_MAX_TURNS} lượt`, step.by === you ? 'down' : 'neutral', { kind: 'jail', seat: step.by, feed: `${seatName(step.by)} vào tù · tối đa ${JAIL_MAX_TURNS} lượt` });
         await fx.jailDoorClose(step.by);
         return;
       }
       case 'jail-out': {
-        pushLog(`${seatName(step.by)} ra tù`);
+        const paid = step.how === 'pay' || step.how === 'forced';
+        const how = step.how === 'double' ? 'ra tù nhờ gieo đôi' : step.how === 'card' ? 'dùng thẻ ra tù' : step.how === 'forced' ? `hết ${JAIL_MAX_TURNS} lượt, nộp phạt ra tù` : 'nộp phạt ra tù';
+        pushLog(`${seatName(step.by)} ${how}`, step.by === you && !paid ? 'up' : 'neutral', { kind: 'jail', seat: step.by, ...(paid ? { money: -JAIL_FINE } : {}) });
         await fx.jailDoorOpen();
         const stillJailed = get().view?.players.some((p, seat) => seat !== step.by && p.inJail && !p.bankrupt) ?? false;
         set({ barsOn: stillJailed });
@@ -605,17 +664,23 @@ export const useTycoon = create<TycoonState>((set, get) => {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
         const houses = step.houses ?? 0;
-        if (levelChange) pushLog(`${seatName(step.by)} nâng cấp ${BOARD[tile].name}: Lv${levelChange.from} → Lv${levelChange.to}`);
+        if (levelChange) {
+          const line = `${seatName(step.by)} nâng ${BOARD[tile].name} lên ${levelName(levelChange.to)}`;
+          pushLog(line, step.by === you ? 'down' : 'neutral', { feed: `${seatName(step.by)} nâng cấp ${BOARD[tile].name}`, kind: 'build', seat: step.by, money: -levelChange.amount, level: levelChange.to });
+        }
         commitTiles((tiles) => tiles.map((item, idx) => (idx === tile ? { ...item, houses } : item)));
-        await fx.buildHouse(tile, houses, step.by, levelChange);
+        await fx.buildHouse(tile, houses, step.by, levelChange ? { who: seatName(step.by), action: 'nâng cấp', place: BOARD[tile].name, money: `−${formatMoney(levelChange.amount)}`, from: levelChange.from, to: levelChange.to, label: levelName(levelChange.to) } : undefined);
         return;
       }
       case 'sell': {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
         const houses = step.houses ?? 0;
-        if (levelChange) pushLog(`${seatName(step.by)} hạ cấp ${BOARD[tile].name}: Lv${levelChange.from} → Lv${levelChange.to}`);
-        await fx.sellHouse(tile, step.by, levelChange);
+        if (levelChange) {
+          const line = `${seatName(step.by)} bán ${BOARD[tile].name} xuống ${levelName(levelChange.to)}`;
+          pushLog(line, step.by === you ? 'up' : 'neutral', { feed: `${seatName(step.by)} bán nhà ở ${BOARD[tile].name}`, kind: 'sell', seat: step.by, money: levelChange.amount, level: levelChange.to });
+        }
+        await fx.sellHouse(tile, step.by, levelChange ? { who: seatName(step.by), action: 'bán nhà', place: BOARD[tile].name, money: `+${formatMoney(levelChange.amount)}`, from: levelChange.from, to: levelChange.to, label: levelName(levelChange.to) } : undefined);
         commitTiles((tiles) => tiles.map((item, idx) => (idx === tile ? { ...item, houses } : item)));
         return;
       }
@@ -623,17 +688,17 @@ export const useTycoon = create<TycoonState>((set, get) => {
         const tile = step.tile ?? -1;
         if (tile < 0) return;
         flushSync(() => set((state) => (state.view ? { view: { ...state.view, festival: tile } } : {})));
-        pushLog(`${seatName(step.by)} tổ chức Lễ hội ở ${BOARD[tile].name} — thuê ×${FESTIVAL_MULTIPLIER}`, step.by === you ? 'up' : 'neutral');
+        pushLog(`${seatName(step.by)} tổ chức Lễ hội ở ${BOARD[tile].name} — thuê ×${FESTIVAL_MULTIPLIER}`, step.by === you ? 'up' : 'neutral', { kind: 'festival', seat: step.by });
         await fx.celebrateFestival(tile);
         return;
       }
       case 'travel': {
-        pushLog(`${seatName(step.by)} được đi Du lịch — lượt sau bay tới ô bất kỳ`, step.by === you ? 'up' : 'neutral');
+        pushLog(`${seatName(step.by)} được đi Du lịch`, step.by === you ? 'up' : 'neutral', { kind: 'travel', seat: step.by });
         await fx.travelWiggle();
         return;
       }
       case 'debt': {
-        pushLog(`${seatName(step.by)} nợ ${formatMoney(step.amount ?? 0)} ${seatName(step.creditor ?? -1)}`, step.by === you ? 'down' : 'neutral');
+        pushLog(`${seatName(step.by)} nợ ${seatName(step.creditor ?? -1)} ${formatMoney(step.amount ?? 0)}`, step.by === you ? 'down' : 'neutral', { kind: 'debt', seat: step.by });
         fx.debtAlarm(step.by);
         await sleep(STEP_MS.debt);
         return;
@@ -641,7 +706,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       case 'bankrupt': {
         const lost = step.tiles ?? [];
         const report = step.by === you ? bankruptReport(step.creditor ?? -1, step.amount) : null;
-        pushLog(`${seatName(step.by)} phá sản`, step.by === you ? 'down' : 'neutral');
+        pushLog(`${seatName(step.by)} phá sản`, step.by === you ? 'down' : 'neutral', { kind: 'bankrupt', seat: step.by });
         await fx.bankruptSeat(step.by, seatName(step.by), lost);
         if (!alive()) return;
         if (report && !refs.incoming?.finished) get().showNotice(report);
@@ -660,7 +725,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       case 'round': {
         const round = step.round ?? 0;
         set((state) => ({
-          log: [...state.log.slice(-79), { seq: nextSeq(), text: round > MAX_ROUNDS ? 'Hết vòng cuối' : `Vòng ${round}/${MAX_ROUNDS} bắt đầu`, tone: 'neutral' }],
+          log: [...state.log.slice(-79), round > MAX_ROUNDS ? { seq: nextSeq(), text: 'Hết vòng cuối', tone: 'neutral', kind: 'info' } : { seq: nextSeq(), text: `Vòng ${round}/${MAX_ROUNDS} bắt đầu`, tone: 'neutral', kind: 'round', round }],
           view: state.view ? { ...state.view, round } : state.view,
         }));
         fx.flipRound(round === MAX_ROUNDS);
@@ -675,27 +740,41 @@ export const useTycoon = create<TycoonState>((set, get) => {
   const replaySteps = async (steps: Step[], epoch: number, batchContinues: boolean): Promise<void> => {
     flushSync(() => set({ replaying: true }));
     const levelChanges = new Map<number, LevelChange>();
-    const firstLevel = new Map<string, number>(refs.batchLevels);
+    const batch = new Map<string, BatchLevel>([...refs.batchLevels].map(([key, entry]) => [key, { ...entry }]));
     const lastChange = new Map<string, number>();
     steps.forEach((step, i) => {
       if ((step.kind !== 'build' && step.kind !== 'sell') || step.tile == null) return;
-      const key = `${step.kind}:${step.tile}`;
+      const key = levelKey(step.kind, step.tile);
       const to = step.houses ?? 0;
-      const before = step.kind === 'build' ? to - 1 : to + 1;
-      if (!firstLevel.has(key)) firstLevel.set(key, before);
-      const previous = lastChange.get(key);
-      if (previous != null) levelChanges.delete(previous);
-      levelChanges.set(i, { from: firstLevel.get(key) ?? before, to });
+      if (!batch.has(key)) batch.set(key, { from: step.kind === 'build' ? to - 1 : to + 1, amount: 0 });
       lastChange.set(key, i);
     });
-    if (batchContinues) {
-      refs.batchLevels = firstLevel;
-      levelChanges.clear();
-    } else refs.batchLevels = new Map();
+    steps.forEach((step) => {
+      if (step.kind !== 'pay' || (step.reason !== 'build' && step.reason !== 'sell') || step.tile == null) return;
+      const entry = batch.get(levelKey(step.reason, step.tile));
+      if (entry) entry.amount += step.amount ?? 0;
+    });
+    if (batchContinues) refs.batchLevels = batch;
+    else {
+      refs.batchLevels = new Map();
+      lastChange.forEach((i, key) => {
+        const entry = batch.get(key);
+        if (entry) levelChanges.set(i, { from: entry.from, to: steps[i].houses ?? 0, amount: entry.amount });
+      });
+    }
+    const jailMiss = new Map<number, number>();
+    const finalPlayers = refs.incoming?.players ?? get().view?.players;
+    steps.forEach((step, i) => {
+      if (step.kind !== 'roll' || step.by < 0) return;
+      const after = finalPlayers?.[step.by];
+      if (!after?.inJail) return;
+      if (steps.slice(i + 1).some((next) => next.by === step.by && (next.kind === 'jail-in' || next.kind === 'jail-out'))) return;
+      jailMiss.set(i, Math.max(0, JAIL_MAX_TURNS - after.jailTurns));
+    });
     for (const [i, step] of steps.entries()) {
       if (refs.replayEpoch !== epoch) return;
       refs.feedSeat = step.kind === 'pay' && step.by < 0 ? step.target ?? -1 : step.by ?? -1;
-      await replayStep(step, epoch, levelChanges.get(i));
+      await replayStep(step, epoch, levelChanges.get(i), jailMiss.get(i));
     }
     fx.clearMovingPawns();
   };
@@ -793,7 +872,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       const stale = () => epoch !== refs.replayEpoch;
       const behind = () => refs.queuedStates > 0;
       refs.incoming = next;
-      setTempo(behind() ? CATCHUP_TEMPO : (get().players[data.lastBy]?.bot ? BOT_TEMPO : 1) * get().speed);
+      setTempo(behind() ? CATCHUP_TEMPO : get().speed);
       set({ deadline: 0, timerLeftMs: 0, turnExpired: false });
       const openCard = data.lastMove?.type === 'CARD_ACK' ? get().cardFx : null;
       if (openCard) {
@@ -844,6 +923,10 @@ export const useTycoon = create<TycoonState>((set, get) => {
       ...(data.matchId === get().matchId ? {} : { matchChat: [], chatUnread: false, reactionFx: null }),
     });
     snapState(data.state);
+    if (!data.resumed && !spectating) {
+      refs.feedSeat = data.state.turn;
+      pushLog(`Ván bắt đầu · ${seatName(data.state.turn)} đi trước`, 'neutral', { kind: 'info' });
+    }
     startTimer();
     playSound('click');
     if (!spectating && !data.resumed && (data.bet ?? 0) > 0) {
@@ -1087,7 +1170,6 @@ export const useTycoon = create<TycoonState>((set, get) => {
     reactionFx: null,
     soundOn: readSound(),
     speed: readPref(SPEED_KEY) === '2' ? 2 : 1,
-    autoEnd: readPref(AUTO_END_KEY) !== '0',
     rulesOpen: false,
     setupOpen: false,
     roomsOpen: false,
@@ -1212,11 +1294,6 @@ export const useTycoon = create<TycoonState>((set, get) => {
     setSpeed(speed: 1 | 2) {
       writePref(SPEED_KEY, String(speed));
       set({ speed });
-    },
-
-    setAutoEnd(on: boolean) {
-      writePref(AUTO_END_KEY, on ? '1' : '0');
-      set({ autoEnd: on });
     },
 
     skipReplay() {
@@ -1371,7 +1448,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     announce(text: string, tone: LogLine['tone']) {
-      pushLog(text, tone);
+      pushLog(text, tone, { kind: 'info' });
       get().showToast(text);
     },
 

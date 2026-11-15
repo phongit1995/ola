@@ -1,11 +1,13 @@
 package conversation
 
 import (
+	"context"
 	"errors"
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 
 	"github.com/google/uuid"
@@ -66,4 +68,19 @@ func BlockIfPrivateFromStranger(userSettingSvc *usersetting.Service, relRepo *re
 		return ErrNotAllowedToMessage
 	}
 	return nil
+}
+
+func ConsumeNewChatQuota(ctx context.Context, limits *sociallimit.Service, relRepo *relationships.Repository, senderID, recipientID uuid.UUID) (func(), error) {
+	noop := func() {}
+	if limits == nil {
+		return noop, nil
+	}
+	friends, err := relRepo.AreFriends(senderID, recipientID)
+	if err != nil {
+		return noop, err
+	}
+	if friends {
+		return noop, nil
+	}
+	return limits.ConsumeNewChat(ctx, senderID, recipientID)
 }

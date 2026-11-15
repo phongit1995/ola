@@ -10,6 +10,8 @@ import type { LoadedWheel, WheelBreakdown, WheelKindMeta, WheelOptionStats } fro
 import { WHEEL_KINDS } from './constants'
 import { newId, percent, round4, sumActiveWeight } from '../egg/utils'
 import { formatCount } from '@/lib/format'
+import { normalizePlatformRules } from '@/lib/platformRules'
+import { DEFAULT_ODDS_VISIBILITY } from '../constants'
 
 export { newId, percent, sumActiveWeight, formatPercent, rebalanceWeights } from '../egg/utils'
 
@@ -50,7 +52,15 @@ export function optionStats(options: WheelSegmentOption[]): WheelOptionStats {
 
 export function loadWheel(wheel: Wheel | null): LoadedWheel {
   if (!wheel) {
-    return { name: 'Vòng quay mới', kenCost: 5000, freeDailyEnabled: true, isEnabled: true, segments: [] }
+    return {
+      name: 'Vòng quay mới',
+      kenCost: 5000,
+      freeDailyEnabled: true,
+      isEnabled: true,
+      megaphoneEnabled: true,
+      oddsVisibility: DEFAULT_ODDS_VISIBILITY,
+      segments: [],
+    }
   }
   const segments: WheelSegment[] = (wheel.segments ?? []).map((s) => ({
     id: s.id,
@@ -81,6 +91,8 @@ export function loadWheel(wheel: Wheel | null): LoadedWheel {
     kenCost: wheel.kenCost,
     freeDailyEnabled: wheel.freeDailyEnabled,
     isEnabled: wheel.isEnabled,
+    megaphoneEnabled: wheel.megaphoneEnabled,
+    oddsVisibility: wheel.oddsVisibility ? normalizePlatformRules(wheel.oddsVisibility) : DEFAULT_ODDS_VISIBILITY,
     segments,
   }
 }

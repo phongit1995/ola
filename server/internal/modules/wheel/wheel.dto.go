@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/setting"
 	userModule "ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
@@ -45,14 +46,18 @@ type CreateWheelRequest struct {
 	IsEnabled        bool           `json:"isEnabled"`
 	SortOrder        int            `json:"sortOrder"`
 	Segments         []SegmentInput `json:"segments"`
+	MegaphoneEnabled *bool          `json:"megaphoneEnabled"`
+	OddsVisibility   models.JSONB   `json:"oddsVisibility" swaggertype:"object"`
 }
 
 type UpdateWheelRequest struct {
-	Name             *string `json:"name"`
-	KenCost          *int    `json:"kenCost"`
-	FreeDailyEnabled *bool   `json:"freeDailyEnabled"`
-	IsEnabled        *bool   `json:"isEnabled"`
-	SortOrder        *int    `json:"sortOrder"`
+	Name             *string      `json:"name"`
+	KenCost          *int         `json:"kenCost"`
+	FreeDailyEnabled *bool        `json:"freeDailyEnabled"`
+	IsEnabled        *bool        `json:"isEnabled"`
+	SortOrder        *int         `json:"sortOrder"`
+	MegaphoneEnabled *bool        `json:"megaphoneEnabled"`
+	OddsVisibility   models.JSONB `json:"oddsVisibility" swaggertype:"object"`
 }
 
 type SpinRequest struct {
@@ -87,13 +92,15 @@ type SegmentView struct {
 }
 
 type WheelView struct {
-	ID               uuid.UUID     `json:"id"`
-	Name             string        `json:"name"`
-	KenCost          int           `json:"kenCost"`
-	FreeDailyEnabled bool          `json:"freeDailyEnabled"`
-	IsEnabled        bool          `json:"isEnabled"`
-	SortOrder        int           `json:"sortOrder"`
-	Segments         []SegmentView `json:"segments"`
+	ID               uuid.UUID             `json:"id"`
+	Name             string                `json:"name"`
+	KenCost          int                   `json:"kenCost"`
+	FreeDailyEnabled bool                  `json:"freeDailyEnabled"`
+	IsEnabled        bool                  `json:"isEnabled"`
+	SortOrder        int                   `json:"sortOrder"`
+	MegaphoneEnabled bool                  `json:"megaphoneEnabled"`
+	OddsVisibility   setting.PlatformRules `json:"oddsVisibility"`
+	Segments         []SegmentView         `json:"segments"`
 }
 
 type WheelListResponse struct {
@@ -101,11 +108,11 @@ type WheelListResponse struct {
 }
 
 type PlayerOptionView struct {
-	Label     string  `json:"label"`
-	VipTypeID *int16  `json:"vipTypeId,omitempty"`
-	VipDays   *int    `json:"vipDays,omitempty"`
-	KenAmount *int    `json:"kenAmount,omitempty"`
-	Percent   float64 `json:"percent"`
+	Label     string   `json:"label"`
+	VipTypeID *int16   `json:"vipTypeId,omitempty"`
+	VipDays   *int     `json:"vipDays,omitempty"`
+	KenAmount *int     `json:"kenAmount,omitempty"`
+	Percent   *float64 `json:"percent,omitempty"`
 }
 
 type PlayerSegmentView struct {
@@ -118,7 +125,7 @@ type PlayerSegmentView struct {
 	VipDays   *int                    `json:"vipDays,omitempty"`
 	VipTypeID *int16                  `json:"vipTypeId,omitempty"`
 	SortOrder int                     `json:"sortOrder"`
-	Percent   float64                 `json:"percent"`
+	Percent   *float64                `json:"percent,omitempty"`
 	Options   []PlayerOptionView      `json:"options,omitempty"`
 }
 
@@ -129,6 +136,15 @@ type PlayerConfigResponse struct {
 	FreeDailyEnabled bool                `json:"freeDailyEnabled"`
 	FreeAvailable    bool                `json:"freeAvailable"`
 	Segments         []PlayerSegmentView `json:"segments"`
+}
+
+func (r *PlayerConfigResponse) HideOdds() {
+	for i := range r.Segments {
+		r.Segments[i].Percent = nil
+		for j := range r.Segments[i].Options {
+			r.Segments[i].Options[j].Percent = nil
+		}
+	}
 }
 
 type SpinResult struct {

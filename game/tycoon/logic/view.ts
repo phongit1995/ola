@@ -13,6 +13,7 @@ export function viewFor(state: GameState, seat: number): TycoonView {
     pendingDebts: copy.pendingDebts,
     card: copy.card,
     festival: copy.festival,
+    bought: copy.bought ?? -1,
     round: copy.round,
     bankruptOrder: copy.bankruptOrder,
     finished: copy.finished,

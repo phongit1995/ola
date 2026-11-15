@@ -8,6 +8,7 @@ import type { RelationshipInfo } from '@app-types';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { ProfileActions, UserProfile } from './types';
+import { showSocialLimitNotice } from '@ola/shared/stores/socialLimit';
 
 interface UseProfileActionsArgs {
   userId: string;
@@ -103,7 +104,9 @@ export function useProfileActions({
     (op: Promise<unknown>) => {
       setBusy(true);
       op.then(() => reload())
-        .catch(() => toast.error(t('profile.actionError')))
+        .catch((error: unknown) => {
+          if (!showSocialLimitNotice(error)) toast.error(t('profile.actionError'));
+        })
         .finally(() => setBusy(false));
     },
     [reload, t]

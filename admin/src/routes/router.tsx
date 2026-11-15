@@ -3,6 +3,7 @@ import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import { AnalyticsPage } from '@/pages/analytics/AnalyticsPage'
 import { UsersPage } from '@/pages/users/UsersPage'
+import { UserSettingsPage } from '@/pages/users/UserSettingsPage'
 import { MarriagesPage } from '@/pages/social/MarriagesPage'
 import { RelationshipsPage } from '@/pages/social/RelationshipsPage'
 import { RoomsPage } from '@/pages/rooms/RoomsPage'
@@ -44,7 +45,6 @@ import { AppUpdateSettingsPage } from '@/pages/settings/AppUpdateSettingsPage'
 import { TopupSettingsPage } from '@/pages/topup/TopupSettingsPage'
 import { TopupTransactionsPage } from '@/pages/topup/TopupTransactionsPage'
 import { UsernameChangeSettingsPage } from '@/pages/username-change/UsernameChangeSettingsPage'
-import { UsernameChangesPage } from '@/pages/username-change/UsernameChangesPage'
 import { AnnouncementPage } from '@/pages/settings/AnnouncementPage'
 import { NotificationSettingsPage } from '@/pages/settings/NotificationSettingsPage'
 import { AuditLogsPage } from '@/pages/audit-logs/AuditLogsPage'
@@ -75,6 +75,7 @@ export const router = createBrowserRouter([
       { path: 'users', element: <UsersPage /> },
       { path: 'users/marriages', element: <MarriagesPage /> },
       { path: 'users/relationships', element: <RelationshipsPage /> },
+      { path: 'users/settings', element: <UserSettingsPage /> },
       { path: 'rooms', element: <RoomsPage /> },
       { path: 'rooms/word-chain', element: <WordChainPage /> },
       { path: 'clans', element: <ClansPage /> },
@@ -110,7 +111,7 @@ export const router = createBrowserRouter([
       { path: 'games/mini-game', element: <MiniGamePage /> },
       { path: 'users/ken-transfers', element: <KenTransfersPage /> },
       { path: 'users/topups', element: <TopupTransactionsPage /> },
-      { path: 'users/username-changes', element: <UsernameChangesPage /> },
+      { path: 'users/username-changes', element: <Navigate to="/users/settings?tab=username-changes" replace /> },
       { path: 'ken-transfers', element: <Navigate to="/users/ken-transfers" replace /> },
       { path: 'posts', element: <PostsPage /> },
       { path: 'me', element: <Navigate to="/posts" replace /> },

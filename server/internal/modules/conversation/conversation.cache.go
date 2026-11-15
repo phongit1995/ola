@@ -65,23 +65,41 @@ func (c *CacheService) DeleteConversationMembers(conversationID uuid.UUID) error
 	return c.cache.Delete(key)
 }
 
-func (c *CacheService) GetUserConversations(userID uuid.UUID) ([]ConversationByUser, error) {
-	key := fmt.Sprintf(CacheKeyConversationList, userID.String())
-	var conversations []ConversationByUser
-	if err := c.cache.Get(key, &conversations); err != nil {
-		return nil, err
-	}
-	return conversations, nil
+type cachedConversationList struct {
+	Gen   int64                `json:"gen"`
+	Items []ConversationByUser `json:"items"`
 }
 
-func (c *CacheService) SetUserConversations(userID uuid.UUID, conversations []ConversationByUser) error {
+func (c *CacheService) userConversationsGen(userID uuid.UUID) int64 {
+	var gen int64
+	if err := c.cache.Get(fmt.Sprintf(CacheKeyConversationListGen, userID.String()), &gen); err != nil {
+		return 0
+	}
+	return gen
+}
+
+func (c *CacheService) GetUserConversations(userID uuid.UUID, gen int64) ([]ConversationByUser, bool) {
 	key := fmt.Sprintf(CacheKeyConversationList, userID.String())
-	return c.cache.Set(key, conversations, CacheTTLConversationList*time.Second)
+	var cached cachedConversationList
+	if err := c.cache.Get(key, &cached); err != nil || cached.Gen != gen || len(cached.Items) == 0 {
+		return nil, false
+	}
+	return cached.Items, true
+}
+
+func (c *CacheService) SetUserConversations(userID uuid.UUID, gen int64, conversations []ConversationByUser) error {
+	key := fmt.Sprintf(CacheKeyConversationList, userID.String())
+	return c.cache.Set(key, cachedConversationList{Gen: gen, Items: conversations}, CacheTTLConversationList*time.Second)
 }
 
 func (c *CacheService) DeleteUserConversations(userID uuid.UUID) error {
-	key := fmt.Sprintf(CacheKeyConversationList, userID.String())
-	return c.cache.Delete(key)
+	genKey := fmt.Sprintf(CacheKeyConversationListGen, userID.String())
+	if _, err := c.cache.Increment(genKey); err != nil {
+		c.logger.Warnw("Failed to bump conversation list generation", "user_id", userID, "error", err)
+	} else if err := c.cache.SetExpire(genKey, CacheTTLConversationListGen*time.Second); err != nil {
+		c.logger.Warnw("Failed to set conversation list generation TTL", "user_id", userID, "error", err)
+	}
+	return c.cache.Delete(fmt.Sprintf(CacheKeyConversationList, userID.String()))
 }
 
 func (c *CacheService) GetDirectConversation(user1ID, user2ID uuid.UUID) (*uuid.UUID, error) {
@@ -128,15 +146,12 @@ func (c *CacheService) SetUnreadCount(conversationID, userID uuid.UUID, count in
 
 func (c *CacheService) IncrementUnreadSeeded(conversationID, userID uuid.UUID, seed int) (int, error) {
 	key := fmt.Sprintf(CacheKeyUnreadCount, conversationID.String(), userID.String())
+	if _, err := c.cache.SetNX(key, seed, CacheTTLUnreadCount*time.Second); err != nil {
+		return 0, err
+	}
 	count, err := c.cache.Increment(key)
 	if err != nil {
 		return 0, err
-	}
-	if count == 1 && seed > 0 {
-		count, err = c.cache.IncrementBy(key, int64(seed))
-		if err != nil {
-			return 0, err
-		}
 	}
 	if err := c.cache.SetExpire(key, CacheTTLUnreadCount*time.Second); err != nil {
 		c.logger.Warnw("Failed to set unread counter TTL", "conversation_id", conversationID, "user_id", userID, "error", err)
@@ -145,8 +160,7 @@ func (c *CacheService) IncrementUnreadSeeded(conversationID, userID uuid.UUID, s
 }
 
 func (c *CacheService) ResetUnreadCount(conversationID, userID uuid.UUID) error {
-	key := fmt.Sprintf(CacheKeyUnreadCount, conversationID.String(), userID.String())
-	return c.cache.Delete(key)
+	return c.SetUnreadCount(conversationID, userID, 0)
 }
 
 func (c *CacheService) ClearPendingPush(conversationID, userID uuid.UUID) error {
@@ -312,7 +326,8 @@ func (c *CacheService) GetConversationByIDCached(conversationID uuid.UUID) (*Con
 }
 
 func (c *CacheService) GetUserConversationsCached(userID uuid.UUID, limit int) ([]ConversationByUser, error) {
-	if cached, err := c.GetUserConversations(userID); err == nil && len(cached) > 0 {
+	gen := c.userConversationsGen(userID)
+	if cached, ok := c.GetUserConversations(userID, gen); ok {
 		return truncateConversations(cached, limit), nil
 	}
 
@@ -322,7 +337,7 @@ func (c *CacheService) GetUserConversationsCached(userID uuid.UUID, limit int) (
 	}
 
 	utils.SafeGo(c.logger, func() {
-		if err := c.SetUserConversations(userID, conversations); err != nil {
+		if err := c.SetUserConversations(userID, gen, conversations); err != nil {
 			c.logger.Warnw("Failed to cache user conversations", "user_id", userID, "error", err)
 		}
 	})

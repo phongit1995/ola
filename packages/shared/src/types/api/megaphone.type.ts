@@ -9,7 +9,7 @@ export interface MegaphoneSender {
   avatarFrameId?: string | null;
 }
 
-export type MegaphoneType = 'message' | 'gift';
+export type MegaphoneType = 'message' | 'gift' | 'lucky';
 
 export interface MegaphoneGift {
   id: string;
@@ -19,12 +19,23 @@ export interface MegaphoneGift {
   quantity: number;
 }
 
+export type MegaphoneLuckyGame = 'egg' | 'wheel';
+
+export interface MegaphoneLucky {
+  game: MegaphoneLuckyGame;
+  label: string;
+  kenAmount?: number;
+  vipDays?: number;
+  vipTypeId?: number;
+}
+
 export interface Megaphone {
   id: string;
   type: MegaphoneType;
   sender: MegaphoneSender;
   receiver?: MegaphoneSender;
   gift?: MegaphoneGift;
+  lucky?: MegaphoneLucky;
   content: string;
   showAt: string;
   displaySeconds: number;
@@ -45,7 +56,11 @@ export interface MegaphoneConfig {
   queueWaitSeconds: number;
 }
 
-export type MegaphoneAppConfig = Omit<MegaphoneConfig, 'todayCount' | 'cooldownRemaining' | 'queueWaitSeconds'>;
+export type MegaphoneSenderDisplay = 'vip' | 'avatar';
+
+export type MegaphoneAppConfig = Omit<MegaphoneConfig, 'todayCount' | 'cooldownRemaining' | 'queueWaitSeconds'> & {
+  senderDisplay?: MegaphoneSenderDisplay;
+};
 
 export interface SendMegaphoneRequest {
   content: string;

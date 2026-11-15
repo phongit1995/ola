@@ -64,13 +64,35 @@ export function UiAvatar({ src, size = 32, ring, className = '' }: { src?: strin
   );
 }
 
-export function UiModal({ title, kicker, icon, onClose, children, actions, tone }: { title: string; kicker?: string; icon?: ReactNode; onClose?: () => void; children?: ReactNode; actions?: ReactNode; tone?: UiTone }) {
+export function UiModal({
+  title,
+  kicker,
+  icon,
+  onClose,
+  children,
+  actions,
+  tone,
+  wide,
+  closable,
+}: {
+  title: string;
+  kicker?: ReactNode;
+  icon?: ReactNode;
+  onClose?: () => void;
+  children?: ReactNode;
+  actions?: ReactNode;
+  tone?: UiTone;
+  wide?: boolean;
+  closable?: boolean;
+}) {
   const titleId = useId();
   const ref = useDialogFocus<HTMLDivElement>({ onEscape: onClose });
+  const classes = ['ui-panel', 'ui-modal', tone ? `ui-modal-${tone}` : '', wide ? 'ui-modal-wide' : '', closable && onClose ? 'ui-modal-closable' : ''].filter(Boolean).join(' ');
   return (
     <div className="ui-modal-layer">
       <div className="ui-scrim" aria-hidden="true" onClick={onClose} />
-      <div ref={ref} className={`ui-panel ui-modal ${tone ? `ui-modal-${tone}` : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+      <div ref={ref} className={classes} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+        {closable && onClose ? <UiIconButton icon="close" label="Đóng" size="sm" className="ui-close" onClick={onClose} /> : null}
         <div className="ui-modal-head">
           {icon}
           <span>

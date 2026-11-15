@@ -27,6 +27,11 @@ describe('pawnLayout', () => {
     expect(spots[2]!.z).toBe(Math.max(...spots.map((spot) => spot!.z)));
   });
 
+  it('quân ở ô góc cũng nằm giữa ô', () => {
+    const spots = pawnLayout([0, 5, 7, 9], noneOut, 0);
+    expect(spots[0]).toMatchObject(tileCenter(0));
+  });
+
   it('bỏ qua quân đã phá sản', () => {
     const spots = pawnLayout([4, 4], [true, false], 1);
     expect(spots[0]).toBeUndefined();

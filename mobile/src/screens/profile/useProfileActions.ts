@@ -19,6 +19,7 @@ import {
   pickValidatedCroppedImage,
 } from '@lib/imagePicker';
 import { FOLLOWING_PREVIEW_LIMIT, POSTS_PAGE_SIZE } from './constants';
+import { showSocialLimitNotice } from '@ola/shared/stores/socialLimit';
 
 export function useProfileActions(username: string) {
   const { t } = useTranslation();
@@ -174,7 +175,9 @@ export function useProfileActions(username: string) {
   function runAndReload(op: Promise<unknown>) {
     setBusy(true);
     op.then(() => reload())
-      .catch(() => push('error', t('profile.actionError')))
+      .catch((error: unknown) => {
+        if (!showSocialLimitNotice(error)) push('error', t('profile.actionError'));
+      })
       .finally(() => setBusy(false));
   }
 

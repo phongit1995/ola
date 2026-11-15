@@ -70,7 +70,7 @@ func IsAppNotificationTransfer(ntype string) bool {
 func (t AppNotificationTransfer) Message(ntype string) string {
 	if ntype == AppNotificationKenReceived {
 		if t.Amount > 0 {
-			return "Đã chuyển cho bạn " + groupThousands(t.Amount) + " Ken"
+			return "Đã chuyển cho bạn " + GroupThousands(t.Amount) + " Ken"
 		}
 		return "Đã chuyển Ken cho bạn"
 	}
@@ -86,7 +86,7 @@ func (t AppNotificationTransfer) Message(ntype string) string {
 	return "Đã tặng bạn VIP"
 }
 
-func groupThousands(n int) string {
+func GroupThousands(n int) string {
 	digits := strconv.Itoa(n)
 	for i := len(digits) - 3; i > 0; i -= 3 {
 		digits = digits[:i] + "," + digits[i:]

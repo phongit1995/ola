@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VipIcon } from '@components';
-import { formatKen } from '@lib';
+import { formatKen, formatOddsPercent } from '@lib';
 import type { WheelPlayerOption, WheelPlayerSegment } from '@app-types';
 import {
   giftCloseButtonUrl,
@@ -55,9 +55,7 @@ function GiftOptionCell({ option }: { option: WheelPlayerOption }) {
   const { t } = useTranslation();
   const visual = giftOptionVisual(t, option);
   return (
-    <div
-      className={`${CARD_CLASS} flex min-h-16 items-center gap-2 px-2 py-2`}
-    >
+    <div className={`${CARD_CLASS} flex min-h-16 items-center gap-2 px-2 py-2`}>
       <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#ffd24a] bg-[#26409e]">
         {visual.vipTypeId != null ? (
           <VipIcon typeId={visual.vipTypeId} className="h-10 w-10" />
@@ -95,6 +93,62 @@ function VipRandomSection({ segment }: { segment: WheelPlayerSegment }) {
   );
 }
 
+function OddsSection({ segments }: { segments: WheelPlayerSegment[] }) {
+  const { t } = useTranslation();
+  const rows = segments.filter(
+    (segment) => formatOddsPercent(segment.percent) != null
+  );
+  if (rows.length === 0) return null;
+  return (
+    <div
+      className={`${CARD_CLASS} flex flex-col gap-1.5 bg-[#26409e] px-3 py-2.5`}
+    >
+      <p
+        className="text-center text-sm font-extrabold uppercase text-[#ffd24a]"
+        style={TEXT_SHADOW}
+      >
+        {t('wheelGame.oddsTitle')}
+      </p>
+      {rows.map((segment) => (
+        <div key={segment.id} className="flex flex-col gap-0.5">
+          <div className="flex justify-between gap-2">
+            <span
+              className="min-w-0 flex-1 truncate text-xs font-bold text-white"
+              style={TEXT_SHADOW}
+            >
+              {segment.label}
+            </span>
+            <span
+              className="text-xs font-extrabold text-[#ffd24a]"
+              style={TEXT_SHADOW}
+            >
+              {formatOddsPercent(segment.percent)}
+            </span>
+          </div>
+          {(segment.options ?? []).map((option, index) =>
+            formatOddsPercent(option.percent) == null ? null : (
+              <div
+                key={`${segment.id}-${index}`}
+                className="flex justify-between gap-2 pl-3.5"
+              >
+                <span className="min-w-0 flex-1 truncate text-[11px] text-white/85">
+                  {option.label}
+                </span>
+                <span className="text-[11px] font-bold text-[#ffd24a]/90">
+                  {formatOddsPercent(option.percent)}
+                </span>
+              </div>
+            )
+          )}
+        </div>
+      ))}
+      <p className="text-center text-[10px] text-white/70">
+        {t('wheelGame.oddsNote')}
+      </p>
+    </div>
+  );
+}
+
 export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
   const { t } = useTranslation();
 
@@ -111,6 +165,9 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
       segment.kind === WHEEL_SEGMENT_KIND.kenRandom ||
       (segment.kind === WHEEL_SEGMENT_KIND.vipRandom &&
         (segment.options?.length ?? 0) > 0)
+  );
+  const hasOdds = segments.some(
+    (segment) => formatOddsPercent(segment.percent) != null
   );
 
   return (
@@ -142,7 +199,7 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
         </div>
 
         <div className={`flex flex-col gap-3 ${SCROLL_CLASS}`}>
-          {randomSegments.length === 0 ? (
+          {randomSegments.length === 0 && !hasOdds ? (
             <p
               className="py-10 text-center text-sm font-bold text-white"
               style={TEXT_SHADOW}
@@ -150,13 +207,16 @@ export function GiftListDialog({ segments, onClose }: GiftListDialogProps) {
               {t('wheelGame.giftListEmpty')}
             </p>
           ) : (
-            randomSegments.map((segment) =>
-              segment.kind === WHEEL_SEGMENT_KIND.kenRandom ? (
-                <KenRandomCard key={segment.id} segment={segment} />
-              ) : (
-                <VipRandomSection key={segment.id} segment={segment} />
-              )
-            )
+            <>
+              {randomSegments.map((segment) =>
+                segment.kind === WHEEL_SEGMENT_KIND.kenRandom ? (
+                  <KenRandomCard key={segment.id} segment={segment} />
+                ) : (
+                  <VipRandomSection key={segment.id} segment={segment} />
+                )
+              )}
+              {hasOdds && <OddsSection segments={segments} />}
+            </>
           )}
         </div>
 

@@ -31,7 +31,7 @@ import {
   MAX_ROUNDS,
   START_CASH,
   STATION_RENT,
-  TAKEOVER_MULTIPLIER,
+  TAKEOVER_PERCENT,
   TAX_RATE,
   TIME_LIMIT_MS,
   TURN_SECONDS,
@@ -108,7 +108,7 @@ const TABS: RuleTab[] = [
         tone: 'sky',
         title: 'Mua lại đất',
         lines: [
-          `Trả thuê xong và không nợ: trả ×${TAKEOVER_MULTIPLIER} (giá đất + tiền nâng cấp) để mua lại thành phố đó.`,
+          `Trả thuê xong và không nợ: trả ×${String(TAKEOVER_PERCENT / 100).replace('.', ',')} (giá đất + tiền đã nâng cấp) để mua lại thành phố đó.`,
           'Tiền trả cho chủ cũ, giữ nguyên cấp nhà; phải đủ tiền.',
           `Không mua lại sân bay hoặc ô đã lên ${LEVEL_NAMES[MAX_HOUSES]}.`,
         ],
@@ -118,9 +118,11 @@ const TABS: RuleTab[] = [
         tone: 'mint',
         title: 'Nâng cấp',
         lines: [
-          'Cần đủ 2 thành phố cùng nhóm màu.',
-          `${LEVEL_NAMES.slice(1).join(' → ')}, tối đa ${MAX_HOUSES} cấp; nâng đều trong lượt của mình.`,
-          'Hạ cấp hoàn 50% giá nâng cấp, hạ đều giữa các ô cùng nhóm còn giữ.',
+          'Đáp vào thành phố của mình thì nâng được ô đó, không cần đủ nhóm.',
+          'Vừa mua xong được xây ngay Nhà; Biệt thự, Khách sạn thì lần sau đáp lại ô đó mới nâng.',
+          `${LEVEL_NAMES.slice(1).join(' → ')}, tối đa ${MAX_HOUSES} cấp; chọn thẳng cấp muốn lên.`,
+          'Giá nâng tăng dần: cấp 1 rẻ nhất, cấp 3 đắt nhất (xem trong hộp nâng cấp).',
+          'Bán nhà hoàn 50% giá của cấp đó, bán ô nào cũng được.',
         ],
       },
       {
@@ -152,7 +154,7 @@ const TABS: RuleTab[] = [
         tone: 'sky',
         title: 'Du lịch',
         lines: [
-          'Lượt sau bay tới ô bất kỳ trừ ô đang đứng, hoặc gieo bình thường.',
+          'Đáp vào là bay ngay tới ô bất kỳ trừ ô đang đứng, hoặc ở lại.',
           `Qua Xuất phát vẫn nhận ${money(GO_SALARY)}; ô đáp xử lý như thường.`,
         ],
       },

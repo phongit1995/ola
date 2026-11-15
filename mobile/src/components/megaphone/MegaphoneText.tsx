@@ -1,16 +1,21 @@
-import { Text } from 'react-native';
+import { Image, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { MEGAPHONE_TYPE } from '@ola/shared/constants';
-import { activeVipTypeId, giftDisplayName } from '@ola/shared/lib';
-import type { Megaphone, MegaphoneSender } from '@ola/shared/types';
+import { MEGAPHONE_SENDER_DISPLAY, MEGAPHONE_TYPE } from '@ola/shared/constants';
+import { selectMegaphoneSenderDisplay, useMegaphoneConfigStore } from '@ola/shared/stores/megaphone/megaphoneConfigStore';
+import { activeVipTypeId, giftDisplayName, megaphoneLuckyRewardText, megaphoneLuckyVerb } from '@ola/shared/lib';
+import type { Megaphone, MegaphoneLucky, MegaphoneSender } from '@ola/shared/types';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { CachedImage } from '@components/ui/CachedImage';
 import { VipBadge } from '@components/ui/VipBadge';
+import { VipIcon } from '@components/ui/VipIcon';
 import { SmileyText } from '@lib/richText';
 
 const GIFT_IMAGE_STYLE = { width: 20, height: 20 };
+const LUCKY_REWARD_ICON_SIZE = 20;
+const kenCoinIcon = require('@assets/icons/apps/ken.png');
+const vipDaysIcon = require('@assets/games/egg/day_vip.png');
 const CONTENT_FONT_SIZE = 14;
-const MEGAPHONE_AVATAR_SIZE = 28;
+const MEGAPHONE_AVATAR_SIZE = 24;
 
 function MegaphoneUserAvatar({ user }: { user: MegaphoneSender }) {
   return (
@@ -21,6 +26,12 @@ function MegaphoneUserAvatar({ user }: { user: MegaphoneSender }) {
       frameId={user.avatarFrameId}
     />
   );
+}
+
+function MegaphoneUserMark({ user }: { user: MegaphoneSender }) {
+  const display = useMegaphoneConfigStore(selectMegaphoneSenderDisplay);
+  if (display === MEGAPHONE_SENDER_DISPLAY.avatar) return <MegaphoneUserAvatar user={user} />;
+  return <VipBadge typeId={activeVipTypeId(user.vipUsed, user.vipEndTime)} size={20} />;
 }
 
 function MegaphoneUsername({ username }: { username: string }) {
@@ -35,10 +46,10 @@ function MegaphoneGiftText({ megaphone }: { megaphone: Megaphone }) {
   }
   return (
     <>
-      <MegaphoneUserAvatar user={sender} />
+      <MegaphoneUserMark user={sender} />
       <MegaphoneUsername username={sender.username} />
       <Text className="text-sm text-ola-ink-soft">{t('megaphone.giftVerb')}</Text>
-      <MegaphoneUserAvatar user={receiver} />
+      <MegaphoneUserMark user={receiver} />
       <MegaphoneUsername username={receiver.username} />
       <Text className="text-sm font-semibold text-ola-ink">{giftDisplayName(gift, i18n.language)}</Text>
       <CachedImage uri={gift.imageUrl} style={GIFT_IMAGE_STYLE} resizeMode="contain" />
@@ -49,13 +60,43 @@ function MegaphoneGiftText({ megaphone }: { megaphone: Megaphone }) {
   );
 }
 
-export function MegaphoneText({ megaphone }: { megaphone: Megaphone }) {
-  if (megaphone.type === MEGAPHONE_TYPE.gift) return <MegaphoneGiftText megaphone={megaphone} />;
-  const vipTypeId = activeVipTypeId(megaphone.sender.vipUsed, megaphone.sender.vipEndTime);
+function MegaphoneLuckyRewardIcon({ lucky }: { lucky: MegaphoneLucky }) {
+  if (lucky.kenAmount != null && lucky.kenAmount > 0) {
+    return <Image source={kenCoinIcon} style={GIFT_IMAGE_STYLE} resizeMode="contain" />;
+  }
+  if (lucky.vipTypeId != null) return <VipIcon typeId={lucky.vipTypeId} size={LUCKY_REWARD_ICON_SIZE} fallback="placeholder" />;
+  if (lucky.vipDays != null && lucky.vipDays > 0) {
+    return <Image source={vipDaysIcon} style={GIFT_IMAGE_STYLE} resizeMode="contain" />;
+  }
+  return null;
+}
+
+function MegaphoneLuckyText({ megaphone }: { megaphone: Megaphone }) {
+  const { t } = useTranslation();
+  const { lucky } = megaphone;
   return (
     <>
-      <MegaphoneUserAvatar user={megaphone.sender} />
-      <VipBadge typeId={vipTypeId} size={20} />
+      <MegaphoneUserMark user={megaphone.sender} />
+      <MegaphoneUsername username={megaphone.sender.username} />
+      {lucky == null ? (
+        <Text className="text-sm font-semibold text-ola-megaphone-ink">{megaphone.content}</Text>
+      ) : (
+        <>
+          <Text className="text-sm text-ola-ink-soft">{megaphoneLuckyVerb(t, lucky)}</Text>
+          <MegaphoneLuckyRewardIcon lucky={lucky} />
+          <Text className="text-sm font-semibold text-ola-megaphone-ink">{megaphoneLuckyRewardText(lucky)} 🎉</Text>
+        </>
+      )}
+    </>
+  );
+}
+
+export function MegaphoneText({ megaphone }: { megaphone: Megaphone }) {
+  if (megaphone.type === MEGAPHONE_TYPE.gift) return <MegaphoneGiftText megaphone={megaphone} />;
+  if (megaphone.type === MEGAPHONE_TYPE.lucky) return <MegaphoneLuckyText megaphone={megaphone} />;
+  return (
+    <>
+      <MegaphoneUserMark user={megaphone.sender} />
       <MegaphoneUsername username={megaphone.sender.username} />
       <Text className="text-sm font-semibold text-ola-megaphone-name">:</Text>
       <Text className="text-sm text-ola-ink">

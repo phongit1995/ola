@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/megaphone"
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
@@ -38,15 +40,17 @@ type Service struct {
 	userCache *user.CacheService
 	cache     *services.CacheService
 	wsServer  *websocket.Server
+	megaphone *megaphone.Service
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, megaphoneService *megaphone.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		userCache: userCache,
 		cache:     cache,
 		wsServer:  wsServer,
+		megaphone: megaphoneService,
 		logger:    logger.Named("[wheel_service]"),
 	}
 }
@@ -108,7 +112,7 @@ func (s *Service) ListAllWheels() (*WheelListResponse, error) {
 	return &WheelListResponse{Items: views}, nil
 }
 
-func (s *Service) PlayerConfig(userID uuid.UUID) (*PlayerConfigResponse, error) {
+func (s *Service) PlayerConfig(client setting.Client, userID uuid.UUID) (*PlayerConfigResponse, error) {
 	wheel, err := s.repo.FirstEnabledWheel()
 	if err != nil {
 		return nil, ErrWheelNotFound
@@ -133,6 +137,7 @@ func (s *Service) PlayerConfig(userID uuid.UUID) (*PlayerConfigResponse, error) 
 	playableOptions := playableOptionsBySegment(options, segPercents)
 	views := make([]PlayerSegmentView, len(active))
 	for i, seg := range active {
+		segPercent := segPercents[seg.ID]
 		views[i] = PlayerSegmentView{
 			ID:        seg.ID,
 			Kind:      seg.Kind,
@@ -143,7 +148,7 @@ func (s *Service) PlayerConfig(userID uuid.UUID) (*PlayerConfigResponse, error) 
 			VipDays:   seg.VipDays,
 			VipTypeID: seg.VipTypeID,
 			SortOrder: seg.SortOrder,
-			Percent:   segPercents[seg.ID],
+			Percent:   &segPercent,
 			Options:   playableOptions[seg.ID],
 		}
 	}
@@ -155,14 +160,18 @@ func (s *Service) PlayerConfig(userID uuid.UUID) (*PlayerConfigResponse, error) 
 		}
 		freeAvailable = !claimed
 	}
-	return &PlayerConfigResponse{
+	resp := &PlayerConfigResponse{
 		ID:               wheel.ID,
 		Name:             wheel.Name,
 		KenCost:          wheel.KenCost,
 		FreeDailyEnabled: wheel.FreeDailyEnabled,
 		FreeAvailable:    freeAvailable,
 		Segments:         views,
-	}, nil
+	}
+	if !setting.OddsRulesFrom(wheel.OddsVisibility).EnabledForClient(client) {
+		resp.HideOdds()
+	}
+	return resp, nil
 }
 
 func buildConfigModels(input []SegmentInput) ([]models.WheelSegment, map[int][]models.WheelSegmentOption) {
@@ -270,7 +279,13 @@ func (s *Service) CreateWheel(req CreateWheelRequest) (*WheelView, error) {
 		FreeDailyEnabled: req.FreeDailyEnabled,
 		IsEnabled:        req.IsEnabled,
 		SortOrder:        req.SortOrder,
+		MegaphoneEnabled: req.MegaphoneEnabled == nil || *req.MegaphoneEnabled,
 	}
+	odds, err := setting.OddsRulesValue(req.OddsVisibility)
+	if err != nil {
+		return nil, err
+	}
+	wheel.OddsVisibility = odds
 	segs, optionsBySeg := buildConfigModels(req.Segments)
 	if err := s.repo.CreateWheelWithConfig(&wheel, segs, optionsBySeg); err != nil {
 		return nil, err
@@ -297,6 +312,16 @@ func (s *Service) UpdateWheel(id uuid.UUID, req UpdateWheelRequest) (*WheelView,
 	}
 	if req.SortOrder != nil {
 		fields["sort_order"] = *req.SortOrder
+	}
+	if req.MegaphoneEnabled != nil {
+		fields["megaphone_enabled"] = *req.MegaphoneEnabled
+	}
+	if req.OddsVisibility != nil {
+		odds, err := setting.OddsRulesValue(req.OddsVisibility)
+		if err != nil {
+			return nil, err
+		}
+		fields["odds_visibility"] = odds
 	}
 	if len(fields) > 0 {
 		if err := s.repo.UpdateWheel(id, fields); err != nil {
@@ -340,15 +365,15 @@ func (s *Service) getWheelView(wheelID uuid.UUID) (*WheelView, error) {
 	return &views[0], nil
 }
 
-func (s *Service) SpinFirstEnabled(userID uuid.UUID, idempotencyKey string) (*SpinResult, error) {
+func (s *Service) SpinFirstEnabled(client setting.Client, userID uuid.UUID, idempotencyKey string) (*SpinResult, error) {
 	wheel, err := s.repo.FirstEnabledWheel()
 	if err != nil {
 		return nil, ErrWheelNotFound
 	}
-	return s.Spin(userID, wheel.ID, idempotencyKey)
+	return s.Spin(client, userID, wheel.ID, idempotencyKey)
 }
 
-func (s *Service) Spin(userID, wheelID uuid.UUID, idempotencyKey string) (*SpinResult, error) {
+func (s *Service) Spin(client setting.Client, userID, wheelID uuid.UUID, idempotencyKey string) (*SpinResult, error) {
 	wheel, err := s.repo.FindWheel(wheelID)
 	if err != nil || !wheel.IsEnabled {
 		return nil, ErrWheelNotFound
@@ -371,6 +396,7 @@ func (s *Service) Spin(userID, wheelID uuid.UUID, idempotencyKey string) (*SpinR
 	}
 
 	s.invalidateUser(userID)
+	s.announceLucky(client, wheel, spin)
 
 	freeAvailable := false
 	if wheel.FreeDailyEnabled {
@@ -415,6 +441,28 @@ func (s *Service) Spin(userID, wheelID uuid.UUID, idempotencyKey string) (*SpinR
 		VipDays:             spin.VipDays,
 		VipTypeID:           spin.VipTypeID,
 	}, nil
+}
+
+func (s *Service) announceLucky(client setting.Client, wheel *models.Wheel, spin *models.WheelSpin) {
+	if !wheel.MegaphoneEnabled || !spin.IsSuperLucky || spin.SegmentKind == models.WheelSegmentMiss {
+		return
+	}
+	label := ""
+	if spin.RewardLabel != nil {
+		label = *spin.RewardLabel
+	}
+	s.megaphone.AnnounceLuckyLater(megaphone.LuckyAnnouncement{
+		Client:   client,
+		Game:     megaphone.LuckyGameWheel,
+		PlayID:   spin.ID,
+		PlayerID: spin.UserID,
+		Reward: megaphone.LuckyReward{
+			Label:     label,
+			KenAmount: spin.KenAmount,
+			VipDays:   spin.VipDays,
+			VipTypeID: spin.VipTypeID,
+		},
+	})
 }
 
 func (s *Service) draw(active []models.WheelSegment, options []models.WheelSegmentOption) (SpinOutcome, int, bool) {
@@ -620,7 +668,7 @@ func playableOptionsBySegment(options []models.WheelSegmentOption, segPercents m
 				VipTypeID: opt.VipTypeID,
 				VipDays:   opt.VipDays,
 				KenAmount: opt.KenAmount,
-				Percent:   percent,
+				Percent:   &percent,
 			})
 		}
 	}
@@ -686,6 +734,8 @@ func buildWheelViews(wheels []models.Wheel, segs []models.WheelSegment, options 
 			FreeDailyEnabled: w.FreeDailyEnabled,
 			IsEnabled:        w.IsEnabled,
 			SortOrder:        w.SortOrder,
+			MegaphoneEnabled: w.MegaphoneEnabled,
+			OddsVisibility:   setting.OddsRulesFrom(w.OddsVisibility),
 			Segments:         list,
 		}
 	}

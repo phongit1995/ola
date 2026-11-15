@@ -10,6 +10,7 @@ import (
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	userModule "ola-chat-server/internal/modules/user"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/transport/kafka"
@@ -29,6 +30,7 @@ type Service struct {
 	userSettingSvc *usersetting.Service
 	relRepo        *relationships.Repository
 	relSvc         BlockChecker
+	limits         *sociallimit.Service
 	kafkaProducer  *kafka.Producer
 	presence       *websocket.PresenceService
 	logger         *zap.SugaredLogger
@@ -41,6 +43,7 @@ func NewService(
 	userSettingSvc *usersetting.Service,
 	relRepo *relationships.Repository,
 	relSvc *relationships.Service,
+	limits *sociallimit.Service,
 	kafkaProducer *kafka.Producer,
 	presence *websocket.PresenceService,
 	logger *zap.SugaredLogger,
@@ -52,6 +55,7 @@ func NewService(
 		userSettingSvc: userSettingSvc,
 		relRepo:        relRepo,
 		relSvc:         relSvc,
+		limits:         limits,
 		kafkaProducer:  kafkaProducer,
 		presence:       presence,
 		logger:         logger.Named("[conversation_service]"),

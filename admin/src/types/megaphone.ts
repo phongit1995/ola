@@ -16,7 +16,10 @@ export interface MegaphoneSetting {
   repeatBaseSeconds: number
   messageWeight: number
   giftTiers: MegaphoneGiftTier[]
+  senderDisplay: MegaphoneSenderDisplay
 }
+
+export type MegaphoneSenderDisplay = 'vip' | 'avatar'
 
 export interface MegaphoneGiftTier {
   minKen: number
@@ -25,7 +28,7 @@ export interface MegaphoneGiftTier {
 
 export type MegaphoneStatus = 'active' | 'removed'
 
-export type MegaphoneType = 'message' | 'gift'
+export type MegaphoneType = 'message' | 'gift' | 'lucky'
 
 export interface AdminMegaphone {
   id: string

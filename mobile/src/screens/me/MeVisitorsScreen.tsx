@@ -16,6 +16,7 @@ import { ROOT_ROUTES } from '@navigation/routes';
 import { VISITORS_PAGE_SIZE } from './constants';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { UserName } from '@components/ui/UserName';
+import { showSocialLimitNotice } from '@ola/shared/stores/socialLimit';
 
 export function MeVisitorsScreen() {
   const { t, i18n } = useTranslation();
@@ -69,8 +70,8 @@ export function MeVisitorsScreen() {
       await RelationshipService.sendRequest(row.id);
       setRequested((current) => ({ ...current, [row.id]: true }));
       push('success', t('me.friendRequestSent'));
-    } catch {
-      push('error', t('me.makeFriendError'));
+    } catch (err) {
+      if (!showSocialLimitNotice(err)) push('error', t('me.makeFriendError'));
     }
   }
 

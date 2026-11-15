@@ -21,17 +21,26 @@ type GiftInfo struct {
 	Quantity int    `json:"quantity" example:"5"`
 }
 
+type LuckyInfo struct {
+	Game      string `json:"game" example:"egg"`
+	Label     string `json:"label" example:"Icon VIP Kim Cương"`
+	KenAmount *int   `json:"kenAmount,omitempty" example:"5000"`
+	VipDays   *int   `json:"vipDays,omitempty" example:"30"`
+	VipTypeID *int16 `json:"vipTypeId,omitempty" example:"7"`
+}
+
 type Megaphone struct {
-	ID             string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Type           string    `json:"type" example:"message"`
-	Sender         Sender    `json:"sender"`
-	Receiver       *Sender   `json:"receiver,omitempty"`
-	Gift           *GiftInfo `json:"gift,omitempty"`
-	Content        string    `json:"content" example:"Chúc cả nhà buổi tối vui vẻ 🎉"`
-	ShowAt         time.Time `json:"showAt" example:"2026-11-06T10:00:00Z"`
-	DisplaySeconds int       `json:"displaySeconds" example:"12"`
-	ExpiresAt      time.Time `json:"expiresAt" example:"2026-11-06T10:30:00Z"`
-	CreatedAt      time.Time `json:"createdAt" example:"2026-11-06T09:59:50Z"`
+	ID             string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Type           string     `json:"type" example:"message"`
+	Sender         Sender     `json:"sender"`
+	Receiver       *Sender    `json:"receiver,omitempty"`
+	Gift           *GiftInfo  `json:"gift,omitempty"`
+	Lucky          *LuckyInfo `json:"lucky,omitempty"`
+	Content        string     `json:"content" example:"Chúc cả nhà buổi tối vui vẻ 🎉"`
+	ShowAt         time.Time  `json:"showAt" example:"2026-11-06T10:00:00Z"`
+	DisplaySeconds int        `json:"displaySeconds" example:"12"`
+	ExpiresAt      time.Time  `json:"expiresAt" example:"2026-11-06T10:30:00Z"`
+	CreatedAt      time.Time  `json:"createdAt" example:"2026-11-06T09:59:50Z"`
 }
 
 type PlayEvent struct {

@@ -4,23 +4,27 @@ import { ActionDock } from '../components/ActionDock';
 import { AssetsSheet } from '../components/AssetsSheet';
 import { Board } from '../components/Board';
 import { BoardCenter } from '../components/BoardCenter';
-import { BottomSheet } from '../components/BottomSheet';
 import { BuyModal } from '../components/BuyModal';
+import { JailModal } from '../components/JailModal';
 import { DebtModal } from '../components/DebtModal';
 import { ChatSheet, ReactionBubbles } from '../components/MatchChat';
 import { TyIcon } from '../components/TyIcon';
 import { KenBadge, UiAvatar, UiIconButton } from '../components/Ui';
 import { PlayerPods } from '../components/PlayerPods';
 import { TileSheet } from '../components/TileSheet';
+import { LogSheet } from '../components/LogSheet';
 import { attachParticles } from '../fx/particles';
 import { MAX_ROUNDS, TIME_LIMIT_MS } from '../logic/constants';
-import { useTycoon } from '../store/useTycoon';
+import { canBuild } from '../logic/rules-hint';
+import { logLineText, useTycoon } from '../store/useTycoon';
 import bgUrl from '../assets/lobby/bg-board-pixel.webp';
 import logoUrl from '../assets/lobby/logo.webp';
 
 const BOARD_MIN = 260;
 const BOARD_MAX = 600;
-const DOCK_RESERVE = 112;
+const DOCK_RESERVE = 56;
+const FLOW_GAPS = 4;
+const BOARD_FRAME = 12;
 
 function ConnectionBanner() {
   const { awaySeats, selfDisconnected, players, you, spectating, spectators, result } = useTycoon(
@@ -60,23 +64,6 @@ function ConnectionBanner() {
   );
 }
 
-function LogSheet() {
-  const { log, closeSheet } = useTycoon(useShallow((s) => ({ log: s.log, closeSheet: s.closeSheet })));
-  return (
-    <BottomSheet title="Diễn biến ván chơi" onClose={closeSheet} tall>
-      <h2 className="ui-title ty-sheet-head">Diễn biến</h2>
-      <div className="ty-log-full">
-        {log.length === 0 ? <p className="ty-sheet-desc">Chưa có gì xảy ra.</p> : null}
-        {[...log].reverse().map((line) => (
-          <div key={line.seq} className={`ty-log-line ty-log-${line.tone}`}>
-            {line.text}
-          </div>
-        ))}
-      </div>
-    </BottomSheet>
-  );
-}
-
 function GameClock() {
   const startedAt = useTycoon((s) => s.startedAt);
   const [now, setNow] = useState(() => Date.now());
@@ -102,7 +89,10 @@ function useBoardFit(screen: RefObject<HTMLDivElement | null>, chrome: RefObject
       const style = getComputedStyle(root);
       const width = root.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
       const height = root.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-      const fixed = chrome.current.reduce((sum, el) => sum + (el?.offsetHeight ?? 0), 0) + DOCK_RESERVE + 52;
+      const dock = root.querySelector<HTMLElement>('.ty-s6-dockwrap');
+      const dockReserve = dock ? parseFloat(getComputedStyle(dock).minHeight) || DOCK_RESERVE : DOCK_RESERVE;
+      const gaps = (parseFloat(style.rowGap) || 8) * FLOW_GAPS;
+      const fixed = chrome.current.reduce((sum, el) => sum + (el?.offsetHeight ?? 0), 0) + dockReserve + gaps + BOARD_FRAME;
       const size = Math.floor(Math.max(BOARD_MIN, Math.min(width, height - fixed, BOARD_MAX)) / 2) * 2;
       root.style.setProperty('--b', `${size}px`);
     };
@@ -114,16 +104,14 @@ function useBoardFit(screen: RefObject<HTMLDivElement | null>, chrome: RefObject
 }
 
 function BoardMenu({ onClose }: { onClose: () => void }) {
-  const { speed, autoEnd, spectating, practice, matchBet, spectators, setSpeed, setAutoEnd, setRulesOpen, exitMatch, forfeitMatch } = useTycoon(
+  const { speed, spectating, practice, matchBet, spectators, setSpeed, setRulesOpen, exitMatch, forfeitMatch } = useTycoon(
     useShallow((s) => ({
       speed: s.speed,
-      autoEnd: s.autoEnd,
       spectating: s.spectating,
       practice: s.practice,
       matchBet: s.matchBet,
       spectators: s.spectators,
       setSpeed: s.setSpeed,
-      setAutoEnd: s.setAutoEnd,
       setRulesOpen: s.setRulesOpen,
       exitMatch: s.exitMatch,
       forfeitMatch: s.forfeitMatch,
@@ -160,14 +148,6 @@ function BoardMenu({ onClose }: { onClose: () => void }) {
           ))}
         </span>
       </div>
-      {spectating ? null : (
-        <button type="button" role="menuitemcheckbox" aria-checked={autoEnd} className="ty-popover-row" onClick={() => setAutoEnd(!autoEnd)}>
-          <span>Tự kết thúc lượt</span>
-          <span className={`ty-switch ${autoEnd ? 'ty-switch-on' : ''}`} aria-hidden="true">
-            <i />
-          </span>
-        </button>
-      )}
       <button
         type="button"
         role="menuitem"
@@ -205,6 +185,47 @@ function BoardMenu({ onClose }: { onClose: () => void }) {
   );
 }
 
+function tapTile(idx: number): void {
+  const s = useTycoon.getState();
+  const me = s.view?.players[s.you];
+  if (s.myTurn && !s.replaying && !s.movePending && s.view?.phase === 'travel' && me && me.pos !== idx) {
+    s.sendMove({ type: 'TRAVEL', tile: idx });
+    return;
+  }
+  s.openSheet({ kind: 'tile', idx });
+}
+
+function useAutoUpgrade(): void {
+  const { view, you, myTurn, replaying, movePending, sheet, openSheet } = useTycoon(
+    useShallow((s) => ({ view: s.view, you: s.you, myTurn: s.myTurn, replaying: s.replaying, movePending: s.movePending, sheet: s.sheet, openSheet: s.openSheet })),
+  );
+  const handled = useRef('');
+  useEffect(() => {
+    const me = view?.players[you];
+    if (!view || !me || !myTurn || replaying || movePending || me.bankrupt) return;
+    const key = `${view.round}:${view.turn}:${me.pos}:${me.doubles}`;
+    if (view.phase !== 'manage' || sheet || handled.current === key) return;
+    handled.current = key;
+    if (canBuild(view, you, me.pos).ok) openSheet({ kind: 'tile', idx: me.pos });
+  }, [view, you, myTurn, replaying, movePending, sheet, openSheet]);
+}
+
+const AUTO_END_MS = 700;
+
+function useAutoEndTurn(): void {
+  const { view, you, myTurn, replaying, movePending, turnExpired, sheet, sendMove } = useTycoon(
+    useShallow((s) => ({ view: s.view, you: s.you, myTurn: s.myTurn, replaying: s.replaying, movePending: s.movePending, turnExpired: s.turnExpired, sheet: s.sheet, sendMove: s.sendMove })),
+  );
+  const me = view?.players[you];
+  const ready = !!view && !!me && myTurn && view.phase === 'manage' && !view.finished && !me.bankrupt && !replaying && !movePending && !turnExpired && !sheet;
+  const moveCount = view?.moveCount ?? -1;
+  useEffect(() => {
+    if (!ready) return;
+    const timer = setTimeout(() => sendMove({ type: 'END_TURN' }), AUTO_END_MS);
+    return () => clearTimeout(timer);
+  }, [ready, moveCount, sendMove]);
+}
+
 export function BoardScreen() {
   const state = useTycoon(
     useShallow((s) => ({
@@ -238,6 +259,8 @@ export function BoardScreen() {
     chrome.current = [top.current, pods.current, foot.current];
   }, []);
   useBoardFit(screen, chrome);
+  useAutoUpgrade();
+  useAutoEndTurn();
 
   useEffect(() => (canvas.current ? attachParticles(canvas.current) : undefined), []);
 
@@ -268,7 +291,7 @@ export function BoardScreen() {
       </header>
 
       <div className="ty-s6-boardwrap" onPointerDownCapture={state.replaying ? state.skipReplay : undefined}>
-        <Board onTileTap={(idx) => state.openSheet({ kind: 'tile', idx })}>
+        <Board onTileTap={tapTile}>
           <BoardCenter />
         </Board>
       </div>
@@ -285,7 +308,7 @@ export function BoardScreen() {
         <UiIconButton icon="deed" label="Tài sản" size="sm" onClick={() => state.openSheet({ kind: 'assets', seat: state.you >= 0 ? state.you : (state.view?.turn ?? 0) })} />
         <button type="button" className="ty-s6-ticker" aria-label="Xem toàn bộ diễn biến" onClick={() => state.openSheet({ kind: 'log' })}>
           <span key={latest?.seq} className={`ty-log-${latest?.tone ?? 'neutral'}`}>
-            {latest?.text ?? 'Ván mới bắt đầu'}
+            {latest ? logLineText(latest) : 'Ván mới bắt đầu'}
           </span>
         </button>
         <UiIconButton icon="history" label="Diễn biến" size="sm" onClick={() => state.openSheet({ kind: 'log' })} />
@@ -312,6 +335,7 @@ export function BoardScreen() {
       {!state.result && state.sheet?.kind === 'chat' ? <ChatSheet /> : null}
       <ReactionBubbles />
       {!state.result ? <BuyModal /> : null}
+      {!state.result ? <JailModal /> : null}
       {!state.result ? <DebtModal /> : null}
     </div>
   );

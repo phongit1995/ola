@@ -8,6 +8,7 @@ export class ApiError extends Error {
   readonly traceId?: string;
   readonly path?: string;
   readonly code?: string;
+  readonly details?: unknown;
 
   constructor(status: number, message: string, meta?: ApiErrorMeta) {
     super(message);
@@ -16,6 +17,7 @@ export class ApiError extends Error {
     this.traceId = meta?.traceId;
     this.path = meta?.path;
     this.code = meta?.code;
+    this.details = meta?.details;
   }
 }
 
@@ -32,6 +34,7 @@ export function toApiError(error: unknown): ApiError {
       traceId: body?.traceId,
       path: body?.path,
       code: body?.code,
+      details: body?.details,
     });
   }
 

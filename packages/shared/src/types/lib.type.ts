@@ -8,6 +8,7 @@ export interface ApiErrorMeta {
   traceId?: string;
   path?: string;
   code?: string;
+  details?: unknown;
 }
 
 export interface ObjectUrlApi {

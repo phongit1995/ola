@@ -1,4 +1,9 @@
-import type { MegaphoneConfig, MegaphoneType } from '../types/api/megaphone.type';
+import type {
+  MegaphoneConfig,
+  MegaphoneLuckyGame,
+  MegaphoneSenderDisplay,
+  MegaphoneType,
+} from '../types/api/megaphone.type';
 import type { MegaphoneErrorKey } from '../types/lib.type';
 
 export const MEGAPHONE_HISTORY_PAGE_SIZE = 20;
@@ -6,7 +11,18 @@ export const MEGAPHONE_HISTORY_PAGE_SIZE = 20;
 export const MEGAPHONE_TYPE = {
   message: 'message',
   gift: 'gift',
+  lucky: 'lucky',
 } as const satisfies Record<string, MegaphoneType>;
+
+export const MEGAPHONE_SENDER_DISPLAY = {
+  vip: 'vip',
+  avatar: 'avatar',
+} as const satisfies Record<string, MegaphoneSenderDisplay>;
+
+export const MEGAPHONE_LUCKY_GAME = {
+  egg: 'egg',
+  wheel: 'wheel',
+} as const satisfies Record<string, MegaphoneLuckyGame>;
 
 export const DEFAULT_MEGAPHONE_CONFIG: MegaphoneConfig = {
   enabled: true,

@@ -17,4 +17,5 @@ export interface ApiErrorBody {
   path?: string;
   error: string;
   code?: string;
+  details?: unknown;
 }

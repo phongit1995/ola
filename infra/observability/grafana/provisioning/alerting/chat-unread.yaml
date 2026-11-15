@@ -1,0 +1,85 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: chat-unread
+    folder: Ola
+    interval: 5m
+    rules:
+      - uid: chat-unread-write-failed
+        title: "Chat: lỗi ghi số tin chưa đọc"
+        condition: C
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: "Server không đọc/ghi được bộ đếm tin chưa đọc (Redis hoặc Scylla), badge chat có thể sai."
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              refId: A
+              editorMode: code
+              queryType: instant
+              expr: 'sum(count_over_time({env="prod"} |~ "Redis unread increment failed|Failed to batch update inbox|Failed to batch read unread counts|Failed to reset unread counter" [15m]))'
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: reduce
+              reducer: last
+              expression: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params:
+                      - 0
+      - uid: chat-unread-drift
+        title: "Chat: số tin chưa đọc bị lệch"
+        condition: C
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "Bộ đếm Redis lệch Scylla lúc đánh dấu đã đọc. Lẻ tẻ là race bình thường, nhiều là logic đếm đang sai."
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 3600
+              to: 0
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              refId: A
+              editorMode: code
+              queryType: instant
+              expr: 'sum(count_over_time({env="prod"} |= "Unread counter drift on mark read" [1h]))'
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: reduce
+              reducer: last
+              expression: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params:
+                      - 20

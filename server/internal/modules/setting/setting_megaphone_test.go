@@ -152,3 +152,21 @@ func TestMegaphonePublicConfigFollowsPlatform(t *testing.T) {
 		t.Fatal("master switch off must win")
 	}
 }
+
+func TestMegaphoneSenderDisplay(t *testing.T) {
+	if got := DefaultMegaphoneConfig().PublicFor(Client{Platform: PlatformAndroid, AppVersion: "1.0.0"}).SenderDisplay; got != MegaphoneSenderDisplayVip {
+		t.Errorf("default sender display: got %q", got)
+	}
+	value := validMegaphoneValue()
+	if err := ValidateMegaphoneValue(value); err != nil {
+		t.Fatalf("missing senderDisplay should fall back to vip: %v", err)
+	}
+	value["senderDisplay"] = MegaphoneSenderDisplayAvatar
+	if err := ValidateMegaphoneValue(value); err != nil {
+		t.Fatalf("avatar should be valid: %v", err)
+	}
+	value["senderDisplay"] = "photo"
+	if err := ValidateMegaphoneValue(value); err == nil {
+		t.Error("unknown senderDisplay should be rejected")
+	}
+}

@@ -1,4 +1,4 @@
-import { App, Button, Card, Form, InputNumber, Space, Spin, Switch, Typography } from 'antd'
+import { App, Button, Card, Form, InputNumber, Radio, Space, Spin, Switch, Typography } from 'antd'
 import { DeleteOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons'
 import { PlatformRulesTable } from '@/components/PlatformRulesTable'
 import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
@@ -21,6 +21,7 @@ import {
   MEGAPHONE_REPEAT_BASE_MAX,
   MEGAPHONE_REPEAT_BASE_MIN,
   MEGAPHONE_SEND_RATE_PER_MINUTE,
+  MEGAPHONE_SENDER_DISPLAY_OPTIONS,
   MEGAPHONE_SETTING_KEY,
   MEGAPHONE_WEIGHT_MAX,
 } from './constants'
@@ -100,6 +101,13 @@ export function MegaphoneSettingsPage() {
           extra="Tắt nền tảng nào thì nền tảng đó không phát được loa và không hiện viên loa; các nền tảng khác vẫn chạy. App bản cũ chưa có phần này vẫn hiện viên loa, chỉ bị chặn phát. So theo tên bản (1.0.0), không tính build."
         >
           <PlatformRulesTable name={['platforms']} />
+        </Form.Item>
+        <Form.Item
+          name="senderDisplay"
+          label="Hiển thị trước tên người gửi"
+          extra="Áp dụng cho loa thường, loa quà và loa trúng thưởng. Icon VIP: người chưa có VIP hiện icon mặc định. Avatar: hiện avatar kèm khung đang đeo, không hiện icon VIP. App bản cũ chưa có phần này giữ cách hiển thị cũ."
+        >
+          <Radio.Group options={MEGAPHONE_SENDER_DISPLAY_OPTIONS} optionType="button" />
         </Form.Item>
         <Form.Item
           name="kenPrice"

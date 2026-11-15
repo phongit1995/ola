@@ -2,11 +2,13 @@ package relationships
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"hash/fnv"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/notification"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
 	"sort"
@@ -89,12 +91,13 @@ func lockPair(tx *gorm.DB, a, b uuid.UUID) error {
 	return tx.Exec("SELECT pg_advisory_xact_lock(?)", pairLockKey(a, b)).Error
 }
 
-func checkFriendCap(repo *Repository, userID uuid.UUID, self bool) error {
+func (s *Service) checkFriendCap(repo *Repository, userID uuid.UUID, self bool) error {
 	count, err := repo.CountFriends(userID)
 	if err != nil {
 		return err
 	}
-	if count >= MaxFriendsPerUser {
+	maxFriends, _ := s.limits.FriendCaps(userID)
+	if count >= int64(maxFriends) {
 		if self {
 			return errors.New("you have reached the maximum number of friends")
 		}
@@ -108,16 +111,18 @@ type Service struct {
 	presence *websocket.PresenceService
 	cache    *services.CacheService
 	notifSvc *notification.Service
+	limits   *sociallimit.Service
 	db       *gorm.DB
 	logger   *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, presence *websocket.PresenceService, cache *services.CacheService, notifSvc *notification.Service, db *gorm.DB, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, presence *websocket.PresenceService, cache *services.CacheService, notifSvc *notification.Service, limits *sociallimit.Service, db *gorm.DB, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:     repo,
 		presence: presence,
 		cache:    cache,
 		notifSvc: notifSvc,
+		limits:   limits,
 		db:       db,
 		logger:   logger.Named("[relationship_service]"),
 	}
@@ -187,6 +192,7 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 	var autoAcceptedRelID uuid.UUID
 	var createdRelID uuid.UUID
 	var didCreate bool
+	release := func() {}
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		if err := lockPair(tx, requesterID, addresseeID); err != nil {
 			return err
@@ -215,10 +221,10 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 				if existing.RequesterID == requesterID {
 					return errors.New("friend request already sent")
 				}
-				if err := checkFriendCap(txRepo, requesterID, true); err != nil {
+				if err := s.checkFriendCap(txRepo, requesterID, true); err != nil {
 					return err
 				}
-				if err := checkFriendCap(txRepo, existing.RequesterID, false); err != nil {
+				if err := s.checkFriendCap(txRepo, existing.RequesterID, false); err != nil {
 					return err
 				}
 				existing.Status = models.RelationshipStatusAccepted
@@ -244,15 +250,19 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 			}
 		}
 
-		if err := checkFriendCap(txRepo, requesterID, true); err != nil {
+		if err := s.checkFriendCap(txRepo, requesterID, true); err != nil {
 			return err
 		}
 		pendingSent, err := txRepo.CountPendingSent(requesterID)
 		if err != nil {
 			return err
 		}
-		if pendingSent >= MaxPendingSentRequests {
+		if _, maxPending := s.limits.FriendCaps(requesterID); pendingSent >= int64(maxPending) {
 			return errors.New("you have reached the maximum number of pending friend requests")
+		}
+		release, err = s.limits.ConsumeFriendRequest(context.Background(), requesterID, addresseeID)
+		if err != nil {
+			return err
 		}
 
 		relationship := &models.Relationship{
@@ -274,6 +284,7 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 		return nil
 	})
 	if err != nil {
+		release()
 		return nil, err
 	}
 	if didAutoAccept {
@@ -321,10 +332,10 @@ func (s *Service) AcceptFriendRequest(relationshipID, userID uuid.UUID) (*Relati
 			return fmt.Errorf("cannot accept request with status: %s", relationship.Status)
 		}
 
-		if err := checkFriendCap(txRepo, userID, true); err != nil {
+		if err := s.checkFriendCap(txRepo, userID, true); err != nil {
 			return err
 		}
-		if err := checkFriendCap(txRepo, relationship.RequesterID, false); err != nil {
+		if err := s.checkFriendCap(txRepo, relationship.RequesterID, false); err != nil {
 			return err
 		}
 
