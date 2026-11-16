@@ -14,6 +14,7 @@ type MessageData struct {
 	ConversationID string         `json:"conversationId"`
 	SenderID       string         `json:"senderId"`
 	SenderName     string         `json:"senderName,omitempty"`
+	SenderFullName string         `json:"senderFullName,omitempty"`
 	SenderAvatar   string         `json:"senderAvatar,omitempty"`
 	Type           string         `json:"type"`
 	Content        string         `json:"content"`

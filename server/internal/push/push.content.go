@@ -24,6 +24,7 @@ type DMPush struct {
 	MessageID        string
 	SenderID         string
 	SenderName       string
+	SenderFullName   string
 	SenderAvatar     string
 	ConversationName string
 	Preview          string
@@ -76,7 +77,7 @@ func buildDMContent(in DMPush) Content {
 	}
 	withUnread(data, in.UnreadCount)
 	return Content{
-		Title:    firstNonEmpty(in.SenderName, in.ConversationName, fallbackTitle),
+		Title:    firstNonEmpty(in.SenderFullName, in.SenderName, in.ConversationName, fallbackTitle),
 		Body:     excerpt(firstNonEmpty(in.Preview, "Bạn có tin nhắn mới")),
 		NotifID:  notifID,
 		Channel:  PushChannelMessages,

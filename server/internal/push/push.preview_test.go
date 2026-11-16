@@ -51,3 +51,20 @@ func TestAPNSMutableContentOnlyWithMedia(t *testing.T) {
 		t.Fatal("DM with image must set mutable-content")
 	}
 }
+
+func TestDMTitlePrefersDisplayName(t *testing.T) {
+	cases := []struct {
+		in   DMPush
+		want string
+	}{
+		{DMPush{SenderFullName: "Minh Anh", SenderName: "minhanh99"}, "Minh Anh"},
+		{DMPush{SenderName: "minhanh99"}, "minhanh99"},
+		{DMPush{ConversationName: "Nhóm bạn"}, "Nhóm bạn"},
+		{DMPush{}, fallbackTitle},
+	}
+	for _, c := range cases {
+		if got := buildDMContent(c.in).Title; got != c.want {
+			t.Fatalf("title = %q, want %q", got, c.want)
+		}
+	}
+}
