@@ -20,6 +20,7 @@ type Processor struct {
 	repo       *Repository
 	s3         *services.S3Service
 	transcoder *Transcoder
+	notifier   Notifier
 	logger     *zap.SugaredLogger
 	wake       chan struct{}
 	stopped    chan struct{}
@@ -53,11 +54,12 @@ func retryDelay(failures int) time.Duration {
 	return delays[failures]
 }
 
-func NewProcessor(repo *Repository, s3 *services.S3Service, transcoder *Transcoder, logger *zap.SugaredLogger) *Processor {
+func NewProcessor(repo *Repository, s3 *services.S3Service, transcoder *Transcoder, notifier Notifier, logger *zap.SugaredLogger) *Processor {
 	return &Processor{
 		repo:       repo,
 		s3:         s3,
 		transcoder: transcoder,
+		notifier:   notifier,
 		logger:     logger.Named("[moment_processor]"),
 		wake:       make(chan struct{}, 1),
 	}
@@ -277,6 +279,9 @@ func (p *Processor) finish(moment *models.Moment, result *processedVideo) error 
 	if !updated {
 		p.deleteObjects(result.objects()...)
 		return nil
+	}
+	if p.notifier != nil {
+		p.notifier.MomentPublished(moment.AuthorID, moment.ID)
 	}
 	if source := sourceObjectOf(moment); p.deleteObjects(source) {
 		if err := p.repo.ClearSource(moment.ID, source); err != nil {

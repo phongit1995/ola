@@ -82,6 +82,7 @@ func (s *Service) createPost(userID uuid.UUID, clanID *uuid.UUID, req *CreateMeR
 	}
 
 	s.notifyMentions(userID, post.ID, post.Mentions, excerptText(content))
+	s.notifyFriendsOfPost(post)
 
 	created, err := s.repo.GetByID(post.ID)
 	if err != nil {

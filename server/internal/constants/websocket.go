@@ -34,6 +34,7 @@ const (
 	WebSocketEventKenChestClosed             = "KEN_CHEST_CLOSED"
 	WebSocketEventMeNotification             = "ME_NOTIFICATION"
 	WebSocketEventAppNotification            = "APP_NOTIFICATION"
+	WebSocketEventFriendContent              = "FRIEND_CONTENT"
 	WebSocketEventForceLogout                = "FORCE_LOGOUT"
 	WebSocketEventMegaphonePlay              = "MEGAPHONE_PLAY"
 	WebSocketEventMegaphoneRemoved           = "MEGAPHONE_REMOVED"

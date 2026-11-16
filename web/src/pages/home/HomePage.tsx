@@ -7,6 +7,7 @@ import { useDevicePlatform } from '@hooks';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useFriendContentStore } from '@ola/shared/stores/friendContent';
 import { useRoomChatStore } from '@ola/shared/stores/room/roomChatStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
@@ -42,6 +43,14 @@ const DownloadGuideOverlay = lazy(() =>
 function readStoredTab(): TabKey {
   const stored = sessionStorage.getItem(ACTIVE_TAB_KEY);
   return stored != null && stored in PANELS ? (stored as TabKey) : 'chat';
+}
+
+function closeOverlays() {
+  useChatStore.getState().closeConversation();
+  useGameOverlayStore.getState().close();
+  useAppOverlayStore.getState().reset();
+  useClanOverlayStore.getState().reset();
+  useDownloadGuideStore.getState().close();
 }
 
 function rollDownloadFabVisible(): boolean {
@@ -82,11 +91,7 @@ export function HomePage() {
   }
 
   function showWordChain() {
-    useChatStore.getState().closeConversation();
-    useGameOverlayStore.getState().close();
-    useAppOverlayStore.getState().reset();
-    useClanOverlayStore.getState().reset();
-    closeGuide();
+    closeOverlays();
     changeTab('room');
   }
 
@@ -105,6 +110,17 @@ export function HomePage() {
   useEffect(() => {
     if (storyEnabled === false) useStoryOverlayStore.getState().reset();
   }, [storyEnabled]);
+
+  useEffect(
+    () =>
+      useFriendContentStore.subscribe((state, prev) => {
+        if (state.openSeq === prev.openSeq) return;
+        closeOverlays();
+        sessionStorage.setItem(ACTIVE_TAB_KEY, 'me');
+        setTab('me');
+      }),
+    []
+  );
 
   useEffect(() => {
     if (!authReady) return;

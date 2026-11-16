@@ -2775,6 +2775,10 @@
       "failed": "Could not claim the gift, try again later"
     }
   },
+  "friendContent": {
+    "post": "shared a new post",
+    "moment": "shared a new moment"
+  },
   "socialLimit": {
     "title": "Daily limit reached",
     "newChat": "You've messaged {{limit}}/{{limit}} new people today.",

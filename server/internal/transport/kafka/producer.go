@@ -9,6 +9,7 @@ import (
 	appNotificationEvents "ola-chat-server/internal/domain/app-notification"
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
+	friendContentEvents "ola-chat-server/internal/domain/friend-content"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	megaphoneEvents "ola-chat-server/internal/domain/megaphone"
@@ -142,6 +143,10 @@ func (p *Producer) PublishMegaphonePlay(ctx context.Context, event *megaphoneEve
 
 func (p *Producer) PublishMegaphoneRemoved(ctx context.Context, event *megaphoneEvents.RemovedEvent) error {
 	return p.publishKeyed(ctx, constants.KafkaTopicMegaphoneRemoved, event.ID, event)
+}
+
+func (p *Producer) PublishFriendContent(ctx context.Context, event *friendContentEvents.Event) error {
+	return p.publishKeyed(ctx, constants.KafkaTopicFriendContent, event.AuthorID, event)
 }
 
 func (p *Producer) PublishToDLQ(ctx context.Context, originalTopic string, key string, payload []byte, reason string) error {

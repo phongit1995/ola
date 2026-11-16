@@ -51,6 +51,7 @@ type Notifier interface {
 	MomentCommented(ownerID, actorID, momentID uuid.UUID, content string)
 	MomentReacted(ownerID, actorID, momentID uuid.UUID, reaction string)
 	MomentDeleted(momentID uuid.UUID)
+	MomentPublished(authorID, momentID uuid.UUID)
 }
 
 func NewService(repo *Repository, store *RedisStore, s3 *services.S3Service, processor *Processor, settings *setting.Service, users *userModule.CacheService, notifier Notifier, logger *zap.SugaredLogger) *Service {
@@ -132,6 +133,8 @@ func (s *Service) Create(ctx context.Context, userID uuid.UUID, input *CreateMom
 	}
 	if drafts[0].Status == MomentStatusProcessing {
 		s.processor.Notify()
+	} else if s.notifier != nil {
+		s.notifier.MomentPublished(userID, drafts[0].ID)
 	}
 
 	author := MomentAuthorResponse{ID: userID.String()}

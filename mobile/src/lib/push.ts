@@ -32,7 +32,7 @@ import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNot
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { androidNotificationBase } from '@lib/notificationAndroid';
 import i18n from '../i18n';
-import { ROOT_ROUTES } from '@navigation/routes';
+import { ROOT_ROUTES, TAB_ROUTES } from '@navigation/routes';
 
 type PushData = Record<string, string>;
 type NavRef = NavigationContainerRefWithCurrent<ParamListBase>;
@@ -48,6 +48,7 @@ const DM_NOTIF_PREFIX = 'dm:';
 export const ME_NOTIF_ID = 'me';
 export const APP_NOTIF_ID = 'app';
 const INBOX_MAX_LINES = 5;
+const INBOX_TYPES: ReadonlySet<string> = new Set(['me_notification', 'app_notification']);
 const TRAY_SYNC_DEBOUNCE_MS = 300;
 
 let navRef: NavRef | null = null;
@@ -187,7 +188,7 @@ async function displayPush(data: PushData): Promise<void> {
     : 'messages';
   const notifId = data.notifId || '';
   const ownerId = useAuthStore.getState().user?.id ?? '';
-  const lines = notifId && data.type !== 'dm' ? await inboxLines(data, notifId, ownerId) : [];
+  const lines = notifId && INBOX_TYPES.has(data.type) ? await inboxLines(data, notifId, ownerId) : [];
   const payload: PushData = {
     ...data,
     ...(ownerId ? { ownerId } : {}),
@@ -350,6 +351,8 @@ function routeFromData(data: PushData): { name: string; params?: object } | null
       return { name: ROOT_ROUTES.MeNotifications };
     case 'app_notification':
       return { name: ROOT_ROUTES.Notifications };
+    case 'friend_content':
+      return { name: ROOT_ROUTES.MainTabs, params: { screen: TAB_ROUTES.Me } };
     default:
       return null;
   }

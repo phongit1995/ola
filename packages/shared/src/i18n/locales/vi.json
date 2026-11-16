@@ -2775,6 +2775,10 @@
       "failed": "Không nhận được quà, thử lại sau"
     }
   },
+  "friendContent": {
+    "post": "vừa đăng bài mới",
+    "moment": "vừa đăng khoảnh khắc mới"
+  },
   "socialLimit": {
     "title": "Đã đạt giới hạn hôm nay",
     "newChat": "Hôm nay bạn đã nhắn tin với {{limit}}/{{limit}} người mới.",

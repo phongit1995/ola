@@ -73,3 +73,5 @@ export const PEN_SOCKET_EVENTS = {
 } as const;
 
 export const ME_NOTIFICATION_SOCKET_EVENT = 'ME_NOTIFICATION';
+
+export const FRIEND_CONTENT_SOCKET_EVENT = 'FRIEND_CONTENT';
