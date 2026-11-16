@@ -60,6 +60,7 @@ function withPageMeta(html: string, page: (typeof seoPages)[number]) {
 
 const HOME_STATIC_PATTERN = /<main id="home-static">[\s\S]*?<\/main>/
 const VI_LOCALE_PATH = path.resolve(__dirname, '../packages/shared/src/i18n/locales/vi.json')
+const SPLASH_LOGO_PATH = path.resolve(__dirname, 'src/assets/images/splash-logo.webp')
 
 interface GuestHomeCopy {
   title: string
@@ -76,6 +77,10 @@ interface GuestHomeCopy {
   download: string
   terms: string
   privacy: string
+}
+
+function splashLogoDataUri() {
+  return `data:image/webp;base64,${fs.readFileSync(SPLASH_LOGO_PATH).toString('base64')}`
 }
 
 function homeStaticHtml() {
@@ -100,6 +105,8 @@ function homeStaticHtml() {
     .join('')
   return [
     '<main id="home-static">',
+    `<div class="home-splash" aria-hidden="true"><img src="${splashLogoDataUri()}" alt="" width="96" height="96"><span class="home-spinner"></span></div>`,
+    '<div class="home-seo">',
     `<h1>${escapeAttribute(copy.title)}</h1>`,
     `<p>${escapeAttribute(copy.lead)}</p>`,
     `<p>${link([ROUTES.login, locale.login.submit])} · ${link([ROUTES.register, locale.login.createAccount])}</p>`,
@@ -108,6 +115,7 @@ function homeStaticHtml() {
     `<h2>${escapeAttribute(copy.explore)}</h2>`,
     `<nav>${topics.map(link).join(' · ')}</nav>`,
     `<nav>${legal.map(link).join(' · ')}</nav>`,
+    '</div>',
     '</main>',
   ].join('')
 }
