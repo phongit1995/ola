@@ -176,7 +176,7 @@ export function createVoiceClient(session: Pick<GameSession, 'requestVoiceToken'
   };
 
   const enableMic = async (liveKit: LiveKit, current: Room, on: boolean): Promise<void> => {
-    set({ micBusy: true });
+    set(on ? { micBusy: true, issue: null } : { micBusy: true });
     try {
       await current.localParticipant.setMicrophoneEnabled(on);
       if (room !== current) return;
