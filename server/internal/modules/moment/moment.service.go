@@ -15,6 +15,7 @@ import (
 	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/setting"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
@@ -42,18 +43,24 @@ type Service struct {
 	music      momentMusicSettings
 	musicSlots chan struct{}
 	users      momentVipUsers
+	postLimits momentPostQuota
 	notifier   Notifier
 	logger     *zap.SugaredLogger
 	now        func() time.Time
+}
+
+type momentPostQuota interface {
+	ConsumePost(ctx context.Context, userID uuid.UUID, kind sociallimit.PostKind) (func(), error)
 }
 
 type Notifier interface {
 	MomentCommented(ownerID, actorID, momentID uuid.UUID, content string)
 	MomentReacted(ownerID, actorID, momentID uuid.UUID, reaction string)
 	MomentDeleted(momentID uuid.UUID)
+	MomentPublished(authorID, momentID uuid.UUID)
 }
 
-func NewService(repo *Repository, store *RedisStore, s3 *services.S3Service, processor *Processor, settings *setting.Service, users *userModule.CacheService, notifier Notifier, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, store *RedisStore, s3 *services.S3Service, processor *Processor, settings *setting.Service, users *userModule.CacheService, postLimits *sociallimit.Service, notifier Notifier, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:       repo,
 		store:      store,
@@ -63,6 +70,7 @@ func NewService(repo *Repository, store *RedisStore, s3 *services.S3Service, pro
 		music:      settings,
 		musicSlots: make(chan struct{}, MomentMusicConcurrency),
 		users:      users,
+		postLimits: postLimits,
 		notifier:   notifier,
 		logger:     logger.Named("[moment_service]"),
 		now:        func() time.Time { return time.Now().UTC() },
@@ -95,14 +103,9 @@ func (s *Service) Create(ctx context.Context, userID uuid.UUID, input *CreateMom
 	}
 
 	now := s.now()
-	release, err := s.store.ReserveQuota(ctx, userID, len(drafts), now)
+	release, err := s.postLimits.ConsumePost(ctx, userID, sociallimit.PostKindMoment)
 	if err != nil {
-		var httpErr *utils.HTTPError
-		if errors.As(err, &httpErr) {
-			return nil, err
-		}
-		s.logger.Warnw("Failed to reserve moment quota", "user_id", userID, "error", err)
-		return nil, errStateUnavailable
+		return nil, err
 	}
 
 	uploads := &uploadTracker{}
@@ -132,6 +135,8 @@ func (s *Service) Create(ctx context.Context, userID uuid.UUID, input *CreateMom
 	}
 	if drafts[0].Status == MomentStatusProcessing {
 		s.processor.Notify()
+	} else if s.notifier != nil {
+		s.notifier.MomentPublished(userID, drafts[0].ID)
 	}
 
 	author := MomentAuthorResponse{ID: userID.String()}

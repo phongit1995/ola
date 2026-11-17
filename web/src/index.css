@@ -39,6 +39,7 @@
   --animate-ola-call-expand: ola-call-expand 0.25s ease;
   --animate-ola-call-pop: ola-call-pop 0.2s ease-out;
   --animate-ola-menu-in: ola-menu-in 0.14s ease-out;
+  --animate-ola-drop-in: ola-drop-in 0.22s ease-out;
   --animate-ola-fly: ola-fly 1.5s ease-in forwards;
   --animate-ola-marquee: ola-marquee 12s linear infinite;
   --animate-ola-marquee-once: ola-marquee 12s linear 1.4s 1 both;
@@ -284,6 +285,17 @@
   }
   62% {
     transform: scale(1.03);
+  }
+}
+
+@keyframes ola-drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

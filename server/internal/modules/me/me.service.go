@@ -1,12 +1,14 @@
 package me
 
 import (
+	"context"
 	"errors"
 	"time"
 
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/moderation"
 	"ola-chat-server/internal/modules/relationships"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	userModule "ola-chat-server/internal/modules/user"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/services"
@@ -24,6 +26,10 @@ type ClanGate interface {
 	OnPostDisabled(postID uuid.UUID)
 }
 
+type postQuota interface {
+	ConsumePost(ctx context.Context, userID uuid.UUID, kind sociallimit.PostKind) (func(), error)
+}
+
 type Service struct {
 	repo           *Repository
 	relRepo        *relationships.Repository
@@ -34,6 +40,7 @@ type Service struct {
 	userCache      *userModule.CacheService
 	clanGate       ClanGate
 	moderation     *moderation.Service
+	postLimits     postQuota
 	logger         *zap.SugaredLogger
 }
 
@@ -47,8 +54,9 @@ type ServiceParams struct {
 	KafkaProducer  *kafka.Producer
 	Cache          *services.CacheService
 	UserCache      *userModule.CacheService
-	ClanGate       ClanGate            `optional:"true"`
-	Moderation     *moderation.Service `optional:"true"`
+	ClanGate       ClanGate             `optional:"true"`
+	Moderation     *moderation.Service  `optional:"true"`
+	PostLimits     *sociallimit.Service `optional:"true"`
 	Logger         *zap.SugaredLogger
 }
 
@@ -63,6 +71,7 @@ func NewService(p ServiceParams) *Service {
 		userCache:      p.UserCache,
 		clanGate:       p.ClanGate,
 		moderation:     p.Moderation,
+		postLimits:     p.PostLimits,
 		logger:         p.Logger.Named("[post_service]"),
 	}
 }

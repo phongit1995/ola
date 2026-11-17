@@ -5,6 +5,7 @@ import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import menuIcon from '@/assets/icons/me/header/ic_header_menu.png';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { usePostQuotaGate } from '@ola/shared/stores/socialLimit';
 import { useHorizontalSwipe } from './useHorizontalSwipe';
 import { PullToRefresh } from '@components';
 import { MeAnnouncementCard } from './components/MeAnnouncementCard';
@@ -57,6 +58,7 @@ export function MePanel() {
   } = useMeFeed();
 
   const [composerOpen, setComposerOpen] = useState(false);
+  const openComposer = usePostQuotaGate('mePost', () => setComposerOpen(true));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [marriageOpen, setMarriageOpen] = useState(false);
@@ -198,7 +200,7 @@ export function MePanel() {
             <button
               type="button"
               aria-label={t('me.composerTitle')}
-              onClick={() => setComposerOpen(true)}
+              onClick={openComposer}
               className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-lg transition hover:brightness-105"
             >
               <img

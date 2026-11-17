@@ -26,6 +26,8 @@ import { MediaViewer } from './components/ui/MediaViewer';
 import { AppUpdateGate } from './components/AppUpdateGate';
 import { SocialLimitOverlay } from './components/socialLimit/SocialLimitOverlay';
 import { useSocialLimitStore } from '@ola/shared/stores/socialLimit';
+import { useFriendContentRealtime, useFriendContentStore } from '@ola/shared/stores/friendContent';
+import { FriendContentBanner } from './components/friendContent/FriendContentBanner';
 import { AppLockGate } from './components/applock/AppLockGate';
 import { useMeNotificationRealtime } from '@ola/shared/stores/me-notification/useMeNotificationRealtime';
 import { useAppNotificationRealtime } from '@ola/shared/stores/app-notification/useAppNotificationRealtime';
@@ -60,6 +62,7 @@ function clearSession() {
 
 export default function App() {
   useMeNotificationRealtime();
+  useFriendContentRealtime();
   useAppNotificationRealtime();
   useKenRealtime();
   useMegaphoneRealtime();
@@ -81,6 +84,14 @@ export default function App() {
     if (socialLimitBuySeq === 0 || !navigationRef.isReady()) return;
     navigationRef.navigate(ROOT_ROUTES.VipStore);
   }, [socialLimitBuySeq, navigationRef]);
+  useEffect(
+    () =>
+      useFriendContentStore.subscribe((state, prev) => {
+        if (state.openSeq === prev.openSeq || !navigationRef.isReady()) return;
+        navigationRef.navigate(ROOT_ROUTES.MainTabs, { screen: TAB_ROUTES.Me }, { pop: true });
+      }),
+    [navigationRef]
+  );
   useEffect(() => {
     if (userId != null) void useSettingsStore.getState().hydrate();
     setTelemetryUser(userId ?? null);
@@ -189,6 +200,7 @@ export default function App() {
             <CallOverlay />
             <GiftAnimationOverlay />
             <ToastHost />
+            <FriendContentBanner />
             <SocialLimitOverlay />
             <MediaViewer />
             <AppUpdateGate />

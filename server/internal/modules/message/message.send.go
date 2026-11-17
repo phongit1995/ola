@@ -176,6 +176,7 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 		ConversationID: conversationID.String(),
 		SenderID:       senderID.String(),
 		SenderName:     senderInfo.Username,
+		SenderFullName: senderInfo.FullName,
 		SenderAvatar:   senderInfo.Avatar,
 		Type:           messageType,
 		Content:        content,

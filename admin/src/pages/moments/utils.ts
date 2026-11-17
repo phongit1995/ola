@@ -23,12 +23,15 @@ import type {
   MomentMediaPurgeLog,
   MomentMediaPurgeSetting,
   MomentVideoSetting,
+  PostLimitSetting,
 } from '@/types'
 import {
   DEFAULT_MOMENT_MEDIA_PURGE_SETTING,
+  DEFAULT_MOMENT_POST_LIMIT_SETTING,
   DEFAULT_MOMENT_VIDEO_SETTING,
   MOMENT_DISPLAY_SETTING_KEY,
   MOMENT_MUSIC_SETTING_KEY,
+  MOMENT_POST_LIMIT_SETTING_KEY,
   MOMENT_VIDEO_SETTING_KEY,
   MOMENT_EXCERPT_SEPARATOR,
   MOMENT_FONT_FACE,
@@ -148,6 +151,10 @@ export function momentMusicRange(music: AdminMomentMusic): string {
 
 export function momentVideoSetting(settings: AppSetting[] | undefined): MomentVideoSetting {
   return settingValue(settings, MOMENT_VIDEO_SETTING_KEY, DEFAULT_MOMENT_VIDEO_SETTING)
+}
+
+export function momentPostLimitSetting(settings: AppSetting[] | undefined): PostLimitSetting {
+  return settingValue(settings, MOMENT_POST_LIMIT_SETTING_KEY, DEFAULT_MOMENT_POST_LIMIT_SETTING)
 }
 
 export function disabledPlatformLabels(

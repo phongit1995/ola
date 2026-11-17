@@ -51,3 +51,41 @@ func TestAPNSMutableContentOnlyWithMedia(t *testing.T) {
 		t.Fatal("DM with image must set mutable-content")
 	}
 }
+
+func TestDMTitlePrefersDisplayName(t *testing.T) {
+	cases := []struct {
+		in   DMPush
+		want string
+	}{
+		{DMPush{SenderFullName: "Minh Anh", SenderName: "minhanh99"}, "Minh Anh"},
+		{DMPush{SenderName: "minhanh99"}, "minhanh99"},
+		{DMPush{ConversationName: "Nhóm bạn"}, "Nhóm bạn"},
+		{DMPush{}, fallbackTitle},
+	}
+	for _, c := range cases {
+		if got := buildDMContent(c.in).Title; got != c.want {
+			t.Fatalf("title = %q, want %q", got, c.want)
+		}
+	}
+}
+
+func TestFriendContentPushBodies(t *testing.T) {
+	post, ok := buildFriendContent(FriendContentPush{Kind: constants.FriendContentPost, ContentID: "p1", AuthorID: "a1", AuthorName: "Minh Anh", Preview: "Đi Đà Lạt không"})
+	if !ok || post.Title != "Minh Anh" || post.Body != "Vừa đăng bài mới: Đi Đà Lạt không" {
+		t.Fatalf("friend post push = %v %q / %q", ok, post.Title, post.Body)
+	}
+	if post.Data["type"] != PushDataTypeFriendContent || post.Data["contentId"] != "p1" || post.Data["kind"] != constants.FriendContentPost {
+		t.Fatalf("friend post data = %v", post.Data)
+	}
+	imageOnly, _ := buildFriendContent(FriendContentPush{Kind: constants.FriendContentPost, AuthorName: "Minh Anh"})
+	if imageOnly.Body != "Vừa đăng bài mới" {
+		t.Fatalf("friend post without text = %q", imageOnly.Body)
+	}
+	moment, _ := buildFriendContent(FriendContentPush{Kind: constants.FriendContentMoment, ContentID: "m1", AuthorName: "Minh Anh", Preview: "ignored"})
+	if moment.Body != "Vừa đăng khoảnh khắc mới" || moment.NotifID != "friend:m1" {
+		t.Fatalf("friend moment push = %q %q", moment.Body, moment.NotifID)
+	}
+	if _, ok := buildFriendContent(FriendContentPush{Kind: "story"}); ok {
+		t.Fatal("unknown kinds must not build a push")
+	}
+}

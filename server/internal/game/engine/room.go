@@ -14,7 +14,16 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 	e.CreateRoomWithSpectators(gameID, owner, bet, password, maxPlayers, nil)
 }
 
+type RoomOptions struct {
+	AllowSpectators *bool
+	Voice           bool
+}
+
 func (e *Engine) CreateRoomWithSpectators(gameID string, owner protocol.PlayerInfo, bet int, password string, maxPlayers int, allowSpectators *bool) {
+	e.CreateRoomWithOptions(gameID, owner, bet, password, maxPlayers, RoomOptions{AllowSpectators: allowSpectators})
+}
+
+func (e *Engine) CreateRoomWithOptions(gameID string, owner protocol.PlayerInfo, bet int, password string, maxPlayers int, options RoomOptions) {
 	if e.sendActiveMatch(gameID, owner.ID) {
 		return
 	}
@@ -76,7 +85,8 @@ func (e *Engine) CreateRoomWithSpectators(gameID string, owner protocol.PlayerIn
 		MaxPlayers:      maxPlayers,
 		Bet:             bet,
 		Password:        password,
-		AllowSpectators: cloneBool(allowSpectators),
+		AllowSpectators: cloneBool(options.AllowSpectators),
+		VoiceEnabled:    options.Voice && owner.VipType != nil,
 		CreatedAt:       time.Now().UnixMilli(),
 	}
 	if err := e.store.Save(room); err != nil {
@@ -257,6 +267,7 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 	}
 	e.clearRoomChatRate(room.GameID, room.OwnerID, guestID)
 	_ = e.store.DeleteUserRef(gameID, guestID, room.ID)
+	e.revokeVoice(&room, guestID)
 	e.emitRoomUpsert(room)
 	e.emitRoomState(room)
 	if !disconnected {
@@ -324,6 +335,7 @@ func (e *Engine) KickRoomMember(gameID, ownerID, roomID, targetID string) {
 	}
 	e.clearRoomChatRate(room.GameID, room.OwnerID, kickedID)
 	_ = e.store.DeleteUserRef(gameID, kickedID, room.ID)
+	e.revokeVoice(&room, kickedID)
 	e.emitRoomUpsert(room)
 	e.toUser(gameID, kickedID, protocol.OutEnvelope{
 		Type: protocol.S2CRoomKicked,

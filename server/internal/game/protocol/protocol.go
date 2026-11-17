@@ -25,6 +25,7 @@ const (
 	C2SSpectateLeave = "SPECTATE_LEAVE"
 	C2SRoomWatch     = "ROOM_WATCH"
 	C2SRoomUnwatch   = "ROOM_UNWATCH"
+	C2SVoiceToken    = "VOICE_TOKEN"
 
 	S2CUserInfo             = "USER_INFO"
 	S2CQueueWaiting         = "QUEUE_WAITING"
@@ -50,6 +51,7 @@ const (
 	S2CSpectateJoined       = "SPECTATE_JOINED"
 	S2CSpectateLeft         = "SPECTATE_LEFT"
 	S2CSpectators           = "SPECTATORS"
+	S2CVoiceToken           = "VOICE_TOKEN"
 )
 
 const (
@@ -99,6 +101,9 @@ const (
 	ErrorCodeStateSaveFailed      = "STATE_SAVE_FAILED"
 	ErrorCodeUnknownGame          = "UNKNOWN_GAME"
 	ErrorCodeUserInfoFailed       = "USER_INFO_FAILED"
+	ErrorCodeVoiceDisabled        = "VOICE_DISABLED"
+	ErrorCodeVoiceNotMember       = "VOICE_NOT_MEMBER"
+	ErrorCodeVoiceUnavailable     = "VOICE_UNAVAILABLE"
 	ErrorCodeWrongPassword        = "WRONG_PASSWORD"
 )
 
@@ -341,6 +346,7 @@ type RoomCreateData struct {
 	Password        string `json:"password"`
 	MaxPlayers      int    `json:"maxPlayers,omitempty"`
 	AllowSpectators *bool  `json:"allowSpectators,omitempty"`
+	Voice           bool   `json:"voice,omitempty"`
 }
 
 type RoomJoinData struct {
@@ -374,6 +380,7 @@ type RoomInfo struct {
 	Status          string  `json:"status,omitempty"`
 	MatchID         string  `json:"matchId,omitempty"`
 	AllowSpectators *bool   `json:"allowSpectators,omitempty"`
+	Voice           bool    `json:"voice,omitempty"`
 }
 
 type RoomListData struct {
@@ -394,6 +401,7 @@ type RoomWaitingData struct {
 	Locked          bool   `json:"locked"`
 	MaxPlayers      int    `json:"maxPlayers,omitempty"`
 	AllowSpectators *bool  `json:"allowSpectators,omitempty"`
+	Voice           bool   `json:"voice,omitempty"`
 }
 
 type RoomMember struct {
@@ -416,6 +424,7 @@ type RoomStateData struct {
 	AfterMatchID    string       `json:"afterMatchId,omitempty"`
 	Watcher         bool         `json:"watcher,omitempty"`
 	AllowSpectators *bool        `json:"allowSpectators,omitempty"`
+	Voice           bool         `json:"voice,omitempty"`
 }
 
 type RoomSyncData struct {
@@ -425,6 +434,19 @@ type RoomSyncData struct {
 type RoomClosedData struct {
 	RoomID string `json:"roomId"`
 	Reason string `json:"reason"`
+}
+
+type VoiceTokenRequest struct {
+	RoomID  string `json:"roomId,omitempty"`
+	MatchID string `json:"matchId,omitempty"`
+}
+
+type VoiceTokenData struct {
+	RoomID   string `json:"roomId,omitempty"`
+	URL      string `json:"url,omitempty"`
+	Token    string `json:"token,omitempty"`
+	CanSpeak bool   `json:"canSpeak"`
+	Error    string `json:"error,omitempty"`
 }
 
 type RoomKickedData struct {

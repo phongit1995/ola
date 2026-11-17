@@ -114,6 +114,7 @@ func messageDataFromResponse(resp MessageResponse) *messageEvents.MessageData {
 		ConversationID: resp.ConversationID,
 		SenderID:       resp.SenderID,
 		SenderName:     resp.SenderName,
+		SenderFullName: resp.SenderFullName,
 		SenderAvatar:   resp.SenderAvatar,
 		Type:           resp.Type,
 		Content:        resp.Content,

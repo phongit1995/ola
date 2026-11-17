@@ -12,6 +12,7 @@ import {
 } from '@components/chat/voice/VoiceRecorderControl';
 import { useOutsideClick, type VoiceRecording } from '@hooks';
 import { hasMePostBody, toast } from '@lib';
+import { useCloseOnSocialLimitBuy } from '@ola/shared/stores/socialLimit';
 import {
   ATTACH_BUTTONS,
   MAX_IMAGES,
@@ -87,6 +88,7 @@ export function MeComposerDialog({
   submitLabel,
   privacyOptions,
 }: MeComposerDialogProps) {
+  useCloseOnSocialLimitBuy(onClose);
   const { t } = useTranslation();
   const options =
     privacyOptions != null && privacyOptions.length > 0

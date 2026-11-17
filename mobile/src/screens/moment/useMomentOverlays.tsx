@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { activeMomentGroups, colorForName, isMomentGroupSeen } from '@ola/shared/lib';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
+import { usePostQuotaGate } from '@ola/shared/stores/socialLimit';
 import type { Moment, MomentAuthor, MomentTrayGroup, MomentViewerSession } from '@ola/shared/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import type { RootStackParamList } from '@navigation/types';
@@ -79,7 +80,7 @@ export function useMomentOverlays() {
     [closeViewer, navigation]
   );
 
-  const openComposer = useCallback(() => setComposerOpen(true), []);
+  const openComposer = usePostQuotaGate('momentPost', () => setComposerOpen(true));
 
   const overlays = (
     <>

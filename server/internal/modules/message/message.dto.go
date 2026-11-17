@@ -37,6 +37,7 @@ type MessageResponse struct {
 	ConversationID string              `json:"conversationId" example:"ea6e8f76-a92e-6957-d1c8-eeg27c26cgfd"`
 	SenderID       string              `json:"senderId" example:"ca4c6d54-870c-4735-b9a6-cce05a04aedb"`
 	SenderName     string              `json:"senderName,omitempty" example:"John Doe"`
+	SenderFullName string              `json:"senderFullName,omitempty" example:"John Doe"`
 	SenderAvatar   string              `json:"senderAvatar,omitempty" example:"https://example.com/avatar.jpg"`
 	Type           string              `json:"type" example:"text"`
 	Content        string              `json:"content" example:"Hello, how are you?"`

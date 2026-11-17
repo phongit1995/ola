@@ -6,6 +6,7 @@ import (
 	appNotificationEvents "ola-chat-server/internal/domain/app-notification"
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
+	friendContentEvents "ola-chat-server/internal/domain/friend-content"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	megaphoneEvents "ola-chat-server/internal/domain/megaphone"
@@ -26,6 +27,7 @@ type KafkaEventAdapter struct {
 	userBanHandler         *userBanEvents.EventHandler
 	pushBroadcastHandler   *pushBroadcastEvents.EventHandler
 	megaphoneHandler       *megaphoneEvents.EventHandler
+	friendContentHandler   *friendContentEvents.EventHandler
 }
 
 func NewKafkaEventAdapter(
@@ -39,6 +41,7 @@ func NewKafkaEventAdapter(
 	userBanHandler *userBanEvents.EventHandler,
 	pushBroadcastHandler *pushBroadcastEvents.EventHandler,
 	megaphoneHandler *megaphoneEvents.EventHandler,
+	friendContentHandler *friendContentEvents.EventHandler,
 ) *KafkaEventAdapter {
 	return &KafkaEventAdapter{
 		messageHandler:         messageHandler,
@@ -51,6 +54,7 @@ func NewKafkaEventAdapter(
 		userBanHandler:         userBanHandler,
 		pushBroadcastHandler:   pushBroadcastHandler,
 		megaphoneHandler:       megaphoneHandler,
+		friendContentHandler:   friendContentHandler,
 	}
 }
 
@@ -150,6 +154,10 @@ func (a *KafkaEventAdapter) HandleMegaphoneRemoved(ctx context.Context, message 
 	return a.megaphoneHandler.OnRemoved(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandleFriendContent(ctx context.Context, message []byte) error {
+	return a.friendContentHandler.OnPublished(ctx, message)
+}
+
 func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicMessageCreated, adapter.HandleMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicMessageDeleted, adapter.HandleMessageDeleted)
@@ -175,4 +183,5 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicPushBroadcast, adapter.HandlePushBroadcast)
 	consumer.RegisterHandler(constants.KafkaTopicMegaphonePlay, adapter.HandleMegaphonePlay)
 	consumer.RegisterHandler(constants.KafkaTopicMegaphoneRemoved, adapter.HandleMegaphoneRemoved)
+	consumer.RegisterHandler(constants.KafkaTopicFriendContent, adapter.HandleFriendContent)
 }

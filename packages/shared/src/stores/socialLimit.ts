@@ -1,17 +1,26 @@
 import i18n from 'i18next';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { create } from 'zustand';
 import { SOCIAL_LIMIT_ERROR_CODES } from '../constants/socialLimit';
 import { toApiError } from '../lib/apiError';
 import { isVipActive } from '../lib/vip';
+import { SocialLimitService } from '../services/socialLimit.service';
+import type { PostQuotaResult } from '../types/api/socialLimit.type';
 import { useAuthStore } from './auth/authStore';
 
-export type SocialLimitKind = 'newChat' | 'friendRequest';
+export type SocialLimitKind = 'newChat' | 'friendRequest' | 'mePost' | 'momentPost';
+
+export type PostLimitKind = Extract<SocialLimitKind, 'mePost' | 'momentPost'>;
+
+const POST_QUOTA_FIELD: Record<PostLimitKind, 'me' | 'moment'> = {
+  mePost: 'me',
+  momentPost: 'moment',
+};
 
 export interface SocialLimitNotice {
   kind: SocialLimitKind;
   limit: number | null;
-  isVip: boolean;
+  canBuyVip: boolean;
 }
 
 interface SocialLimitState {
@@ -41,17 +50,23 @@ export function useCloseOnSocialLimitBuy(onClose: () => void): void {
 }
 
 function kindOf(code: string | undefined): SocialLimitKind | null {
-  if (code === SOCIAL_LIMIT_ERROR_CODES.newChat) return 'newChat';
-  if (code === SOCIAL_LIMIT_ERROR_CODES.friendRequest) return 'friendRequest';
-  return null;
+  const match = Object.entries(SOCIAL_LIMIT_ERROR_CODES).find(([, value]) => value === code);
+  return match ? (match[0] as SocialLimitKind) : null;
 }
 
-function readDetails(details: unknown): { limit: number | null; isVip: boolean | null } {
-  if (details == null || typeof details !== 'object') return { limit: null, isVip: null };
+interface LimitDetails {
+  limit: number | null;
+  isVip: boolean | null;
+  upgradable: boolean | null;
+}
+
+function readDetails(details: unknown): LimitDetails {
+  if (details == null || typeof details !== 'object') return { limit: null, isVip: null, upgradable: null };
   const record = details as Record<string, unknown>;
   const limit = typeof record.limit === 'number' && record.limit > 0 ? record.limit : null;
   const isVip = typeof record.isVip === 'boolean' ? record.isVip : null;
-  return { limit, isVip };
+  const upgradable = typeof record.upgradable === 'boolean' ? record.upgradable : null;
+  return { limit, isVip, upgradable };
 }
 
 export function socialLimitNoticeOf(error: unknown): SocialLimitNotice | null {
@@ -59,11 +74,38 @@ export function socialLimitNoticeOf(error: unknown): SocialLimitNotice | null {
   const kind = kindOf(apiError.code);
   if (kind == null) return null;
   const details = readDetails(apiError.details);
-  return {
-    kind,
-    limit: details.limit,
-    isVip: details.isVip ?? isVipActive(useAuthStore.getState().user?.vipEndTime),
-  };
+  const isVip = details.isVip ?? isVipActive(useAuthStore.getState().user?.vipEndTime);
+  return { kind, limit: details.limit, canBuyVip: details.upgradable ?? !isVip };
+}
+
+export async function checkPostQuota(kind: PostLimitKind): Promise<boolean> {
+  let result: PostQuotaResult;
+  try {
+    result = await SocialLimitService.postQuotas();
+  } catch {
+    return true;
+  }
+  const quota = result[POST_QUOTA_FIELD[kind]];
+  if (quota.limit <= 0 || quota.used < quota.limit) return true;
+  useSocialLimitStore.setState({ notice: { kind, limit: quota.limit, canBuyVip: quota.upgradable } });
+  return false;
+}
+
+export function usePostQuotaGate(kind: PostLimitKind, open: () => void): () => void {
+  const checking = useRef(false);
+  const openRef = useRef(open);
+  openRef.current = open;
+  return useCallback(() => {
+    if (checking.current) return;
+    checking.current = true;
+    void checkPostQuota(kind)
+      .then((allowed) => {
+        if (allowed) openRef.current();
+      })
+      .finally(() => {
+        checking.current = false;
+      });
+  }, [kind]);
 }
 
 export function showSocialLimitNotice(error: unknown): boolean {
@@ -74,17 +116,12 @@ export function showSocialLimitNotice(error: unknown): boolean {
 }
 
 function usageMessage({ kind, limit }: SocialLimitNotice): string {
-  if (kind === 'newChat') {
-    return limit != null
-      ? i18n.t('socialLimit.newChat', { limit })
-      : i18n.t('socialLimit.newChatReached');
-  }
   return limit != null
-    ? i18n.t('socialLimit.friendRequest', { limit })
-    : i18n.t('socialLimit.friendRequestReached');
+    ? i18n.t(`socialLimit.${kind}`, { limit })
+    : i18n.t(`socialLimit.${kind}Reached`);
 }
 
 export function socialLimitMessage(notice: SocialLimitNotice): string {
-  const next = notice.isVip ? i18n.t('socialLimit.tomorrow') : i18n.t('socialLimit.vipHint');
+  const next = notice.canBuyVip ? i18n.t('socialLimit.vipHint') : i18n.t('socialLimit.tomorrow');
   return `${usageMessage(notice)} ${next}`;
 }

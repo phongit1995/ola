@@ -34,6 +34,8 @@ import {
   type SpectatorsData,
   type StateData,
   type UserInfoData,
+  type VoiceTokenData,
+  type VoiceTokenRequest,
 } from './protocol';
 
 export type GameStatus = 'connecting' | 'idle' | 'queueing' | 'playing' | 'over';
@@ -47,7 +49,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   sendRoomChat(roomId: string, text: string): void;
   sendReaction(matchId: string, type: GameReactionType): void;
   forfeit(matchId: string, leaveAfter?: boolean): void;
-  createRoom(bet: number, password?: string, maxPlayers?: number, allowSpectators?: boolean): void;
+  createRoom(bet: number, password?: string, maxPlayers?: number, allowSpectators?: boolean, voice?: boolean): void;
   joinRoom(roomId: string, password?: string): void;
   leaveRoom(roomId?: string): void;
   kickRoomMember(roomId: string, userId: string): void;
@@ -61,6 +63,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   spectateLeave(matchId?: string): void;
   roomWatch(roomId: string): void;
   roomUnwatch(): void;
+  requestVoiceToken(request: VoiceTokenRequest): void;
   onUserInfo(handler: (data: UserInfoData) => void): () => void;
   onQueueWaiting(handler: () => void): () => void;
   onRoomList(handler: (data: RoomListData) => void): () => void;
@@ -85,6 +88,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onSpectateJoined(handler: (data: SpectateJoinedData<TState>) => void): () => void;
   onSpectateLeft(handler: (data: SpectateLeftData) => void): () => void;
   onSpectators(handler: (data: SpectatorsData) => void): () => void;
+  onVoiceToken(handler: (data: VoiceTokenData) => void): () => void;
   onConnectionChange(handler: (connected: boolean) => void): () => void;
   onConnectionError(handler: (error: Error) => void): () => void;
   disconnect(): void;
@@ -150,12 +154,13 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     sendRoomChat: (roomId, text) => send(C2S.ChatSend, { roomId, text }),
     sendReaction: (matchId, type) => send(C2S.ReactionSend, { matchId, type }),
     forfeit: (matchId, leaveAfter = false) => send(C2S.Forfeit, { matchId, leaveAfter }),
-    createRoom: (bet, password, maxPlayers, allowSpectators) =>
+    createRoom: (bet, password, maxPlayers, allowSpectators, voice) =>
       send(C2S.RoomCreate, {
         bet,
         password,
         ...(maxPlayers ? { maxPlayers } : {}),
         ...(allowSpectators === undefined ? {} : { allowSpectators }),
+        ...(voice ? { voice } : {}),
       }),
     joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
     leaveRoom: (roomId) => send(C2S.RoomLeave, roomId ? { roomId } : undefined),
@@ -170,6 +175,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     spectateLeave: (matchId) => send(C2S.SpectateLeave, matchId ? { matchId } : undefined),
     roomWatch: (roomId) => send(C2S.RoomWatch, { roomId }),
     roomUnwatch: () => send(C2S.RoomUnwatch),
+    requestVoiceToken: (request) => send(C2S.VoiceToken, request),
     onUserInfo: (handler) => on(S2C.UserInfo, handler as Handler),
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),
     onRoomList: (handler) => on(S2C.RoomList, handler as Handler),
@@ -194,6 +200,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     onSpectateJoined: (handler) => on(S2C.SpectateJoined, handler as Handler),
     onSpectateLeft: (handler) => on(S2C.SpectateLeft, handler as Handler),
     onSpectators: (handler) => on(S2C.Spectators, handler as Handler),
+    onVoiceToken: (handler) => on(S2C.VoiceToken, handler as Handler),
     onConnectionChange: (handler) => on('connection', handler as Handler),
     onConnectionError: (handler) => on('connection_error', handler as Handler),
     disconnect: () => socket.disconnect(),

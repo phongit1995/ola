@@ -9,6 +9,7 @@ import userMinusIcon from '../../assets/icons/ic-user-minus.svg';
 import type { RoomStateData } from '../../../src/sdk';
 import { PlayerAvatar } from '../../components/PlayerAvatar';
 import { PlayerName } from '../../components/PlayerName';
+import { MicIcon, SeatVoice, SpeakerButton } from '../../components/VoiceControls';
 import { formatKen } from '../../helpers/room';
 import { useThirteen } from '../../store/useThirteen';
 
@@ -40,7 +41,10 @@ function RoomSeats({ room, selfId, onKick }: { room: RoomStateData; selfId: stri
                 <img src={userMinusIcon} alt="" />
               </button>
             )}
-            <PlayerAvatar name={member.name} vipType={member.vipType} size="lg" />
+            <span className="tl-voice-anchor">
+              <PlayerAvatar name={member.name} vipType={member.vipType} size="lg" />
+              <SeatVoice userId={member.id} name={member.name} self={member.id === selfId} />
+            </span>
             <span className="tl-seat-name">
               <PlayerName name={member.name} self={member.id === selfId} />
             </span>
@@ -58,6 +62,11 @@ function RoomSeats({ room, selfId, onKick }: { room: RoomStateData; selfId: stri
       })}
     </div>
   );
+}
+
+function VoiceTopbarSlot() {
+  const voiceOn = useThirteen((s) => s.voice.status !== 'off');
+  return voiceOn ? <SpeakerButton /> : <span className="tl-topbar-spacer" />;
 }
 
 function RoomChatLog({ room, selfId, empty }: { room: RoomStateData; selfId: string; empty: string }) {
@@ -105,7 +114,7 @@ function WatchedRoomScreen() {
           </span>
           <small>{roomSummary(room)}</small>
         </div>
-        <span className="tl-topbar-spacer" />
+        <VoiceTopbarSlot />
       </div>
 
       <RoomSeats room={room} selfId="" />
@@ -171,10 +180,13 @@ function MemberRoomScreen() {
           <img src={backIcon} alt="" />
         </button>
         <div className="tl-room-title">
-          <span>Bàn chờ</span>
+          <span className="tl-room-title-text">
+            Bàn chờ
+            {room.voice && <MicIcon className="tl-room-voice" />}
+          </span>
           <small>{roomSummary(room)}</small>
         </div>
-        <span className="tl-topbar-spacer" />
+        <VoiceTopbarSlot />
       </div>
 
       <RoomSeats room={room} selfId={user.id} onKick={isOwner ? kickMember : undefined} />

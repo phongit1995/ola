@@ -7,6 +7,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMeFeedStore } from '@ola/shared/stores/feed/meFeedStore';
 import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { usePostQuotaGate } from '@ola/shared/stores/socialLimit';
 import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import { AuthService, SocketService } from '@ola/shared/services';
@@ -80,6 +81,7 @@ export function MeFeedScreen() {
 
   const [tab, setTab] = useState<MeTab>('community');
   const [composerOpen, setComposerOpen] = useState(false);
+  const openComposer = usePostQuotaGate('mePost', () => setComposerOpen(true));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [commentFocusInput, setCommentFocusInput] = useState(false);
@@ -279,7 +281,7 @@ export function MeFeedScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('me.composerTitle')}
-          onPress={() => setComposerOpen(true)}
+          onPress={openComposer}
           className="absolute h-14 w-14 items-center justify-center rounded-full bg-ola-primary"
           style={{
             right: 16,

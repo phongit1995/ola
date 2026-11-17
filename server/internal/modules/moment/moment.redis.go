@@ -22,7 +22,6 @@ import (
 
 var (
 	errStateUnavailable = utils.NewHTTPError(http.StatusServiceUnavailable, "moment state unavailable")
-	errQuotaExceeded    = utils.NewHTTPErrorWithCode(http.StatusTooManyRequests, "daily moment limit reached", ErrorCodeMomentQuotaExceeded)
 )
 
 type RedisStore struct {
@@ -39,11 +38,6 @@ func seenKey(viewerID uuid.UUID) string {
 
 func viewersKey(momentID uuid.UUID) string {
 	return fmt.Sprintf(CacheKeyMomentViewers, momentID.String())
-}
-
-func quotaKey(userID uuid.UUID, now time.Time) string {
-	day := localDay(now).Format(MomentQuotaDayLayout)
-	return fmt.Sprintf(CacheKeyMomentQuota, userID.String(), day)
 }
 
 func (s *RedisStore) SeenIDs(ctx context.Context, viewerID uuid.UUID, now time.Time) ([]uuid.UUID, error) {
@@ -127,26 +121,6 @@ func (s *RedisStore) newestFirstPage(ctx context.Context, key string, offset, li
 		return nil, 0, err
 	}
 	return page, total, nil
-}
-
-func (s *RedisStore) ReserveQuota(ctx context.Context, userID uuid.UUID, count int, now time.Time) (func(), error) {
-	client := s.cache.GetClient()
-	key := quotaKey(userID, now)
-	used, err := client.IncrBy(ctx, key, int64(count)).Result()
-	if err != nil {
-		return nil, err
-	}
-	if used == int64(count) {
-		client.Expire(ctx, key, MomentQuotaTTL)
-	}
-	release := func() {
-		client.DecrBy(context.Background(), key, int64(count))
-	}
-	if used > MaxMomentsPerDay {
-		release()
-		return nil, errQuotaExceeded
-	}
-	return release, nil
 }
 
 func (s *RedisStore) RecordPurgeLog(ctx context.Context, entry *MediaPurgeLog) error {

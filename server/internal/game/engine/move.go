@@ -286,6 +286,11 @@ func (e *Engine) forfeit(gameID, userID, matchID string, leaveAfter bool) {
 		return
 	}
 	if leaveAfter {
+		voiceRoom := m.room
+		if voiceRoom == nil {
+			voiceRoom = m.closedRoom
+		}
+		e.revokeVoice(voiceRoom, userID)
 		if m.room != nil && m.room.guestIndex(userID) >= 0 {
 			room := *m.room
 			removeRoomGuest(&room, userID)

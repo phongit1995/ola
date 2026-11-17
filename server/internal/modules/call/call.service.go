@@ -10,6 +10,7 @@ import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	callEvents "ola-chat-server/internal/domain/call"
+	"ola-chat-server/internal/livekit"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/message"
@@ -534,19 +535,12 @@ func (s *Service) GetOngoingCall(ctx context.Context, userID uuid.UUID) (*CallTo
 }
 
 func (s *Service) mintToken(identity, roomName string) (string, error) {
-	at := auth.NewAccessToken(s.cfg.LiveKitAPIKey, s.cfg.LiveKitAPISecret)
-	canPub := true
-	canSub := true
-	grant := &auth.VideoGrant{
-		RoomJoin:     true,
-		Room:         roomName,
-		CanPublish:   &canPub,
-		CanSubscribe: &canSub,
-	}
-	at.SetVideoGrant(grant).
-		SetIdentity(identity).
-		SetValidFor(time.Hour)
-	return at.ToJWT()
+	return livekit.MintToken(s.cfg, livekit.Grant{
+		Identity:   identity,
+		Room:       roomName,
+		CanPublish: true,
+		ValidFor:   time.Hour,
+	})
 }
 
 func uuidsToStrings(ids []uuid.UUID) []string {

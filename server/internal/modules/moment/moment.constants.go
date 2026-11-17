@@ -67,7 +67,6 @@ const (
 	MaxMomentThumbUploadSize     = 300 * 1024
 	MaxMomentVideoSeconds        = 30
 	MomentVideoDurationTolerance = 0.5
-	MaxMomentsPerDay             = 30
 	MaxMomentSeenBatch           = 50
 
 	MaxMomentMusicUploadSize  = 30 * 1024 * 1024
@@ -103,9 +102,7 @@ const (
 	MomentOverlayScaleMax        = 4.0
 	MomentOverlayRotationMax     = 180.0
 	MomentDayUTCOffset           = 7 * time.Hour
-	MomentQuotaDayLayout         = "20060102"
 	MomentSeenTTL                = 25 * time.Hour
-	MomentQuotaTTL               = 48 * time.Hour
 	MomentCleanupInterval        = 10 * time.Minute
 	MomentMusicDeleteRetryDelay  = 10 * time.Minute
 	MomentCleanupStartDelay      = time.Minute
@@ -145,7 +142,6 @@ const (
 	MomentVideoExtension         = ".mp4"
 	CacheKeyMomentSeen           = "MOMENT:SEEN:%s"
 	CacheKeyMomentViewers        = "MOMENT:VIEWERS:%s"
-	CacheKeyMomentQuota          = "MOMENT:QUOTA:%s:%s"
 	CacheKeyMomentCleanupLock    = "MOMENT:CLEANUP:LOCK"
 	CacheKeyMomentPurgeLock      = "MOMENT:PURGE:LOCK"
 	CacheKeyMomentReactions      = "MOMENT:REACTIONS:%s"
@@ -155,7 +151,6 @@ const (
 	CacheKeyMomentPurgeLogs      = "MOMENT:PURGE:LOGS"
 	CacheKeyMomentPurgeLast      = "MOMENT:PURGE:LAST"
 	CacheKeyMomentPurgeTotals    = "MOMENT:PURGE:TOTALS:%s"
-	ErrorCodeMomentQuotaExceeded = "MOMENT_QUOTA_EXCEEDED"
 	ErrorCodeMomentHiddenByAdmin = "MOMENT_HIDDEN_BY_ADMIN"
 	ErrorCodeMomentPurgeDisabled = "MOMENT_PURGE_DISABLED"
 	ErrorCodeMomentVideoTooLong  = "MOMENT_VIDEO_TOO_LONG"

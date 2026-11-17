@@ -297,6 +297,7 @@ export function ArcadeOverlay() {
           style={styles.webView}
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction={false}
+          mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
         />
         <MinimizeHandle
           key={active.slug}

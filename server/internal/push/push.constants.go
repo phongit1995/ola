@@ -11,15 +11,16 @@ const (
 	PushDispatchWorkers    = 4
 	PushDispatchQueueSize  = 1024
 
-	PushCollapseDM       = "dm"
-	PushTTLHours         = 24
-	PushSendBatchSize    = 500
-	PushDataTypeDM       = "dm"
-	PushDataTypeMeNotif  = "me_notification"
-	PushDataTypeAppNotif = "app_notification"
-	PushChannelMessages  = "messages"
-	PushChannelSocial    = "social"
-	PushChannelSystem    = "system"
+	PushCollapseDM            = "dm"
+	PushTTLHours              = 24
+	PushSendBatchSize         = 500
+	PushDataTypeDM            = "dm"
+	PushDataTypeMeNotif       = "me_notification"
+	PushDataTypeAppNotif      = "app_notification"
+	PushDataTypeFriendContent = "friend_content"
+	PushChannelMessages       = "messages"
+	PushChannelSocial         = "social"
+	PushChannelSystem         = "system"
 
 	APNSHeaderPushType   = "apns-push-type"
 	APNSHeaderPriority   = "apns-priority"

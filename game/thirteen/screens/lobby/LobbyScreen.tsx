@@ -14,6 +14,8 @@ import { BrandMark } from '../../components/BrandMark';
 import { handleModalKeyDown } from '../../components/modalKeyboard';
 import { PlayerAvatar } from '../../components/PlayerAvatar';
 import { PlayerName } from '../../components/PlayerName';
+import { MicIcon } from '../../components/VoiceControls';
+import { VOICE_CREATE_ROOM_KEY, readVoiceFlag, writeVoiceFlag } from '../../helpers/voice';
 import {
   formatBetInput,
   formatKen,
@@ -52,6 +54,9 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
   const [capacity, setCapacity] = useState(4);
   const [betInput, setBetInput] = useState('0');
   const [password, setPassword] = useState('');
+  const canVoice = user?.vipType != null;
+  const [voice, setVoice] = useState(() => readVoiceFlag(VOICE_CREATE_ROOM_KEY));
+  const [voiceHint, setVoiceHint] = useState(false);
   const bet = parseBetInput(betInput);
   const createError = roomCreationError(bet, password, user?.ken ?? null, user?.maxBet ?? null);
   const betHint =
@@ -59,7 +64,8 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
     (bet === 0 ? '0 Ken = chơi không cược.' : `Mỗi người cần đủ ${formatKen(bet)} Ken để vào bàn.`);
   const submit = () => {
     if (createError) return;
-    createRoom(capacity, password.trim(), bet);
+    if (canVoice) writeVoiceFlag(VOICE_CREATE_ROOM_KEY, voice);
+    createRoom(capacity, password.trim(), bet, canVoice && voice);
     onClose();
   };
   return (
@@ -136,6 +142,35 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
           placeholder="Không đặt mật khẩu"
           onChange={(e) => setPassword(e.target.value)}
         />
+        <div className={'tl-voice-option' + (canVoice ? '' : ' locked')}>
+          <span className="tl-voice-option-icon" aria-hidden="true">
+            <MicIcon />
+          </span>
+          <span className="tl-voice-option-text">
+            <span className="tl-voice-option-title" id="tl-create-room-voice">
+              Voice chat
+              {!canVoice && <span className="tl-vip-chip">VIP</span>}
+            </span>
+            <small>
+              {canVoice
+                ? 'Mọi người trong bàn nói chuyện bằng giọng nói. Người xem chỉ nghe.'
+                : voiceHint
+                  ? 'Nâng cấp VIP trong ứng dụng Ola để mở voice cho bàn của bạn.'
+                  : 'Cần VIP để mở voice cho bàn.'}
+            </small>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            className={'tl-switch' + (canVoice && voice ? ' on' : '')}
+            aria-checked={canVoice && voice}
+            aria-disabled={!canVoice}
+            aria-labelledby="tl-create-room-voice"
+            onClick={() => (canVoice ? setVoice((on) => !on) : setVoiceHint(true))}
+          >
+            <span className="tl-switch-knob" />
+          </button>
+        </div>
         <div className="tl-modal-actions">
           <button type="button" className="tl-btn tl-btn-ghost" onClick={onClose}>
             Hủy
@@ -287,6 +322,11 @@ export function LobbyScreen({ assetsReady }: { assetsReady: boolean }) {
                 <span className="tl-room-name">
                   <span className="tl-room-name-text">Bàn của <PlayerName name={room.owner} /></span>
                   {room.locked && <img className="tl-lock" src={lockIcon} alt="Có mật khẩu" />}
+                  {room.voice && (
+                    <span className="tl-room-voice-badge" role="img" aria-label="Bàn có voice">
+                      <MicIcon />
+                    </span>
+                  )}
                   {playing && <span className="tl-playing-badge">Đang chơi</span>}
                 </span>
                 <span className="tl-room-meta">

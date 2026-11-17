@@ -10,6 +10,7 @@ import wifiOffIcon from '../../assets/icons/ic-wifi-off.svg';
 import chopRays from '../../assets/fx/fx-chop-rays.svg';
 import { PlayerAvatar } from '../../components/PlayerAvatar';
 import { PlayerName } from '../../components/PlayerName';
+import { SeatVoice, SpeakerButton } from '../../components/VoiceControls';
 import type { FlightOrigin } from '../../helpers/cardFlight';
 import { HAND_SELECTED_LIFT, handArc, handArcDrop, handLayout, trickLayout, trickRotation } from '../../helpers/cardLayout';
 import { atName } from '../../helpers/name';
@@ -168,6 +169,7 @@ function OpponentSeat({ seat }: { seat: number }) {
         )}
         <SeatReactions seat={seat} />
         <SeatChatBubble seat={seat} />
+        <SeatVoice userId={player.id} name={player.name} />
       </span>
       <span className="tl-opponent-name">
         <PlayerName name={player.name} />
@@ -640,7 +642,10 @@ export function TableScreen() {
         ) : (
           <span className="tl-table-title">{practice ? 'Tập luyện' : 'Tiến Lên Miền Nam'}</span>
         )}
-        <ChatButton />
+        <div className="tl-topbar-actions">
+          <SpeakerButton />
+          <ChatButton />
+        </div>
       </div>
 
       <div
@@ -697,6 +702,7 @@ export function TableScreen() {
               </TurnRing>
               <SeatReactions seat={you} />
               <SeatChatBubble seat={you} />
+              {user && <SeatVoice userId={user.id} name="Bạn" self />}
             </span>
             <div className="tl-my-info">
               <span className="tl-my-name">Bạn</span>

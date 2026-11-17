@@ -289,6 +289,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     spectateLeave() {},
     roomWatch() {},
     roomUnwatch() {},
+    requestVoiceToken() {},
 
     onUserInfo: () => () => {},
     onRoomList: () => () => {},
@@ -314,6 +315,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     onSpectateJoined: () => () => {},
     onSpectateLeft: () => () => {},
     onSpectators: () => () => {},
+    onVoiceToken: () => () => {},
     onConnectionChange: (handler) => {
       (handler as (c: boolean) => void)(true);
       return () => {};

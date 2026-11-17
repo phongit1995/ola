@@ -1,5 +1,5 @@
 import { REPORT_REASON_LABEL } from '@/lib/moderation'
-import type { MeHiddenBy, ReportReason } from '@/types'
+import type { MeHiddenBy, PostLimitSetting, ReportReason } from '@/types'
 
 export const VISIBILITY: Record<string, { label: string; color: string }> = {
   public: { label: 'Công khai', color: 'green' },
@@ -30,3 +30,9 @@ export const ME_HIDDEN_BY_LABEL: Record<MeHiddenBy, string> = {
   admin: 'Admin ẩn',
   clan: 'Quản lý clan xoá',
 }
+
+export const ME_POST_LIMIT_SETTING_KEY = 'me_post_limit'
+
+export const DEFAULT_ME_POST_LIMIT_SETTING: PostLimitSetting = { normalPerDay: 3, vipPerDay: 5 }
+
+export const ME_SETTINGS_DRAWER_WIDTH = 640

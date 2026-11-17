@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
-import { bridge, joinGame, type GameSession } from '../../src/sdk';
+import {
+  bridge,
+  createVoiceClient,
+  joinGame,
+  VOICE_IDLE,
+  type GameSession,
+  type VoiceClient,
+  type VoiceState,
+  type VoiceTarget,
+} from '../../src/sdk';
 import type {
   ChatMessageData,
   ExpGainEntry,
@@ -29,6 +38,7 @@ import { decodeServerState, type ServerMove, type ServerPlay, type ServerState, 
 import { errorText, roomClosedText } from '../helpers/errorText';
 import type { BotSetupItem } from '../helpers/practice';
 import { createPracticeSession } from '../practice';
+import { VOICE_ISSUE_TEXT, VOICE_MIC_PRIMED_KEY, readVoiceFlag, writeVoiceFlag } from '../helpers/voice';
 import { CHAT_BUBBLE_MS, receiveMatchChat, type SeatChatBubble } from './matchChat';
 
 export type Phase = 'connecting' | 'lobby' | 'room' | 'table';
@@ -119,11 +129,13 @@ interface ThirteenStore {
   overlay: LobbyOverlay | null;
   history: RecordList<MatchHistoryEntry>;
   leaderboard: LeaderboardView;
+  voice: VoiceState;
+  micPrimerOpen: boolean;
   init(): void;
   dispose(): void;
   startPractice(bots: BotSetupItem[]): void;
   refreshRooms(): void;
-  createRoom(maxPlayers: number, password: string, bet: number): void;
+  createRoom(maxPlayers: number, password: string, bet: number, voice?: boolean): void;
   joinRoom(room: RoomInfo, password?: string): void;
   leaveRoom(): void;
   setReady(ready: boolean): void;
@@ -152,6 +164,12 @@ interface ThirteenStore {
   openLeaderboard(): void;
   setLeaderboardPeriod(period: LeaderboardPeriod): void;
   closeOverlay(): void;
+  toggleMic(): void;
+  confirmMicPrimer(): void;
+  dismissMicPrimer(): void;
+  toggleSpeaker(): void;
+  togglePeerMuted(userId: string): void;
+  resumeVoiceAudio(): void;
   selectedCombo(): Combo | null;
   canPlaySelected(): boolean;
 }
@@ -229,7 +247,7 @@ const WATCH_FAILURE_CODES: ReadonlySet<string> = new Set([
   GAME_ERROR_CODE.SpectateNotSupported,
 ]);
 
-export const useThirteen = create<ThirteenStore>()((set, get) => {
+export const useThirteen = create<ThirteenStore>()((set, get, api) => {
   const refs = {
     session: null as GameSession<ServerState, ServerMove> | null,
     practice: null as GameSession<ServerState, ServerMove> | null,
@@ -240,6 +258,9 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     handledMatchStarts: new RecentMatchIds(),
     leftMatchId: '',
     matchRoomId: '',
+    matchRoomVoice: false,
+    voice: null as VoiceClient | null,
+    voiceKey: '',
     watchRequest: '',
     toastTimer: 0,
     historyTimer: 0 as ReturnType<typeof setTimeout> | 0,
@@ -301,6 +322,52 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
   };
 
   const matchSession = (): GameSession<ServerState, ServerMove> | null => refs.practice ?? refs.session;
+
+  const voiceTarget = (s: ThirteenStore): VoiceTarget | null => {
+    if (s.practice) return null;
+    if (s.phase === 'room') {
+      if (s.room) return s.room.voice ? { roomId: s.room.roomId, speak: true } : null;
+      if (s.watchingRoomId && s.watchedRoom?.roomId === s.watchingRoomId && s.watchedRoom.voice) {
+        return { roomId: s.watchingRoomId, speak: false };
+      }
+      return null;
+    }
+    if (s.phase !== 'table' || !s.matchId) return null;
+    if (s.spectating) {
+      const roomId = s.watchingRoomId || s.rooms.find((room) => room.matchId === s.matchId)?.id || '';
+      const known = s.watchedRoom?.roomId === roomId ? s.watchedRoom.voice : s.rooms.find((room) => room.id === roomId)?.voice;
+      if (known === false) return null;
+      return { ...(roomId ? { roomId } : {}), matchId: s.matchId, speak: false };
+    }
+    if (!refs.matchRoomId || !(refs.matchRoomVoice || s.room?.voice)) return null;
+    return { roomId: refs.matchRoomId, matchId: s.matchId, speak: true };
+  };
+
+  const syncVoice = (): void => {
+    const voice = refs.voice;
+    if (!voice) return;
+    const target = voiceTarget(get());
+    const key = target ? [target.roomId ?? '', target.matchId ?? '', String(target.speak)].join('|') : '';
+    if (key === refs.voiceKey) return;
+    refs.voiceKey = key;
+    if (target) voice.join(target);
+    else voice.leave();
+  };
+
+  const attachVoice = (session: GameSession<ServerState, ServerMove>): void => {
+    const voice = createVoiceClient(session);
+    refs.voice = voice;
+    refs.voiceKey = '';
+    refs.unsubs.push(
+      voice.subscribe((state) => {
+        const previousIssue = get().voice.issue;
+        set({ voice: state });
+        if (state.issue && state.issue !== previousIssue) get().showToast(VOICE_ISSUE_TEXT[state.issue]);
+      }),
+      api.subscribe(syncVoice),
+    );
+    syncVoice();
+  };
 
   const stopPractice = (): void => {
     refs.practice?.disconnect();
@@ -430,8 +497,13 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     closeOverlay();
     if (data.matchId === refs.leftMatchId) refs.leftMatchId = '';
     const room = get().room;
-    if (room) refs.matchRoomId = room.roomId;
-    else if (fresh) refs.matchRoomId = '';
+    if (room) {
+      refs.matchRoomId = room.roomId;
+      refs.matchRoomVoice = room.voice === true;
+    } else if (fresh) {
+      refs.matchRoomId = '';
+      refs.matchRoomVoice = false;
+    }
     set({
       phase: 'table',
       matchId: data.matchId,
@@ -942,6 +1014,8 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     overlay: null,
     history: { items: [], loading: false, error: null },
     leaderboard: { period: 'day', from: 0, items: [], loading: false, error: null },
+    voice: VOICE_IDLE,
+    micPrimerOpen: false,
 
     init() {
       refs.disposed = false;
@@ -953,6 +1027,7 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
           }
           refs.session = session;
           bindLobby(session);
+          attachVoice(session);
         })
         .catch(() => {
           set({ notice: 'Không thể đăng nhập vào trò chơi. Hãy mở lại từ ứng dụng Ola.' });
@@ -964,6 +1039,9 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       clearRecordTimers();
       refs.unsubs.forEach((off) => off());
       refs.unsubs = [];
+      refs.voice?.destroy();
+      refs.voice = null;
+      refs.voiceKey = '';
       refs.practice?.disconnect();
       refs.practice = null;
       refs.session?.disconnect();
@@ -983,8 +1061,8 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
     refreshRooms() {
       refs.session?.listRooms();
     },
-    createRoom(maxPlayers, password, bet) {
-      refs.session?.createRoom(bet, password || undefined, maxPlayers);
+    createRoom(maxPlayers, password, bet, voice) {
+      refs.session?.createRoom(bet, password || undefined, maxPlayers, undefined, voice === true);
     },
     joinRoom(room, password) {
       refs.session?.joinRoom(room.id, password);
@@ -1040,6 +1118,36 @@ export const useThirteen = create<ThirteenStore>()((set, get) => {
       const selected = [...s.selected].sort((a, b) => a - b).join(',');
       const current = hints.findIndex((play) => play.join(',') === selected);
       set({ selected: hints[(current + 1) % hints.length] });
+    },
+    toggleMic() {
+      const voice = get().voice;
+      if (refs.voice && voice.status === 'failed') {
+        refs.voice.retry();
+        return;
+      }
+      if (!refs.voice || !voice.canSpeak || voice.micBusy || voice.status !== 'connected') return;
+      if (!voice.micOn && !readVoiceFlag(VOICE_MIC_PRIMED_KEY)) {
+        set({ micPrimerOpen: true });
+        return;
+      }
+      void refs.voice.setMic(!voice.micOn);
+    },
+    confirmMicPrimer() {
+      writeVoiceFlag(VOICE_MIC_PRIMED_KEY, true);
+      set({ micPrimerOpen: false });
+      void refs.voice?.setMic(true);
+    },
+    dismissMicPrimer() {
+      set({ micPrimerOpen: false });
+    },
+    toggleSpeaker() {
+      refs.voice?.setSpeaker(!get().voice.speakerOn);
+    },
+    togglePeerMuted(userId) {
+      refs.voice?.setPeerMuted(userId, !get().voice.mutedIds.includes(userId));
+    },
+    resumeVoiceAudio() {
+      refs.voice?.resumeAudio();
     },
     selectedCombo() {
       const selected = get().selected;

@@ -16,6 +16,7 @@ import { useToastStore } from '@ola/shared/stores/toast/toastStore';
 import { colorForName } from '@ola/shared/lib';
 import { GIFT_SOURCE, RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
+import { usePostQuotaGate } from '@ola/shared/stores/socialLimit';
 import type { FollowUser } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { MediaViewerModal } from '@components/ui/MediaViewer';
@@ -96,6 +97,7 @@ export function UserProfileScreen({
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
   const [frameStoreOpen, setFrameStoreOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
+  const openComposer = usePostQuotaGate('mePost', () => setComposerOpen(true));
   const [viewer, setViewer] = useState<ProfileViewerState | null>(null);
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftWallKey, setGiftWallKey] = useState(0);
@@ -194,7 +196,7 @@ export function UserProfileScreen({
             onToggleFollow={toggleFollow}
             onUnblock={blockAction}
             onUpdateInfo={onEditProfile ?? comingSoon}
-            onPostMe={() => setComposerOpen(true)}
+            onPostMe={openComposer}
             onMore={() => setMenuOpen(true)}
             onSendGift={!isSelf && giftsEnabled ? () => setGiftOpen(true) : undefined}
             openViewer={openViewer}

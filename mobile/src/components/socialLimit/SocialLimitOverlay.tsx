@@ -24,7 +24,7 @@ export function SocialLimitOverlay() {
   }, [open, close]);
 
   if (notice == null) return null;
-  const canBuy = !notice.isVip;
+  const canBuy = notice.canBuyVip;
 
   return (
     <View style={StyleSheet.absoluteFill}>

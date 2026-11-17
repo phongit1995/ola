@@ -51,3 +51,4 @@ export * from './gift/GiftPickerDialog';
 export * from './gift/CharmIcon';
 export * from './gift/GiftAnimationOverlay';
 export * from './SocialLimitDialog';
+export * from './FriendContentBanner';

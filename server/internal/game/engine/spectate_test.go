@@ -633,3 +633,123 @@ func TestRoomFinishedAtDealStaysWaitingInLobby(t *testing.T) {
 		t.Fatalf("the lobby was left with a playing room that has no match: %+v", info)
 	}
 }
+
+func TestCreateRoomEnablesVoiceOnlyForVipOwners(t *testing.T) {
+	tests := []struct {
+		name  string
+		owner protocol.PlayerInfo
+		voice bool
+		want  bool
+	}{
+		{name: "vip owner asks for voice", owner: lifecyclePlayer("owner"), voice: true, want: true},
+		{name: "vip owner without voice", owner: lifecyclePlayer("owner"), voice: false, want: false},
+		{name: "owner without vip", owner: protocol.PlayerInfo{ID: "owner", Name: "OWNER"}, voice: true, want: false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
+			defer stopEngineTimers(gameEngine)
+			gameEngine.CreateRoomWithOptions(persistenceTestGameID, test.owner, 0, "", 0, RoomOptions{Voice: test.voice})
+			if room := onlyRoom(t, rooms); room.VoiceEnabled != test.want {
+				t.Fatalf("stored voice %v, want %v", room.VoiceEnabled, test.want)
+			}
+			upsert, found := emitter.last("", protocol.S2CRoomUpsert)
+			if !found || upsert.Data.(protocol.RoomUpsertData).Room.Voice != test.want {
+				t.Fatalf("ROOM_UPSERT voice mismatch: %+v", upsert)
+			}
+			waiting, found := emitter.last("owner", protocol.S2CRoomWaiting)
+			if !found || waiting.Data.(protocol.RoomWaitingData).Voice != test.want {
+				t.Fatalf("ROOM_WAITING voice mismatch: %+v", waiting)
+			}
+			state, found := emitter.last("owner", protocol.S2CRoomState)
+			if !found || state.Data.(protocol.RoomStateData).Voice != test.want {
+				t.Fatalf("ROOM_STATE voice mismatch: %+v", state)
+			}
+		})
+	}
+}
+
+func TestVoiceAccessInWaitingRoom(t *testing.T) {
+	gameEngine, rooms, _ := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	defer stopEngineTimers(gameEngine)
+	room := thirteenRoom("voice-room", "tl-b")
+	room.VoiceEnabled = true
+	private := thirteenRoom("private-room", "tl-c")
+	private.VoiceEnabled = true
+	private.AllowSpectators = boolPtr(false)
+	silent := thirteenRoom("silent-room", "tl-d")
+	for _, saved := range []Room{room, private, silent} {
+		if err := rooms.Save(saved); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	cases := []struct {
+		name     string
+		userID   string
+		roomID   string
+		watching bool
+		want     VoiceAccess
+	}{
+		{"owner speaks", "tl-a", room.ID, false, VoiceAccess{RoomID: room.ID, Enabled: true, Role: VoiceRoleSpeaker}},
+		{"guest speaks", "tl-b", room.ID, false, VoiceAccess{RoomID: room.ID, Enabled: true, Role: VoiceRoleSpeaker}},
+		{"watcher listens", "watcher", room.ID, true, VoiceAccess{RoomID: room.ID, Enabled: true, Role: VoiceRoleListener}},
+		{"outsider gets nothing", "outsider", room.ID, false, VoiceAccess{RoomID: room.ID, Enabled: true}},
+		{"watcher of a private room gets nothing", "watcher", private.ID, true, VoiceAccess{RoomID: private.ID, Enabled: true}},
+		{"room without voice", "tl-d", silent.ID, false, VoiceAccess{RoomID: silent.ID, Role: VoiceRoleSpeaker}},
+		{"missing room", "tl-a", "missing", false, VoiceAccess{}},
+	}
+	for _, tc := range cases {
+		got, err := gameEngine.VoiceAccess(thirteen.GameID, tc.userID, tc.roomID, "", tc.watching)
+		if err != nil || got != tc.want {
+			t.Errorf("%s: got %+v (%v), want %+v", tc.name, got, err, tc.want)
+		}
+	}
+}
+
+func TestVoiceAccessFollowsTheRoomIntoTheMatch(t *testing.T) {
+	var (
+		gameEngine *Engine
+		match      *Match
+	)
+	room := thirteenRoom("voice-room", "tl-b")
+	room.VoiceEnabled = true
+	for attempt := 0; attempt < 20 && match == nil; attempt++ {
+		var rooms *memoryRoomStore
+		gameEngine, rooms, _ = newPersistenceTestEngine(newMemoryActiveMatchStore())
+		if err := rooms.Save(room); err != nil {
+			t.Fatal(err)
+		}
+		gameEngine.StartRoom(room.GameID, room.OwnerID, room.ID)
+		if match = onlyMatch(t, gameEngine); match == nil {
+			stopEngineTimers(gameEngine)
+		}
+	}
+	if match == nil {
+		t.Fatal("every deal ended in an instant win")
+	}
+	defer stopEngineTimers(gameEngine)
+	if box, ok := joinAs(gameEngine, match, "watcher", "sock-1"); !ok {
+		t.Fatalf("spectate join failed: %+v", box.lastError(t))
+	}
+
+	cases := []struct {
+		name    string
+		userID  string
+		roomID  string
+		matchID string
+		want    VoiceAccess
+	}{
+		{"player by room id", "tl-a", room.ID, "", VoiceAccess{RoomID: room.ID, Enabled: true, Role: VoiceRoleSpeaker}},
+		{"player by match id", "tl-b", "", match.ID, VoiceAccess{RoomID: room.ID, Enabled: true, Role: VoiceRoleSpeaker}},
+		{"spectator listens", "watcher", room.ID, match.ID, VoiceAccess{RoomID: room.ID, Enabled: true, Role: VoiceRoleListener}},
+		{"outsider gets nothing", "outsider", "", match.ID, VoiceAccess{RoomID: room.ID, Enabled: true}},
+		{"another room id is refused", "tl-a", "other-room", "", VoiceAccess{}},
+	}
+	for _, tc := range cases {
+		got, err := gameEngine.VoiceAccess(room.GameID, tc.userID, tc.roomID, tc.matchID, false)
+		if err != nil || got != tc.want {
+			t.Errorf("%s: got %+v (%v), want %+v", tc.name, got, err, tc.want)
+		}
+	}
+}

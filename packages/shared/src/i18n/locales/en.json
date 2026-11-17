@@ -2775,12 +2775,20 @@
       "failed": "Could not claim the gift, try again later"
     }
   },
+  "friendContent": {
+    "post": "shared a new post",
+    "moment": "shared a new moment"
+  },
   "socialLimit": {
     "title": "Daily limit reached",
     "newChat": "You've messaged {{limit}}/{{limit}} new people today.",
     "newChatReached": "You've used up today's messages to new people.",
     "friendRequest": "You've sent {{limit}}/{{limit}} friend requests today.",
     "friendRequestReached": "You've used up today's friend requests.",
+    "mePost": "You've posted {{limit}}/{{limit}} Me posts today.",
+    "mePostReached": "You've used up today's Me posts.",
+    "momentPost": "You've posted {{limit}}/{{limit}} moments today.",
+    "momentPostReached": "You've used up today's moments.",
     "vipHint": "Upgrade to VIP to unlock the limit.",
     "tomorrow": "Come back tomorrow.",
     "confirm": "OK",

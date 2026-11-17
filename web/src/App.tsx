@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { ReconnectingBanner, SocialLimitDialog, ToastViewport } from '@components';
+import { FriendContentBanner, ReconnectingBanner, SocialLimitDialog, ToastViewport } from '@components';
 import { CALL_MODE } from '@constants';
 import {
   useSoundUnlock,
@@ -17,6 +17,7 @@ import { useKenTreasureStore } from '@ola/shared/stores/ken/kenTreasureStore';
 import { useKenRealtime } from '@ola/shared/stores/ken/useKenRealtime';
 import { useMegaphoneRealtime } from '@ola/shared/stores/megaphone/useMegaphoneRealtime';
 import { useMeNotificationRealtime } from '@ola/shared/stores/me-notification/useMeNotificationRealtime';
+import { useFriendContentRealtime } from '@ola/shared/stores/friendContent';
 import { useAppNotificationRealtime } from '@ola/shared/stores/app-notification/useAppNotificationRealtime';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useThemeStore } from '@ola/shared/stores/themeStore';
@@ -102,6 +103,7 @@ function App() {
   useKenRealtime();
   useMegaphoneRealtime();
   useMeNotificationRealtime();
+  useFriendContentRealtime();
   useAppNotificationRealtime();
   useUnreadTitle();
   const fontSize = useSettingsStore((state) => state.settings.fontSize);
@@ -112,6 +114,7 @@ function App() {
       <div className="relative mx-auto flex h-dvh w-full max-w-[520px] flex-col overflow-hidden bg-white shadow-2xl [transform:translateZ(0)]">
         <AppRouter />
         <ReconnectingBanner />
+        <FriendContentBanner />
         <ToastViewport />
         <div id="ola-portal" />
         <SocialLimitDialog />

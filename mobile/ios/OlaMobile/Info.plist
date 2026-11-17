@@ -44,7 +44,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Ola Me cần vị trí của bạn để gợi ý địa điểm check-in gần đây khi đăng bài.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Ola Me cần truy cập micro để bạn ghi tin nhắn thoại và thực hiện cuộc gọi.</string>
+	<string>Ola Me cần truy cập micro để bạn ghi tin nhắn thoại, thực hiện cuộc gọi và nói chuyện với mọi người trong bàn game.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Ola Me cần truy cập thư viện ảnh để bạn gửi ảnh trong chat và đăng ảnh, video lên khoảnh khắc.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

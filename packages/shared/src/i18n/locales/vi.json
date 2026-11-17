@@ -2775,12 +2775,20 @@
       "failed": "Không nhận được quà, thử lại sau"
     }
   },
+  "friendContent": {
+    "post": "vừa đăng bài mới",
+    "moment": "vừa đăng khoảnh khắc mới"
+  },
   "socialLimit": {
     "title": "Đã đạt giới hạn hôm nay",
     "newChat": "Hôm nay bạn đã nhắn tin với {{limit}}/{{limit}} người mới.",
     "newChatReached": "Hôm nay bạn đã hết lượt nhắn tin với người mới.",
     "friendRequest": "Hôm nay bạn đã gửi {{limit}}/{{limit}} lời mời kết bạn.",
     "friendRequestReached": "Hôm nay bạn đã hết lượt gửi lời mời kết bạn.",
+    "mePost": "Hôm nay bạn đã đăng {{limit}}/{{limit}} bài Me.",
+    "mePostReached": "Hôm nay bạn đã hết lượt đăng bài Me.",
+    "momentPost": "Hôm nay bạn đã đăng {{limit}}/{{limit}} khoảnh khắc.",
+    "momentPostReached": "Hôm nay bạn đã hết lượt đăng khoảnh khắc.",
     "vipHint": "Nâng cấp VIP để có thể mở khóa giới hạn.",
     "tomorrow": "Quay lại vào ngày mai nhé.",
     "confirm": "Xác nhận",

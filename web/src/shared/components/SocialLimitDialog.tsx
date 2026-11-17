@@ -11,7 +11,7 @@ export function SocialLimitDialog() {
   const requestBuy = useSocialLimitStore((state) => state.requestBuy);
 
   if (notice == null) return null;
-  const canBuy = !notice.isVip;
+  const canBuy = notice.canBuyVip;
 
   function buyVip() {
     requestBuy();

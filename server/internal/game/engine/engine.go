@@ -60,6 +60,7 @@ type Engine struct {
 	abortJobsMu      sync.Mutex
 	logger           *zap.SugaredLogger
 	emitter          Emitter
+	voiceRevoker     VoiceRevoker
 	settlement       Settlement
 	store            RoomRepository
 	activeStore      ActiveMatchRepository

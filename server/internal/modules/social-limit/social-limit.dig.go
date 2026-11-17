@@ -6,6 +6,8 @@ func Provider(c *dig.Container) error {
 	providers := []interface{}{
 		NewRepository,
 		NewService,
+		NewController,
+		NewRouter,
 	}
 
 	for _, p := range providers {

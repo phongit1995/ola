@@ -16,7 +16,8 @@ import type {
 const sessionHandlers = vi.hoisted(() => new Map<string, Set<(data: unknown) => void>>());
 const sessionCalls = vi.hoisted(() => [] as Array<[string, unknown[]]>);
 
-vi.mock('../../src/sdk', () => {
+vi.mock('../../src/sdk', async () => {
+  const voice = await vi.importActual<typeof import('../../src/sdk/voice')>('../../src/sdk/voice');
   const session = new Proxy(
     {},
     {
@@ -37,7 +38,12 @@ vi.mock('../../src/sdk', () => {
     },
   );
   const bridge = new Proxy({}, { get: () => () => undefined });
-  return { bridge, joinGame: vi.fn(() => Promise.resolve(session)) };
+  return {
+    bridge,
+    joinGame: vi.fn(() => Promise.resolve(session)),
+    VOICE_IDLE: voice.VOICE_IDLE,
+    createVoiceClient: voice.createVoiceClient,
+  };
 });
 
 import { RECORD_REQUEST_TIMEOUT_MS, useThirteen } from './useThirteen';

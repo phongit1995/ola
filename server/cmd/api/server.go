@@ -33,6 +33,7 @@ import (
 	"ola-chat-server/internal/modules/room/wordchain"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/setting"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 	"ola-chat-server/internal/modules/story"
 	"ola-chat-server/internal/modules/topup"
 	"ola-chat-server/internal/modules/user"
@@ -92,6 +93,7 @@ func CreateServer(
 	storyRouter *story.Router,
 	reportRouter *report.Router,
 	momentRouter *moment.Router,
+	socialLimitRouter *sociallimit.Router,
 	wsServer *websocket.Server,
 	apiGuard *middleware.ApiGuardMiddleware,
 	cfg *config.Config,
@@ -164,6 +166,7 @@ func CreateServer(
 		storyRouter.Setup(api)
 		reportRouter.Setup(api)
 		momentRouter.Setup(api)
+		socialLimitRouter.Setup(api)
 	}
 
 	r.NoRoute(func(c *gin.Context) {

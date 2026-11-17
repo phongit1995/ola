@@ -42,3 +42,8 @@ export interface PlatformRule {
 }
 
 export type PlatformRules = Record<AppPlatform, PlatformRule>
+
+export interface PostLimitSetting {
+  normalPerDay: number
+  vipPerDay: number
+}
