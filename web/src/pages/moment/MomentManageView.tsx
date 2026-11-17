@@ -28,6 +28,7 @@ import {
 } from '@lib';
 import type { Moment, MomentViewerSession } from '@app-types';
 import { useMomentManage } from '@ola/shared/stores/moment/useMomentManage';
+import { usePostQuotaGate } from '@ola/shared/stores/socialLimit';
 import { MomentCanvas } from './components/MomentCanvas';
 import { MomentCommentsDialog } from './components/MomentCommentsDialog';
 import { MomentComposer } from './components/MomentComposer';
@@ -329,6 +330,7 @@ export function MomentManageView({ onClose }: { onClose: () => void }) {
   const [viewerSession, setViewerSession] =
     useState<MomentViewerSession | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
+  const openComposer = usePostQuotaGate('momentPost', () => setComposerOpen(true));
   const formatTime = useMemo(
     () => createTimeAgoFormatter(i18n.language),
     [i18n.language]
@@ -354,7 +356,7 @@ export function MomentManageView({ onClose }: { onClose: () => void }) {
           </span>
           <p className="text-sm text-black/54">{t('moment.manageEmpty')}</p>
           <ActionButton
-            onClick={() => setComposerOpen(true)}
+            onClick={openComposer}
             className="inline-flex items-center gap-1.5 px-4 py-1.5"
           >
             <MomentPlusIcon className="h-4 w-4" />
@@ -402,7 +404,7 @@ export function MomentManageView({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           aria-label={t('moment.add')}
-          onClick={() => setComposerOpen(true)}
+          onClick={openComposer}
           className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
         >
           <MomentPlusIcon className="h-6 w-6" />

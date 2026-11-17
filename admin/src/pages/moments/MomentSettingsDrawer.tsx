@@ -1,13 +1,16 @@
 import { App, Button, Card, Drawer, Form, InputNumber, Spin, Switch, Typography } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
 import { PlatformRulesTable } from '@/components/PlatformRulesTable'
-import { useAppSettings, usePutAppSetting } from '@/hooks/useAppSettingQueries'
+import { PostLimitFields } from '@/components/PostLimitFields'
+import { useAppSettings, usePutAppSetting, usePutAppSettings } from '@/hooks/useAppSettingQueries'
 import { useServerFormValues } from '@/hooks/useServerFormValues'
 import { errorMessage } from '@/lib/apiError'
 import { cleanPlatformRules } from '@/lib/platformRules'
-import type { MomentDisplaySetting, MomentMediaPurgeSetting, MomentMusicSetting, MomentVideoSetting } from '@/types'
+import type { MomentDisplaySetting, MomentMediaPurgeSetting, MomentMusicSetting, MomentVideoSetting, PostLimitSetting } from '@/types'
 import {
+  DEFAULT_MOMENT_POST_LIMIT_SETTING,
   MOMENT_DISPLAY_SETTING_KEY,
+  MOMENT_POST_LIMIT_SETTING_KEY,
   MOMENT_VIDEO_SETTING_KEY,
   MOMENT_MEDIA_PURGE_SETTING_KEY,
   MOMENT_MUSIC_SETTING_KEY,
@@ -21,6 +24,7 @@ import {
   hoursInDays,
   momentDisplaySetting,
   momentMusicSetting,
+  momentPostLimitSetting,
   momentPurgeSetting,
   momentVideoSetting,
 } from './utils'
@@ -101,7 +105,7 @@ function MomentSettings() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <MomentDisplayCard current={momentDisplaySetting(settings)} />
-      <MomentVideoCard current={momentVideoSetting(settings)} />
+      <MomentPostingCard limit={momentPostLimitSetting(settings)} video={momentVideoSetting(settings)} />
       <MomentMusicCard current={momentMusicSetting(settings)} />
       <Card title="Tự động xoá file ảnh/video">
         <Typography.Paragraph type="secondary">
@@ -189,46 +193,51 @@ function MomentMusicCard({ current }: { current: MomentMusicSetting }) {
   )
 }
 
-function MomentVideoCard({ current }: { current: MomentVideoSetting }) {
-  const { message } = App.useApp()
-  const putSetting = usePutAppSetting()
-  const [form] = Form.useForm<MomentVideoSetting>()
-  const markSaved = useServerFormValues(form, current)
+type MomentPostingValues = PostLimitSetting & MomentVideoSetting
 
-  async function save(values: MomentVideoSetting) {
+function MomentPostingCard({ limit, video }: { limit: PostLimitSetting; video: MomentVideoSetting }) {
+  const { message } = App.useApp()
+  const putSettings = usePutAppSettings()
+  const [form] = Form.useForm<MomentPostingValues>()
+  const current = { ...limit, ...video }
+  const markSaved = useServerFormValues(form, current)
+  const defaults = DEFAULT_MOMENT_POST_LIMIT_SETTING
+
+  async function save(values: MomentPostingValues) {
     try {
-      await putSetting.mutateAsync({
-        key: MOMENT_VIDEO_SETTING_KEY,
-        value: { vipRequired: values.vipRequired },
-      })
+      await putSettings.mutateAsync([
+        {
+          key: MOMENT_POST_LIMIT_SETTING_KEY,
+          value: { normalPerDay: values.normalPerDay, vipPerDay: values.vipPerDay },
+        },
+        { key: MOMENT_VIDEO_SETTING_KEY, value: { vipRequired: values.vipRequired } },
+      ])
       markSaved(values)
-      message.success(
-        values.vipRequired
-          ? 'Đã lưu, từ giờ chỉ thành viên VIP đăng được video'
-          : 'Đã lưu, mọi người đều đăng được video',
-      )
+      message.success('Đã lưu quyền đăng khoảnh khắc')
     } catch (err) {
       message.error(errorMessage(err, 'Lưu thất bại'))
     }
   }
 
   return (
-    <Card title="Đăng video">
+    <Card title="Quyền đăng">
       <Typography.Paragraph type="secondary">
-        Khi bật, chỉ người còn hạn VIP mới đăng được khoảnh khắc video. Người không có VIP vẫn thấy
-        nút Video kèm nhãn VIP, bấm vào sẽ được gợi ý mua VIP. Khoảnh khắc ảnh và chữ không bị ảnh
-        hưởng. Chưa lưu lần nào thì đang tắt.
+        Số lần mỗi người được đăng khoảnh khắc trong một ngày, đếm theo ngày giờ Việt Nam. Mỗi lần bấm Đăng tính một
+        lượt dù có nhiều trang. Khoảnh khắc đã đăng rồi xoá vẫn tính lượt. Hết lượt thì app báo cho người dùng, chỉ gợi ý
+        mua VIP khi mức VIP cao hơn hoặc không giới hạn. Chưa lưu lần nào thì dùng mặc định: người chưa VIP {defaults.normalPerDay} lần, VIP{' '}
+        {defaults.vipPerDay} lần.
       </Typography.Paragraph>
-      <Form<MomentVideoSetting>
-        form={form}
-        layout="vertical"
-        initialValues={current}
-        onFinish={save}
-      >
-        <Form.Item name="vipRequired" label="Chỉ VIP mới được đăng video" valuePropName="checked">
+      <Form<MomentPostingValues> form={form} layout="vertical" initialValues={current} onFinish={save}>
+        <PostLimitFields unit="lần" />
+        <Form.Item
+          name="vipRequired"
+          label="Chỉ VIP mới được đăng video"
+          valuePropName="checked"
+          extra="Khi bật, người không có VIP vẫn thấy nút Video kèm nhãn VIP, bấm vào sẽ được gợi ý mua VIP. Khoảnh khắc ảnh và chữ không bị ảnh hưởng."
+        >
           <Switch />
         </Form.Item>
-        <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={putSetting.isPending}>
+        <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={putSettings.isPending}>
           Lưu
         </Button>
       </Form>

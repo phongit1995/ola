@@ -6,6 +6,7 @@ import { MeService, UserService } from '@services';
 import { compressImageForUpload, imageUploadErrorText, toast, validatedImageObjectUrl } from '@lib';
 import { MIN_IMAGE_SOURCE } from '@constants';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { showSocialLimitNotice } from '@ola/shared/stores/socialLimit';
 import { CheckIcon } from './Icons';
 
 interface ChangeUserImageTexts {
@@ -112,6 +113,8 @@ export function ChangeUserImageDialog({
         await MeService.create({
           content: texts.postContent,
           images: [{ url: uploaded.url }],
+        }).catch((error: unknown) => {
+          if (!showSocialLimitNotice(error)) throw error;
         });
       }
       await refreshUser();

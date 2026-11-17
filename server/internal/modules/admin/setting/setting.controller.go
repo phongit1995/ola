@@ -274,6 +274,10 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateMomentVideoValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyMePostLimit, setting.KeyMomentPostLimit:
+		if err := setting.ValidatePostLimitValue(value); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
 	case setting.KeyMomentMediaPurge:
 		if err := setting.ValidateMomentMediaPurgeValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())

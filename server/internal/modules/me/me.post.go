@@ -1,10 +1,12 @@
 package me
 
 import (
+	"context"
 	"strings"
 	"time"
 
 	"ola-chat-server/internal/models"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
 
 	"github.com/google/uuid"
 )
@@ -71,12 +73,18 @@ func (s *Service) createPost(userID uuid.UUID, clanID *uuid.UUID, req *CreateMeR
 		Visibility: visibility,
 		Enabled:    true,
 	}
+	release, err := s.consumePostQuota(userID, clanID)
+	if err != nil {
+		return nil, err
+	}
 	claimedUploads, err := s.claimPostUploads(pendingUploads)
 	if err != nil {
+		release()
 		s.deletePostUploadRecordsAsync(claimedUploads)
 		return nil, err
 	}
 	if err := s.repo.Create(post); err != nil {
+		release()
 		s.deletePostUploadRecordsAsync(claimedUploads)
 		return nil, err
 	}
@@ -90,6 +98,13 @@ func (s *Service) createPost(userID uuid.UUID, clanID *uuid.UUID, req *CreateMeR
 	}
 	resp := toMeResponse(created, nil)
 	return &resp, nil
+}
+
+func (s *Service) consumePostQuota(userID uuid.UUID, clanID *uuid.UUID) (func(), error) {
+	if clanID != nil {
+		return func() {}, nil
+	}
+	return s.postLimits.ConsumePost(context.Background(), userID, sociallimit.PostKindMe)
 }
 
 func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeResponse, error) {

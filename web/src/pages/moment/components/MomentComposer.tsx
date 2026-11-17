@@ -34,6 +34,7 @@ import {
 } from '@lib';
 import type { MomentDraftSlide, MomentMusicDraft, MomentVisibility } from '@app-types';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
+import { showSocialLimitNotice, useCloseOnSocialLimitBuy } from '@ola/shared/stores/socialLimit';
 import { useMomentMusicEnabled, useMomentVideoLocked } from '@ola/shared/stores/moment/momentConfigStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { buildMomentUpload } from '../momentUpload';
@@ -64,6 +65,7 @@ function releaseSlides(slides: MomentDraftSlide[]) {
 }
 
 export function MomentComposer({ onClose }: { onClose: () => void }) {
+  useCloseOnSocialLimitBuy(onClose);
   const { t } = useTranslation();
   const publish = useMomentStore((s) => s.publish);
   const [submitting, setSubmitting] = useState(false);
@@ -263,9 +265,10 @@ export function MomentComposer({ onClose }: { onClose: () => void }) {
       }));
       if (posted) toast.success(t('moment.posted'));
     } catch (error) {
+      setSubmitting(false);
+      if (showSocialLimitNotice(error)) return;
       const failure = momentPublishError(error);
       toast.error(t(failure.key, failure.params));
-      setSubmitting(false);
       return;
     }
     onClose();

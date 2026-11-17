@@ -11,6 +11,7 @@ import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import { colorForName } from '@lib';
 import composeIcon from '@/assets/icons/chat/ic_action_compose_message.png';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { usePostQuotaGate } from '@ola/shared/stores/socialLimit';
 import { useMeLocalStore } from '@ola/shared/stores/meLocalStore';
 import type { RelationshipInfo } from '@app-types';
 import { MePostCard } from '../me/components/MePostCard';
@@ -68,6 +69,7 @@ export function ProfilePage({
   const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [editOpen, setEditOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
+  const openComposer = usePostQuotaGate('mePost', () => setComposerOpen(true));
   const [followersOpen, setFollowersOpen] = useState(false);
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
   const [frameStoreOpen, setFrameStoreOpen] = useState(false);
@@ -126,7 +128,7 @@ export function ProfilePage({
           profile={profile}
           relationship={relationship}
           actions={actions}
-          onPostMe={() => setComposerOpen(true)}
+          onPostMe={openComposer}
           onUpdateInfo={() => setEditOpen(true)}
           onViewVipStore={() => setVipStoreOpen(true)}
           onViewAvatarFrameStore={() => setFrameStoreOpen(true)}

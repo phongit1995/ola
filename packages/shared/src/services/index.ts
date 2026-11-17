@@ -25,6 +25,7 @@ export * from './chatBotStream';
 export * from './announcement.service';
 export * from './push.service';
 export * from './report.service';
+export * from './socialLimit.service';
 export * from './moment.service';
 export * from './story.service';
 export * from './wordChain.service';

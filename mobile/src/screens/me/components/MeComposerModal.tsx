@@ -5,6 +5,7 @@ import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { OlaModal } from '@components/ui/OlaModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Post, PostVisibility } from '@ola/shared/types';
+import { useCloseOnSocialLimitBuy } from '@ola/shared/stores/socialLimit';
 import {
   ChatComposer,
   type ChatComposerHandle,
@@ -73,6 +74,7 @@ function MeComposerBody({
   submitPost,
   postingRef,
 }: MeComposerModalProps & { postingRef: { current: boolean } }) {
+  useCloseOnSocialLimitBuy(onClose);
   const { t } = useTranslation();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();

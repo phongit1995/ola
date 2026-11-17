@@ -11,7 +11,7 @@ import {
   Typography,
   type TableColumnsType,
 } from 'antd'
-import { ClearOutlined, DeleteOutlined, EyeOutlined, SettingOutlined } from '@ant-design/icons'
+import { ClearOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons'
 import type { MomentType, MomentVisibility } from '@ola/shared/types'
 import { UserBriefCell } from '@/components/UserBriefCell'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -22,7 +22,6 @@ import { triToBool } from '../me/utils'
 import type { TriState } from '../me/types'
 import { MomentDetailModal } from './MomentDetailModal'
 import { MomentPreview } from './MomentPreview'
-import { MomentSettingsDrawer } from './MomentSettingsDrawer'
 import { useMomentList, usePurgeMomentMedia, useToggleMomentStatus } from './useMomentQueries'
 import {
   canPurgeMomentMedia,
@@ -60,7 +59,6 @@ export function MomentsTab() {
   const [hasMusic, setHasMusic] = useState<TriState>('all')
   const [sort, setSort] = useState('newest')
   const [detailId, setDetailId] = useState<string | null>(null)
-  const [settingsOpen, setSettingsOpen] = useState(false)
 
   function resetPage<T>(setter: (v: T) => void) {
     return (v: T) => {
@@ -346,13 +344,6 @@ export function MomentsTab() {
             Xoá lọc
           </Button>
         )}
-        <Button
-          icon={<SettingOutlined />}
-          style={{ marginLeft: 'auto' }}
-          onClick={() => setSettingsOpen(true)}
-        >
-          Cài đặt
-        </Button>
       </div>
       <Table<AdminMoment>
         rowKey="id"
@@ -369,7 +360,6 @@ export function MomentsTab() {
         }}
       />
       <MomentDetailModal momentId={detailId} onClose={() => setDetailId(null)} />
-      <MomentSettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
   )
 }

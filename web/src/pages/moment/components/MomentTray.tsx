@@ -13,6 +13,7 @@ import type {
 } from '@app-types';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
 import { useMomentTray } from '@ola/shared/stores/moment/useMomentTray';
+import { usePostQuotaGate } from '@ola/shared/stores/socialLimit';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useScrollEdges } from '../useScrollEdges';
 import { MomentAddCard, MomentTrayCard } from './MomentTrayCard';
@@ -37,6 +38,7 @@ export function MomentTray() {
   const tray = useMomentTray();
   const [session, setSession] = useState<MomentViewerSession | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
+  const openComposer = usePostQuotaGate('momentPost', () => setComposerOpen(true));
   const [profileTarget, setProfileTarget] = useState<{
     username: string;
     color: string;
@@ -111,7 +113,7 @@ export function MomentTray() {
         onTouchEnd={keepTouchInTray}
         className="flex gap-2 overflow-x-auto px-3 [scrollbar-width:none]"
       >
-        <MomentAddCard onClick={() => setComposerOpen(true)} />
+        <MomentAddCard onClick={openComposer} />
         {latestMine && (
           <MomentTrayCard
             moment={latestMine}

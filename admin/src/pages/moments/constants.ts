@@ -6,6 +6,7 @@ import type {
   MomentMediaPurgeStatus,
   MomentMediaPurgeTrigger,
   MomentVideoSetting,
+  PostLimitSetting,
 } from '@/types'
 
 interface TagMeta {
@@ -87,6 +88,10 @@ export const MOMENT_VIDEO_SETTING_KEY = 'moment_video'
 export const MOMENT_MUSIC_SETTING_KEY = 'moment_music'
 
 export const DEFAULT_MOMENT_VIDEO_SETTING: MomentVideoSetting = { vipRequired: false }
+
+export const MOMENT_POST_LIMIT_SETTING_KEY = 'moment_post_limit'
+
+export const DEFAULT_MOMENT_POST_LIMIT_SETTING: PostLimitSetting = { normalPerDay: 1, vipPerDay: 5 }
 
 export const MOMENT_MEDIA_PURGE_SETTING_KEY = 'moment_media_purge'
 

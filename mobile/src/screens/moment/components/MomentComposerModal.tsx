@@ -34,6 +34,7 @@ import {
   toast,
 } from '@ola/shared/lib';
 import { useMomentStore } from '@ola/shared/stores/moment/momentStore';
+import { showSocialLimitNotice, useCloseOnSocialLimitBuy } from '@ola/shared/stores/socialLimit';
 import { useMomentMusicEnabled, useMomentVideoLocked } from '@ola/shared/stores/moment/momentConfigStore';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -95,6 +96,7 @@ interface MomentComposerContentProps {
 }
 
 function MomentComposerContent({ ready, onClose, requestCloseRef }: MomentComposerContentProps) {
+  useCloseOnSocialLimitBuy(onClose);
   const { t } = useTranslation();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
@@ -329,9 +331,10 @@ function MomentComposerContent({ ready, onClose, requestCloseRef }: MomentCompos
       }));
       if (posted) toast.success(t('moment.posted'));
     } catch (error) {
+      setSubmitting(false);
+      if (showSocialLimitNotice(error)) return;
       const failure = momentPublishError(error);
       toast.error(t(failure.key, failure.params));
-      setSubmitting(false);
       return;
     }
     onClose();

@@ -5,6 +5,7 @@ import { MeService } from '../../services/me.service';
 import type { Post, PostUploadRef } from '../../types/api/me.type';
 import type { MeFeedState } from '../../types/client/feed.type';
 import i18n from 'i18next';
+import { showSocialLimitNotice } from '../socialLimit';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
 import { selfLiker } from './selfLiker';
 import {
@@ -130,7 +131,7 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
     } catch (error) {
       console.error('create post failed', error);
       await MeService.cleanupRejectedUploads(error, uploaded);
-      toast.error(i18n.t('me.postError'));
+      if (!showSocialLimitNotice(error)) toast.error(i18n.t('me.postError'));
       return null;
     }
   },

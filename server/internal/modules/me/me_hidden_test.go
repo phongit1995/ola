@@ -1,10 +1,14 @@
 package me
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"ola-chat-server/internal/models"
+	sociallimit "ola-chat-server/internal/modules/social-limit"
+
+	"github.com/google/uuid"
 )
 
 func TestOnlyAdminHiddenPostsExplainThemselvesToTheOwner(t *testing.T) {
@@ -36,5 +40,31 @@ func TestHiddenFieldsClearWhoHidWhenShownAgain(t *testing.T) {
 	hidden := HiddenFields(true, MeHiddenByOwner, time.Now())
 	if hidden["enabled"] != false || hidden["hidden_by"] != MeHiddenByOwner {
 		t.Fatalf("hidden fields: %v", hidden)
+	}
+}
+
+type fakePostQuota struct{ kinds []sociallimit.PostKind }
+
+func (f *fakePostQuota) ConsumePost(_ context.Context, _ uuid.UUID, kind sociallimit.PostKind) (func(), error) {
+	f.kinds = append(f.kinds, kind)
+	return func() {}, nil
+}
+
+func TestClanPostsSkipTheDailyMePostQuota(t *testing.T) {
+	quota := &fakePostQuota{}
+	svc := &Service{postLimits: quota}
+	clanID := uuid.New()
+
+	if _, err := svc.consumePostQuota(uuid.New(), &clanID); err != nil {
+		t.Fatal(err)
+	}
+	if len(quota.kinds) != 0 {
+		t.Fatalf("clan post consumed quota %v", quota.kinds)
+	}
+	if _, err := svc.consumePostQuota(uuid.New(), nil); err != nil {
+		t.Fatal(err)
+	}
+	if len(quota.kinds) != 1 || quota.kinds[0] != sociallimit.PostKindMe {
+		t.Fatalf("personal post must consume one Me quota, got %v", quota.kinds)
 	}
 }

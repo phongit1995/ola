@@ -349,7 +349,6 @@ func TestNextViewerOffsetSkipsPastFilteredViewers(t *testing.T) {
 }
 
 func TestUploadFolderGroupsByVietnamDayThenKind(t *testing.T) {
-	userID := uuid.MustParse("72c6ace6-562c-415a-96a2-7dfd6bdb9186")
 	cases := []struct {
 		momentType string
 		now        time.Time
@@ -364,9 +363,6 @@ func TestUploadFolderGroupsByVietnamDayThenKind(t *testing.T) {
 		if got := uploadFolder(tc.momentType, tc.now); got != tc.want {
 			t.Errorf("uploadFolder(%s, %s) = %q, want %q", tc.momentType, tc.now, got, tc.want)
 		}
-	}
-	if got, want := quotaKey(userID, time.Date(2026, 10, 24, 17, 0, 0, 0, time.UTC)), fmt.Sprintf(CacheKeyMomentQuota, userID.String(), "20261025"); got != want {
-		t.Errorf("quota day should follow the same Vietnam day: %q, want %q", got, want)
 	}
 }
 

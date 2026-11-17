@@ -38,9 +38,10 @@ type configSource interface {
 }
 
 type LimitError struct {
-	Code  string
-	Limit int
-	Vip   bool
+	Code       string
+	Limit      int
+	Vip        bool
+	Upgradable bool
 }
 
 func (e *LimitError) Error() string {
@@ -53,12 +54,13 @@ func HTTPError(err error) *utils.HTTPError {
 		return nil
 	}
 	httpErr := utils.NewHTTPErrorWithCode(http.StatusTooManyRequests, limitErr.Error(), limitErr.Code)
-	httpErr.Details = map[string]any{"limit": limitErr.Limit, "isVip": limitErr.Vip}
+	httpErr.Details = map[string]any{"limit": limitErr.Limit, "isVip": limitErr.Vip, "upgradable": limitErr.Upgradable}
 	return httpErr
 }
 
 type Service struct {
 	settings configSource
+	posts    postLimitSource
 	cache    *services.CacheService
 	vip      vipChecker
 	logger   *zap.SugaredLogger
@@ -69,7 +71,9 @@ type Service struct {
 }
 
 func NewService(settings *setting.Service, cache *services.CacheService, repo *Repository, logger *zap.SugaredLogger) *Service {
-	return newService(settings, cache, repo, logger)
+	svc := newService(settings, cache, repo, logger)
+	svc.posts = settings
+	return svc
 }
 
 func newService(settings configSource, cache *services.CacheService, vip vipChecker, logger *zap.SugaredLogger) *Service {
@@ -129,7 +133,12 @@ func (s *Service) ConsumeNewChat(ctx context.Context, userID, targetID uuid.UUID
 	if !cfg.Enabled {
 		return noop, nil
 	}
-	return s.consume(ctx, CacheKeyNewChats, &LimitError{Code: ErrorCodeDailyNewChatLimit, Limit: t.NewChatsPerDay, Vip: vip}, userID, targetID)
+	return s.consume(ctx, CacheKeyNewChats, &LimitError{
+		Code:       ErrorCodeDailyNewChatLimit,
+		Limit:      t.NewChatsPerDay,
+		Vip:        vip,
+		Upgradable: !vip && cfg.Vip.NewChatsPerDay > t.NewChatsPerDay,
+	}, userID, targetID)
 }
 
 func (s *Service) ConsumeFriendRequest(ctx context.Context, userID, targetID uuid.UUID) (func(), error) {
@@ -137,7 +146,12 @@ func (s *Service) ConsumeFriendRequest(ctx context.Context, userID, targetID uui
 	if !cfg.Enabled {
 		return noop, nil
 	}
-	return s.consume(ctx, CacheKeyFriendRequests, &LimitError{Code: ErrorCodeDailyFriendRequestLimit, Limit: t.FriendRequestsPerDay, Vip: vip}, userID, targetID)
+	return s.consume(ctx, CacheKeyFriendRequests, &LimitError{
+		Code:       ErrorCodeDailyFriendRequestLimit,
+		Limit:      t.FriendRequestsPerDay,
+		Vip:        vip,
+		Upgradable: !vip && cfg.Vip.FriendRequestsPerDay > t.FriendRequestsPerDay,
+	}, userID, targetID)
 }
 
 func noop() {}
@@ -166,11 +180,17 @@ func (s *Service) consume(ctx context.Context, keyFormat string, limitErr *Limit
 	if result[1] != 1 {
 		return noop, nil
 	}
+	return s.refund(ctx, key, func(refundCtx context.Context) error {
+		return s.cache.GetClient().SRem(refundCtx, key, member).Err()
+	}), nil
+}
+
+func (s *Service) refund(ctx context.Context, key string, undo func(context.Context) error) func() {
 	return func() {
 		refundCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), RefundTimeout)
 		defer cancel()
-		if err := s.cache.GetClient().SRem(refundCtx, key, member).Err(); err != nil {
+		if err := undo(refundCtx); err != nil {
 			s.logger.Warnw("refund social limit failed", "key", key, "error", err)
 		}
-	}, nil
+	}
 }

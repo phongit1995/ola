@@ -94,6 +94,9 @@ export const API_PATH = {
   reports: {
     base: '/reports',
   },
+  socialLimit: {
+    posts: '/social-limit/posts',
+  },
   moments: {
     base: '/moments',
     detail: (id: string) => `/moments/${id}`,

@@ -6,6 +6,7 @@ import { MeService, UserService } from '@ola/shared/services';
 import { toast } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/types';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { showSocialLimitNotice } from '@ola/shared/stores/socialLimit';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { pickValidatedCroppedImage } from '@lib/imagePicker';
 
@@ -95,6 +96,8 @@ export function ChangeUserImageDialog({
         await MeService.create({
           content: texts.postContent,
           images: [{ url: uploaded.url }],
+        }).catch((error: unknown) => {
+          if (!showSocialLimitNotice(error)) throw error;
         });
       }
       await refreshUser();
