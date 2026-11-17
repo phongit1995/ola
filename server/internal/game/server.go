@@ -96,6 +96,7 @@ func NewServer(
 		roomWatching: make(map[socket.SocketId]string),
 	}
 	gameEngine.SetEmitter(server)
+	gameEngine.SetVoiceRevoker(server)
 
 	io.Use(func(s *socket.Socket, next func(*socket.ExtendedError)) {
 		auth := s.Handshake().Auth

@@ -1121,6 +1121,10 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     },
     toggleMic() {
       const voice = get().voice;
+      if (refs.voice && voice.status === 'failed') {
+        refs.voice.retry();
+        return;
+      }
       if (!refs.voice || !voice.canSpeak || voice.micBusy || voice.status !== 'connected') return;
       if (!voice.micOn && !readVoiceFlag(VOICE_MIC_PRIMED_KEY)) {
         set({ micPrimerOpen: true });

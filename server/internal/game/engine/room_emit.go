@@ -119,6 +119,7 @@ func (e *Engine) emitRoomSync(gameID, userID, roomID string) {
 }
 
 func (e *Engine) emitRoomClosed(room Room, reason string) {
+	e.closeVoice(room)
 	data := protocol.RoomClosedData{RoomID: room.ID, Reason: reason}
 	for _, memberID := range room.memberIDs() {
 		e.toUser(room.GameID, memberID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
@@ -127,6 +128,7 @@ func (e *Engine) emitRoomClosed(room Room, reason string) {
 }
 
 func (e *Engine) emitRoomClosedExcept(room Room, excludedID, reason string) {
+	e.closeVoice(room)
 	data := protocol.RoomClosedData{RoomID: room.ID, Reason: reason}
 	for _, memberID := range room.memberIDs() {
 		if memberID == excludedID {

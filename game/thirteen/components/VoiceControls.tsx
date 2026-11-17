@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { VOICE_ISSUE_TEXT } from '../helpers/voice';
 import { useThirteen } from '../store/useThirteen';
 import { ConfirmModal } from './ConfirmModal';
 
-const VOICE_FAILED_TEXT = 'Voice đang gián đoạn, đang thử kết nối lại…';
+const VOICE_RETRY_TEXT = 'Đang kết nối lại voice…';
 
 export function MicIcon({ off = false, className }: { off?: boolean; className?: string }) {
   return (
@@ -37,15 +36,14 @@ function SelfMicToggle({ userId }: { userId: string }) {
   const speaking = voice.micOn && voice.speakingIds.includes(userId);
   const label = voice.micOn
     ? 'Mic đang bật, chạm để tắt'
-    : busy
-      ? 'Đang kết nối voice'
-      : 'Mic đang tắt, chạm để bật';
+    : failed
+      ? 'Voice bị gián đoạn, chạm để kết nối lại'
+      : busy
+        ? 'Đang kết nối voice'
+        : 'Mic đang tắt, chạm để bật';
 
   const press = (): void => {
-    if (failed) {
-      showToast(voice.issue ? VOICE_ISSUE_TEXT[voice.issue] : VOICE_FAILED_TEXT);
-      return;
-    }
+    if (failed) showToast(VOICE_RETRY_TEXT);
     toggleMic();
   };
 

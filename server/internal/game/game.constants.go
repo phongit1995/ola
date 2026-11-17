@@ -4,5 +4,6 @@ import "time"
 
 const (
 	VoiceRoomNameFormat = "game:%s:%s"
-	VoiceTokenTTL       = 15 * time.Minute
+	VoiceTokenTTL       = 2 * time.Minute
+	VoiceRevokeTimeout  = 5 * time.Second
 )

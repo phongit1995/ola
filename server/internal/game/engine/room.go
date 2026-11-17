@@ -267,6 +267,7 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 	}
 	e.clearRoomChatRate(room.GameID, room.OwnerID, guestID)
 	_ = e.store.DeleteUserRef(gameID, guestID, room.ID)
+	e.revokeVoice(&room, guestID)
 	e.emitRoomUpsert(room)
 	e.emitRoomState(room)
 	if !disconnected {
@@ -334,6 +335,7 @@ func (e *Engine) KickRoomMember(gameID, ownerID, roomID, targetID string) {
 	}
 	e.clearRoomChatRate(room.GameID, room.OwnerID, kickedID)
 	_ = e.store.DeleteUserRef(gameID, kickedID, room.ID)
+	e.revokeVoice(&room, kickedID)
 	e.emitRoomUpsert(room)
 	e.toUser(gameID, kickedID, protocol.OutEnvelope{
 		Type: protocol.S2CRoomKicked,

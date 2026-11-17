@@ -35,6 +35,7 @@ export interface VoiceClient {
   setSpeaker(on: boolean): void;
   setPeerMuted(userId: string, muted: boolean): void;
   resumeAudio(): void;
+  retry(): void;
   destroy(): void;
 }
 
@@ -54,6 +55,7 @@ export const VOICE_IDLE: VoiceState = {
 };
 
 const RECONNECT_DELAYS_MS = [1_000, 3_000, 8_000];
+const FAILED_RETRY_MS = 30_000;
 
 type LiveKit = typeof import('livekit-client');
 
@@ -89,7 +91,9 @@ function clearAudioSink(): void {
   document.getElementById('ola-voice-sink')?.replaceChildren();
 }
 
-export function createVoiceClient(session: Pick<GameSession, 'requestVoiceToken' | 'onVoiceToken'>): VoiceClient {
+export function createVoiceClient(
+  session: Pick<GameSession, 'requestVoiceToken' | 'onVoiceToken'> & Partial<Pick<GameSession, 'onConnectionChange'>>,
+): VoiceClient {
   let state: VoiceState = VOICE_IDLE;
   let target: VoiceTarget | null = null;
   let room: Room | null = null;
@@ -154,8 +158,14 @@ export function createVoiceClient(session: Pick<GameSession, 'requestVoiceToken'
 
   const scheduleReconnect = (): void => {
     const delay = RECONNECT_DELAYS_MS[reconnectAttempt];
-    if (!target || delay === undefined) {
+    if (!target) {
       set({ status: 'failed' });
+      return;
+    }
+    if (delay === undefined) {
+      set({ status: 'failed' });
+      clearReconnect();
+      reconnectTimer = setTimeout(requestToken, FAILED_RETRY_MS);
       return;
     }
     reconnectAttempt += 1;
@@ -270,6 +280,14 @@ export function createVoiceClient(session: Pick<GameSession, 'requestVoiceToken'
     if (micWanted && reply.canSpeak) await enableMic(liveKit, current, true);
   };
 
+  const retry = (): void => {
+    if (!target || state.status !== 'failed') return;
+    clearReconnect();
+    reconnectAttempt = 0;
+    set({ status: 'reconnecting' });
+    requestToken();
+  };
+
   const leave = (): void => {
     generation += 1;
     target = null;
@@ -293,6 +311,18 @@ export function createVoiceClient(session: Pick<GameSession, 'requestVoiceToken'
     }
     void connect(reply);
   });
+
+  const unsubscribeConnection = session.onConnectionChange?.((connected) => {
+    if (connected) retry();
+  });
+
+  const wake = (): void => {
+    if (typeof document === 'undefined' || document.visibilityState !== 'hidden') retry();
+  };
+  const onlineTarget = typeof window !== 'undefined' ? window : null;
+  const visibilityTarget = typeof document !== 'undefined' ? document : null;
+  onlineTarget?.addEventListener?.('online', wake);
+  visibilityTarget?.addEventListener?.('visibilitychange', wake);
 
   return {
     getState: () => state,
@@ -342,9 +372,13 @@ export function createVoiceClient(session: Pick<GameSession, 'requestVoiceToken'
     resumeAudio() {
       void room?.startAudio().then(() => set({ audioBlocked: false })).catch(() => undefined);
     },
+    retry,
     destroy() {
       leave();
       unsubscribeToken();
+      unsubscribeConnection?.();
+      onlineTarget?.removeEventListener?.('online', wake);
+      visibilityTarget?.removeEventListener?.('visibilitychange', wake);
       listeners.clear();
     },
   };

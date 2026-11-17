@@ -14,9 +14,41 @@ type VoiceAccess struct {
 	Role    VoiceRole
 }
 
-// VoiceAccess resolves a voice seat for a waiting room or, once the room has
-// moved into a match, from the persisted match snapshot so any game instance
-// can answer. watchingRoom tells whether the caller's socket watches roomID.
+type VoiceRevoker interface {
+	RemoveVoiceMember(gameID, roomID, userID string)
+	CloseVoiceRoom(gameID, roomID string)
+}
+
+func (e *Engine) SetVoiceRevoker(revoker VoiceRevoker) {
+	e.emitterMu.Lock()
+	e.voiceRevoker = revoker
+	e.emitterMu.Unlock()
+}
+
+func (e *Engine) currentVoiceRevoker() VoiceRevoker {
+	e.emitterMu.RLock()
+	defer e.emitterMu.RUnlock()
+	return e.voiceRevoker
+}
+
+func (e *Engine) revokeVoice(room *Room, userID string) {
+	if room == nil || !room.VoiceEnabled || userID == "" {
+		return
+	}
+	if revoker := e.currentVoiceRevoker(); revoker != nil {
+		revoker.RemoveVoiceMember(room.GameID, room.ID, userID)
+	}
+}
+
+func (e *Engine) closeVoice(room Room) {
+	if !room.VoiceEnabled {
+		return
+	}
+	if revoker := e.currentVoiceRevoker(); revoker != nil {
+		revoker.CloseVoiceRoom(room.GameID, room.ID)
+	}
+}
+
 func (e *Engine) VoiceAccess(gameID, userID, roomID, matchID string, watchingRoom bool) (VoiceAccess, error) {
 	if roomID != "" {
 		if room, ok := e.store.Get(gameID, roomID); ok {
@@ -59,7 +91,9 @@ func (e *Engine) matchVoiceAccess(gameID, userID, matchID string) (VoiceAccess, 
 	}
 	access := VoiceAccess{RoomID: snapshot.Room.ID, Enabled: snapshot.Room.VoiceEnabled}
 	if seatOf(snapshot.Players, userID) >= 0 {
-		access.Role = VoiceRoleSpeaker
+		if snapshot.Room.hasMember(userID) {
+			access.Role = VoiceRoleSpeaker
+		}
 		return access, nil
 	}
 	if !spectatorsAllowed(snapshot.Room) {

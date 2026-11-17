@@ -1,11 +1,13 @@
 package game
 
 import (
+	"context"
 	"fmt"
 
 	"ola-chat-server/internal/game/engine"
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/livekit"
+	"ola-chat-server/internal/utils"
 
 	"github.com/zishang520/socket.io/servers/socket/v3"
 )
@@ -46,7 +48,7 @@ func (s *Server) voiceTokenFor(socketID socket.SocketId, data *SocketData, reque
 	token, err := livekit.MintToken(s.cfg, livekit.Grant{
 		Identity:   data.UserID,
 		Name:       data.Name,
-		Room:       fmt.Sprintf(VoiceRoomNameFormat, data.GameID, access.RoomID),
+		Room:       voiceRoomName(data.GameID, access.RoomID),
 		CanPublish: canSpeak,
 		VoiceOnly:  true,
 		ValidFor:   VoiceTokenTTL,
@@ -62,6 +64,35 @@ func (s *Server) voiceTokenFor(socketID socket.SocketId, data *SocketData, reque
 		Token:    token,
 		CanSpeak: canSpeak,
 	}
+}
+
+func (s *Server) RemoveVoiceMember(gameID, roomID, userID string) {
+	s.revokeVoice(func(ctx context.Context) error {
+		return livekit.RemoveParticipant(ctx, s.cfg, voiceRoomName(gameID, roomID), userID)
+	}, "room_id", roomID, "user_id", userID)
+}
+
+func (s *Server) CloseVoiceRoom(gameID, roomID string) {
+	s.revokeVoice(func(ctx context.Context) error {
+		return livekit.DeleteRoom(ctx, s.cfg, voiceRoomName(gameID, roomID))
+	}, "room_id", roomID)
+}
+
+func (s *Server) revokeVoice(call func(ctx context.Context) error, fields ...any) {
+	if !livekit.Configured(s.cfg) {
+		return
+	}
+	utils.SafeGo(s.logger, func() {
+		ctx, cancel := context.WithTimeout(context.Background(), VoiceRevokeTimeout)
+		defer cancel()
+		if err := call(ctx); err != nil {
+			s.logger.Warnw("Failed to revoke voice access", append(fields, "error", err)...)
+		}
+	})
+}
+
+func voiceRoomName(gameID, roomID string) string {
+	return fmt.Sprintf(VoiceRoomNameFormat, gameID, roomID)
 }
 
 func (s *Server) isWatchingRoom(socketID socket.SocketId, roomID string) bool {

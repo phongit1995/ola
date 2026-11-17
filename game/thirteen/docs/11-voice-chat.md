@@ -32,7 +32,7 @@ Xem giao diện bằng dữ liệu giả: `/thirteen/mock-ui.html?screen=<tên>`
 2. **Âm lượng trên iOS:** khi WKWebView đang thu mic, iOS chuyển sang chế độ thoại và có thể làm âm lượng phát nhỏ đi. Vì vậy khi tắt mic phải **dừng hẳn track mic** (`stopMicTrackOnMute`), không chỉ mute, để iOS trả âm thanh về chế độ thường.
 3. **Đụng cuộc gọi trong app:** đang gọi điện trong app mà mở game bật mic thì iOS có thể ngắt một bên. Game bắt lỗi track kết thúc, tự tắt mic và báo cho người dùng.
 4. **Chạy nền:** app vào nền thì iOS dừng âm thanh WebView. Quay lại thì LiveKit tự kết nối lại; nếu token đã hết hạn thì game xin token mới.
-5. **Người bị kick nghe lén:** client bình thường tự rời phòng voice khi nhận `ROOM_KICKED`. App bị sửa có thể nghe tiếp tới khi thoát. Mức này chấp nhận được; nếu cần chặn hẳn, bổ sung sau một lệnh để server đuổi người đó khỏi phòng LiveKit.
+5. **Người bị kick nghe lén:** client bình thường tự rời phòng voice khi nhận `ROOM_KICKED`. Server cũng gỡ người đó khỏi phòng LiveKit (§3), nên app bị sửa không ở lại nghe hay nói tiếp được.
 6. **Chi phí:** chỉ có âm thanh (Opus khoảng 32 kbps mỗi người nói), mỗi bàn tối đa 4 người nói và 20 người nghe, băng thông thấp. Nên có công tắc tổng ở admin để tắt nhanh khi cần.
 
 ## 3. Thiết kế tổng thể
@@ -74,14 +74,15 @@ bật/tắt mic, ai đang nói, tắt tiếng người khác  ◀─────
 | Một người rời bàn hoặc bị kick | Client người đó gọi `leave()`. Người còn lại nhận `ParticipantDisconnected`, ghế bỏ hiệu ứng voice. Người tiếp theo vào ghế đó kết nối như dòng trên. |
 | Người xem vào xem giữa ván | Xin token chỉ nghe rồi kết nối, nghe được ngay. Thôi xem thì `leave()`. |
 | Mất mạng ngắn | LiveKit tự kết nối lại bằng token cũ. Mất lâu, token hết hạn thì game xin token mới. |
+| Mất mạng lâu | SDK xin token và nối lại sau 1 / 3 / 8 giây. Hỏng cả 3 lần thì ghế báo lỗi, nhưng vẫn thử lại ngầm mỗi 30 giây, thử ngay khi socket game nối lại, khi máy có mạng lại hoặc khi app quay lại từ nền. Người chơi chạm chấm mic đang báo lỗi cũng thử lại ngay. |
 | App bị tắt ngang (không kịp `leave()`) | LiveKit tự loại người đó sau khoảng 15–20 giây không có tín hiệu. |
 | Giải tán bàn (chủ bàn rời, bàn đóng) | Mọi client nhận `ROOM_CLOSED`/`ROOM_REMOVED` rồi `leave()`. Người cuối rời thì LiveKit tự đóng phòng. |
 
-**Tuỳ chọn chặn hẳn (chưa làm ở đợt đầu).**
-- Muốn chắc chắn người đã rời hoặc bị kick không ở lại nghe lén bằng app đã sửa, có thể thêm ở server:
-  - `RemoveParticipant` khi một người rời bàn hoặc bị kick.
-  - `DeleteRoom` khi giải tán bàn.
-- Cách làm: gắn vào chỗ engine phát sự kiện đóng bàn và kick (`emitRoomClosed`, `KickRoomMember`). Khoảng 20–30 dòng, không đổi luồng bàn/ván.
+**Server chặn hẳn (18/11/2026).** Không tin client tự rời, server gọi API RoomService của LiveKit (`internal/livekit/room.go`, chạy nền, lỗi chỉ ghi log):
+- `RemoveParticipant` khi khách rời bàn, bị kick, hoặc bỏ cuộc và rời bàn giữa ván.
+- `DeleteRoom` khi bàn giải tán (`emitRoomClosed`, `emitRoomClosedExcept`).
+- Giữa ván, người đã rời bàn không còn được cấp token nói dù vẫn có tên trong ván.
+- Token voice sống 2 phút (trước là 15) để người bị gỡ không dùng lại token cũ được lâu. Đang kết nối thì LiveKit tự gia hạn, nên không ảnh hưởng người đang nói.
 
 ## 4. Backend (service game)
 
@@ -105,7 +106,7 @@ Các bước xử lý `VOICE_TOKEN` trong `voice.go`:
    - **Xem ván đang đánh** (`SPECTATE_JOIN`): kiểm tra danh sách người xem của ván.
 4. Người ngoài bàn nhận `VOICE_NOT_MEMBER`.
 
-Token sống 15 phút. Game xin lại khi kết nối lại, hoặc khi người xem được mời ngồi vào ghế (lúc đó cần quyền nói).
+Token sống 2 phút. Game xin lại khi kết nối lại, hoặc khi người xem được mời ngồi vào ghế (lúc đó cần quyền nói).
 
 Không đổi: luồng bàn/ván, settlement, lịch sử, DB (không migration). Dữ liệu bàn cũ trong Redis không có `voiceEnabled` thì coi như tắt.
 
@@ -246,7 +247,7 @@ Voice dùng được ngay từ phòng chờ. Vào bàn là tự kết nối, nê
   - "Đã bật mic" / "Đã tắt mic"
   - "Chưa có quyền micro, mở Cài đặt để cho phép"
   - "Bản app này chưa hỗ trợ mic, hãy cập nhật"
-  - "Voice đang tạm gián đoạn, đang kết nối lại…"
+  - "Đang kết nối lại voice…" khi chạm chấm mic đang báo lỗi
 - **Bị ngắt mic** vì đang có cuộc gọi khác: tự chuyển nút mic về Tắt và hiện toast.
 
 ### 7.6 Accessibility
