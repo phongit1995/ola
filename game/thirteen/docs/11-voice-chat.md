@@ -1,6 +1,8 @@
-# 11 — Voice chat trong bàn (plan)
+# 11 — Voice chat trong bàn
 
-Trạng thái: **plan, chưa code**. Tài liệu này chốt phạm vi, đánh giá khả thi, việc cần làm theo từng phần và thiết kế giao diện.
+Trạng thái: **đã triển khai** (server game, SDK game, tiến lên, app chủ). Tài liệu này chốt phạm vi, đánh giá khả thi, việc cần làm theo từng phần và thiết kế giao diện. Các điểm triển khai khác với plan ban đầu ghi ở mục 10.
+
+Xem giao diện bằng dữ liệu giả: `/thirteen/mock-ui.html?screen=<tên>`, với các màn `voice-lobby`, `voice-create-room`, `voice-create-room-novip`, `voice-room`, `voice-table`, `voice-table-me`, `voice-menu`, `voice-primer`, `voice-watch`.
 
 ## 1. Phạm vi đã chốt
 
@@ -177,18 +179,18 @@ Voice dùng được ngay từ phòng chờ. Vào bàn là tự kết nối, nê
 │                                      │
 │   ┌──────┐ ┌──────┐ ┌──────┐ ┌────┐  │
 │   │ ◯🎙  │ │ ◯🔇  │ │  +   │ │ +  │  │  ← ô ghế: chấm voice ở góc avatar,
-│   │Minh A│ │ Bảo  │ │ Trống│ │    │  │     viền xanh khi đang nói
+│   │Minh A│ │ Bảo  │ │ Trống│ │    │  │     chấm sáng vàng + sóng khi đang nói
 │   └──────┘ └──────┘ └──────┘ └────┘  │
 │                                      │
 │ [ khung chat phòng chờ            ]  │
 │                                      │
-│ [🎙]   [      Sẵn sàng          ]    │  ← nút mic tròn cạnh nút Sẵn sàng / Bắt đầu
+│ [ Rời bàn ]   [    Sẵn sàng     ]    │
 └──────────────────────────────────────┘
 ```
 
-- **Nút mic** là nút tròn 44 px đặt bên trái nút "Sẵn sàng" / "Bắt đầu" trong `tl-room-actions`, dễ với bằng ngón cái. Bốn trạng thái giống nút mic ở bàn chơi (mục 7.4). Chỉ người ngồi ghế mới có nút mic.
+- **Nút mic** chính là chấm voice ở góc avatar trong ô ghế của mình: chạm vào để bật/tắt, không có nút mic riêng. Bốn trạng thái như ở bàn chơi (mục 7.4). Chỉ người ngồi ghế mới có nút mic.
 - **Nút loa** ở thanh trên cùng (`tl-topbar`, vị trí `tl-topbar-spacer`).
-- **Ô ghế** (`tl-seat-grid`): chấm voice ở góc avatar và viền xanh khi đang nói, theo bảng trạng thái ở mục 7.4. Bấm vào ô ghế của người khác mở menu "Tắt tiếng / Bật tiếng" phía mình. Ô "Trống" không có gì.
+- **Ô ghế** (`tl-seat-grid`): chấm voice ở góc avatar, đang nói thì chấm chuyển vàng và có sóng lan ra, theo bảng trạng thái ở mục 7.4. Bấm vào ô ghế của người khác mở menu "Tắt tiếng / Bật tiếng" phía mình. Ô "Trống" không có gì.
 - **Tiêu đề bàn:** có icon mic nhỏ để biết bàn này có voice.
 - **Màn xem bàn đang chờ** (người xem, `WatchedRoomScreen`): chỉ có nút loa, nghe được cả bàn, không có nút mic.
 - **Ở sảnh** (chưa vào bàn nào): không có voice; chỉ thấy icon mic trên thẻ bàn có voice (mục 7.2).
@@ -201,21 +203,21 @@ Voice dùng được ngay từ phòng chờ. Vào bàn là tự kết nối, nê
 │                                      │
 │              (ghế trên)              │
 │   (ghế trái)              (ghế phải) │
-│        ◯ viền xanh = đang nói        │
+│        🎙 vàng + sóng = đang nói     │
 │        🔇 góc avatar = tắt mic       │
 │                                      │
-│ [avatar Bạn] Bạn        [🎙] [💡]    │  ← nút mic cạnh nút Gợi ý
+│ (🎙)[avatar Bạn] Bạn          [💡]   │  ← chấm mic ở góc avatar của mình là nút bật/tắt
 │ [   bài trên tay                  ]  │
 │ [ Bỏ lượt ]          [ Đánh ]        │
 └──────────────────────────────────────┘
 ```
 
-**Nút mic** đặt ở hàng "Bạn" (`tl-my-row`), cạnh nút Gợi ý, để dễ với bằng ngón cái. Nút có 4 trạng thái:
+**Nút mic** là chấm voice 26 px ở góc dưới bên trái avatar của mình (hàng "Bạn", `tl-my-row`), vùng chạm nới rộng thêm 8 px mỗi phía. Không có nút mic riêng. Khung bài trên tay trùm lên hàng này nên khung để `pointer-events: none`, chỉ lá bài nhận chạm. Chấm có 4 trạng thái:
 
 | Trạng thái | Hiển thị |
 |---|---|
-| Tắt (mặc định) | Nền kem, icon mic gạch chéo navy |
-| Bật | Nền xanh aqua, icon mic trắng, vòng sóng nhẹ theo âm lượng giọng mình |
+| Tắt (mặc định) | Nền navy, icon mic gạch chéo |
+| Bật | Nền xanh teal, icon mic; khi mình đang nói thì chấm chuyển vàng, mic nảy nhẹ và có sóng lan ra |
 | Đang kết nối | Icon mic mờ kèm vòng xoay nhỏ, không bấm được |
 | Lỗi (không có quyền, máy không hỗ trợ) | Icon mic với chấm đỏ; bấm vào thì hiện lý do |
 
@@ -227,11 +229,11 @@ Voice dùng được ngay từ phòng chờ. Vào bàn là tự kết nối, nê
 |---|---|---|
 | Chưa vào voice (app cũ, chưa cấp quyền, mất kết nối voice) | Người đó không có trong phòng LiveKit | Không có chấm voice |
 | Tắt mic | Có trong phòng nhưng không có kênh mic, hoặc kênh mic `muted` (sự kiện `TrackMuted`) | Chấm tròn nhỏ có icon mic gạch chéo ở góc dưới avatar |
-| Mở mic, đang im lặng | Kênh mic không `muted` (sự kiện `TrackUnmuted`) | Chấm tròn nhỏ có icon mic, nền xanh aqua |
-| Đang nói | Có trong `ActiveSpeakersChanged` / `isSpeaking`, độ trễ khoảng 0,2–0,5 giây | Giữ chấm mic xanh và thêm viền xanh aqua nhấp nháy quanh avatar, nhịp theo `audioLevel` |
-| Mình đã tắt tiếng người này | Chỉ có trên máy mình | Chấm có icon loa gạch chéo thay cho chấm mic. Người đó có nói cũng không hiện viền sóng, để khỏi gây khó chịu |
+| Mở mic, đang im lặng | Kênh mic không `muted` (sự kiện `TrackUnmuted`) | Chấm tròn nhỏ có icon mic, nền xanh teal |
+| Đang nói | Có trong `ActiveSpeakersChanged` / `isSpeaking`, độ trễ khoảng 0,2–0,5 giây | Chấm mic to hơn chút, chuyển nền vàng có quầng sáng, icon mic nảy nhẹ và 2 vòng sóng lan ra từ chấm. Avatar giữ nguyên |
+| Mình đã tắt tiếng người này | Chỉ có trên máy mình | Chấm có icon loa gạch chéo thay cho chấm mic. Người đó có nói cũng không hiện hiệu ứng đang nói, để khỏi gây khó chịu |
 
-- Viền "đang nói" phải khác viền vàng của lượt đánh (`TurnRing`). Nếu trùng lượt thì cả hai cùng hiện, viền xanh nằm ngoài.
+- Hiệu ứng "đang nói" chỉ nằm ở chấm mic nên không đè lên viền lượt đánh (`TurnRing`). Máy bật giảm chuyển động thì chỉ đổi màu, không có sóng.
 - Tắt mic dùng `stopMicTrackOnMute`: micro được giải phóng nhưng kênh mic vẫn còn ở trạng thái `muted`, nên người khác vẫn thấy đúng là "tắt mic".
 - **Bấm vào avatar** (hiện chưa có hành động nào) mở popover nhỏ cạnh ghế gồm tên người chơi và 1 nút "Tắt tiếng" hoặc "Bật tiếng" (chỉ trên máy bạn).
 
@@ -273,3 +275,16 @@ Voice dùng được ngay từ phòng chờ. Vào bàn là tự kết nối, nê
 
 - Công tắc tổng ở admin có làm trong đợt này không, hay chỉ tắt bằng cách bỏ biến môi trường `LIVEKIT_*` của service game.
 - Gợi ý mua VIP trong modal Tạo bàn: cần một lệnh bridge mở cửa hàng VIP của app, hiện chưa có.
+
+## 10. Ghi chú triển khai
+
+Các điểm làm khác hoặc cụ thể hơn plan:
+
+- **Lỗi voice không đi qua `ERROR`.** Server trả lỗi ngay trong `VOICE_TOKEN` (`{ error: "VOICE_DISABLED" | "VOICE_NOT_MEMBER" | "VOICE_UNAVAILABLE" }`), theo kiểu của `HISTORY`. Nhờ vậy bàn không bật voice không làm hiện toast lỗi.
+- **Token chỉ cho phát micro.** Token người chơi giới hạn nguồn phát là `microphone` và không gửi được data; người xem chỉ nghe.
+- **Tắt tiếng một người và tắt loa** làm bằng cách ngừng nhận luồng âm thanh (`setSubscribed(false)`), không chỉnh âm lượng, vì iOS không cho đổi âm lượng thẻ `<audio>`. Cách này còn tiết kiệm băng thông.
+- **Tải LiveKit khi cần.** `livekit-client` được tải lười, tách thành chunk riêng, chỉ tải khi vào bàn có voice; bundle chính của tiến lên không nặng thêm.
+- **Máy không hỗ trợ WebRTC** thì voice tắt lặng lẽ, không hiện nút hay thông báo. Máy hỗ trợ nghe nhưng không mở được micro thì nút mic có chấm đỏ, bấm vào hiện lý do.
+- **Kết nối lại:** mất kết nối voice thì tự xin token mới, thử 3 lần (1, 3, 8 giây) rồi mới báo lỗi.
+- **Gợi ý VIP** trong modal Tạo bàn hiện là dòng chữ hướng dẫn, chưa mở được cửa hàng VIP của app (cần thêm lệnh bridge, xem mục 9).
+- **Công tắc tổng ở admin** chưa làm. Muốn tắt voice thì bỏ các biến `LIVEKIT_*` của service game; khi đó server trả `VOICE_UNAVAILABLE`, game thử lại 3 lần rồi để nút mic ở trạng thái lỗi (người chơi vẫn chơi bình thường).

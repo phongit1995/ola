@@ -854,6 +854,7 @@ function makeMockPvpSession(
     spectateLeave: () => {},
     roomWatch: () => {},
     roomUnwatch: () => {},
+    requestVoiceToken: () => {},
     onUserInfo: subscription,
     onQueueWaiting: subscription,
     onRoomList: subscription,
@@ -871,6 +872,7 @@ function makeMockPvpSession(
     onSpectateJoined: subscription,
     onSpectateLeft: subscription,
     onSpectators: subscription,
+    onVoiceToken: subscription,
     startBotTurn: scheduleBotTurn,
     disconnect: () => {
       if (botTimer != null) window.clearTimeout(botTimer);

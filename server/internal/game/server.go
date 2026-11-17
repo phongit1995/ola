@@ -35,6 +35,7 @@ func (d *SocketData) Key() string {
 
 type Server struct {
 	io     *socket.Server
+	cfg    *config.Config
 	engine *engine.Engine
 	repo   *Repository
 	logger *zap.SugaredLogger
@@ -86,6 +87,7 @@ func NewServer(
 
 	server := &Server{
 		io:           io,
+		cfg:          cfg,
 		engine:       gameEngine,
 		repo:         repo,
 		logger:       logger.Named("[game-ws]"),
@@ -350,7 +352,10 @@ func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any)
 		if err := json.Unmarshal(env.Data, &d); err != nil {
 			return
 		}
-		s.engine.CreateRoomWithSpectators(data.GameID, s.socketPlayer(data), d.Bet, d.Password, d.MaxPlayers, d.AllowSpectators)
+		s.engine.CreateRoomWithOptions(data.GameID, s.socketPlayer(data), d.Bet, d.Password, d.MaxPlayers, engine.RoomOptions{
+			AllowSpectators: d.AllowSpectators,
+			Voice:           d.Voice,
+		})
 	case protocol.C2SRoomJoin:
 		var d protocol.RoomJoinData
 		if err := json.Unmarshal(env.Data, &d); err != nil {
@@ -419,6 +424,12 @@ func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any)
 		s.roomWatch(client, data, d.RoomID)
 	case protocol.C2SRoomUnwatch:
 		s.roomUnwatch(client, data)
+	case protocol.C2SVoiceToken:
+		var d protocol.VoiceTokenRequest
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.voiceToken(client, data, d)
 	default:
 		s.logger.Debugw("Unknown game message type", "type", env.Type, "user_id", data.UserID)
 	}

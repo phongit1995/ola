@@ -19,6 +19,7 @@ export const C2S = {
   SpectateLeave: 'SPECTATE_LEAVE',
   RoomWatch: 'ROOM_WATCH',
   RoomUnwatch: 'ROOM_UNWATCH',
+  VoiceToken: 'VOICE_TOKEN',
 } as const;
 
 export const S2C = {
@@ -46,6 +47,13 @@ export const S2C = {
   SpectateJoined: 'SPECTATE_JOINED',
   SpectateLeft: 'SPECTATE_LEFT',
   Spectators: 'SPECTATORS',
+  VoiceToken: 'VOICE_TOKEN',
+} as const;
+
+export const VOICE_ERROR = {
+  disabled: 'VOICE_DISABLED',
+  notMember: 'VOICE_NOT_MEMBER',
+  unavailable: 'VOICE_UNAVAILABLE',
 } as const;
 
 export const SPECTATE_LEFT_REASON = {
@@ -309,6 +317,7 @@ export interface RoomInfo {
   matchId?: string;
   /** Set only when the creator chose; absent keeps the legacy rule (public rooms watchable). */
   allowSpectators?: boolean;
+  voice?: boolean;
 }
 
 export interface RoomListData {
@@ -329,6 +338,7 @@ export interface RoomWaitingData {
   locked: boolean;
   maxPlayers?: number;
   allowSpectators?: boolean;
+  voice?: boolean;
 }
 
 export interface RoomMember {
@@ -353,6 +363,7 @@ export interface RoomStateData {
   /** Sent to people watching the room from outside; youId is empty. */
   watcher?: boolean;
   allowSpectators?: boolean;
+  voice?: boolean;
 }
 
 export interface RoomSyncData {
@@ -362,6 +373,19 @@ export interface RoomSyncData {
 export interface RoomClosedData {
   roomId: string;
   reason: 'owner_left' | 'owner_disconnected' | 'owner_busy' | 'guest_left' | 'member_left' | 'left' | string;
+}
+
+export interface VoiceTokenRequest {
+  roomId?: string;
+  matchId?: string;
+}
+
+export interface VoiceTokenData {
+  roomId?: string;
+  url?: string;
+  token?: string;
+  canSpeak: boolean;
+  error?: (typeof VOICE_ERROR)[keyof typeof VOICE_ERROR] | string;
 }
 
 export interface RoomKickedData {

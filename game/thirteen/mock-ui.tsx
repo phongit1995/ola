@@ -16,7 +16,9 @@ import type {
   PlayerInfo,
   RoomInfo,
   RoomStateData,
+  VoiceState,
 } from '../src/sdk';
+import { VOICE_IDLE } from '../src/sdk/voice';
 import { App } from './App';
 import type { BotLevel } from './logic/bot';
 import { BOT_VIP_TYPES } from './helpers/practice';
@@ -39,6 +41,18 @@ const ROOMS: RoomInfo[] = [
   { id: 'r4', owner: 'thuha', ownerVipType: '5', bet: 0, locked: false, players: 2, maxPlayers: 2, status: 'waiting' },
   { id: 'r5', owner: 'minhthu', bet: 5_000, locked: true, players: 3, maxPlayers: 3, status: 'playing', matchId: 'm-private' },
 ];
+
+const VOICE_TABLE: VoiceState = {
+  ...VOICE_IDLE,
+  roomId: 'r1',
+  status: 'connected',
+  canSpeak: true,
+  micOn: true,
+  presentIds: PLAYERS_4.map((player) => player.id),
+  micOnIds: [ME.id, 'u-2', 'u-4'],
+  speakingIds: ['u-2'],
+  mutedIds: ['u-4'],
+};
 
 const WATCH_PLAYERS: PlayerInfo[] = [
   { id: 'u-4', name: 'quocbao', vipType: '27' },
@@ -361,6 +375,31 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
     roomChat: WATCH_ROOM_CHAT,
   }),
   'watch-ended': () => ({ phase: 'lobby', rooms: ROOMS, toast: 'Ván đấu bạn đang xem đã kết thúc.' }),
+  'voice-lobby': () => ({ phase: 'lobby', rooms: ROOMS.map((item) => (item.id === 'r1' || item.id === 'r3' ? { ...item, voice: true } : item)) }),
+  'voice-create-room': () => ({ phase: 'lobby', rooms: ROOMS }),
+  'voice-create-room-novip': () => ({ phase: 'lobby', rooms: ROOMS, user: { ...ME, vipType: undefined } }),
+  'voice-room': () => ({
+    phase: 'room',
+    room: { ...room(1, 4, 4), voice: true },
+    roomChat: ROOM_CHAT,
+    voice: { ...VOICE_TABLE, micOn: false, micOnIds: ['u-2', 'u-4'], speakingIds: ['u-2'], mutedIds: [] },
+  }),
+  'voice-table': () => ({ ...table(PLAYERS_4), voice: VOICE_TABLE }),
+  'voice-table-me': () => ({ ...table(PLAYERS_4), voice: { ...VOICE_TABLE, speakingIds: [ME.id] } }),
+  'voice-menu': () => ({ ...table(PLAYERS_4), voice: VOICE_TABLE }),
+  'voice-primer': () => ({ ...table(PLAYERS_4), voice: { ...VOICE_TABLE, micOn: false, micOnIds: ['u-2'] }, micPrimerOpen: true }),
+  'voice-watch': () => ({
+    ...watchTable(WATCH_PLAYERS),
+    voice: {
+      ...VOICE_TABLE,
+      canSpeak: false,
+      micOn: false,
+      presentIds: [...WATCH_PLAYERS.map((player) => player.id), ME.id],
+      micOnIds: ['u-4', 'u-2'],
+      speakingIds: ['u-4'],
+      mutedIds: [],
+    },
+  }),
 };
 
 const screen = new URLSearchParams(location.search).get('screen') ?? 'lobby';
@@ -467,10 +506,15 @@ function MockApp() {
       const timer = window.setTimeout(() => document.querySelector<HTMLButtonElement>('.tl-viewers-tab')?.click(), 300);
       return () => window.clearTimeout(timer);
     }
-    if (screen !== 'create-room' && screen !== 'password-room' && screen !== 'practice-setup') return;
+    if (screen === 'voice-menu') {
+      const timer = window.setTimeout(() => document.querySelectorAll<HTMLButtonElement>('.tl-voice-hit')[0]?.click(), 300);
+      return () => window.clearTimeout(timer);
+    }
+    const opensCreate = screen === 'create-room' || screen.startsWith('voice-create-room');
+    if (!opensCreate && screen !== 'password-room' && screen !== 'practice-setup') return;
     const timer = window.setInterval(() => {
       const target =
-        screen === 'create-room'
+        opensCreate
           ? document.querySelector<HTMLButtonElement>('.tl-play-now')
           : screen === 'practice-setup'
             ? document.querySelector<HTMLButtonElement>('.tl-practice-btn')

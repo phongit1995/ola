@@ -173,7 +173,7 @@ export function ArcadeOverlay() {
           src={active.gameUrl}
           title={active.name}
           className="h-full w-full border-0"
-          allow="autoplay; fullscreen"
+          allow="autoplay; fullscreen; microphone"
         />
       </div>
 

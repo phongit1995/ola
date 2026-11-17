@@ -20,6 +20,7 @@ func roomInfo(room Room) protocol.RoomInfo {
 		MaxPlayers:      room.capacity(),
 		Full:            players >= room.capacity(),
 		AllowSpectators: cloneBool(room.AllowSpectators),
+		Voice:           room.VoiceEnabled,
 	}
 }
 
@@ -65,7 +66,7 @@ func (e *Engine) emitRoomRemoved(gameID, roomID string) {
 func (e *Engine) emitRoomWaiting(gameID, userID string, room Room) {
 	e.toUser(gameID, userID, protocol.OutEnvelope{
 		Type: protocol.S2CRoomWaiting,
-		Data: protocol.RoomWaitingData{RoomID: room.ID, Bet: room.Bet, Locked: room.Password != "", MaxPlayers: room.capacity(), AllowSpectators: cloneBool(room.AllowSpectators)},
+		Data: protocol.RoomWaitingData{RoomID: room.ID, Bet: room.Bet, Locked: room.Password != "", MaxPlayers: room.capacity(), AllowSpectators: cloneBool(room.AllowSpectators), Voice: room.VoiceEnabled},
 	})
 }
 
@@ -106,6 +107,7 @@ func roomStateData(room Room, youID, matchID string) protocol.RoomStateData {
 		RoomID: room.ID, OwnerID: room.OwnerID, YouID: youID, Bet: room.Bet,
 		Locked: room.Password != "", MaxPlayers: room.capacity(), Members: members, AfterMatchID: matchID,
 		AllowSpectators: cloneBool(room.AllowSpectators),
+		Voice:           room.VoiceEnabled,
 	}
 }
 

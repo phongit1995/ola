@@ -361,6 +361,7 @@ export function createPracticeSession({
     spectateLeave: unsupported,
     roomWatch: unsupported,
     roomUnwatch: unsupported,
+    requestVoiceToken: unsupported,
 
     onUserInfo: (handler) => on(S2C.UserInfo, handler),
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler),
@@ -386,6 +387,7 @@ export function createPracticeSession({
     onSpectateJoined: (handler) => on(S2C.SpectateJoined, handler),
     onSpectateLeft: (handler) => on(S2C.SpectateLeft, handler),
     onSpectators: (handler) => on(S2C.Spectators, handler),
+    onVoiceToken: () => () => {},
     onConnectionChange: () => () => undefined,
     onConnectionError: () => () => undefined,
   };
