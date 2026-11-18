@@ -3,6 +3,8 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { AvatarWithFrame } from '@components/ui/AvatarWithFrame';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { TEXT_PRIMARY } from '@constants';
+import { useTranslation } from 'react-i18next';
+import { ItemExpiryText, ItemLockButton } from '@components/ui/ItemGrantMarks';
 import { FRAME_CARD_AVATAR_SIZE, FRAME_GRID_COLUMNS } from '../constants';
 import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
 
@@ -11,10 +13,21 @@ interface AvatarFrameCardProps {
   subtitle?: string;
   badge?: string;
   highlighted?: boolean;
+  locked?: boolean;
+  expiresAt?: string | null;
   onPress: () => void;
 }
 
-export function AvatarFrameCard({ frameId, subtitle, badge, highlighted = false, onPress }: AvatarFrameCardProps) {
+export function AvatarFrameCard({
+  frameId,
+  subtitle,
+  badge,
+  highlighted = false,
+  locked = false,
+  expiresAt,
+  onPress,
+}: AvatarFrameCardProps) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
   const username = useAuthStore((s) => s.user?.username ?? '');
   const avatar = useAuthStore((s) => s.user?.avatar ?? undefined);
@@ -53,6 +66,14 @@ export function AvatarFrameCard({ frameId, subtitle, badge, highlighted = false,
           >
             {subtitle}
           </Text>
+        )}
+        <View className="mt-0.5 w-full">
+          <ItemExpiryText item={{ expiresAt }} />
+        </View>
+        {locked && (
+          <View style={{ position: 'absolute', top: 5, left: 6 }}>
+            <ItemLockButton message={t('avatarFrame.lockedNotTransferable')} />
+          </View>
         )}
         {badge != null && (
           <View

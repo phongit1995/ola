@@ -233,7 +233,7 @@ func (s *Service) SearchUsers(query string, limit int, currentUserID uuid.UUID) 
 			IsOnline:      presenceMap[user.ID.String()].IsOnline,
 			Relationship:  rel.status,
 			RequestID:     rel.requestID,
-			VipUsed:       user.VipUsed,
+			VipUsed:       user.ActiveVipUsed(time.Now()),
 			VipEndTime:    formatOptionalTime(user.VipEndTime),
 			AvatarFrameID: user.ActiveAvatarFrameID(time.Now()),
 		})
@@ -370,7 +370,7 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 		Bio:            user.Bio,
 		CustomInfo:     user.CustomInfo,
 		Ken:            user.Ken,
-		VipUsed:        user.VipUsed,
+		VipUsed:        user.ActiveVipUsed(time.Now()),
 		AvatarFrameID:  user.ActiveAvatarFrameID(time.Now()),
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,

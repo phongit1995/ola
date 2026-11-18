@@ -410,7 +410,7 @@ func (s *Service) userBriefs(ids []uuid.UUID) map[uuid.UUID]GiftUserBrief {
 			FullName:      u.FullName,
 			Avatar:        u.Avatar,
 			Gender:        u.Gender,
-			VipUsed:       u.VipUsed,
+			VipUsed:       u.ActiveVipUsed(time.Now()),
 			AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 		}
 		if u.VipEndTime != nil {

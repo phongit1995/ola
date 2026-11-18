@@ -339,7 +339,7 @@ func (s *Service) senders(ids []uuid.UUID) map[uuid.UUID]megaphoneEvents.Sender 
 			FullName:      u.FullName,
 			Avatar:        u.Avatar,
 			Gender:        u.Gender,
-			VipUsed:       u.VipUsed,
+			VipUsed:       u.ActiveVipUsed(time.Now()),
 			AvatarFrameID: u.ActiveAvatarFrameID(time.Now()),
 		}
 		if u.VipEndTime != nil {

@@ -97,10 +97,14 @@ export interface AvatarFrameTransferListParams {
 export type UserAvatarFrameSource = 'purchase' | 'gift' | 'transfer' | 'gift_code' | 'admin'
 
 export interface AdminUserAvatarFrame {
+  id?: string
   frameId: string
   source: UserAvatarFrameSource
   acquiredAt: string
   isEquipped: boolean
+  locked: boolean
+  expiresAt?: string | null
+  expired?: boolean
 }
 
 export interface AdminUserAvatarFrameStore {
@@ -115,4 +119,6 @@ export interface AdminUserAvatarFrameStore {
 
 export interface GrantUserAvatarFrameRequest {
   frameId: string
+  expiresInDays?: number | null
+  locked: boolean
 }

@@ -3,6 +3,7 @@ package vip
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"ola-chat-server/internal/ledger"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 const (
@@ -88,18 +90,45 @@ func (r *Repository) UserExists(userID uuid.UUID) (bool, error) {
 	return count > 0, err
 }
 
-func (r *Repository) CountByUser(userID uuid.UUID) (int64, error) {
+type IconListFilter struct {
+	Now              time.Time
+	IncludeExpired   bool
+	TransferableOnly bool
+	ExcludeID        *uuid.UUID
+}
+
+func (r *Repository) ownedIcons(userID uuid.UUID, f IconListFilter) *gorm.DB {
+	q := r.db.Model(&models.UserVipIcon{}).Where("user_id = ?", userID)
+	if !f.IncludeExpired {
+		q = q.Where(models.ItemNotExpiredSQL, f.Now)
+	}
+	if f.TransferableOnly {
+		q = q.Where("locked = ? AND is_locked = ? AND expires_at IS NULL", false, false)
+	}
+	if f.ExcludeID != nil {
+		q = q.Where("id <> ?", *f.ExcludeID)
+	}
+	return q
+}
+
+func (r *Repository) CountByUser(userID uuid.UUID, f IconListFilter) (int64, error) {
 	var count int64
-	err := r.db.Model(&models.UserVipIcon{}).Where("user_id = ?", userID).Count(&count).Error
+	err := r.ownedIcons(userID, f).Count(&count).Error
 	return count, err
 }
 
-func (r *Repository) ListByUserPaged(userID uuid.UUID, activeTypeID int16, limit, offset int) ([]models.UserVipIcon, error) {
+func (r *Repository) ListByUserPaged(userID uuid.UUID, activeTypeID int16, activeInstanceID *uuid.UUID, f IconListFilter, limit, offset int) ([]models.UserVipIcon, error) {
 	var items []models.UserVipIcon
-	order := fmt.Sprintf("(vip_icon_id = %d) DESC, acquired_at DESC", activeTypeID)
-	err := r.db.
-		Where("user_id = ?", userID).
-		Order(order).
+	activeID := uuid.Nil
+	if activeInstanceID != nil {
+		activeID = *activeInstanceID
+	}
+	err := r.ownedIcons(userID, f).
+		Order(clause.OrderBy{Expression: clause.Expr{
+			SQL:                "(id = ?) DESC, (vip_icon_id = ?) DESC, (expires_at IS NOT NULL AND expires_at <= ?) ASC, (expires_at IS NULL) ASC, expires_at ASC, acquired_at DESC, id DESC",
+			Vars:               []interface{}{activeID, activeTypeID, f.Now},
+			WithoutParentheses: true,
+		}}).
 		Limit(limit).
 		Offset(offset).
 		Find(&items).Error
@@ -114,11 +143,12 @@ func (r *Repository) FindInstance(id uuid.UUID) (*models.UserVipIcon, error) {
 	return &item, nil
 }
 
-func (r *Repository) FindOneOfTypeExcluding(userID uuid.UUID, typeID int16, excludeID uuid.UUID) (*models.UserVipIcon, error) {
+func (r *Repository) FindOneOfTypeExcluding(userID uuid.UUID, typeID int16, excludeID uuid.UUID, now time.Time) (*models.UserVipIcon, error) {
 	var items []models.UserVipIcon
 	err := r.db.
 		Where("user_id = ? AND vip_icon_id = ? AND id <> ?", userID, typeID, excludeID).
-		Order("acquired_at DESC").
+		Where(models.ItemNotExpiredSQL, now).
+		Order("(expires_at IS NULL) DESC, expires_at DESC, acquired_at DESC").
 		Limit(1).
 		Find(&items).Error
 	if err != nil {
@@ -151,6 +181,89 @@ func (r *Repository) SoftDeleteMany(userID uuid.UUID, ids []uuid.UUID) (int64, e
 	return res.RowsAffected, res.Error
 }
 
+func (r *Repository) UseIcon(userID, instanceID uuid.UUID, now time.Time) (bool, error) {
+	changed := false
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		u, err := ledger.LockUser(tx, userID)
+		if err != nil {
+			return err
+		}
+		var item models.UserVipIcon
+		if err := tx.First(&item, "id = ?", instanceID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrVipNotFound
+			}
+			return err
+		}
+		if item.UserID != userID {
+			return ErrVipNotOwned
+		}
+		if item.Expired(now) {
+			return ErrVipIconExpired
+		}
+		if u.VipEndTime == nil || !u.VipEndTime.After(now) {
+			return ErrVipExpired
+		}
+		activeInstance := u.ActiveVipUsedInstanceID(now)
+		if activeInstance != nil && *activeInstance == item.ID {
+			return nil
+		}
+		typeStr := strconv.Itoa(int(item.VipIconID))
+		fields := map[string]interface{}{
+			"vip_used_instance_id": item.ID,
+			"vip_used_expires_at":  item.ExpiresAt,
+		}
+		activeType := u.ActiveVipUsed(now)
+		if activeType == nil || *activeType != typeStr {
+			fields["vip_used"] = typeStr
+			fields["vip_end_time"] = u.VipEndTime.Add(-24 * time.Hour)
+		}
+		if err := tx.Model(&models.User{}).Where("id = ?", userID).Updates(fields).Error; err != nil {
+			return err
+		}
+		changed = true
+		return nil
+	})
+	return changed, err
+}
+
+func (r *Repository) AdminUpdateIcon(userID, instanceID uuid.UUID, locked bool, expiresAt *time.Time, now time.Time) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if _, err := ledger.LockUser(tx, userID); err != nil {
+			return err
+		}
+		res := tx.Model(&models.UserVipIcon{}).
+			Where("id = ? AND user_id = ?", instanceID, userID).
+			Updates(map[string]interface{}{"locked": locked, "expires_at": expiresAt})
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected != 1 {
+			return ErrVipNotOwned
+		}
+		if err := clearExpiredUsedTx(tx, userID, now); err != nil {
+			return err
+		}
+		return tx.Model(&models.User{}).
+			Where("id = ? AND vip_used_instance_id = ?", userID, instanceID).
+			Update("vip_used_expires_at", expiresAt).Error
+	})
+}
+
+func clearExpiredUsedTx(tx *gorm.DB, userID uuid.UUID, now time.Time) error {
+	return tx.Model(&models.User{}).
+		Where("id = ? AND vip_used_expires_at IS NOT NULL AND vip_used_expires_at <= ?", userID, now).
+		Updates(map[string]interface{}{
+			"vip_used":             nil,
+			"vip_used_instance_id": nil,
+			"vip_used_expires_at":  nil,
+		}).Error
+}
+
+func (r *Repository) ClearExpiredUsed(userID uuid.UUID, now time.Time) error {
+	return clearExpiredUsedTx(r.db, userID, now)
+}
+
 func (r *Repository) SetLocked(id uuid.UUID, locked bool) error {
 	return r.db.Model(&models.UserVipIcon{}).
 		Where("id = ?", id).
@@ -161,27 +274,56 @@ type TransferParams struct {
 	InstanceID uuid.UUID
 	FromUserID uuid.UUID
 	ToUserID   uuid.UUID
-	VipIconID  int16
+	Now        time.Time
 }
 
-func (r *Repository) Transfer(p TransferParams) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&models.UserVipIcon{}).
-			Where("id = ?", p.InstanceID).
+func (r *Repository) Transfer(p TransferParams) (int16, error) {
+	var vipIconID int16
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		sender, err := ledger.LockUser(tx, p.FromUserID)
+		if err != nil {
+			return err
+		}
+		var item models.UserVipIcon
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&item, "id = ?", p.InstanceID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrVipNotFound
+			}
+			return err
+		}
+		switch {
+		case item.UserID != p.FromUserID:
+			return ErrVipNotOwned
+		case item.Expired(p.Now):
+			return ErrVipIconExpired
+		case item.Locked:
+			return ErrVipNotTransferable
+		case item.IsLocked:
+			return ErrVipLocked
+		case sender.VipUsedInstanceID != nil && *sender.VipUsedInstanceID == item.ID:
+			return ErrVipInUse
+		}
+		res := tx.Model(&models.UserVipIcon{}).
+			Where("id = ? AND user_id = ?", item.ID, p.FromUserID).
 			Updates(map[string]interface{}{
 				"user_id": p.ToUserID,
 				"source":  "transfer",
-			}).Error; err != nil {
-			return err
+			})
+		if res.Error != nil {
+			return res.Error
 		}
-		log := models.VipTransfer{
+		if res.RowsAffected != 1 {
+			return ErrVipNotOwned
+		}
+		vipIconID = item.VipIconID
+		return tx.Create(&models.VipTransfer{
 			FromUserID: p.FromUserID,
 			ToUserID:   p.ToUserID,
-			VipIconID:  p.VipIconID,
-			InstanceID: p.InstanceID,
-		}
-		return tx.Create(&log).Error
+			VipIconID:  item.VipIconID,
+			InstanceID: item.ID,
+		}).Error
 	})
+	return vipIconID, err
 }
 
 func (r *Repository) ListTransfers(userID *uuid.UUID, q string, limit, offset int) ([]models.VipTransfer, int64, error) {
@@ -457,7 +599,7 @@ func (r *Repository) PurchaseShopItem(userID uuid.UUID, item *models.VipShopItem
 		}
 		newKen := u.Ken - item.KenPrice
 
-		created, err := CreateIconTx(tx, userID, item.VipTypeID, IconSourcePurchase)
+		created, err := CreateIconTx(tx, userID, item.VipTypeID, IconSourcePurchase, models.PermanentGrant)
 		if err != nil {
 			return err
 		}
@@ -514,7 +656,7 @@ func (r *Repository) GiftShopItem(fromID uuid.UUID, receiver *models.User, item 
 			return err
 		}
 
-		created, err := CreateIconTx(tx, to.ID, item.VipTypeID, IconSourceGift)
+		created, err := CreateIconTx(tx, to.ID, item.VipTypeID, IconSourceGift, models.PermanentGrant)
 		if err != nil {
 			return err
 		}
@@ -766,12 +908,16 @@ func ExtendEnd(now time.Time, current *time.Time, days int) time.Time {
 	return base.Add(time.Duration(days) * 24 * time.Hour)
 }
 
-func CreateIconTx(tx *gorm.DB, userID uuid.UUID, vipTypeID int16, source string) (*models.UserVipIcon, error) {
+func CreateIconTx(tx *gorm.DB, userID uuid.UUID, vipTypeID int16, source string, grant models.ItemGrant) (*models.UserVipIcon, error) {
+	now := time.Now()
+	grant = grant.Normalized()
 	icon := models.UserVipIcon{
 		UserID:     userID,
 		VipIconID:  vipTypeID,
 		Source:     source,
-		AcquiredAt: time.Now(),
+		AcquiredAt: now,
+		Locked:     grant.Locked,
+		ExpiresAt:  grant.ExpiresAt(now),
 	}
 	if err := tx.Create(&icon).Error; err != nil {
 		return nil, err
@@ -806,13 +952,13 @@ func GrantDaysTx(tx *gorm.DB, userID uuid.UUID, days int, source, name string) (
 	return &purchase, nil
 }
 
-func GrantIconTx(tx *gorm.DB, userID uuid.UUID, vipTypeID int16, iconSource, purchaseSource string) (*models.UserVipIcon, error) {
+func GrantIconTx(tx *gorm.DB, userID uuid.UUID, vipTypeID int16, iconSource, purchaseSource string, grant models.ItemGrant) (*models.UserVipIcon, error) {
 	u, err := ledger.LockUser(tx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	icon, err := CreateIconTx(tx, userID, vipTypeID, iconSource)
+	icon, err := CreateIconTx(tx, userID, vipTypeID, iconSource, grant)
 	if err != nil {
 		return nil, err
 	}

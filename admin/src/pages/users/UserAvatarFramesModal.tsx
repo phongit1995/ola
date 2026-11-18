@@ -1,16 +1,18 @@
 import { useMemo, useState } from 'react'
 import { Alert, App, Button, Empty, Modal, Segmented, Skeleton, Tag, Tooltip } from 'antd'
-import { CrownFilled, DeleteOutlined, GiftOutlined } from '@ant-design/icons'
+import { CrownFilled, DeleteOutlined, EditOutlined, GiftOutlined } from '@ant-design/icons'
 import { avatarFrameById, avatarFrameLabel } from '@ola/shared/lib/avatarFrame'
-import { useRevokeUserAvatarFrame, useUserAvatarFrames } from '@/hooks/useUserQueries'
+import { useRevokeUserAvatarFrame, useUpdateUserAvatarFrame, useUserAvatarFrames } from '@/hooks/useUserQueries'
 import { errorMessage } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import type { AdminUserAvatarFrame } from '@/types'
+import { EditItemGrantModal } from './EditItemGrantModal'
 import { GrantAvatarFrameModal } from './GrantAvatarFrameModal'
+import { ItemGrantTags } from './ItemGrantTags'
 import { UserFramePurchaseHistory, UserFrameTransferHistory } from './UserAvatarFrameHistory'
 import { USER_AVATAR_FRAME_SOURCE_LABEL, USER_FRAMES_TAB_OPTIONS } from './constants'
 import type { UserFramesTab } from './types'
-import { revokeAvatarFrameNotes } from './utils'
+import { revokeAvatarFrameNotes, userFrameRef } from './utils'
 
 interface UserAvatarFramesModalProps {
   open: boolean
@@ -19,12 +21,19 @@ interface UserAvatarFramesModalProps {
   onClose: () => void
 }
 
-function FrameCard({ item, onRevoke }: { item: AdminUserAvatarFrame; onRevoke: (item: AdminUserAvatarFrame) => void }) {
+interface FrameCardProps {
+  item: AdminUserAvatarFrame
+  onRevoke: (item: AdminUserAvatarFrame) => void
+  onEdit: (item: AdminUserAvatarFrame) => void
+}
+
+function FrameCard({ item, onRevoke, onEdit }: FrameCardProps) {
   const frame = avatarFrameById(item.frameId)
   return (
     <div
       style={{
         position: 'relative',
+        opacity: item.expired ? 0.55 : 1,
         border: `1px solid ${item.isEquipped ? '#faad14' : '#eef1f4'}`,
         borderRadius: 12,
         padding: 12,
@@ -48,6 +57,16 @@ function FrameCard({ item, onRevoke }: { item: AdminUserAvatarFrame; onRevoke: (
           style={{ position: 'absolute', top: 4, right: 4 }}
         />
       </Tooltip>
+      <Tooltip title="Sửa hạn / khoá">
+        <Button
+          type="text"
+          size="small"
+          icon={<EditOutlined />}
+          aria-label="Sửa hạn và khoá"
+          onClick={() => onEdit(item)}
+          style={{ position: 'absolute', top: 4, right: 30 }}
+        />
+      </Tooltip>
       {frame ? (
         <img src={frame.url} alt={avatarFrameLabel(item.frameId)} width={64} height={64} style={{ objectFit: 'contain' }} />
       ) : (
@@ -55,8 +74,9 @@ function FrameCard({ item, onRevoke }: { item: AdminUserAvatarFrame; onRevoke: (
       )}
       <div style={{ fontSize: 13, fontWeight: 600, marginTop: 6, lineHeight: 1.3 }}>{avatarFrameLabel(item.frameId)}</div>
       <div style={{ fontSize: 11, color: '#8c98a4', marginTop: 2 }}>#{item.frameId}</div>
-      <div style={{ marginTop: 8 }}>
+      <div style={{ marginTop: 8, display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
         <Tag style={{ margin: 0 }}>{USER_AVATAR_FRAME_SOURCE_LABEL[item.source] ?? item.source}</Tag>
+        <ItemGrantTags locked={item.locked} expiresAt={item.expiresAt} expired={item.expired} />
       </div>
       <div style={{ fontSize: 11, color: '#b0b8c1', marginTop: 6 }}>{formatDateTime(item.acquiredAt)}</div>
     </div>
@@ -66,7 +86,12 @@ function FrameCard({ item, onRevoke }: { item: AdminUserAvatarFrame; onRevoke: (
 export function UserAvatarFramesModal({ open, userId, username, onClose }: UserAvatarFramesModalProps) {
   const { data, isLoading } = useUserAvatarFrames(open ? userId : null)
   const items = useMemo(() => data?.items ?? [], [data])
-  const ownedFrameIds = useMemo(() => new Set(items.map((item) => item.frameId)), [items])
+  const ownedFrameIds = useMemo(
+    () => new Set(items.filter((item) => !item.expiresAt).map((item) => item.frameId)),
+    [items],
+  )
+  const [editing, setEditing] = useState<AdminUserAvatarFrame | null>(null)
+  const updateFrame = useUpdateUserAvatarFrame()
   const [grantOpen, setGrantOpen] = useState(false)
   const [tab, setTab] = useState<UserFramesTab>('owned')
   const hiddenCount = data ? data.total - items.length : 0
@@ -95,7 +120,7 @@ export function UserAvatarFramesModal({ open, userId, username, onClose }: UserA
       cancelText: 'Huỷ',
       onOk: async () => {
         try {
-          await revoke.mutateAsync({ id: userId, frameId: item.frameId })
+          await revoke.mutateAsync({ id: userId, frameRef: userFrameRef(item) })
           message.success(`Đã thu hồi khung ${label}`)
         } catch (err) {
           message.error(errorMessage(err, 'Thu hồi khung thất bại'))
@@ -147,7 +172,7 @@ export function UserAvatarFramesModal({ open, userId, username, onClose }: UserA
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
               {items.map((item) => (
-                <FrameCard key={item.frameId} item={item} onRevoke={confirmRevoke} />
+                <FrameCard key={userFrameRef(item)} item={item} onRevoke={confirmRevoke} onEdit={setEditing} />
               ))}
             </div>
           )}
@@ -158,6 +183,19 @@ export function UserAvatarFramesModal({ open, userId, username, onClose }: UserA
       )}
       {tab === 'purchases' && userId && <UserFramePurchaseHistory userId={userId} />}
       {tab === 'transfers' && userId && <UserFrameTransferHistory userId={userId} />}
+      <EditItemGrantModal
+        open={editing != null}
+        title={editing ? `Sửa khung "${avatarFrameLabel(editing.frameId)}" (#${editing.frameId})` : ''}
+        locked={editing?.locked ?? false}
+        expiresAt={editing?.expiresAt}
+        submitting={updateFrame.isPending}
+        onSubmit={(payload) =>
+          userId && editing
+            ? updateFrame.mutateAsync({ id: userId, frameRef: userFrameRef(editing), payload })
+            : Promise.resolve()
+        }
+        onClose={() => setEditing(null)}
+      />
       <GrantAvatarFrameModal
         open={grantOpen}
         userId={userId}

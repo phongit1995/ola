@@ -1339,6 +1339,7 @@
     "saveError": "Couldn't update status, please try again."
   },
   "vip": {
+    "lockedNotTransferable": "This VIP is locked and cannot be transferred",
     "title": "VIP Store",
     "history": "History",
     "historyDialog": {
@@ -1489,6 +1490,7 @@
     }
   },
   "avatarFrame": {
+    "lockedNotTransferable": "This frame is locked and cannot be transferred",
     "title": "Avatar frames",
     "shopTitle": "Buy / Gift",
     "selectFrame": "Choose a frame",
@@ -1552,7 +1554,8 @@
       "receiverOwns": "The receiver already owns this frame",
       "notOwned": "You don't own this frame",
       "inUse": "Remove the frame before transferring it",
-      "notTransferable": "Frames from a gift code cannot be transferred",
+      "notTransferable": "This frame cannot be transferred",
+      "expired": "This frame has expired",
       "vipRequired": "VIP is required to wear a frame",
       "insufficientKen": "Not enough KEN",
       "wrongPassword": "Wrong password",
@@ -2742,6 +2745,12 @@
       "failed": "Broadcast failed, try again later"
     }
   },
+  "itemExpiry": {
+    "days": "{{count}}d",
+    "dayHour": "{{days}}d {{hours}}h",
+    "until": "Expires {{time}}",
+    "notice": "Expires at {{time}} · {{left}} left"
+  },
   "giftCode": {
     "menuTitle": "Redeem gift code",
     "title": "Redeem gift code",
@@ -2754,7 +2763,8 @@
     "rewardVipDays": "+{{count}} VIP days",
     "rewardVipIcon": "VIP icon {{name}}",
     "rewardAvatarFrame": "Avatar frame",
-    "notTransferable": "From a gift code, cannot be transferred",
+    "rewardForDays": "({{count}} days)",
+    "notTransferable": "Cannot be transferred",
     "verifyGuide": "How to verify: Personal → Profile → Email → Verify.",
     "errors": {
       "empty": "Please enter a code",

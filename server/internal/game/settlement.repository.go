@@ -892,10 +892,10 @@ func (s *SettlementRepository) freshUserInfo(gameID string, userID uuid.UUID) (*
 		MaxBet:   maxBetForGame(gameID),
 	}
 	applyGameLevel(s.db, info, gameID, userID)
-	if u.VipUsed != nil && u.VipEndTime != nil {
+	if vipUsed := u.ActiveVipUsed(time.Now()); vipUsed != nil && u.VipEndTime != nil {
 		left := time.Until(*u.VipEndTime)
 		if left > 0 {
-			info.VipType = u.VipUsed
+			info.VipType = vipUsed
 			info.VipDays = int(math.Ceil(left.Hours() / 24))
 		}
 	}

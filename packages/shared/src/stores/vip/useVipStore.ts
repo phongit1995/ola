@@ -3,6 +3,7 @@ import i18n from 'i18next';
 import { VIP_PRIVACY_KEYS } from '../../constants/settings';
 import { VIP_STORE_PAGE_SIZE } from '../../constants/vip';
 import { isVipIconTransferable } from '../../lib/giftCode';
+import { withoutExpiredItems } from '../../lib/itemExpiry';
 import { toast } from '../../lib/toast';
 import { vipName } from '../../lib/vip';
 import { vipRemainingText } from '../../lib/vipPurchase';
@@ -10,13 +11,16 @@ import { VipService } from '../../services/vip.service';
 import type { VipIconInstance, VipStoreResult } from '../../types/api/vip.type';
 import type { MenuOption } from '../../types/client/menu.type';
 import { useAuthStore } from '../auth/authStore';
+import { useMinuteNow } from '../useMinuteNow';
 
 export function useVipStore() {
   const t = i18n.t;
   const refreshUser = useAuthStore((s) => s.refreshUser);
 
   const [store, setStore] = useState<VipStoreResult | null>(null);
-  const [items, setItems] = useState<VipIconInstance[]>([]);
+  const [loadedItems, setItems] = useState<VipIconInstance[]>([]);
+  const now = useMinuteNow();
+  const items = withoutExpiredItems(loadedItems, now);
   const [loadedAt, setLoadedAt] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -29,8 +33,8 @@ export function useVipStore() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
 
-  const loadPage = useCallback(async (offset: number) => {
-    const res = await VipService.store({ limit: VIP_STORE_PAGE_SIZE, offset });
+  const loadPage = useCallback(async (offset: number, asOf?: string) => {
+    const res = await VipService.store({ limit: VIP_STORE_PAGE_SIZE, offset, asOf });
     setStore(res);
     setLoadedAt(Date.now());
     setItems((prev) => (offset === 0 ? res.items : [...prev, ...res.items]));
@@ -54,7 +58,7 @@ export function useVipStore() {
   }, [loadPage, t]);
 
   const total = store?.total ?? 0;
-  const hasMore = items.length < total;
+  const hasMore = loadedItems.length < total;
   const usingIcon = items.find((icon) => icon.isUsing) ?? null;
   const privacy = (store?.privacy ?? 0) as 0 | 1 | 2;
   const remainingDays = store?.days ?? null;
@@ -63,7 +67,7 @@ export function useVipStore() {
   function loadMore() {
     if (loadingMore || loading || !hasMore) return;
     setLoadingMore(true);
-    void loadPage(items.length).finally(() => setLoadingMore(false));
+    void loadPage(loadedItems.length, store?.asOf).finally(() => setLoadingMore(false));
   }
 
   const durationText = vipRemainingText(t, vipEndTime, remainingDays, loadedAt);
@@ -182,6 +186,7 @@ export function useVipStore() {
 
   return {
     items,
+    now,
     loading,
     loadingMore,
     loadMore,

@@ -24,7 +24,7 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func briefSelect(tx *gorm.DB) *gorm.DB {
-	return tx.Select("id", "username", "full_name", "avatar", "vip_used", "vip_end_time")
+	return tx.Select("id", "username", "full_name", "avatar", "vip_used", "vip_used_expires_at", "vip_end_time")
 }
 
 func orderIDs(a, b uuid.UUID) (uuid.UUID, uuid.UUID) {
@@ -500,10 +500,10 @@ func (r *Repository) Leaderboard(from, to time.Time, limit int) ([]LeaderboardRo
 	settled := string(models.PenStatusSettled)
 	var rows []LeaderboardRow
 	err := r.db.Table("(?) as t", gorm.Expr(sub, settled, fromStr, toStr, settled, fromStr, toStr)).
-		Select(`t.uid as user_id, users.username, users.full_name, users.avatar, users.vip_used, users.vip_end_time,
+		Select(`t.uid as user_id, users.username, users.full_name, users.avatar, ` + models.ActiveVipUsedSQL("users") + ` AS vip_used, users.vip_end_time,
 			coalesce(sum(t.net),0) as profit`).
 		Joins("JOIN users ON users.id = t.uid").
-		Group("t.uid, users.username, users.full_name, users.avatar, users.vip_used, users.vip_end_time").
+		Group("t.uid, users.username, users.full_name, users.avatar, users.vip_used, users.vip_used_expires_at, users.vip_end_time").
 		Having("coalesce(sum(t.net),0) > 0").
 		Order("profit DESC").
 		Limit(limit).

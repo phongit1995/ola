@@ -86,7 +86,7 @@ func (m Message) withSender(u *models.User) Message {
 	m.SenderName = u.Username
 	m.SenderAvatar = u.Avatar
 	m.SenderGender = u.Gender
-	m.SenderVip = u.VipUsed
+	m.SenderVip = u.ActiveVipUsed(time.Now())
 	if u.VipEndTime != nil {
 		vipEnd := u.VipEndTime.Format(time.RFC3339)
 		m.SenderVipEnd = &vipEnd

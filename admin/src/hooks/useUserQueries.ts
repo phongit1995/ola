@@ -4,6 +4,7 @@ import type {
   AddVipDaysRequest,
   GrantUserAvatarFrameRequest,
   GrantVipRequest,
+  UpdateItemGrantRequest,
   ListParams,
   UserListParams,
   UsernameChangeListParams,
@@ -135,11 +136,34 @@ export function useGrantUserAvatarFrame() {
   })
 }
 
+export function useUpdateUserAvatarFrame() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, frameRef, payload }: { id: string; frameRef: string; payload: UpdateItemGrantRequest }) =>
+      AdminUserService.updateAvatarFrame(id, frameRef, payload),
+    onSuccess: (_, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY, 'avatar-frames', id] })
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY, 'detail', id] })
+    },
+  })
+}
+
+export function useUpdateUserVip() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, instanceId, payload }: { id: string; instanceId: string; payload: UpdateItemGrantRequest }) =>
+      AdminUserService.updateVip(id, instanceId, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY] })
+    },
+  })
+}
+
 export function useRevokeUserAvatarFrame() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, frameId }: { id: string; frameId: string }) =>
-      AdminUserService.revokeAvatarFrame(id, frameId),
+    mutationFn: ({ id, frameRef }: { id: string; frameRef: string }) =>
+      AdminUserService.revokeAvatarFrame(id, frameRef),
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: [USERS_KEY, 'avatar-frames', id] })
     },

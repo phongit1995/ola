@@ -23,6 +23,8 @@ type GiftCodeReward struct {
 	Days      int    `json:"days,omitempty"`
 	VipIconID int16  `json:"vipIconId,omitempty"`
 	FrameID   string `json:"frameId,omitempty"`
+
+	ExpiresInDays int `json:"expiresInDays,omitempty"`
 }
 
 type GiftCodeRewards []GiftCodeReward

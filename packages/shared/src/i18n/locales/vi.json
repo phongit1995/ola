@@ -1339,6 +1339,7 @@
     "saveError": "Cập nhật trạng thái thất bại, vui lòng thử lại."
   },
   "vip": {
+    "lockedNotTransferable": "VIP đã khoá, không thể chuyển",
     "title": "Kho VIP",
     "history": "Lịch sử",
     "historyDialog": {
@@ -1489,6 +1490,7 @@
     }
   },
   "avatarFrame": {
+    "lockedNotTransferable": "Khung đã khoá, không thể chuyển",
     "title": "Khung avatar",
     "shopTitle": "Mua / Tặng",
     "selectFrame": "Chọn khung",
@@ -1552,7 +1554,8 @@
       "receiverOwns": "Người nhận đã có khung này",
       "notOwned": "Bạn không sở hữu khung này",
       "inUse": "Hãy tháo khung trước khi chuyển",
-      "notTransferable": "Khung từ mã quà tặng không chuyển được",
+      "notTransferable": "Khung này không thể chuyển",
+      "expired": "Khung đã hết hạn",
       "vipRequired": "Cần còn VIP để đeo khung",
       "insufficientKen": "Không đủ KEN",
       "wrongPassword": "Mật khẩu không đúng",
@@ -2742,6 +2745,12 @@
       "failed": "Phát loa thất bại, thử lại sau"
     }
   },
+  "itemExpiry": {
+    "days": "{{count}} ngày",
+    "dayHour": "{{days}} ngày {{hours}} giờ",
+    "until": "Hết hạn {{time}}",
+    "notice": "Hết hạn lúc {{time}} · còn {{left}}"
+  },
   "giftCode": {
     "menuTitle": "Nhập mã quà tặng",
     "title": "Nhập mã quà tặng",
@@ -2754,7 +2763,8 @@
     "rewardVipDays": "+{{count}} ngày VIP",
     "rewardVipIcon": "Icon VIP {{name}}",
     "rewardAvatarFrame": "Khung avatar",
-    "notTransferable": "Từ mã quà tặng, không chuyển được",
+    "rewardForDays": "({{count}} ngày)",
+    "notTransferable": "Không thể chuyển",
     "verifyGuide": "Cách xác thực: Cá nhân → Trang cá nhân → Email → Xác thực.",
     "errors": {
       "empty": "Bạn chưa nhập mã",

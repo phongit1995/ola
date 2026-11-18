@@ -30,8 +30,10 @@ type cachedUser struct {
 	CustomInfo      map[string]interface{} `json:"customInfo"`
 	Ken             int                    `json:"ken"`
 	VipUsed         *string                `json:"vipUsed"`
+	VipUsedExpires  *time.Time             `json:"vipUsedExpiresAt"`
 	VipEndTime      *time.Time             `json:"vipEndTime"`
 	AvatarFrameID   *string                `json:"avatarFrameId"`
+	FrameExpiresAt  *time.Time             `json:"avatarFrameExpiresAt"`
 	FollowerCount   int                    `json:"followerCount"`
 	FollowingCount  int                    `json:"followingCount"`
 	CreatedAt       time.Time              `json:"createdAt"`
@@ -55,8 +57,10 @@ func toCachedUser(u *models.User) *cachedUser {
 		CustomInfo:      u.CustomInfo,
 		Ken:             u.Ken,
 		VipUsed:         u.VipUsed,
+		VipUsedExpires:  u.VipUsedExpiresAt,
 		VipEndTime:      u.VipEndTime,
 		AvatarFrameID:   u.AvatarFrameID,
+		FrameExpiresAt:  u.AvatarFrameExpiresAt,
 		FollowerCount:   u.FollowerCount,
 		FollowingCount:  u.FollowingCount,
 		CreatedAt:       u.CreatedAt,
@@ -66,24 +70,26 @@ func toCachedUser(u *models.User) *cachedUser {
 
 func (cu *cachedUser) toModel() *models.User {
 	return &models.User{
-		Username:        cu.Username,
-		Email:           cu.Email,
-		EmailVerified:   cu.EmailVerified,
-		EmailVerifiedAt: cu.EmailVerifiedAt,
-		Avatar:          cu.Avatar,
-		Phone:           cu.Phone,
-		FullName:        cu.FullName,
-		Gender:          cu.Gender,
-		Bio:             cu.Bio,
-		BioImage:        cu.BioImage,
-		DateOfBirth:     cu.DateOfBirth,
-		CustomInfo:      models.JSONB(cu.CustomInfo),
-		Ken:             cu.Ken,
-		VipUsed:         cu.VipUsed,
-		VipEndTime:      cu.VipEndTime,
-		AvatarFrameID:   cu.AvatarFrameID,
-		FollowerCount:   cu.FollowerCount,
-		FollowingCount:  cu.FollowingCount,
+		Username:             cu.Username,
+		Email:                cu.Email,
+		EmailVerified:        cu.EmailVerified,
+		EmailVerifiedAt:      cu.EmailVerifiedAt,
+		Avatar:               cu.Avatar,
+		Phone:                cu.Phone,
+		FullName:             cu.FullName,
+		Gender:               cu.Gender,
+		Bio:                  cu.Bio,
+		BioImage:             cu.BioImage,
+		DateOfBirth:          cu.DateOfBirth,
+		CustomInfo:           models.JSONB(cu.CustomInfo),
+		Ken:                  cu.Ken,
+		VipUsed:              cu.VipUsed,
+		VipUsedExpiresAt:     cu.VipUsedExpires,
+		VipEndTime:           cu.VipEndTime,
+		AvatarFrameID:        cu.AvatarFrameID,
+		AvatarFrameExpiresAt: cu.FrameExpiresAt,
+		FollowerCount:        cu.FollowerCount,
+		FollowingCount:       cu.FollowingCount,
 	}
 }
 

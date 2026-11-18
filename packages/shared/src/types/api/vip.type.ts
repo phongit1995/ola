@@ -16,6 +16,8 @@ export interface VipIconInstance {
   isUsing: boolean;
   source: string;
   acquiredAt: string;
+  locked?: boolean;
+  expiresAt?: string | null;
 }
 
 export interface BuyVipIconResult {
@@ -128,5 +130,6 @@ export interface VipStoreResult {
   total: number;
   limit: number;
   offset: number;
+  asOf?: string;
   items: VipIconInstance[];
 }

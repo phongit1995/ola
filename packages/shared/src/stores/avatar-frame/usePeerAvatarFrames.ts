@@ -56,6 +56,7 @@ export function usePeerAvatarFrames(userId: string, enabled: boolean): PeerAvata
       const next = await AvatarFrameService.peerStore(userId, {
         limit: AVATAR_FRAME_STORE_PAGE_SIZE,
         offset: store.items.length,
+        asOf: store.asOf,
       });
       setState((prev) =>
         prev.store ? { ...prev, store: mergeAvatarFramePage(prev.store, next) } : prev,

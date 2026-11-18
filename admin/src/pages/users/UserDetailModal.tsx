@@ -1,3 +1,4 @@
+import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame'
 import { useState, type ReactNode } from 'react'
 import { Avatar, Button, Modal, Skeleton, Tag, Typography } from 'antd'
 import {
@@ -281,10 +282,23 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
                       }}
                     />
                     <span>{vipName(Number(data.vipUsed))}</span>
+                    {data.vipUsedExpiresAt && (
+                      <span style={{ color: '#8c98a4' }}>{`· hết hạn ${formatDateTime(data.vipUsedExpiresAt)}`}</span>
+                    )}
                   </span>
                 ) : (
                   'Không dùng icon'
                 )
+              }
+            />
+            <Row
+              label="Khung đang đeo"
+              value={
+                data.avatarFrameId
+                  ? `${avatarFrameLabel(data.avatarFrameId)} (#${data.avatarFrameId})${
+                      data.avatarFrameExpiresAt ? ` · hết hạn ${formatDateTime(data.avatarFrameExpiresAt)}` : ''
+                    }`
+                  : 'Không đeo khung'
               }
             />
           </Section>

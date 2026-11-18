@@ -4,6 +4,7 @@ import type {
   AdminAvatarFrameTransfer,
   AdminUserAvatarFrame,
   AdminUserVipIcon,
+  ItemGrantOptions,
   ModerationLockStep,
   ReportAdminBrief,
   UserViolation,
@@ -95,4 +96,21 @@ export function revokeAvatarFrameNotes(item: AdminUserAvatarFrame): string[] {
   if (item.isEquipped) notes.push('User đang đeo khung này, khung sẽ bị gỡ khỏi avatar.')
   if (item.source === 'purchase' || item.source === 'gift') notes.push('Khung được mua bằng KEN, thu hồi không hoàn KEN.')
   return notes
+}
+
+export function itemGrantSummary(grant: ItemGrantOptions): string {
+  const days = grant.expiresInDays ?? 0
+  if (days > 0) return `hạn ${days} ngày, khoá`
+  return grant.locked ? 'vĩnh viễn, khoá' : 'vĩnh viễn, chuyển được'
+}
+
+export function formatShortExpiry(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '—'
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(date.getHours())}:${pad(date.getMinutes())} ${pad(date.getDate())}/${pad(date.getMonth() + 1)}`
+}
+
+export function userFrameRef(item: { id?: string; frameId: string }): string {
+  return item.id ?? item.frameId
 }

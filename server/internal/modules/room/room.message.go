@@ -287,7 +287,7 @@ func senderFields(u *models.User) (name, avatar, gender string, vip, vipEnd *str
 	}
 	name = u.Username
 	gender = u.Gender
-	vip = u.VipUsed
+	vip = u.ActiveVipUsed(time.Now())
 	if u.VipEndTime != nil {
 		formatted := u.VipEndTime.Format(time.RFC3339)
 		vipEnd = &formatted

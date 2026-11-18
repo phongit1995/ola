@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { avatarFramePrivacyLabelKey } from '@ola/shared/lib';
-import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
+import { avatarFramePrivacyLabelKey, isAvatarFrameTransferable } from '@ola/shared/lib';
+import { ItemCountdown } from '@components/ui/ItemGrantMarks';
+import { avatarFrameLabel, ownedAvatarFrameKey } from '@ola/shared/lib/avatarFrame';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -51,7 +52,7 @@ export function AvatarFrameStoreScreen({ navigation }: Props) {
     navigation.navigate(ROOT_ROUTES.BuyVip, { mode: 'extend' });
   }
 
-  const equippedText =
+  const equippedStatus =
     equippedFrameId == null
       ? t('avatarFrame.empty')
       : equippedHidden
@@ -71,9 +72,19 @@ export function AvatarFrameStoreScreen({ navigation }: Props) {
           <Text numberOfLines={1} className="text-base font-semibold" style={{ color: TEXT_PRIMARY }}>
             {equippedFrameId != null ? avatarFrameLabel(equippedFrameId) : t('avatarFrame.title')}
           </Text>
-          <Text className="mt-0.5 text-xs" style={{ color: TEXT_SECONDARY }}>
-            {equippedText}
-          </Text>
+          <View className="mt-0.5 flex-row items-center" style={{ gap: 4 }}>
+            <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
+              {equippedStatus}
+            </Text>
+            {frames.equippedFrame?.expiresAt != null && (
+              <>
+                <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
+                  ·
+                </Text>
+                <ItemCountdown expiresAt={frames.equippedFrame.expiresAt} style={{ fontSize: 12 }} />
+              </>
+            )}
+          </View>
           {!vipActive && store != null && (
             <Pressable
               onPress={openBuyVip}
@@ -153,14 +164,17 @@ export function AvatarFrameStoreScreen({ navigation }: Props) {
       />
       <FlatList
         className="flex-1"
-        data={store?.items ?? []}
+        data={frames.items}
+        extraData={frames.now}
         numColumns={FRAME_GRID_COLUMNS}
-        keyExtractor={(item) => item.frameId}
+        keyExtractor={ownedAvatarFrameKey}
         renderItem={({ item }) => (
           <AvatarFrameCard
             frameId={item.frameId}
             badge={item.isEquipped ? t('avatarFrame.equipped') : undefined}
             highlighted={item.isEquipped}
+            locked={!isAvatarFrameTransferable(item)}
+            expiresAt={item.expiresAt}
             onPress={() => vm.setMenuFrame(item)}
           />
         )}
@@ -186,7 +200,7 @@ export function AvatarFrameStoreScreen({ navigation }: Props) {
 
       <ListOptionDialog
         visible={vm.menuFrame != null}
-        title={vm.menuTitle}
+        title={vm.menuFrame != null ? avatarFrameLabel(vm.menuFrame.frameId) : ''}
         options={vm.menuFrame != null ? vm.menuOptions(vm.menuFrame) : []}
         onClose={() => vm.setMenuFrame(null)}
       />

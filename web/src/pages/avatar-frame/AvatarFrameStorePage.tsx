@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ConfirmDialog,
   FullScreenOverlay,
+  ItemCountdown,
   ListOptionDialog,
   ChevronRightIcon,
   ScreenHeader,
@@ -10,9 +11,14 @@ import {
   type ListOption,
 } from '@components';
 import { AVATAR_FRAME_PRIVACY_OPTIONS } from '@constants';
-import { avatarFramePrivacyLabelKey, isAvatarFrameTransferable, toast } from '@lib';
+import {
+  avatarFramePrivacyLabelKey,
+  isAvatarFrameTransferable,
+  itemExpiryExactText,
+  toast,
+} from '@lib';
 import type { OwnedAvatarFrame } from '@app-types';
-import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
+import { avatarFrameLabel, ownedAvatarFrameKey } from '@ola/shared/lib/avatarFrame';
 import { useAvatarFrameCollection } from '@ola/shared/stores/avatar-frame/useAvatarFrameCollection';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { AvatarFrameHistoryDialog } from './components/AvatarFrameHistoryDialog';
@@ -40,6 +46,7 @@ export function AvatarFrameStorePage({ onClose }: { onClose: () => void }) {
     transfer,
     items,
     equippedFrameId,
+    equippedFrame,
     vipActive,
     privacy,
     transferFrameId,
@@ -132,10 +139,13 @@ export function AvatarFrameStorePage({ onClose }: { onClose: () => void }) {
       <div className="grid grid-cols-3 gap-2 p-2">
         {items.map((frame) => (
           <AvatarFrameTile
-            key={frame.frameId}
+            key={ownedAvatarFrameKey(frame)}
             frameId={frame.frameId}
             highlighted={frame.isEquipped}
             badge={frame.isEquipped ? t('avatarFrame.equipped') : undefined}
+            locked={!isAvatarFrameTransferable(frame)}
+            expiresAt={frame.expiresAt}
+            title={itemExpiryExactText(t, frame.expiresAt) ?? undefined}
             onClick={() => setMenuFrame(frame)}
           />
         ))}
@@ -169,10 +179,16 @@ export function AvatarFrameStorePage({ onClose }: { onClose: () => void }) {
               <span className="mt-3 text-base font-medium text-black/87">
                 {avatarFrameLabel(equippedFrameId)}
               </span>
-              <span className="text-xs text-black/54">
+              <span className="flex items-center gap-1 text-xs text-black/54">
                 {vipActive
                   ? t('avatarFrame.equipped')
                   : t('avatarFrame.equippedHidden')}
+                {equippedFrame?.expiresAt && (
+                  <>
+                    <span>·</span>
+                    <ItemCountdown expiresAt={equippedFrame.expiresAt} />
+                  </>
+                )}
               </span>
             </>
           )}
@@ -220,7 +236,9 @@ export function AvatarFrameStorePage({ onClose }: { onClose: () => void }) {
 
       <ListOptionDialog
         open={menuFrame != null}
-        title={menuFrame ? avatarFrameLabel(menuFrame.frameId) : ''}
+        title={
+          menuFrame ? avatarFrameLabel(menuFrame.frameId) : ''
+        }
         options={menuFrame ? buildMenuOptions(menuFrame) : []}
         onClose={() => setMenuFrame(null)}
       />

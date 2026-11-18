@@ -125,3 +125,9 @@ export const DEFAULT_SOCIAL_LIMIT_SETTING: SocialLimitSetting = {
 }
 
 export const USER_SETTINGS_TAB_KEYS = ['social-limit', 'username-changes'] as const
+
+export const ITEM_GRANT_MAX_DAYS = 3650
+
+export const ITEM_GRANT_EXTEND_DAYS = [1, 7, 30] as const
+
+export const ITEM_GRANT_INITIAL_VALUES = { expiresInDays: null, locked: true }

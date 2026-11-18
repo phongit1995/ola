@@ -188,7 +188,7 @@ func (s *Service) ListMembers(ctx context.Context, roomID uuid.UUID) (*RoomMembe
 			Gender:     u.Gender,
 			Bio:        u.Bio,
 			BioImage:   u.BioImage,
-			VipUsed:    u.VipUsed,
+			VipUsed:    u.ActiveVipUsed(time.Now()),
 			DeviceType: presenceMap[uid.String()].DeviceType,
 		}
 		if u.VipEndTime != nil {

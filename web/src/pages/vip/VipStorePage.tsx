@@ -4,13 +4,21 @@ import { useAppOverlayStore } from '@/store/appOverlayStore';
 import {
   ConfirmDialog,
   FullScreenOverlay,
+  ItemCountdown,
+  ItemLockButton,
+  ItemExpiryNotice,
   ListOptionDialog,
   ScreenHeader,
   VipIcon,
   type ListOption,
   ChevronRightIcon,
 } from '@components';
-import { formatDateDMY, isVipIconTransferable, vipName } from '@lib';
+import {
+  formatDateDMY,
+  isVipIconTransferable,
+  itemExpiryExactText,
+  vipName,
+} from '@lib';
 import type { VipIconInstance } from '@app-types';
 import { VipHistoryDialog } from './VipHistoryDialog';
 import { VIP_PRIVACY_KEYS } from '@constants';
@@ -45,6 +53,7 @@ function VipRow({
       type="button"
       onClick={selectMode ? onToggle : onSelect}
       disabled={disabled}
+      title={itemExpiryExactText(t, icon.expiresAt) ?? undefined}
       className={`flex h-[72px] w-full flex-col bg-white/80 text-left ${
         disabled ? 'opacity-50' : 'active:bg-black/5'
       }`}
@@ -82,14 +91,21 @@ function VipRow({
           rounded
           alt={vipName(icon.typeId)}
         />
-        <div className="ml-2 flex min-w-0 flex-col justify-center">
-          <span className="text-base text-black/87">
-            {vipName(icon.typeId)}
+        <div className="ml-2 flex min-w-0 flex-1 flex-col justify-center">
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-base text-black/87">
+              {vipName(icon.typeId)}
+            </span>
+            {!isVipIconTransferable(icon) && (
+              <ItemLockButton message={t('vip.lockedNotTransferable')} />
+            )}
+            <ItemCountdown
+              expiresAt={icon.expiresAt}
+              className="ml-auto pl-2 text-[13px]"
+            />
           </span>
           <span className="mt-0.5 truncate text-xs text-black/54">
             {t(stateKey)}
-            {!isVipIconTransferable(icon) &&
-              ` · ${t('giftCode.notTransferable')}`}
           </span>
         </div>
       </div>
@@ -326,9 +342,14 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
       <ConfirmDialog
         open={useTarget != null}
         title={t('vip.confirmUseTitle')}
-        message={t('vip.confirmUse', {
-          name: useTarget ? vipName(useTarget.typeId) : '',
-        })}
+        message={
+          <>
+            {t('vip.confirmUse', {
+              name: useTarget ? vipName(useTarget.typeId) : '',
+            })}
+            <ItemExpiryNotice expiresAt={useTarget?.expiresAt} />
+          </>
+        }
         confirmLabel={t('vip.confirm')}
         cancelLabel={t('vip.cancel')}
         onConfirm={confirmUse}

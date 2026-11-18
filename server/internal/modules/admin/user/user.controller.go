@@ -3,8 +3,10 @@ package adminuser
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"ola-chat-server/internal/middleware"
+	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -250,7 +252,38 @@ func (ctrl *Controller) GrantVip(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	resp, err := ctrl.service.GrantVip(id, req.VipTypeID)
+	grant := models.ItemGrant{Locked: req.Locked, Duration: time.Duration(req.ExpiresInDays) * 24 * time.Hour}
+	resp, err := ctrl.service.GrantVip(id, req.VipTypeID, grant)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// @Summary Sửa hạn và khoá của một VIP trong kho user
+// @Tags admin-users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Param instanceId path string true "Instance ID"
+// @Param request body UpdateVipRequest true "expiresAt null = vĩnh viễn"
+// @Success 200 {object} VipIconItem
+// @Router /admin/users/{id}/vips/{instanceId} [patch]
+func (ctrl *Controller) UpdateVip(c *gin.Context) (interface{}, error) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+	instanceID, err := uuid.Parse(c.Param("instanceId"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid instance id")
+	}
+	req, err := utils.BindJSON[UpdateVipRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.UpdateVip(id, instanceID, req.Locked, req.ExpiresAt)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

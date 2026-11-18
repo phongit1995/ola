@@ -15,6 +15,8 @@ type RewardItem struct {
 	Days      int    `json:"days,omitempty" example:"7"`
 	VipIconID int16  `json:"vipIconId,omitempty" example:"15"`
 	FrameID   string `json:"frameId,omitempty" example:"001"`
+
+	ExpiresInDays int `json:"expiresInDays,omitempty" example:"7"`
 }
 
 type RedeemResponse struct {

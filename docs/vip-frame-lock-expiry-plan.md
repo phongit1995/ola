@@ -1,10 +1,12 @@
 # Plan: Thẻ VIP và khung avatar khoá + có hạn
 
-Ngày lập: 18/11/2026 · Trạng thái: **plan, chưa code**
+Ngày lập: 18/11/2026 · Trạng thái: **đã code 18/11/2026** (server, admin, web, mobile), chưa commit/deploy. Migration `20261119000001_vip_frame_lock_expiry`.
+
+> Đổi tên so với bản plan đầu: cột là **`locked`** (true = khoá, không chuyển được, mặc định `false`) thay cho `transferable`. Đồ đang có giữ `locked = false`, chỉ đồ từ mã quà được set `true`. JSON trả client là `locked` + `expiresAt`; `isLocked` cũ vẫn là khoá do user tự bật.
 
 Thêm 2 thuộc tính cho **thẻ VIP** (icon trong Kho VIP) và **khung avatar**:
 
-- **Khoá** (`transferable = false`): không chuyển, không tặng lại, không giao dịch được.
+- **Khoá** (`locked = true`): không chuyển, không tặng lại, không giao dịch được.
 - **Có hạn** (`expires_at`): tới hạn thì món đó coi như không còn. Đang đeo thì tự tháo.
 
 Đây là nền cho các tính năng phát quà sau này (điểm danh, nhiệm vụ, sự kiện): phát đồ đẹp mà không bị nuôi nick gom về nick chính, và không làm mất giá đồ mua bằng KEN.
@@ -14,13 +16,13 @@ Thêm 2 thuộc tính cho **thẻ VIP** (icon trong Kho VIP) và **khung avatar*
 | Hạng mục | Chốt |
 |---|---|
 | Áp dụng cho | Thẻ VIP (`user_vip_icons`) và khung avatar (`user_avatar_frames`). **Không** đụng ngày VIP (`users.vip_end_time`) |
-| Khoá | Cột `transferable`. Thay cho cách kiểm tra cứng `source == gift_code` hiện nay. Đồ từ mã quà tặng giữ nguyên là không chuyển được |
-| Có hạn | Cột `expires_at`, NULL = vĩnh viễn. Đồ có hạn **luôn khoá** (server ép `transferable = false`). Hạn **tính từ lúc nhận** và vẫn chạy dù không đeo hay đã hết VIP |
+| Khoá | Cột `locked`. Thay cho cách kiểm tra cứng `source == gift_code` hiện nay. Đồ từ mã quà tặng giữ nguyên là không chuyển được |
+| Có hạn | Cột `expires_at`, NULL = vĩnh viễn. Đồ có hạn **luôn khoá** (server ép `locked = true`). Hạn **tính từ lúc nhận** và vẫn chạy dù không đeo hay đã hết VIP |
 | Giao diện | Món **không khoá, không hạn** hiển thị **y như bản hiện tại**. Chỉ món khoá/có hạn mới thêm nhãn |
 | Hết hạn khi đang đeo | Không cần job. Lúc đeo, chép hạn vào `users.vip_used_expires_at` / `users.avatar_frame_expires_at`. Mọi chỗ đọc thẻ/khung đang đeo đi qua helper kiểm tra hạn, hết hạn thì trả `null`. Gặp món đã hết hạn thì server ghi null luôn (dọn lười) |
 | Gỡ / đổi / hết hạn | Cột đang đeo và cột hạn đều về **null**. Không tự đeo lại món cũ |
 | Món đã hết hạn | **Ẩn** khỏi kho của user và kho người khác xem. Dòng vẫn giữ trong DB để admin xem lịch sử. Admin thấy có nhãn "Đã hết hạn" |
-| Dữ liệu trả về client | Danh sách bạn bè, phòng chat, bình luận, loa, game... **giữ nguyên trường**, chỉ là `vipUsed` / khung thành `null` khi hết hạn. Riêng **kho của chính mình** có thêm `transferable` và `expiresAt` cho mỗi món |
+| Dữ liệu trả về client | Danh sách bạn bè, phòng chat, bình luận, loa, game... **giữ nguyên trường**, chỉ là `vipUsed` / khung thành `null` khi hết hạn. Riêng **kho** có thêm `locked` và `expiresAt` cho mỗi món |
 | App cũ | Không cần cập nhật. Server tự lọc nên hiển thị vẫn đúng. Bấm chuyển đồ khoá thì server trả `VIP_NOT_TRANSFERABLE` / `AVATAR_FRAME_NOT_TRANSFERABLE`, app cũ đã hiểu 2 mã lỗi này |
 | Nơi phát đồ khoá/có hạn (đợt này) | **Admin tặng tay** cho user và **mã quà tặng**. Điểm danh / nhiệm vụ dùng lại sau. Vòng quay, đập trứng để sau |
 
@@ -29,7 +31,7 @@ Ngoài phạm vi: ngày VIP khoá (không Chuyển NSD được), user tự gia 
 ## 2. Hiện trạng trong code
 
 - Thẻ VIP mỗi lần nhận là **một dòng riêng** `user_vip_icons` (`vip_icon_id`, `is_locked`, `source`). Đang đeo: `users.vip_used` (mã loại, chuỗi) + `users.vip_used_instance_id`. Đeo thẻ khác loại **trừ 1 ngày VIP** ([vip.service.go `Use`](../server/internal/modules/vip/vip.service.go)).
-- `is_locked` là **khoá do user tự bật** để khỏi xoá/chuyển nhầm, tự mở lại được. Cột mới `transferable` là chuyện khác, UI phải đặt tên khác ("Không thể chuyển").
+- `is_locked` là **khoá do user tự bật** để khỏi xoá/chuyển nhầm, tự mở lại được. Cột mới `locked` là chuyện khác, UI phải đặt tên khác ("Không thể chuyển").
 - Chặn chuyển thẻ từ mã quà: `item.Source == IconSourceGiftCode` trong `vip.Service.Transfer`. Chặn chuyển khung: `row.Source == models.AvatarFrameSourceGiftCode` trong `avatar-frame.Repository.Transfer`.
 - Khung: mỗi user **chỉ 1 dòng cho mỗi khung** (unique `user_id, frame_id` khi chưa xoá). Đang đeo: `users.avatar_frame_id`. Hiển thị đi qua `User.ActiveAvatarFrameID(now)` ([user.model.go](../server/internal/models/user.model.go)), đòi còn VIP.
 - Chỗ cấp thẻ: `vip.CreateIconTx` (mua shop, tặng, đập trứng, vòng quay) và `vip.GrantIconTx` (mã quà, admin). Chỗ cấp khung: `avatarframe.GrantFrameTx` (mã quà, admin) và `Repository.purchase` (mua, tặng).
@@ -43,23 +45,34 @@ Migration `20261119000001_vip_frame_lock_expiry`. Version phải lớn hơn mọ
 
 ```sql
 ALTER TABLE user_vip_icons
-  ADD COLUMN transferable boolean NOT NULL DEFAULT true,
+  ADD COLUMN locked boolean NOT NULL DEFAULT false,
   ADD COLUMN expires_at timestamptz;
-UPDATE user_vip_icons SET transferable = false WHERE source = 'gift_code';
+UPDATE user_vip_icons SET locked = true WHERE source = 'gift_code';
 
 ALTER TABLE user_avatar_frames
-  ADD COLUMN transferable boolean NOT NULL DEFAULT true,
+  ADD COLUMN locked boolean NOT NULL DEFAULT false,
   ADD COLUMN expires_at timestamptz;
-UPDATE user_avatar_frames SET transferable = false WHERE source = 'gift_code';
+UPDATE user_avatar_frames SET locked = true WHERE source = 'gift_code';
 
 ALTER TABLE users
   ADD COLUMN vip_used_expires_at timestamptz,
   ADD COLUMN avatar_frame_expires_at timestamptz;
 ```
 
+Hai bảng đồ có thêm trigger `BEFORE INSERT` (`lock_gift_code_item`): dòng `source = 'gift_code'` luôn được ghi `locked = true`. Trigger này chặn khe lúc deploy: API cũ vẫn nhận mã quà sau khi migration chạy nhưng không biết cột `locked`, nên dòng nó tạo sẽ có `locked = false`. API mới vốn đã ghi `locked = true` cho mã quà nên trigger không đổi gì thêm. Admin vẫn mở khoá được vì trigger chỉ chạy khi INSERT.
+
+### Đồng thời và phân trang (sửa sau review 18/11/2026)
+
+- Đeo thẻ VIP, admin sửa hạn/khoá và chuyển thẻ đều khoá dòng `users` của chủ thẻ (`ledger.LockUser`) rồi mới đọc thẻ trong cùng transaction. Chuyển thẻ còn khoá cả dòng thẻ và cập nhật kèm điều kiện `user_id`, kiểm tra số dòng.
+- Trước khi ghi hạn mới vào `users` (admin sửa, tặng/gộp khung), server tháo món đang đeo đã hết hạn trước, để gia hạn không làm món tự đeo lại.
+- Kho VIP/khung trả `asOf` ở trang đầu, các trang sau gửi lại `asOf`. Server lọc hết hạn và tính món đang đeo để xếp lên đầu theo mốc này, nên món hết hạn giữa hai trang không làm lặp hay sót. `asOf` sai, ở tương lai hoặc cũ hơn 6 giờ thì dùng giờ hiện tại. App cũ không gửi `asOf` thì chạy như trước.
+- Dọn lười món đang đeo đã hết hạn chỉ chạy ở **trang đầu** (`offset = 0`), để các trang sau còn đọc được món đang đeo lúc bắt đầu lượt và giữ nguyên thứ tự.
+- `GET /vip/store?transferable=true` (hộp thoại chuyển VIP trong chat) lọc ở server trước khi phân trang: không khoá, không đang khoá tay (`is_locked`), không có hạn, không phải thẻ đang đeo.
+- Chuyển thẻ kiểm tra hết hạn trước khoá, nên thẻ có hạn đã hết hạn trả `VIP_ICON_EXPIRED`.
+
 Down: drop 6 cột.
 
-- `DEFAULT true` chỉ để điền dữ liệu cũ. Model Go **không** để tag `default:true` (bẫy GORM bỏ qua giá trị `false`, đã gặp ở module quà): khai `Transferable bool gorm:"not null"` và luôn set tường minh khi tạo.
+- Mặc định `false` nên toàn bộ thẻ/khung đang có **không bị khoá**; chỉ đồ từ mã quà được set `true` (vốn đã không chuyển được). Model Go để `default:false`, giá trị `true` luôn được ghi tường minh.
 - Không thêm index: các truy vấn kho đã lọc theo `user_id` có index sẵn, điều kiện hạn lọc trên vài chục dòng mỗi user.
 
 ## 4. Server
@@ -69,7 +82,7 @@ Down: drop 6 cột.
 `models.UserVipIcon` và `models.UserAvatarFrame` thêm:
 
 ```go
-Transferable bool       `gorm:"not null"`
+Locked       bool       `gorm:"column:locked;not null;default:false"`
 ExpiresAt    *time.Time
 func (i *UserVipIcon) Expired(now time.Time) bool
 ```
@@ -89,27 +102,29 @@ Hằng dùng chung (scope SQL) đặt ở `models`, ví dụ `NotExpiredScope(no
 ### 4.2 Tuỳ chọn khi cấp đồ
 
 ```go
-type GrantOptions struct {
-    Transferable bool
-    ExpiresAt    *time.Time
+type ItemGrant struct {
+    Locked   bool
+    Duration time.Duration
 }
-var PermanentTransferable = GrantOptions{Transferable: true}
+var PermanentGrant = ItemGrant{}
+var PermanentLockedGrant = ItemGrant{Locked: true}
+func LockedGrantForDays(days int) ItemGrant
 ```
 
-Đặt ở `internal/models` (hoặc `internal/constants`) để cả `vip` và `avatar-frame` dùng mà không import vòng. Hàm chuẩn hoá: có `ExpiresAt` thì ép `Transferable = false`.
+Đặt ở `internal/models` (hoặc `internal/constants`) để cả `vip` và `avatar-frame` dùng mà không import vòng. Hàm chuẩn hoá `Normalized()`: có `Duration` thì ép `Locked = true`.
 
 ### 4.3 Thẻ VIP (`internal/modules/vip`)
 
 | Chỗ | Sửa |
 |---|---|
-| `CreateIconTx(tx, userID, typeID, source)` | thêm `opts GrantOptions`. Các chỗ gọi hiện có (mua shop, tặng, đập trứng, vòng quay) truyền `PermanentTransferable` để hành vi không đổi |
-| `GrantIconTx` | thêm `opts`. Mã quà truyền `{Transferable:false, ExpiresAt: theo cấu hình}`; admin truyền theo form |
+| `CreateIconTx(tx, userID, typeID, source)` | thêm `grant models.ItemGrant`. Các chỗ gọi hiện có (mua shop, tặng, đập trứng, vòng quay) truyền `models.PermanentGrant` để hành vi không đổi |
+| `GrantIconTx` | thêm `opts`. Mã quà truyền `LockedGrantForDays(expiresInDays)`; admin truyền theo form |
 | `ListByUserPaged`, `CountByUser`, `FindInstance` cho user/peer | lọc `NotExpiredScope`. Bản admin có tham số `includeExpired` |
 | `Use` | món hết hạn → `ErrVipIconExpired` (mã `VIP_ICON_EXPIRED`). Khi đeo, set `vip_used_expires_at = item.ExpiresAt`, kể cả nhánh cùng loại chỉ đổi `vip_used_instance_id`. Giữ nguyên quy tắc trừ 1 ngày VIP khi đổi sang thẻ khác loại, **áp dụng cho mọi thẻ kể cả thẻ có hạn và thẻ khoá** (mục 9) |
 | `clearActive`, `clearActiveIfGone`, `Delete`, `BatchDelete`, `AdminDelete` | khi gỡ thì null cả `vip_used`, `vip_used_instance_id`, `vip_used_expires_at` |
-| `Transfer` (thẻ) | thay `item.Source == IconSourceGiftCode` bằng `!item.Transferable`. Món hết hạn → `ErrVipIconExpired` |
-| Giao dịch thẻ trong chat (`useTradingVip`) và tặng thẻ | dùng cùng kiểm tra `Transferable` |
-| `toVipItem` / `VipItem` DTO | thêm `transferable bool`, `expiresAt *string` (RFC3339, `omitempty`) |
+| `Transfer` (thẻ) | thay `item.Source == IconSourceGiftCode` bằng `item.Locked`. Món hết hạn → `ErrVipIconExpired` |
+| Giao dịch thẻ trong chat (`useTradingVip`) và tặng thẻ | dùng cùng kiểm tra `Locked` |
+| `toVipItem` / `VipItem` DTO | thêm `locked bool`, `expiresAt *string` (RFC3339, `omitempty`) |
 | `GetStore` của chính mình | nếu `VipUsedExpiresAt` đã qua thì ghi null 3 cột và `invalidate` (dọn lười). Lỗi chỉ log |
 
 ### 4.4 Thay mọi chỗ đọc `VipUsed`
@@ -141,27 +156,27 @@ Tin đã chụp lại (tin phòng chat, loa) gửi **trước** lúc hết hạn
 
 ### 4.5 Khung avatar (`internal/modules/avatar-frame`)
 
-**Cấp khung `GrantFrameTx(tx, userID, frameID, source, now, opts)`**: đổi từ `ON CONFLICT DO NOTHING` sang khoá dòng rồi gộp theo bảng:
+**Bản có hạn và bản vĩnh viễn là 2 món riêng** (user chốt 18/11/2026): mỗi user có tối đa **1 dòng vĩnh viễn + 1 dòng có hạn** cho mỗi khung. Unique cũ `uq_user_avatar_frames_owner` được thay bằng `uq_user_avatar_frames_owner_permanent` (`expires_at IS NULL`) và `uq_user_avatar_frames_owner_timed` (`expires_at IS NOT NULL`). Không bao giờ nâng bản có hạn lên vĩnh viễn; muốn vĩnh viễn thì tặng/mua thêm một bản vĩnh viễn.
 
-| Đang có | Nhận thêm | Kết quả |
+**Cấp khung `GrantFrameTx(tx, userID, frameID, source, now, grant)`** chỉ gộp trong cùng loại:
+
+| Nhận thêm | Đang có bản cùng loại | Kết quả |
 |---|---|---|
-| Không có | bất kỳ | tạo dòng theo `opts` |
-| Dòng **đã hết hạn** | bất kỳ | ghi đè dòng đó theo `opts` (hạn mới tính từ bây giờ), `source` mới |
-| Vĩnh viễn | có hạn | không đổi gì, trả `granted=false` (người nhận đã có bản tốt hơn) |
-| Vĩnh viễn, khoá | vĩnh viễn, chuyển được | thành chuyển được |
-| Có hạn, còn hạn | có hạn | **cộng dồn**: `expires_at = expires_at + thời lượng mới` |
-| Có hạn, còn hạn | vĩnh viễn | thành vĩnh viễn, `transferable` theo bản mới |
+| bất kỳ | không | tạo dòng mới |
+| có hạn | có hạn, còn hạn | **cộng dồn** `expires_at += thời lượng`, giữ `source` |
+| có hạn | có hạn, đã hết hạn | ghi đè: hạn mới tính từ bây giờ, `source` mới |
+| vĩnh viễn | vĩnh viễn | không đổi, `granted=false` ("đã có") |
 
-Mã quà và admin truyền **thời lượng** (số ngày), không truyền mốc cố định, để cộng dồn được. Nếu đang đeo khung đó thì cập nhật luôn `users.avatar_frame_expires_at`.
+User đang đeo bản có hạn của khung X mà nhận thêm bản vĩnh viễn X (tặng, mua, được chuyển) thì tự chuyển sang đeo bản vĩnh viễn (`avatar_frame_expires_at = NULL`), để không bị tháo khi bản có hạn hết hạn. Gia hạn bản có hạn thì chỉ cập nhật hạn ở `users` nếu user đang đeo đúng bản có hạn. Bản đang đeo được nhận ra bằng `avatar_frame_id` + `avatar_frame_expires_at` (NULL = bản vĩnh viễn).
 
 | Chỗ | Sửa |
 |---|---|
 | `OwnsFrameTx`, `OwnedFrameIDs` (cờ "đã có" ở shop), `ListOwned`, `CountOwned`, `GetStore` | lọc `NotExpiredScope` |
-| Mua / tặng từ shop (`purchase`) | người nhận đang có bản **có hạn** thì **nâng thành vĩnh viễn** thay vì báo đã có; chỉ báo `alreadyOwned` khi đã có bản vĩnh viễn |
-| `Equip` | món hết hạn → `ErrFrameExpired` (mã `AVATAR_FRAME_EXPIRED`); set `avatar_frame_expires_at = row.ExpiresAt` |
+| Mua / tặng từ shop (`purchase`) | chỉ báo `alreadyOwned` khi đã có bản vĩnh viễn; đang có bản có hạn thì tạo thêm bản vĩnh viễn |
+| `Equip` | ưu tiên bản vĩnh viễn, không có thì dùng bản có hạn; bản có hạn hết hạn → `ErrFrameExpired`; set `avatar_frame_expires_at = row.ExpiresAt` |
 | `ClearEquipped`, `AdminRevoke` (khi đang đeo) | null cả `avatar_frame_id` và `avatar_frame_expires_at` |
-| `Transfer` | thay kiểm tra `source == gift_code` bằng `!row.Transferable`; món hết hạn → `ErrFrameExpired`. Người nhận có dòng **đã hết hạn** của khung đó thì xoá mềm dòng đó trước khi chuyển, tránh đụng unique |
-| `OwnedFrame` DTO | thêm `transferable`, `expiresAt` |
+| `Transfer` | chỉ chuyển bản vĩnh viễn và không khoá; chỉ có bản có hạn → `ErrNotTransferable` (hết hạn → `ErrFrameExpired`); đang đeo bản vĩnh viễn → `ErrInUse`; người nhận đã có bản vĩnh viễn → `ErrReceiverOwns` (có bản có hạn thì vẫn nhận được) |
+| `OwnedFrame` DTO | thêm `id` (id dòng, client dùng làm key vì 1 khung có thể có 2 ô), `locked`, `expiresAt`, `expired` (admin); `isEquipped` chỉ bật cho đúng bản đang đeo |
 | `GetStore` của chính mình | dọn lười như thẻ VIP |
 
 ### 4.6 Mã quà tặng
@@ -186,7 +201,7 @@ Mã cũ `VIP_NOT_TRANSFERABLE`, `AVATAR_FRAME_NOT_TRANSFERABLE` dùng chung cho 
 
 - `models`: `ActiveVipUsed`, `ActiveAvatarFrameID` với các tổ hợp còn/hết VIP × còn/hết hạn × NULL.
 - `vip`: đeo món hết hạn bị chặn; đeo set đúng cột hạn; gỡ/xoá null đủ 3 cột; chuyển đồ khoá và đồ hết hạn bị chặn; danh sách ẩn đồ hết hạn; dọn lười.
-- `avatar-frame`: đủ 6 dòng bảng gộp ở 4.5; mua bản vĩnh viễn khi đang có bản có hạn; chuyển khi người nhận có dòng hết hạn.
+- `avatar-frame`: bảng gộp cùng loại ở 4.5; mua bản vĩnh viễn khi đang có bản có hạn thành 2 dòng; khớp bản đang đeo theo loại.
 - `gift-code`: nhập mã ra đúng hạn và khoá.
 - admin sửa: đặt hạn quá khứ bị chặn; có hạn thì ép khoá; sửa món đang đeo cập nhật cột hạn ở `users`; gia hạn món đã hết hạn làm món hiện lại.
 - Test cũ có sẵn (`vip.repository_test.go`, `gift-code_utils_test.go`) vẫn xanh.
@@ -197,24 +212,25 @@ Mã cũ `VIP_NOT_TRANSFERABLE`, `AVATAR_FRAME_NOT_TRANSFERABLE` dùng chung cho 
 
 | Method | Path | Sửa |
 |---|---|---|
-| POST | `/admin/users/:id/vips` | body thêm `expiresInDays` (0–3650, 0 = vĩnh viễn) và `transferable` (bỏ qua khi có hạn) |
-| GET | `/admin/users/:id/vips` | thêm query `includeExpired=true` (mặc định true ở admin), mỗi món thêm `transferable`, `expiresAt`, `expired` |
+| POST | `/admin/users/:id/vips` | body thêm `expiresInDays` (0–3650, 0 = vĩnh viễn) và `locked` (bị ép `true` khi có hạn) |
+| GET | `/admin/users/:id/vips` | thêm query `includeExpired=true` (mặc định true ở admin), mỗi món thêm `locked`, `expiresAt`, `expired` |
 | POST | `/admin/users/:id/avatar-frames` | như thẻ VIP |
 | GET | `/admin/users/:id/avatar-frames` | như thẻ VIP |
 | POST/PATCH | `/admin/gift-codes` | reward thêm `expiresInDays` |
-| PATCH | `/admin/users/:id/vips/:instanceId` | **sửa món đã tặng**: body `{ "expiresAt": "RFC3339" \| null, "transferable": bool }`. `expiresAt = null` là vĩnh viễn |
-| PATCH | `/admin/users/:id/avatar-frames/:frameId` | như trên cho khung |
+| PATCH | `/admin/users/:id/vips/:instanceId` | **sửa món đã tặng**: body `{ "expiresAt": "RFC3339" \| null, "locked": bool }` |
+| PATCH/DELETE | `/admin/users/:id/avatar-frames/:ref` | như trên cho khung; `ref` là id dòng (admin mới), vẫn nhận mã khung 3 số (ưu tiên bản vĩnh viễn) cho admin cũ |
 | GET | `/admin/users/:id` | thêm `vipUsedExpiresAt`, `avatarFrameExpiresAt` |
 
 Quy tắc sửa:
 
-- `expiresAt` phải ở **tương lai** (muốn thu hồi thì dùng nút Thu hồi có sẵn). Có `expiresAt` thì server ép `transferable = false`; chỉ bật `transferable` được khi vĩnh viễn.
+- **Không đổi loại** (user chốt 18/11/2026): món có hạn chỉ đổi được ngày hết hạn, gia hạn hay rút ngắn đều được, không chuyển thành vĩnh viễn. Món vĩnh viễn chỉ bật/tắt khoá, không chuyển thành có hạn. Gửi sai loại → 400 `VIP_ICON_EXPIRY_KIND_FIXED` / `AVATAR_FRAME_EXPIRY_KIND_FIXED`.
+- `expiresAt` phải ở **tương lai** (muốn thu hồi thì dùng nút Thu hồi có sẵn). Món có hạn luôn `locked = true`.
 - Sửa được cả món **đã hết hạn** (gia hạn lại, đền bù). Món hiện lại trong kho user.
 - Món đang đeo thì cập nhật luôn `users.vip_used_expires_at` / `users.avatar_frame_expires_at` trong cùng transaction, rồi xoá cache user.
 - Khung: sửa thẳng dòng đó, không qua bảng gộp ở 4.5.
 - Service: `vip.Service.AdminUpdateIcon`, `avatarframe.Service.AdminUpdateFrame`; ghi `admin_audit_logs` cả giá trị cũ lẫn mới.
 
-Audit log ghi đủ `expiresInDays`, `transferable` khi admin tặng.
+Audit log (middleware tự ghi body) có đủ `expiresInDays`, `locked` khi admin tặng/sửa.
 
 ### 5.2 Màn hình
 
@@ -222,7 +238,7 @@ Audit log ghi đủ `expiresInDays`, `transferable` khi admin tặng.
   - Form tặng thêm ô số "Hạn (ngày)", trống = vĩnh viễn, và checkbox "Cho phép chuyển". Checkbox tự tắt khi có hạn.
   - Bảng thêm cột **Hạn** ("Vĩnh viễn" / "25/11/2026 20:00" / tag đỏ "Đã hết hạn") và cột **Chuyển được** (✓ / "Khoá").
   - Lọc "Ẩn món đã hết hạn".
-- **Người dùng → chi tiết → Khung avatar** ([UserAvatarFramesModal.tsx](../admin/src/pages/users/UserAvatarFramesModal.tsx)): giống hệt. Khi tặng khung user đã có, hiện kết quả theo bảng gộp ("Đã cộng thêm 7 ngày", "User đã có bản vĩnh viễn").
+- **Người dùng → chi tiết → Khung avatar** ([UserAvatarFramesModal.tsx](../admin/src/pages/users/UserAvatarFramesModal.tsx)): giống hệt. Mỗi ô là một dòng (sửa/thu hồi theo id dòng); tặng vĩnh viễn thì làm mờ khung đã có vĩnh viễn, tặng có hạn thì không làm mờ (cộng thêm ngày vào bản có hạn).
 - **Sửa món đã tặng** (cả 2 modal): mỗi dòng có nút **Sửa** mở form nhỏ: chọn "Vĩnh viễn" hoặc chọn ngày giờ hết hạn (có nút nhanh +1 / +7 / +30 ngày tính từ hạn hiện tại), ô "Cho phép chuyển" (tự tắt và mờ khi có hạn). Món đã hết hạn cũng có nút Sửa để gia hạn lại.
 - **Chi tiết user**: dòng "Thẻ đang dùng" / "Khung đang đeo" hiện thêm "hết hạn 25/11 20:00" nếu có.
 - **Mã quà tặng** ([GiftCodeRewardsField.tsx](../admin/src/pages/gift-codes/GiftCodeRewardsField.tsx)):
@@ -234,8 +250,8 @@ Audit log ghi đủ `expiresInDays`, `transferable` khi admin tặng.
 
 ### 6.1 Shared `packages/shared`
 
-- `types/api/vip.type.ts` (`VipIconInstance`) và `types/api/avatarFrame.type.ts` (`OwnedAvatarFrame`) thêm `transferable?: boolean`, `expiresAt?: string | null`.
-- `lib/giftCode.ts`: `isVipIconTransferable` / hàm khung đổi thành `item.transferable ?? item.source !== GIFT_CODE`. Cân nhắc chuyển sang `lib/vip.ts` / `lib/avatarFrame.ts` vì không còn riêng mã quà.
+- `types/api/vip.type.ts` (`VipIconInstance`) và `types/api/avatarFrame.type.ts` (`OwnedAvatarFrame`) thêm `locked?: boolean`, `expiresAt?: string | null`.
+- `lib/giftCode.ts`: `isVipIconTransferable` / hàm khung đổi thành: có `locked` thì dùng `!isItemLocked(item)`, server cũ không có `locked` thì vẫn suy từ `source`. Cân nhắc chuyển sang `lib/vip.ts` / `lib/avatarFrame.ts` vì không còn riêng mã quà.
 - `lib/itemExpiry.ts` (mới):
   - `isItemExpired(expiresAt, now)`.
   - `itemExpiryLabel(t, expiresAt, now)` → "Còn 3 ngày" / "Còn 5 giờ" / "Còn 20 phút".
@@ -246,7 +262,7 @@ Audit log ghi đủ `expiresInDays`, `transferable` khi admin tặng.
 - `stores/vip/useTradingVip.ts`: dùng helper mới, bỏ qua món khoá/có hạn.
 - i18n vi/en:
   - `itemExpiry.days/hours/minutes`;
-  - `item.notTransferable` = "Không thể chuyển", thay 2 câu đang nhắc "mã quà tặng";
+  - đổi chữ `giftCode.notTransferable` thành "Không thể chuyển" và `avatarFrame.errors.notTransferable` thành câu chung, thêm `avatarFrame.errors.expired`, `itemExpiry.*`, `vip.confirmUseExpiry`, `giftCode.rewardForDays`;
   - `vip.errors.iconExpired`, `avatarFrame.errors.expired`;
   - `giftCode.rewardWithDays`.
 
@@ -288,7 +304,7 @@ Mỗi món hiện rõ **có khoá không** và **còn bao lâu**. Món **đã h�
 
 Chung cho cả Kho VIP và Kho khung:
 
-- **Nhãn khoá** "🔒 Không thể chuyển": hiện khi `transferable = false`.
+- **Nhãn khoá** "🔒 Không thể chuyển": hiện khi `locked = true` hoặc có hạn.
 - **Nhãn hạn** "⏱ Còn X ngày / X giờ / X phút": hiện khi có `expiresAt`. Bấm hoặc giữ vào nhãn thì hiện giờ chính xác "Hết hạn 20:00 25/11/2026". Còn dưới 24 giờ thì tô đỏ.
 - Đồ **vĩnh viễn và chuyển được**: **giữ nguyên giao diện bản hiện tại**, không thêm nhãn, không đổi bố cục, không đổi thứ tự hiển thị so với trước.
 - Nút **Chuyển / Tặng / Giao dịch** ẩn hoặc mờ với món khoá. Bấm vào thì hiện toast "Vật phẩm này không thể chuyển".
@@ -316,7 +332,7 @@ Cùng nội dung 6.2 và 6.3 ở `mobile/src/screens/vip/VipStoreScreen.tsx` + `
 | 1 | Migration + model + helper + `GrantOptions` + test model | 0,25 ngày |
 | 2 | Thẻ VIP: cấp, đeo, gỡ, chuyển, danh sách, dọn lười + test | 0,5 ngày |
 | 3 | Đổi 27 file đọc `VipUsed` sang helper / SQL `CASE` + cache user | 0,5 ngày |
-| 4 | Khung: bảng gộp, đeo, chuyển, mua nâng cấp, danh sách + test | 0,5 ngày |
+| 4 | Khung: bảng gộp cùng loại, đeo, chuyển, 2 bản riêng, danh sách + test | 0,5 ngày |
 | 5 | Mã quà `expiresInDays` + admin API | 0,25 ngày |
 | 6 | Admin UI: 2 modal + chi tiết user + form mã quà | 0,5 ngày |
 | 6b | Admin sửa món đã tặng: 2 API PATCH + form Sửa + test | 0,5 ngày |
@@ -325,7 +341,7 @@ Cùng nội dung 6.2 và 6.3 ở `mobile/src/screens/vip/VipStoreScreen.tsx` + `
 
 Tổng khoảng **4 ngày**.
 
-**Deploy**: migration → api + chat + game (game đọc `vip_used`) → admin → web → app. Server lên trước app vẫn đúng vì chỉ thêm trường.
+**Deploy**: migration → api + chat + game (game đọc `vip_used`) → admin → web → app. Server lên trước app vẫn đúng vì chỉ thêm trường. Khoảng API cũ còn chạy sau migration đã được trigger `lock_gift_code_item` che (mục 3).
 
 ## 8. Để sau: thông báo hết hạn (user chốt 18/11/2026 chưa làm đợt này)
 
@@ -348,7 +364,7 @@ Job này fail chỉ mất thông báo; hiển thị vẫn đúng nhờ helper. �
 
 - Hạn **tính từ lúc nhận**, không phải lúc đeo lần đầu; vẫn chạy khi đang không đeo hoặc đã hết VIP.
 - Món không khoá, không hạn: **giữ nguyên giao diện** bản hiện tại.
-- Admin **sửa được** món đã tặng: đổi hạn, đặt vĩnh viễn, bật/tắt cho chuyển, gia hạn món đã hết hạn (mục 5.1, 5.2).
+- Admin **sửa được** món đã tặng nhưng không đổi loại: món có hạn đổi ngày (gia hạn hoặc rút ngắn, kể cả món đã hết hạn), món vĩnh viễn bật/tắt khoá (mục 5.1, 5.2). Không nâng có hạn lên vĩnh viễn, muốn vĩnh viễn thì tặng thêm món mới.
 - Thông báo sắp hết hạn / đã hết hạn: **để sau** (mục 8).
 - **Không xoá** món hết hạn khỏi DB.
 - App cũ: món khoá vẫn hiện nút Chuyển, bấm thì server báo lỗi "không thể chuyển". Chấp nhận, không bắt cập nhật app.

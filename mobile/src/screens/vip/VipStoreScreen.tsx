@@ -7,6 +7,7 @@ import { formatDateDMY, vipName } from '@ola/shared/lib';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { ItemExpiryNotice } from '@components/ui/ItemGrantMarks';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
@@ -152,7 +153,7 @@ export function VipStoreScreen({ navigation }: Props) {
       <FlatList
         className="flex-1"
         data={vm.items}
-        extraData={vm.selectMode ? vm.selectedIds : null}
+        extraData={vm.selectMode ? vm.selectedIds : vm.now}
         keyExtractor={(item) => item.instanceId}
         renderItem={({ item }) => (
           <VipRow
@@ -219,9 +220,16 @@ export function VipStoreScreen({ navigation }: Props) {
       <ConfirmDialog
         visible={vm.useTarget != null}
         title={t('vip.confirmUseTitle')}
-        message={t('vip.confirmUse', {
-          name: vm.useTarget != null ? vipName(vm.useTarget.typeId) : '',
-        })}
+        message={
+          <View>
+            <Text className="text-sm leading-relaxed" style={{ color: '#616163' }}>
+              {t('vip.confirmUse', {
+                name: vm.useTarget != null ? vipName(vm.useTarget.typeId) : '',
+              })}
+            </Text>
+            <ItemExpiryNotice expiresAt={vm.useTarget?.expiresAt} />
+          </View>
+        }
         confirmLabel={t('vip.confirm')}
         cancelLabel={t('vip.cancel')}
         onConfirm={vm.confirmUse}

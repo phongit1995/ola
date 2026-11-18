@@ -3,7 +3,9 @@ import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-nati
 import { usePeerAvatarFrames } from '@ola/shared/stores/avatar-frame/usePeerAvatarFrames';
 import { AvatarFrameImage } from '@components/ui/AvatarFrameImage';
 import { Dialog } from '@components/ui/Dialog';
-import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
+import { avatarFrameLabel, ownedAvatarFrameKey } from '@ola/shared/lib/avatarFrame';
+import { withoutExpiredItems } from '@ola/shared/lib';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 import { TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { PEER_FRAME_THUMB_SIZE } from '../constants';
@@ -31,6 +33,7 @@ export function PeerAvatarFrameStoreDialog({ userId, name, onClose }: PeerAvatar
     userId,
     true,
   );
+  const now = useMinuteNow();
 
   return (
     <Dialog
@@ -57,9 +60,9 @@ export function PeerAvatarFrameStoreDialog({ userId, name, onClose }: PeerAvatar
               {t('avatarFrame.count', { count: store.total })}
             </Text>
             <View className="flex-row flex-wrap">
-              {store.items.map((frame) => (
+              {withoutExpiredItems(store.items, now).map((frame) => (
                 <View
-                  key={frame.frameId}
+                  key={ownedAvatarFrameKey(frame)}
                   className="items-center"
                   style={{ width: '33.333%', paddingTop: 10, paddingBottom: 6 }}
                 >

@@ -29,7 +29,7 @@ type BlockedUserRow struct {
 func (r *BlockRepository) ListBlocked(userID uuid.UUID) ([]BlockedUserRow, error) {
 	rows := make([]BlockedUserRow, 0)
 	err := r.db.Table("room_user_blocks AS b").
-		Select("b.blocked_user_id AS user_id, u.username, u.full_name, u.avatar, u.avatar_frame_id, u.vip_end_time").
+		Select("b.blocked_user_id AS user_id, u.username, u.full_name, u.avatar, "+models.ActiveAvatarFrameIDSQL("u")+" AS avatar_frame_id, u.vip_end_time").
 		Joins("LEFT JOIN users u ON u.id = b.blocked_user_id").
 		Where("b.user_id = ?", userID).
 		Order("b.created_at ASC").

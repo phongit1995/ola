@@ -115,10 +115,18 @@ func (r *Repository) SoftDeleteShopItem(id uuid.UUID) error {
 	return r.db.Delete(&models.AvatarFrameShopItem{}, "id = ?", id).Error
 }
 
+func (r *Repository) ownedFrames(userID uuid.UUID, includeExpired bool, now time.Time) *gorm.DB {
+	q := r.db.Model(&models.UserAvatarFrame{}).Where("user_id = ?", userID)
+	if !includeExpired {
+		q = q.Where(models.ItemNotExpiredSQL, now)
+	}
+	return q
+}
+
 func (r *Repository) OwnedFrameIDs(userID uuid.UUID) (map[string]bool, error) {
 	var ids []string
 	if err := r.db.Model(&models.UserAvatarFrame{}).
-		Where("user_id = ?", userID).
+		Where("user_id = ? AND expires_at IS NULL", userID).
 		Pluck("frame_id", &ids).Error; err != nil {
 		return nil, err
 	}
@@ -129,19 +137,18 @@ func (r *Repository) OwnedFrameIDs(userID uuid.UUID) (map[string]bool, error) {
 	return out, nil
 }
 
-func (r *Repository) CountOwned(userID uuid.UUID) (int64, error) {
+func (r *Repository) CountOwned(userID uuid.UUID, includeExpired bool, now time.Time) (int64, error) {
 	var count int64
-	err := r.db.Model(&models.UserAvatarFrame{}).Where("user_id = ?", userID).Count(&count).Error
+	err := r.ownedFrames(userID, includeExpired, now).Count(&count).Error
 	return count, err
 }
 
-func (r *Repository) ListOwned(userID uuid.UUID, equippedFrameID string, limit, offset int) ([]models.UserAvatarFrame, error) {
+func (r *Repository) ListOwned(userID uuid.UUID, equippedFrameID string, includeExpired bool, now time.Time, limit, offset int) ([]models.UserAvatarFrame, error) {
 	var items []models.UserAvatarFrame
-	err := r.db.
-		Where("user_id = ?", userID).
+	err := r.ownedFrames(userID, includeExpired, now).
 		Order(clause.OrderBy{Expression: clause.Expr{
-			SQL:                "(frame_id = ?) DESC, acquired_at DESC, id DESC",
-			Vars:               []interface{}{equippedFrameID},
+			SQL:                "(frame_id = ?) DESC, (expires_at IS NOT NULL AND expires_at <= ?) ASC, (expires_at IS NULL) ASC, expires_at ASC, acquired_at DESC, id DESC",
+			Vars:               []interface{}{equippedFrameID, now},
 			WithoutParentheses: true,
 		}}).
 		Limit(limit).
@@ -150,8 +157,22 @@ func (r *Repository) ListOwned(userID uuid.UUID, equippedFrameID string, limit, 
 	return items, err
 }
 
+func clearEquippedFields() map[string]interface{} {
+	return map[string]interface{}{"avatar_frame_id": nil, "avatar_frame_expires_at": nil}
+}
+
 func (r *Repository) ClearEquipped(userID uuid.UUID) error {
-	return r.db.Model(&models.User{}).Where("id = ?", userID).Update("avatar_frame_id", nil).Error
+	return r.db.Model(&models.User{}).Where("id = ?", userID).Updates(clearEquippedFields()).Error
+}
+
+func clearExpiredEquippedTx(tx *gorm.DB, userID uuid.UUID, now time.Time) error {
+	return tx.Model(&models.User{}).
+		Where("id = ? AND avatar_frame_expires_at IS NOT NULL AND avatar_frame_expires_at <= ?", userID, now).
+		Updates(clearEquippedFields()).Error
+}
+
+func (r *Repository) ClearExpiredEquipped(userID uuid.UUID, now time.Time) error {
+	return clearExpiredEquippedTx(r.db, userID, now)
 }
 
 func (r *Repository) Equip(userID uuid.UUID, frameID string, now time.Time) error {
@@ -160,17 +181,17 @@ func (r *Repository) Equip(userID uuid.UUID, frameID string, now time.Time) erro
 		if err != nil {
 			return err
 		}
-		owned, err := OwnsFrameTx(tx, userID, frameID)
+		row, err := findWearableFrameTx(tx, userID, frameID, now)
 		if err != nil {
 			return err
-		}
-		if !owned {
-			return ErrNotOwned
 		}
 		if !locked[userID].HasActiveVip(now) {
 			return ErrVipRequired
 		}
-		return tx.Model(&models.User{}).Where("id = ?", userID).Update("avatar_frame_id", frameID).Error
+		return tx.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+			"avatar_frame_id":         frameID,
+			"avatar_frame_expires_at": row.ExpiresAt,
+		}).Error
 	})
 }
 
@@ -221,12 +242,172 @@ func lockUsersInOrder(tx *gorm.DB, ids ...uuid.UUID) (map[uuid.UUID]*models.User
 	return locked, nil
 }
 
-func OwnsFrameTx(tx *gorm.DB, userID uuid.UUID, frameID string) (bool, error) {
+func OwnsPermanentFrameTx(tx *gorm.DB, userID uuid.UUID, frameID string) (bool, error) {
 	var count int64
 	err := tx.Model(&models.UserAvatarFrame{}).
-		Where("user_id = ? AND frame_id = ?", userID, frameID).
+		Where("user_id = ? AND frame_id = ? AND expires_at IS NULL", userID, frameID).
 		Count(&count).Error
 	return count > 0, err
+}
+
+func findFrameRowTx(tx *gorm.DB, userID uuid.UUID, frameID string, timed bool) (*models.UserAvatarFrame, error) {
+	q := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("user_id = ? AND frame_id = ?", userID, frameID)
+	if timed {
+		q = q.Where("expires_at IS NOT NULL")
+	} else {
+		q = q.Where("expires_at IS NULL")
+	}
+	var rows []models.UserAvatarFrame
+	if err := q.Limit(1).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	return &rows[0], nil
+}
+
+func findWearableFrameTx(tx *gorm.DB, userID uuid.UUID, frameID string, now time.Time) (*models.UserAvatarFrame, error) {
+	permanent, err := findFrameRowTx(tx, userID, frameID, false)
+	if err != nil || permanent != nil {
+		return permanent, err
+	}
+	timed, err := findFrameRowTx(tx, userID, frameID, true)
+	if err != nil {
+		return nil, err
+	}
+	if timed == nil {
+		return nil, ErrNotOwned
+	}
+	if timed.Expired(now) {
+		return nil, ErrFrameExpired
+	}
+	return timed, nil
+}
+
+func findOwnedFrameRefTx(tx *gorm.DB, userID uuid.UUID, ref string) (*models.UserAvatarFrame, error) {
+	q := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("user_id = ?", userID)
+	if rowID, err := uuid.Parse(ref); err == nil {
+		q = q.Where("id = ?", rowID)
+	} else {
+		q = q.Where("frame_id = ?", ref).Order("(expires_at IS NULL) DESC")
+	}
+	var rows []models.UserAvatarFrame
+	if err := q.Limit(1).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, ErrNotOwned
+	}
+	return &rows[0], nil
+}
+
+func wearsFrameRow(u *models.User, row *models.UserAvatarFrame) bool {
+	return u.AvatarFrameID != nil && *u.AvatarFrameID == row.FrameID &&
+		(u.AvatarFrameExpiresAt == nil) == (row.ExpiresAt == nil)
+}
+
+func syncTimedEquippedTx(tx *gorm.DB, userID uuid.UUID, frameID string, expiresAt *time.Time, now time.Time) error {
+	if err := clearExpiredEquippedTx(tx, userID, now); err != nil {
+		return err
+	}
+	return tx.Model(&models.User{}).
+		Where("id = ? AND avatar_frame_id = ? AND avatar_frame_expires_at IS NOT NULL", userID, frameID).
+		Update("avatar_frame_expires_at", expiresAt).Error
+}
+
+func wearPermanentCopyTx(tx *gorm.DB, userID uuid.UUID, frameID string, now time.Time) error {
+	if err := clearExpiredEquippedTx(tx, userID, now); err != nil {
+		return err
+	}
+	return tx.Model(&models.User{}).
+		Where("id = ? AND avatar_frame_id = ? AND avatar_frame_expires_at IS NOT NULL", userID, frameID).
+		Update("avatar_frame_expires_at", nil).Error
+}
+
+func timedFrameGrantFields(existing *models.UserAvatarFrame, source string, now time.Time, duration time.Duration) map[string]interface{} {
+	if existing.Expired(now) {
+		return map[string]interface{}{
+			"source":      source,
+			"acquired_at": now,
+			"locked":      true,
+			"expires_at":  now.Add(duration),
+		}
+	}
+	return map[string]interface{}{"expires_at": existing.ExpiresAt.Add(duration), "locked": true}
+}
+
+func GrantFrameTx(tx *gorm.DB, userID uuid.UUID, frameID, source string, now time.Time, grant models.ItemGrant) (bool, error) {
+	grant = grant.Normalized()
+	timed := grant.Duration > 0
+	existing, err := findFrameRowTx(tx, userID, frameID, timed)
+	if err != nil {
+		return false, err
+	}
+	if existing == nil {
+		result := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&models.UserAvatarFrame{
+			UserID:     userID,
+			FrameID:    frameID,
+			Source:     source,
+			AcquiredAt: now,
+			Locked:     grant.Locked,
+			ExpiresAt:  grant.ExpiresAt(now),
+		})
+		if result.Error != nil || result.RowsAffected == 0 {
+			return false, result.Error
+		}
+		if !timed {
+			if err := wearPermanentCopyTx(tx, userID, frameID, now); err != nil {
+				return false, err
+			}
+		}
+		return true, nil
+	}
+	if !timed {
+		return false, nil
+	}
+	fields := timedFrameGrantFields(existing, source, now, grant.Duration)
+	if err := tx.Model(&models.UserAvatarFrame{}).Where("id = ?", existing.ID).Updates(fields).Error; err != nil {
+		return false, err
+	}
+	expiresAt := fields["expires_at"].(time.Time)
+	if err := syncTimedEquippedTx(tx, userID, frameID, &expiresAt, now); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *Repository) AdminUpdateFrame(userID uuid.UUID, ref string, locked bool, expiresAt *time.Time, now time.Time) (*models.UserAvatarFrame, error) {
+	var row *models.UserAvatarFrame
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := LockOwnerTx(tx, userID); err != nil {
+			return err
+		}
+		found, err := findOwnedFrameRefTx(tx, userID, ref)
+		if err != nil {
+			return err
+		}
+		if (found.ExpiresAt == nil) != (expiresAt == nil) {
+			return ErrExpiryKindFixed
+		}
+		if expiresAt != nil {
+			locked = true
+		}
+		if err := tx.Model(&models.UserAvatarFrame{}).Where("id = ?", found.ID).
+			Updates(map[string]interface{}{"locked": locked, "expires_at": expiresAt}).Error; err != nil {
+			return err
+		}
+		if expiresAt != nil {
+			if err := syncTimedEquippedTx(tx, userID, found.FrameID, expiresAt, now); err != nil {
+				return err
+			}
+		}
+		found.Locked = locked
+		found.ExpiresAt = expiresAt
+		row = found
+		return nil
+	})
+	return row, err
 }
 
 func LockOwnerTx(tx *gorm.DB, userID uuid.UUID) error {
@@ -234,54 +415,41 @@ func LockOwnerTx(tx *gorm.DB, userID uuid.UUID) error {
 	return err
 }
 
-func GrantFrameTx(tx *gorm.DB, userID uuid.UUID, frameID, source string, now time.Time) (bool, error) {
-	result := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&models.UserAvatarFrame{
-		UserID:     userID,
-		FrameID:    frameID,
-		Source:     source,
-		AcquiredAt: now,
-	})
-	return result.RowsAffected > 0, result.Error
-}
-
-func (r *Repository) AdminGrant(userID uuid.UUID, frameID string, now time.Time) (bool, error) {
+func (r *Repository) AdminGrant(userID uuid.UUID, frameID string, now time.Time, grant models.ItemGrant) (bool, error) {
 	granted := false
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := LockOwnerTx(tx, userID); err != nil {
 			return err
 		}
-		ok, err := GrantFrameTx(tx, userID, frameID, models.AvatarFrameSourceAdmin, now)
+		ok, err := GrantFrameTx(tx, userID, frameID, models.AvatarFrameSourceAdmin, now, grant)
 		granted = ok
 		return err
 	})
 	return granted, err
 }
 
-func (r *Repository) AdminRevoke(userID uuid.UUID, frameID string) (*models.UserAvatarFrame, bool, error) {
-	var row models.UserAvatarFrame
+func (r *Repository) AdminRevoke(userID uuid.UUID, ref string) (*models.UserAvatarFrame, bool, error) {
+	var row *models.UserAvatarFrame
 	unequipped := false
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		locked, err := lockUsersInOrder(tx, userID)
 		if err != nil {
 			return err
 		}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("user_id = ? AND frame_id = ?", userID, frameID).
-			First(&row).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return ErrNotOwned
-			}
+		found, err := findOwnedFrameRefTx(tx, userID, ref)
+		if err != nil {
 			return err
 		}
-		if equipped := locked[userID].AvatarFrameID; equipped != nil && *equipped == frameID {
-			if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("avatar_frame_id", nil).Error; err != nil {
+		row = found
+		if wearsFrameRow(locked[userID], found) {
+			if err := tx.Model(&models.User{}).Where("id = ?", userID).Updates(clearEquippedFields()).Error; err != nil {
 				return err
 			}
 			unequipped = true
 		}
-		return tx.Delete(&row).Error
+		return tx.Delete(found).Error
 	})
-	return &row, unequipped, err
+	return row, unequipped, err
 }
 
 type purchaseParams struct {
@@ -324,7 +492,7 @@ func (r *Repository) purchase(p purchaseParams, alreadyOwnedErr error) (*models.
 			return err
 		}
 
-		owned, err := OwnsFrameTx(tx, p.recipientID, item.FrameID)
+		owned, err := OwnsPermanentFrameTx(tx, p.recipientID, item.FrameID)
 		if err != nil {
 			return err
 		}
@@ -336,18 +504,15 @@ func (r *Repository) purchase(p purchaseParams, alreadyOwnedErr error) (*models.
 		}
 		newKen := payer.Ken - item.KenPrice
 
-		now := time.Now()
-		frame := models.UserAvatarFrame{
-			UserID:     p.recipientID,
-			FrameID:    item.FrameID,
-			Source:     p.source,
-			AcquiredAt: now,
-		}
-		if err := tx.Create(&frame).Error; err != nil {
+		granted, err := GrantFrameTx(tx, p.recipientID, item.FrameID, p.source, time.Now(), models.PermanentGrant)
+		if err != nil {
 			if apperr.IsUniqueViolation(err) {
 				return alreadyOwnedErr
 			}
 			return err
+		}
+		if !granted {
+			return alreadyOwnedErr
 		}
 
 		shopItemID := item.ID
@@ -428,51 +593,66 @@ func (r *Repository) Transfer(fromID, toID uuid.UUID, frameID string) error {
 		if err != nil {
 			return err
 		}
-		sender := locked[fromID]
-		if sender.AvatarFrameID != nil && *sender.AvatarFrameID == frameID {
-			return ErrInUse
-		}
-
-		var row models.UserAvatarFrame
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("user_id = ? AND frame_id = ?", fromID, frameID).
-			First(&row).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return ErrNotOwned
-			}
+		now := time.Now()
+		row, err := findFrameRowTx(tx, fromID, frameID, false)
+		if err != nil {
 			return err
 		}
-		if row.Source == models.AvatarFrameSourceGiftCode {
+		if row == nil {
+			return transferBlockReasonTx(tx, fromID, frameID, now)
+		}
+		if row.Locked {
 			return ErrNotTransferable
 		}
-
-		owned, err := OwnsFrameTx(tx, toID, frameID)
+		if wearsFrameRow(locked[fromID], row) {
+			return ErrInUse
+		}
+		owned, err := OwnsPermanentFrameTx(tx, toID, frameID)
 		if err != nil {
 			return err
 		}
 		if owned {
 			return ErrReceiverOwns
 		}
-
-		if err := tx.Model(&models.UserAvatarFrame{}).
-			Where("id = ?", row.ID).
+		res := tx.Model(&models.UserAvatarFrame{}).
+			Where("id = ? AND user_id = ?", row.ID, fromID).
 			Updates(map[string]interface{}{
 				"user_id":     toID,
 				"source":      models.AvatarFrameSourceTransfer,
-				"acquired_at": time.Now(),
-			}).Error; err != nil {
-			if apperr.IsUniqueViolation(err) {
+				"acquired_at": now,
+			})
+		if res.Error != nil {
+			if apperr.IsUniqueViolation(res.Error) {
 				return ErrReceiverOwns
 			}
+			return res.Error
+		}
+		if res.RowsAffected != 1 {
+			return ErrNotOwned
+		}
+		if err := wearPermanentCopyTx(tx, toID, frameID, now); err != nil {
 			return err
 		}
-
 		return tx.Create(&models.AvatarFrameTransfer{
 			FromUserID: fromID,
 			ToUserID:   toID,
 			FrameID:    frameID,
 		}).Error
 	})
+}
+
+func transferBlockReasonTx(tx *gorm.DB, userID uuid.UUID, frameID string, now time.Time) error {
+	timed, err := findFrameRowTx(tx, userID, frameID, true)
+	if err != nil {
+		return err
+	}
+	if timed == nil {
+		return ErrNotOwned
+	}
+	if timed.Expired(now) {
+		return ErrFrameExpired
+	}
+	return ErrNotTransferable
 }
 
 type PurchaseFilter struct {

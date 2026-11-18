@@ -46,6 +46,9 @@ export interface AdminUserDetail extends AdminUserListItem {
   bio?: string
   dateOfBirth?: string
   vipUsed?: string
+  vipUsedExpiresAt?: string
+  avatarFrameId?: string
+  avatarFrameExpiresAt?: string
   vipEndTime?: string
   emailVerifiedAt?: string
   followerCount?: number
@@ -74,9 +77,22 @@ export interface AdminUserVipIcon {
   isUsing: boolean
   source?: string
   acquiredAt?: string
+  locked: boolean
+  expiresAt?: string | null
+  expired?: boolean
 }
 
-export interface GrantVipRequest {
+export interface ItemGrantOptions {
+  expiresInDays?: number | null
+  locked: boolean
+}
+
+export interface UpdateItemGrantRequest {
+  expiresAt: string | null
+  locked: boolean
+}
+
+export interface GrantVipRequest extends ItemGrantOptions {
   vipTypeId: number
 }
 

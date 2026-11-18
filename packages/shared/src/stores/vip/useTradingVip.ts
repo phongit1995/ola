@@ -27,7 +27,7 @@ export function useTradingVip({ receiver, enabled, onDone }: UseTradingVipOption
     if (!enabled) return;
     let active = true;
     setLoading(true);
-    VipService.store({ limit: TRADING_VIP_STORE_LIMIT })
+    VipService.store({ limit: TRADING_VIP_STORE_LIMIT, transferable: true })
       .then((res) => {
         if (!active) return;
         setVips(

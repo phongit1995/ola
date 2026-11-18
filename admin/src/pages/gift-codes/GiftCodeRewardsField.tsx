@@ -46,6 +46,11 @@ function GiftCodeRewardRow({ name, disabled, onRemove }: { name: number; disable
           <InputNumber disabled={disabled} min={1} max={3650} addonAfter="ngày" style={{ width: '100%' }} />
         </Form.Item>
       )}
+      {type === 'avatar_frame' || type === 'vip_icon' ? (
+        <Form.Item name={[name, 'expiresInDays']} style={{ width: 130, marginBottom: 12 }}>
+          <InputNumber disabled={disabled} min={0} max={3650} precision={0} placeholder="Vĩnh viễn" addonAfter="ngày" />
+        </Form.Item>
+      ) : null}
       <Button type="text" danger icon={<DeleteOutlined />} disabled={disabled || onRemove == null} onClick={onRemove} />
     </div>
   )
@@ -91,7 +96,7 @@ export function GiftCodeRewardsField({ locked }: { locked: boolean }) {
         )}
       </Form.List>
       <Typography.Paragraph type="secondary" style={{ fontSize: 13 }}>
-        Ngày VIP tính từ lúc nhận, đang có VIP thì cộng dồn. Icon và khung giữ vĩnh viễn nhưng không chuyển được cho người khác.
+        Ngày VIP tính từ lúc nhận, đang có VIP thì cộng dồn. Icon và khung luôn bị khoá (không chuyển được cho người khác); để trống ô ngày thì giữ vĩnh viễn, nhập số ngày thì hết hạn sau từng ấy ngày kể từ lúc nhập mã.
         Khung cần còn VIP mới đeo được. Ai đã có sẵn khung thì chỉ nhận các quà còn lại; mã chỉ có khung thì họ không nhận được và không mất lượt.
       </Typography.Paragraph>
     </>

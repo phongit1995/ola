@@ -11,6 +11,8 @@ type RewardInput struct {
 	Days      int    `json:"days" binding:"omitempty,min=1,max=3650" example:"7"`
 	VipIconID int16  `json:"vipIconId" binding:"omitempty,min=1,max=138" example:"15"`
 	FrameID   string `json:"frameId" binding:"omitempty,len=3,numeric" example:"001"`
+
+	ExpiresInDays int `json:"expiresInDays" binding:"omitempty,min=0,max=3650" example:"7"`
 }
 
 type CampaignRequest struct {
@@ -57,6 +59,8 @@ type RewardItem struct {
 	Days      int    `json:"days,omitempty"`
 	VipIconID int16  `json:"vipIconId,omitempty"`
 	FrameID   string `json:"frameId,omitempty"`
+
+	ExpiresInDays int `json:"expiresInDays,omitempty"`
 }
 
 type CampaignItem struct {

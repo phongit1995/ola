@@ -598,7 +598,7 @@ func buildDraft(req *CampaignRequest) (campaignDraft, error) {
 			if r.VipIconID <= 0 {
 				return d, invalidInput("Chọn icon VIP")
 			}
-			d.rewards = append(d.rewards, models.GiftCodeReward{Type: r.Type, VipIconID: r.VipIconID})
+			d.rewards = append(d.rewards, models.GiftCodeReward{Type: r.Type, VipIconID: r.VipIconID, ExpiresInDays: r.ExpiresInDays})
 		case models.GiftCodeRewardAvatarFrame:
 			if !avatarframe.IsValidFrameID(r.FrameID) {
 				return d, invalidInput("Chọn khung avatar")
@@ -607,7 +607,7 @@ func buildDraft(req *CampaignRequest) (campaignDraft, error) {
 				return d, invalidInput("Khung avatar bị trùng")
 			}
 			frames[r.FrameID] = struct{}{}
-			d.rewards = append(d.rewards, models.GiftCodeReward{Type: r.Type, FrameID: r.FrameID})
+			d.rewards = append(d.rewards, models.GiftCodeReward{Type: r.Type, FrameID: r.FrameID, ExpiresInDays: r.ExpiresInDays})
 		}
 	}
 	if len(d.rewards) == 0 {
@@ -657,7 +657,7 @@ func mapCodeConflict(err error) error {
 func toRewardItems(rewards models.GiftCodeRewards) []RewardItem {
 	items := make([]RewardItem, 0, len(rewards))
 	for _, r := range rewards {
-		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID})
+		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID, ExpiresInDays: r.ExpiresInDays})
 	}
 	return items
 }

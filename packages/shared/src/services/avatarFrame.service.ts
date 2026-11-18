@@ -14,6 +14,7 @@ import type {
 interface PageParams {
   limit?: number;
   offset?: number;
+  asOf?: string;
 }
 
 export class AvatarFrameService {

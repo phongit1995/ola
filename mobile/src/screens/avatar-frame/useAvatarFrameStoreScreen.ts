@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AVATAR_FRAME_PRIVACY_OPTIONS } from '@ola/shared/constants';
 import { isAvatarFrameTransferable } from '@ola/shared/lib';
-import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
 import { useAvatarFrameCollection } from '@ola/shared/stores/avatar-frame/useAvatarFrameCollection';
 import type { OwnedAvatarFrame } from '@ola/shared/types';
 import type { ListOption } from '@components/ui/ListOptionDialog';
@@ -36,8 +35,6 @@ export function useAvatarFrameStoreScreen() {
     ];
   }
 
-  const menuTitle = menuFrame != null ? avatarFrameLabel(menuFrame.frameId) : '';
-
   return {
     frames,
     store: frames.store,
@@ -46,7 +43,6 @@ export function useAvatarFrameStoreScreen() {
     privacy: frames.privacy,
     menuFrame,
     setMenuFrame,
-    menuTitle,
     menuOptions,
     transferFrameId: frames.transferFrameId,
     setTransferFrameId: frames.setTransferFrameId,

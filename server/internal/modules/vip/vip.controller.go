@@ -18,15 +18,15 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[vip_controller]")}
 }
 
-func parseStoreQuery(c *gin.Context) (int, int, error) {
+func parseStoreQuery(c *gin.Context) (StoreQuery, error) {
 	var q StoreQuery
 	if err := c.ShouldBindQuery(&q); err != nil {
-		return 0, 0, utils.NewHTTPError(400, err.Error())
+		return q, utils.NewHTTPError(400, err.Error())
 	}
 	if q.Limit == 0 {
 		q.Limit = 50
 	}
-	return q.Limit, q.Offset, nil
+	return q, nil
 }
 
 // @Summary      Kho VIP của tôi
@@ -40,11 +40,11 @@ func (ctrl *Controller) GetMyStore(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	limit, offset, err := parseStoreQuery(c)
+	q, err := parseStoreQuery(c)
 	if err != nil {
 		return nil, err
 	}
-	store, err := ctrl.service.GetStore(userID, userID, limit, offset)
+	store, err := ctrl.service.GetStore(userID, userID, q)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -68,11 +68,11 @@ func (ctrl *Controller) GetUserStore(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	limit, offset, err := parseStoreQuery(c)
+	q, err := parseStoreQuery(c)
 	if err != nil {
 		return nil, err
 	}
-	store, err := ctrl.service.GetStore(userID, targetID, limit, offset)
+	store, err := ctrl.service.GetStore(userID, targetID, q)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

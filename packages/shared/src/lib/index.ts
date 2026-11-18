@@ -35,6 +35,7 @@ export * from './gift';
 export * from './appNotification';
 export * from './megaphone';
 export * from './giftCode';
+export * from './itemExpiry';
 export * from './wordChain';
 export * from './chatBotView';
 export * from './penHistory';

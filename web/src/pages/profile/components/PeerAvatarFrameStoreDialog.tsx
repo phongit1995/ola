@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Dialog, Spinner } from '@components';
-import { cn } from '@lib';
+import { cn, withoutExpiredItems } from '@lib';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 import { usePeerAvatarFrames } from '@ola/shared/stores/avatar-frame/usePeerAvatarFrames';
 import { AvatarFrameThumb } from '../../avatar-frame/components/AvatarFrameThumb';
 import { PEER_FRAME_THUMB_SIZE } from '../../avatar-frame/constants';
-import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame';
+import { avatarFrameLabel, ownedAvatarFrameKey } from '@ola/shared/lib/avatarFrame';
 
 interface PeerAvatarFrameStoreDialogProps {
   userId: string;
@@ -20,6 +21,7 @@ export function PeerAvatarFrameStoreDialog({
   const { t } = useTranslation();
   const { store, loading, loadingMore, hasMore, loadMore, isPrivate, failed } =
     usePeerAvatarFrames(userId, true);
+  const now = useMinuteNow();
 
   function renderBody() {
     if (isPrivate) {
@@ -54,14 +56,14 @@ export function PeerAvatarFrameStoreDialog({
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-2 pb-1">
-            {store.items.map((frame) => (
+            {withoutExpiredItems(store.items, now).map((frame) => (
               <div
-                key={frame.frameId}
+                key={ownedAvatarFrameKey(frame)}
                 className="flex flex-col items-center gap-1"
               >
                 <div
                   className={cn(
-                    'rounded-md p-0.5',
+                    'relative rounded-md p-0.5',
                     frame.isEquipped && 'ring-2 ring-ola-primary'
                   )}
                 >

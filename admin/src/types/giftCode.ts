@@ -39,6 +39,7 @@ export interface GiftCodeReward {
   days?: number
   vipIconId?: number
   frameId?: string
+  expiresInDays?: number
 }
 
 export interface GiftCodeAdminBrief {

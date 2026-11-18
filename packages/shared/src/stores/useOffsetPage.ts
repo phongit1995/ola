@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 export interface OffsetPage<T> {
   items: T[];
   total: number;
+  asOf?: string;
 }
 
 interface UseOffsetPageOptions {
@@ -13,10 +14,11 @@ interface OffsetPageState<T> {
   items: T[];
   total: number;
   reachedEnd: boolean;
+  asOf?: string;
 }
 
 export function useOffsetPage<T>(
-  fetchPage: (offset: number) => Promise<OffsetPage<T>>,
+  fetchPage: (offset: number, asOf?: string) => Promise<OffsetPage<T>>,
   { pageSize }: UseOffsetPageOptions = {}
 ) {
   const [page, setPage] = useState<OffsetPageState<T>>({ items: [], total: 0, reachedEnd: false });
@@ -34,7 +36,12 @@ export function useOffsetPage<T>(
     fetchPage(0)
       .then((result) => {
         if (!active) return;
-        setPage({ items: result.items, total: result.total, reachedEnd: isLastPage(result) });
+        setPage({
+          items: result.items,
+          total: result.total,
+          reachedEnd: isLastPage(result),
+          asOf: result.asOf,
+        });
         setError(null);
       })
       .catch((err: unknown) => {
@@ -54,18 +61,19 @@ export function useOffsetPage<T>(
     if (loading || loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
-      const result = await fetchPage(page.items.length);
+      const result = await fetchPage(page.items.length, page.asOf);
       setPage((current) => ({
         items: [...current.items, ...result.items],
         total: result.total,
         reachedEnd: isLastPage(result),
+        asOf: result.asOf ?? current.asOf,
       }));
     } catch {
       return;
     } finally {
       setLoadingMore(false);
     }
-  }, [fetchPage, isLastPage, loading, loadingMore, hasMore, page.items.length]);
+  }, [fetchPage, isLastPage, loading, loadingMore, hasMore, page.items.length, page.asOf]);
 
   const setItems = useCallback((update: (items: T[]) => T[]) => {
     setPage((current) => ({ ...current, items: update(current.items) }));

@@ -29,7 +29,10 @@ var (
 	ErrVipNotFound        = errors.New("vip icon not found")
 	ErrVipNotOwned        = errors.New("vip does not belong to you")
 	ErrVipLocked          = errors.New("vip is locked")
-	ErrVipNotTransferable = utils.NewHTTPErrorWithCode(http.StatusForbidden, "vip icon from a gift code cannot be transferred", ErrorCodeVipNotTransferable)
+	ErrVipNotTransferable = utils.NewHTTPErrorWithCode(http.StatusForbidden, "vip icon is locked and cannot be transferred", ErrorCodeVipNotTransferable)
+	ErrVipIconExpired     = utils.NewHTTPErrorWithCode(http.StatusGone, "vip icon has expired", ErrorCodeVipIconExpired)
+	ErrVipExpiryInPast    = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "expiry must be in the future", ErrorCodeVipExpiryInPast)
+	ErrVipExpiryKindFixed = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "cannot switch between permanent and timed", ErrorCodeVipExpiryKindFixed)
 	ErrVipInUse           = errors.New("vip is in use")
 	ErrWrongPassword      = errors.New("invalid transfer password")
 	ErrVipExpired         = errors.New("vip membership expired")
@@ -107,7 +110,31 @@ func toVipItem(item *models.UserVipIcon, activeInstance *uuid.UUID) VipItem {
 		IsUsing:    using,
 		Source:     item.Source,
 		AcquiredAt: item.AcquiredAt.Format(time.RFC3339),
+		Locked:     item.Locked,
+		ExpiresAt:  utils.FormatOptionalRFC3339(item.ExpiresAt),
 	}
+}
+
+func clearUsedFields() map[string]interface{} {
+	return map[string]interface{}{
+		"vip_used":             nil,
+		"vip_used_instance_id": nil,
+		"vip_used_expires_at":  nil,
+	}
+}
+
+func (s *Service) ClearExpiredUsed(u *models.User, now time.Time) {
+	if !u.VipUsedExpired(now) {
+		return
+	}
+	if err := s.repo.ClearExpiredUsed(u.ID, now); err != nil {
+		s.logger.Warnw("Failed to clear expired vip icon", "user_id", u.ID, "error", err.Error())
+		return
+	}
+	u.VipUsed = nil
+	u.VipUsedInstanceID = nil
+	u.VipUsedExpiresAt = nil
+	s.invalidate(u.ID)
 }
 
 func (s *Service) invalidate(userID uuid.UUID) {
@@ -116,7 +143,7 @@ func (s *Service) invalidate(userID uuid.UUID) {
 	}
 }
 
-func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*StoreResponse, error) {
+func (s *Service) GetStore(viewerID, targetID uuid.UUID, q StoreQuery) (*StoreResponse, error) {
 	target, err := s.repo.GetUser(targetID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -145,25 +172,40 @@ func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*St
 		}
 	}
 
-	total, err := s.repo.CountByUser(targetID)
+	now := time.Now()
+	listAt := utils.PageAsOf(q.AsOf, now)
+	if q.Offset == 0 {
+		listAt = now
+	}
+	activeSort := int16(-1)
+	if sortType := parseTypeID(target.ActiveVipUsed(listAt)); sortType != nil {
+		activeSort = *sortType
+	}
+	sortInstance := target.ActiveVipUsedInstanceID(listAt)
+
+	if viewerID == targetID && q.Offset == 0 {
+		s.ClearExpiredUsed(target, now)
+	}
+	active := parseTypeID(target.ActiveVipUsed(now))
+
+	filter := IconListFilter{Now: listAt}
+	if q.Transferable && viewerID == targetID {
+		filter.TransferableOnly = true
+		filter.ExcludeID = target.ActiveVipUsedInstanceID(now)
+	}
+	total, err := s.repo.CountByUser(targetID, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	active := parseTypeID(target.VipUsed)
-	activeSort := int16(-1)
-	if active != nil {
-		activeSort = *active
-	}
-
-	items, err := s.repo.ListByUserPaged(targetID, activeSort, limit, offset)
+	items, err := s.repo.ListByUserPaged(targetID, activeSort, sortInstance, filter, q.Limit, q.Offset)
 	if err != nil {
 		return nil, err
 	}
 
 	out := make([]VipItem, 0, len(items))
 	for i := range items {
-		out = append(out, toVipItem(&items[i], target.VipUsedInstanceID))
+		out = append(out, toVipItem(&items[i], target.ActiveVipUsedInstanceID(now)))
 	}
 
 	resp := &StoreResponse{
@@ -172,8 +214,9 @@ func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*St
 		Days:         remainingDays(target.VipEndTime),
 		Privacy:      privacy,
 		Total:        int(total),
-		Limit:        limit,
-		Offset:       offset,
+		Limit:        q.Limit,
+		Offset:       q.Offset,
+		AsOf:         listAt.UTC().Format(time.RFC3339Nano),
 		Items:        out,
 	}
 	if target.VipEndTime != nil {
@@ -198,43 +241,13 @@ func (s *Service) ownedInstance(userID, instanceID uuid.UUID) (*models.UserVipIc
 }
 
 func (s *Service) Use(userID, instanceID uuid.UUID) error {
-	item, err := s.ownedInstance(userID, instanceID)
+	changed, err := s.repo.UseIcon(userID, instanceID, time.Now())
 	if err != nil {
 		return err
 	}
-
-	u, err := s.repo.GetUser(userID)
-	if err != nil {
-		return err
-	}
-	if u.VipEndTime == nil || !u.VipEndTime.After(time.Now()) {
-		return ErrVipExpired
-	}
-
-	if u.VipUsedInstanceID != nil && *u.VipUsedInstanceID == item.ID {
-		return nil
-	}
-
-	typeStr := strconv.Itoa(int(item.VipIconID))
-	if u.VipUsed != nil && *u.VipUsed == typeStr {
-		if err := s.repo.UpdateUserFields(userID, map[string]interface{}{
-			"vip_used_instance_id": item.ID,
-		}); err != nil {
-			return err
-		}
+	if changed {
 		s.invalidate(userID)
-		return nil
 	}
-
-	newEnd := u.VipEndTime.Add(-24 * time.Hour)
-	if err := s.repo.UpdateUserFields(userID, map[string]interface{}{
-		"vip_used":             typeStr,
-		"vip_used_instance_id": item.ID,
-		"vip_end_time":         newEnd,
-	}); err != nil {
-		return err
-	}
-	s.invalidate(userID)
 	return nil
 }
 
@@ -277,10 +290,7 @@ func (s *Service) clearActive(userID, instanceID uuid.UUID) error {
 	if u.VipUsedInstanceID == nil || *u.VipUsedInstanceID != instanceID {
 		return nil
 	}
-	if err := s.repo.UpdateUserFields(userID, map[string]interface{}{
-		"vip_used":             nil,
-		"vip_used_instance_id": nil,
-	}); err != nil {
+	if err := s.repo.UpdateUserFields(userID, clearUsedFields()); err != nil {
 		return err
 	}
 	s.invalidate(userID)
@@ -347,28 +357,16 @@ func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID, password stri
 		return ErrBlockedTransfer
 	}
 
-	item, err := s.ownedInstance(userID, instanceID)
-	if err != nil {
-		return err
-	}
-	if item.Source == IconSourceGiftCode {
-		return ErrVipNotTransferable
-	}
-	if item.IsLocked {
-		return ErrVipLocked
-	}
-	if sender.VipUsedInstanceID != nil && *sender.VipUsedInstanceID == instanceID {
-		return ErrVipInUse
-	}
-	if err := s.repo.Transfer(TransferParams{
+	vipIconID, err := s.repo.Transfer(TransferParams{
 		InstanceID: instanceID,
 		FromUserID: userID,
 		ToUserID:   toUserID,
-		VipIconID:  item.VipIconID,
-	}); err != nil {
+		Now:        time.Now(),
+	})
+	if err != nil {
 		return err
 	}
-	s.notifSvc.Create(toUserID, &userID, models.AppNotificationVipReceived, nil, models.AppNotificationTransfer{VipTypeID: item.VipIconID}.Preview())
+	s.notifSvc.Create(toUserID, &userID, models.AppNotificationVipReceived, nil, models.AppNotificationTransfer{VipTypeID: vipIconID}.Preview())
 	return nil
 }
 
@@ -380,16 +378,16 @@ func (s *Service) clearActiveIfGone(userID, instanceID uuid.UUID, typeID int16) 
 	if u.VipUsedInstanceID == nil || *u.VipUsedInstanceID != instanceID {
 		return nil
 	}
-	replacement, err := s.repo.FindOneOfTypeExcluding(userID, typeID, instanceID)
+	replacement, err := s.repo.FindOneOfTypeExcluding(userID, typeID, instanceID, time.Now())
 	if err != nil {
 		return err
 	}
-	fields := map[string]interface{}{}
+	fields := clearUsedFields()
 	if replacement != nil {
-		fields["vip_used_instance_id"] = replacement.ID
-	} else {
-		fields["vip_used"] = nil
-		fields["vip_used_instance_id"] = nil
+		fields = map[string]interface{}{
+			"vip_used_instance_id": replacement.ID,
+			"vip_used_expires_at":  replacement.ExpiresAt,
+		}
 	}
 	if err := s.repo.UpdateUserFields(userID, fields); err != nil {
 		return err
@@ -407,4 +405,27 @@ func (s *Service) SetPrivacy(userID uuid.UUID, privacy int16) error {
 		s.logger.Warnw("failed to invalidate user settings cache", "user_id", userID, "error", err.Error())
 	}
 	return nil
+}
+
+func (s *Service) AdminUpdateIcon(userID, instanceID uuid.UUID, locked bool, expiresAt *time.Time) (*models.UserVipIcon, error) {
+	item, err := s.ownedInstance(userID, instanceID)
+	if err != nil {
+		return nil, err
+	}
+	if (item.ExpiresAt == nil) != (expiresAt == nil) {
+		return nil, ErrVipExpiryKindFixed
+	}
+	if expiresAt != nil {
+		if !expiresAt.After(time.Now()) {
+			return nil, ErrVipExpiryInPast
+		}
+		locked = true
+	}
+	if err := s.repo.AdminUpdateIcon(userID, instanceID, locked, expiresAt, time.Now()); err != nil {
+		return nil, err
+	}
+	s.invalidate(userID)
+	item.Locked = locked
+	item.ExpiresAt = expiresAt
+	return item, nil
 }

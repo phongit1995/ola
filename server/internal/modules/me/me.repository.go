@@ -362,7 +362,7 @@ func (r *Repository) ListLikers(viewerID, postID uuid.UUID, limit, offset int) (
 
 	var rows []LikerRow
 	if err := base.
-		Select("users.id, users.username, users.full_name, users.avatar, users.avatar_frame_id, users.vip_end_time, "+likerFriendExists,
+		Select("users.id, users.username, users.full_name, users.avatar, "+models.ActiveAvatarFrameIDSQL("users")+" AS avatar_frame_id, users.vip_end_time, "+likerFriendExists,
 			models.RelationshipStatusAccepted, viewerID, viewerID).
 		Order("me_reactions.created_at DESC").
 		Limit(limit).Offset(offset).
@@ -709,7 +709,7 @@ func (r *Repository) ListCommentLikers(viewerID, commentID uuid.UUID, limit, off
 
 	var rows []LikerRow
 	if err := base.
-		Select("users.id, users.username, users.full_name, users.avatar, users.avatar_frame_id, users.vip_end_time, "+likerFriendExists,
+		Select("users.id, users.username, users.full_name, users.avatar, "+models.ActiveAvatarFrameIDSQL("users")+" AS avatar_frame_id, users.vip_end_time, "+likerFriendExists,
 			models.RelationshipStatusAccepted, viewerID, viewerID).
 		Order("me_comment_likes.created_at DESC").
 		Limit(limit).Offset(offset).
