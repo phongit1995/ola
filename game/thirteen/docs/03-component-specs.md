@@ -345,16 +345,13 @@ Badge không được chỉ là một chấm màu nếu trạng thái quan trọ
 - IME Vietnamese không bị submit khi đang composition;
 - Enter send, Shift+Enter chỉ khi hỗ trợ multiline.
 
-## 15. Capacity segment
+## 15. Ghế đóng (thay Capacity segment)
 
-- mỗi item height 44;
-- min-width 64;
-- cream fill/navy border 2;
-- active aqua.100 hoặc sun.300;
-- active border 3 hoặc check 14 px;
-- radius 12;
-- group gap 8;
-- label bao gồm số và “người” nếu đủ chỗ; nếu chỉ số, group có field label rõ.
+Từ 18/11/2026 hộp tạo bàn không còn chọn số người; số ghế đổi trong bàn chờ bằng ghế đóng/mở. Spec chi tiết ở 02 § 5.3.
+
+- cùng kích thước seat card, nền navy 28%, viền navy 45% dashed, không shadow;
+- vòng tròn 42 px icon `ic-lock.svg`, chữ “Ghế đóng”, chủ bàn có thêm “Chạm để mở” ở ghế đóng đầu tiên;
+- nút đóng ghế dùng khung `tl-kick-btn` 32 × 32, viền navy, icon khoá.
 
 ## 16. Seat card phòng chờ
 
@@ -530,7 +527,8 @@ Focus chuẩn:
 | `tl-btn-ghost` | Secondary Cream |
 | `tl-btn-disabled` | Disabled button state |
 | `tl-modal` | Cream Modal |
-| `tl-capacity-btn` | Capacity Segment |
+| `tl-seat-closed` | Ghế đóng |
+| `tl-seat-lock-btn` | Nút đóng ghế |
 | `tl-seat` | Waiting Seat Card |
 | `tl-seat-empty` | Empty Dashed Seat |
 | `tl-room-chat` | Cream Chat Panel |

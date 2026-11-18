@@ -37,6 +37,7 @@ import { RecentMatchIds } from '../logic/recent-match-ids';
 import { decodeServerState, type ServerMove, type ServerPlay, type ServerState, type ServerStep } from '../logic/server-types';
 import { errorText, roomClosedText } from '../helpers/errorText';
 import type { BotSetupItem } from '../helpers/practice';
+import { MIN_ROOM_SEATS, ROOM_SEATS } from '../helpers/room';
 import { createPracticeSession } from '../practice';
 import { VOICE_ISSUE_TEXT, VOICE_MIC_PRIMED_KEY, readVoiceFlag, writeVoiceFlag } from '../helpers/voice';
 import { CHAT_BUBBLE_MS, receiveMatchChat, type SeatChatBubble } from './matchChat';
@@ -135,12 +136,13 @@ interface ThirteenStore {
   dispose(): void;
   startPractice(bots: BotSetupItem[]): void;
   refreshRooms(): void;
-  createRoom(maxPlayers: number, password: string, bet: number, voice?: boolean): void;
+  createRoom(password: string, bet: number, voice?: boolean): void;
   joinRoom(room: RoomInfo, password?: string): void;
   leaveRoom(): void;
   setReady(ready: boolean): void;
   startRoom(): void;
   kickMember(userId: string): void;
+  setRoomSeats(maxPlayers: number): void;
   watchRoom(room: RoomInfo): void;
   stopWatching(): void;
   joinWatchedRoom(): void;
@@ -756,7 +758,7 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
         window.setTimeout(() => {
           set((s) => ({ chatBubbles: s.chatBubbles.filter((bubble) => bubble.key !== key) }));
         }, CHAT_BUBBLE_MS);
-        if (data.userId !== get().user?.id && !get().spectating) bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat });
+        if (data.userId !== get().user?.id && !data.spectator && !get().spectating) bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat });
       }),
       source.onReaction((data) => {
         if (!active()) return;
@@ -1061,8 +1063,8 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     refreshRooms() {
       refs.session?.listRooms();
     },
-    createRoom(maxPlayers, password, bet, voice) {
-      refs.session?.createRoom(bet, password || undefined, maxPlayers, undefined, voice === true);
+    createRoom(password, bet, voice) {
+      refs.session?.createRoom(bet, password || undefined, ROOM_SEATS, undefined, voice === true);
     },
     joinRoom(room, password) {
       refs.session?.joinRoom(room.id, password);
@@ -1084,6 +1086,12 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     kickMember(userId) {
       const roomId = get().room?.roomId;
       if (roomId) refs.session?.kickRoomMember(roomId, userId);
+    },
+    setRoomSeats(maxPlayers) {
+      const room = get().room;
+      if (!room || room.ownerId !== get().user?.id) return;
+      if (maxPlayers < MIN_ROOM_SEATS || maxPlayers > ROOM_SEATS || maxPlayers < room.members.length) return;
+      refs.session?.setRoomSeats(room.roomId, maxPlayers);
     },
     watchRoom(room) {
       const s = get();
@@ -1179,13 +1187,13 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     },
 
     sendChat(text) {
-      if (get().spectating) return;
       const trimmed = text.trim();
       if (trimmed && get().matchId) matchSession()?.sendChat(get().matchId, trimmed);
     },
     sendRoomChatText(text) {
       const trimmed = text.trim();
-      const roomId = get().room?.roomId;
+      const s = get();
+      const roomId = s.room?.roomId ?? (s.watchedRoom ? s.watchingRoomId : null);
       if (trimmed && roomId) refs.session?.sendRoomChat(roomId, trimmed);
     },
     sendReaction(type) {

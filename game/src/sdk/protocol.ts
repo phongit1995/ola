@@ -12,6 +12,7 @@ export const C2S = {
   RoomKick: 'ROOM_KICK',
   RoomReady: 'ROOM_READY',
   RoomStart: 'ROOM_START',
+  RoomSeats: 'ROOM_SEATS',
   Leaderboard: 'LEADERBOARD',
   History: 'HISTORY',
   SpectateList: 'SPECTATE_LIST',
@@ -78,6 +79,7 @@ export const GAME_ERROR_CODE = {
   RoomMemberNotFound: 'ROOM_MEMBER_NOT_FOUND',
   RoomMismatch: 'ROOM_MISMATCH',
   RoomNotReady: 'ROOM_NOT_READY',
+  RoomSeatsInvalid: 'ROOM_SEATS_INVALID',
   RoomStartFailed: 'ROOM_START_FAILED',
   RoomUpdateFailed: 'ROOM_UPDATE_FAILED',
   NotRoomOwner: 'NOT_ROOM_OWNER',
@@ -268,6 +270,7 @@ export interface ChatMessageData {
   name: string;
   text: string;
   sentAt: number;
+  spectator?: boolean;
 }
 
 export interface ReactionData {

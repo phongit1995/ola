@@ -844,6 +844,7 @@ function makeMockPvpSession(
     joinRoom: () => {},
     leaveRoom: () => {},
     kickRoomMember: () => {},
+    setRoomSeats: () => {},
     setRoomReady: () => {},
     startRoom: () => {},
     listRooms: () => {},

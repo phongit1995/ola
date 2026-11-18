@@ -16,6 +16,7 @@ const ERROR_TEXT: Record<string, string> = {
   ROOM_NOT_READY: 'Còn người chơi chưa sẵn sàng',
   ROOM_START_FAILED: 'Không thể bắt đầu ván, vui lòng thử lại',
   ROOM_UPDATE_FAILED: 'Không thể cập nhật bàn, vui lòng thử lại',
+  ROOM_SEATS_INVALID: 'Không đổi được số ghế lúc này',
   NOT_ROOM_OWNER: 'Chỉ chủ bàn mới thực hiện được thao tác này',
   NOT_ROOM_MEMBER: 'Bạn không còn ở trong bàn này',
   IN_ROOM: 'Hãy rời bàn hiện tại trước',

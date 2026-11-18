@@ -545,57 +545,51 @@ function ChatOverlay() {
           {matchChat.map((msg) => (
             <div key={`${msg.userId}-${msg.sentAt}`} className="tl-chat-line">
               <b>
-                <PlayerName name={msg.name} self={msg.userId === user?.id} owner={msg.userId === roomOwnerId} />:
+                <PlayerName name={msg.name} self={msg.userId === user?.id} owner={msg.userId === roomOwnerId} />
+                {msg.spectator && <span className="tl-chat-viewer-tag">xem</span>}:
               </b>{' '}
               {msg.text}
             </div>
           ))}
         </div>
-        {spectating ? (
-          <p className="tl-chat-readonly">
-            <img src={eyeIcon} alt="" />
-            Người xem chỉ đọc được trò chuyện của bàn
-          </p>
-        ) : (
-          <>
-            <div className="tl-reaction-row">
-              {(Object.keys(REACTION_ASSETS) as ReactionKey[]).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  className="tl-reaction-btn"
-                  onClick={() => {
-                    sendReaction(key);
-                    setChatOpen(false);
-                  }}
-                >
-                  <img src={REACTION_ASSETS[key]} alt={key} />
-                </button>
-              ))}
-            </div>
-            <div className="tl-quick-row">
-              {QUICK_CHATS.map((text) => (
-                <button key={text} type="button" className="tl-quick-chip" onClick={() => sendQuick(text)}>
-                  {text}
-                </button>
-              ))}
-            </div>
-            <div className="tl-chat-input-row">
-              <input
-                className="tl-input"
-                value={draft}
-                maxLength={120}
-                placeholder="Nhập tin nhắn..."
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && send()}
-              />
-              <button type="button" className="tl-btn tl-btn-gold tl-send-btn" disabled={!draft.trim()} onClick={send}>
-                <span>Gửi</span>
-                <img src={sendIcon} alt="" />
+        {!spectating && (
+          <div className="tl-reaction-row">
+            {(Object.keys(REACTION_ASSETS) as ReactionKey[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                className="tl-reaction-btn"
+                onClick={() => {
+                  sendReaction(key);
+                  setChatOpen(false);
+                }}
+              >
+                <img src={REACTION_ASSETS[key]} alt={key} />
               </button>
-            </div>
-          </>
+            ))}
+          </div>
         )}
+        <div className="tl-quick-row">
+          {QUICK_CHATS.map((text) => (
+            <button key={text} type="button" className="tl-quick-chip" onClick={() => sendQuick(text)}>
+              {text}
+            </button>
+          ))}
+        </div>
+        <div className="tl-chat-input-row">
+          <input
+            className="tl-input"
+            value={draft}
+            maxLength={120}
+            placeholder={spectating ? 'Nhắn với bàn (bạn đang xem)...' : 'Nhập tin nhắn...'}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && send()}
+          />
+          <button type="button" className="tl-btn tl-btn-gold tl-send-btn" disabled={!draft.trim()} onClick={send}>
+            <span>Gửi</span>
+            <img src={sendIcon} alt="" />
+          </button>
+        </div>
       </div>
     </div>
   );

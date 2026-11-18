@@ -3,6 +3,7 @@ import backIcon from '../../assets/icons/ic-back.svg';
 import checkIcon from '../../assets/icons/ic-check.svg';
 import crownIcon from '../../assets/icons/ic-crown.svg';
 import eyeIcon from '../../assets/icons/ic-eye.svg';
+import lockIcon from '../../assets/icons/ic-lock.svg';
 import plusIcon from '../../assets/icons/ic-plus.svg';
 import sendIcon from '../../assets/icons/ic-send.svg';
 import userMinusIcon from '../../assets/icons/ic-user-minus.svg';
@@ -10,22 +11,60 @@ import type { RoomStateData } from '../../../src/sdk';
 import { PlayerAvatar } from '../../components/PlayerAvatar';
 import { PlayerName } from '../../components/PlayerName';
 import { MicIcon, SeatVoice, SpeakerButton } from '../../components/VoiceControls';
-import { formatKen } from '../../helpers/room';
+import { ROOM_SEATS, canCloseSeat, formatKen, roomSeatSlots } from '../../helpers/room';
 import { useThirteen } from '../../store/useThirteen';
 
 function roomSummary(room: RoomStateData): string {
-  const maxPlayers = room.maxPlayers ?? 4;
+  const maxPlayers = room.maxPlayers ?? ROOM_SEATS;
   return `${room.members.length}/${maxPlayers} người · ${formatKen(room.bet)} Ken${room.locked ? ' · Có mật khẩu' : ''}`;
 }
 
-function RoomSeats({ room, selfId, onKick }: { room: RoomStateData; selfId: string; onKick?: (userId: string) => void }) {
+interface RoomSeatsProps {
+  room: RoomStateData;
+  selfId: string;
+  onKick?: (userId: string) => void;
+  onSeats?: (maxPlayers: number) => void;
+}
+
+function ClosedSeat({ onOpen }: { onOpen?: () => void }) {
+  const body = (
+    <>
+      <div className="tl-seat-plus">
+        <img src={lockIcon} alt="" />
+      </div>
+      <span>Ghế đóng</span>
+      {onOpen && <small className="tl-seat-hint">Chạm để mở</small>}
+    </>
+  );
+  return onOpen ? (
+    <button type="button" className="tl-seat tl-seat-closed" onClick={onOpen} aria-label="Mở ghế">
+      {body}
+    </button>
+  ) : (
+    <div className="tl-seat tl-seat-closed">{body}</div>
+  );
+}
+
+function RoomSeats({ room, selfId, onKick, onSeats }: RoomSeatsProps) {
+  const maxPlayers = room.maxPlayers ?? ROOM_SEATS;
+  const slots = roomSeatSlots(room.members.length, room.maxPlayers);
+  const lastOpen = slots.map((slot) => slot.kind).lastIndexOf('open');
+  const firstClosed = slots.findIndex((slot) => slot.kind === 'closed');
+  const closeSeat = onSeats && canCloseSeat(room.members.length, maxPlayers) ? () => onSeats(maxPlayers - 1) : undefined;
   return (
     <div className="tl-seat-grid">
-      {Array.from({ length: room.maxPlayers ?? 4 }, (_, i) => {
-        const member = room.members[i];
-        if (!member) {
+      {slots.map((slot, i) => {
+        if (slot.kind === 'closed') {
+          return <ClosedSeat key={`closed-${i}`} onOpen={onSeats && i === firstClosed ? () => onSeats(maxPlayers + 1) : undefined} />;
+        }
+        if (slot.kind === 'open') {
           return (
             <div key={`empty-${i}`} className="tl-seat tl-seat-empty">
+              {closeSeat && i === lastOpen && (
+                <button type="button" className="tl-kick-btn tl-seat-lock-btn" aria-label="Đóng ghế" onClick={closeSeat}>
+                  <img src={lockIcon} alt="" />
+                </button>
+              )}
               <div className="tl-seat-plus">
                 <img src={plusIcon} alt="" />
               </div>
@@ -33,6 +72,7 @@ function RoomSeats({ room, selfId, onKick }: { room: RoomStateData; selfId: stri
             </div>
           );
         }
+        const member = room.members[slot.index];
         return (
           <div key={member.id} className={'tl-seat' + (member.owner ? ' owner' : '')}>
             {member.owner && <img className="tl-crown" src={crownIcon} alt="Chủ bàn" />}
@@ -83,11 +123,38 @@ function RoomChatLog({ room, selfId, empty }: { room: RoomStateData; selfId: str
       {roomChat.map((msg) => (
         <div key={`${msg.userId}-${msg.sentAt}`} className="tl-chat-line">
           <b>
-            <PlayerName name={msg.name} self={msg.userId === selfId} owner={msg.userId === room.ownerId} />:
+            <PlayerName name={msg.name} self={msg.userId === selfId} owner={msg.userId === room.ownerId} />
+            {msg.spectator && <span className="tl-chat-viewer-tag">xem</span>}:
           </b>{' '}
           {msg.text}
         </div>
       ))}
+    </div>
+  );
+}
+
+function RoomChatInput({ placeholder }: { placeholder: string }) {
+  const sendRoomChatText = useThirteen((s) => s.sendRoomChatText);
+  const [draft, setDraft] = useState('');
+  const send = (): void => {
+    if (!draft.trim()) return;
+    sendRoomChatText(draft);
+    setDraft('');
+  };
+  return (
+    <div className="tl-chat-input-row">
+      <input
+        className="tl-input"
+        value={draft}
+        maxLength={120}
+        placeholder={placeholder}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && send()}
+      />
+      <button type="button" className="tl-btn tl-btn-gold tl-send-btn" disabled={!draft.trim()} onClick={send}>
+        <span>Gửi</span>
+        <img src={sendIcon} alt="" />
+      </button>
     </div>
   );
 }
@@ -98,7 +165,7 @@ function WatchedRoomScreen() {
   const joinWatchedRoom = useThirteen((s) => s.joinWatchedRoom);
 
   if (!room) return null;
-  const freeSeat = room.members.length < (room.maxPlayers ?? 4);
+  const freeSeat = room.members.length < (room.maxPlayers ?? ROOM_SEATS);
   const waitingFor = room.members.filter((m) => !m.owner && !m.ready).length;
 
   return (
@@ -126,10 +193,7 @@ function WatchedRoomScreen() {
 
       <div className="tl-room-chat">
         <RoomChatLog room={room} selfId="" empty="Chưa có ai trò chuyện..." />
-        <p className="tl-chat-readonly">
-          <img src={eyeIcon} alt="" />
-          Người xem chỉ đọc được trò chuyện của bàn
-        </p>
+        <RoomChatInput placeholder="Nhắn với bàn (bạn đang xem)..." />
       </div>
 
       <div className="tl-room-actions">
@@ -157,8 +221,7 @@ function MemberRoomScreen() {
   const setReady = useThirteen((s) => s.setReady);
   const startRoom = useThirteen((s) => s.startRoom);
   const kickMember = useThirteen((s) => s.kickMember);
-  const sendRoomChatText = useThirteen((s) => s.sendRoomChatText);
-  const [draft, setDraft] = useState('');
+  const setRoomSeats = useThirteen((s) => s.setRoomSeats);
 
   if (!room || !user) return null;
   const isOwner = room.ownerId === user.id;
@@ -166,12 +229,6 @@ function MemberRoomScreen() {
   const readyGuests = room.members.filter((m) => !m.owner && m.ready).length;
   const guests = room.members.length - 1;
   const canStart = room.members.length >= 2 && readyGuests === guests;
-
-  const send = (): void => {
-    if (!draft.trim()) return;
-    sendRoomChatText(draft);
-    setDraft('');
-  };
 
   return (
     <div className="tl-screen tl-room">
@@ -189,24 +246,16 @@ function MemberRoomScreen() {
         <VoiceTopbarSlot />
       </div>
 
-      <RoomSeats room={room} selfId={user.id} onKick={isOwner ? kickMember : undefined} />
+      <RoomSeats
+        room={room}
+        selfId={user.id}
+        onKick={isOwner ? kickMember : undefined}
+        onSeats={isOwner ? setRoomSeats : undefined}
+      />
 
       <div className="tl-room-chat">
         <RoomChatLog room={room} selfId={user.id} empty="Trò chuyện với người trong bàn..." />
-        <div className="tl-chat-input-row">
-          <input
-            className="tl-input"
-            value={draft}
-            maxLength={120}
-            placeholder="Nhập tin nhắn..."
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && send()}
-          />
-          <button type="button" className="tl-btn tl-btn-gold tl-send-btn" disabled={!draft.trim()} onClick={send}>
-            <span>Gửi</span>
-            <img src={sendIcon} alt="" />
-          </button>
-        </div>
+        <RoomChatInput placeholder="Nhập tin nhắn..." />
       </div>
 
       <div className="tl-room-actions">

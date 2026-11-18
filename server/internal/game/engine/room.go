@@ -344,6 +344,44 @@ func (e *Engine) KickRoomMember(gameID, ownerID, roomID, targetID string) {
 	e.emitRoomState(room)
 }
 
+func (e *Engine) SetRoomSeats(gameID, ownerID, roomID string, maxPlayers int) {
+	gameLogic, err := logic.Get(gameID)
+	if err != nil {
+		e.sendError(gameID, ownerID, protocol.ErrorCodeUnknownGame, err.Error())
+		return
+	}
+
+	e.roomMu.Lock()
+	defer e.roomMu.Unlock()
+
+	room, release, ok := e.roomForAction(gameID, ownerID, roomID)
+	if !ok {
+		return
+	}
+	defer release()
+	if room.OwnerID != ownerID {
+		e.sendError(gameID, ownerID, protocol.ErrorCodeNotRoomOwner, "only the room owner can change seats")
+		return
+	}
+	if maxPlayers < logic.MinPlayers(gameLogic) || maxPlayers > logic.MaxPlayers(gameLogic) ||
+		maxPlayers < room.playerCount() || room.Bet > MaxBetFor(maxPlayers) {
+		e.sendError(gameID, ownerID, protocol.ErrorCodeRoomSeatsInvalid, "invalid room seats")
+		return
+	}
+	if room.capacity() == maxPlayers {
+		e.emitRoomStateTo(room, ownerID)
+		return
+	}
+
+	room.MaxPlayers = maxPlayers
+	if err := e.store.Save(room); err != nil {
+		e.sendError(gameID, ownerID, protocol.ErrorCodeRoomUpdateFailed, err.Error())
+		return
+	}
+	e.emitRoomUpsert(room)
+	e.emitRoomState(room)
+}
+
 func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 	e.roomMu.Lock()
 	defer e.roomMu.Unlock()

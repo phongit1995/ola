@@ -411,6 +411,40 @@ describe('Thirteen room after a match', () => {
   });
 });
 
+describe('Thirteen room seats', () => {
+  const calls = (name: string) => sessionCalls.filter(([key]) => key === name).map(([, args]) => args);
+  const guest = { id: 'opp', name: 'Đối thủ', owner: false, ready: false };
+
+  it('creates every room with four seats', async () => {
+    await connect();
+    useThirteen.getState().createRoom('', 0, false);
+    expect(calls('createRoom')).toEqual([[0, undefined, 4, undefined, false]]);
+  });
+
+  it('lets the owner close and reopen empty seats', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'room', room: { ...waitingRoom, members: [...waitingRoom.members, guest] }, user: me });
+
+    useThirteen.getState().setRoomSeats(3);
+    useThirteen.getState().setRoomSeats(1);
+    useThirteen.getState().setRoomSeats(5);
+
+    expect(calls('setRoomSeats')).toEqual([['room-1', 3]]);
+  });
+
+  it('never closes a seat someone sits in or lets a guest change seats', async () => {
+    await connect();
+    const full = { ...waitingRoom, members: [...waitingRoom.members, guest, { ...guest, id: 'g3' }] };
+    useThirteen.setState({ phase: 'room', room: full, user: me });
+    useThirteen.getState().setRoomSeats(2);
+
+    useThirteen.setState({ room: { ...full, ownerId: 'opp' } });
+    useThirteen.getState().setRoomSeats(4);
+
+    expect(calls('setRoomSeats')).toEqual([]);
+  });
+});
+
 describe('Thirteen connecting screen', () => {
   it('explains a failed player load instead of spinning forever', async () => {
     await connect();
@@ -938,13 +972,21 @@ describe('Thirteen spectating', () => {
     expect(useThirteen.getState()).toMatchObject({ phase: 'lobby', spectating: false, notice: 'Ván đấu bạn đang xem đã kết thúc.' });
   });
 
-  it('never sends chat or reactions as a spectator', async () => {
+  it('lets a spectator chat but never react', async () => {
     await startWatching();
 
-    useThirteen.getState().sendChat('xin chào');
+    useThirteen.getState().sendChat('  xin chào  ');
     useThirteen.getState().sendReaction('LIKE');
 
-    expect(calls('sendChat')).toEqual([]);
+    expect(calls('sendChat')).toEqual([['match-w', 'xin chào']]);
     expect(calls('sendReaction')).toEqual([]);
+  });
+
+  it('lets a room watcher chat with the waiting room', async () => {
+    await watchUntilWaitingRoom();
+
+    useThirteen.getState().sendRoomChatText('cho mình vào với');
+
+    expect(calls('sendRoomChat')).toEqual([['room-w', 'cho mình vào với']]);
   });
 });

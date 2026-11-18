@@ -65,6 +65,7 @@ const WATCH_CHAT: ChatMessageData[] = [
   { matchId: 'm-watch', userId: 'u-2', name: 'hoangminh', text: 'đôi 2 đây, ai chặt nổi', sentAt: Date.now() - 25_000 },
   { matchId: 'm-watch', userId: 'u-4', name: 'quocbao', text: 'để tui', sentAt: Date.now() - 12_000 },
   { matchId: 'm-watch', userId: 'u-5', name: 'thuha', text: 'bỏ lượt thôi', sentAt: Date.now() - 4_000 },
+  { matchId: 'm-watch', userId: 'v-1', name: 'khachxem', text: 'ván này căng quá', sentAt: Date.now() - 2_000, spectator: true },
 ];
 
 const VIEWERS: PlayerInfo[] = [
@@ -320,6 +321,8 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   'room-host': () => ({ phase: 'room', room: room(0, 4, 3), roomChat: ROOM_CHAT }),
   'room-guest': () => ({ phase: 'room', room: room(1, 4, 4), roomChat: ROOM_CHAT }),
   'room-2p': () => ({ phase: 'room', room: room(0, 2, 2), roomChat: [] }),
+  'room-seats-closed': () => ({ phase: 'room', room: room(0, 3, 2), roomChat: ROOM_CHAT }),
+  'room-seats-min': () => ({ phase: 'room', room: room(0, 2, 1), roomChat: [] }),
   table: () => table(PLAYERS_4),
   'table-2p': () => table(PLAYERS_4.slice(0, 2)),
   'table-3p': () => table(PLAYERS_4.slice(0, 3)),

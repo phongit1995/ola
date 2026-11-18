@@ -150,8 +150,6 @@ Huy chương hạng ở cả hai màn dùng lại `tl-result-medal` (`gold` / `s
 | `tl-modal` | CSS component | cream panel, navy border, radius 20 |
 | `tl-modal-title` | live text | title.lg navy |
 | `tl-modal-text` | live text | body.md navy/teal |
-| `tl-capacity-row` | layout | 3 segment flex, 8 px gap |
-| `tl-capacity-btn` | CSS component | cream segment; `.active` aqua/sun + check/border |
 | `tl-bet-input` | existing PNG + input | icon Ken vàng 26 px, numeric value mặc định 0, suffix KEN |
 | `tl-bet-hint` | live text | helper teal hoặc validation coral; `aria-live` |
 | `tl-modal-actions` | layout | two equal 48 px buttons |
@@ -344,7 +342,7 @@ Danh sách class/tên `tl-*` cần được coverage khi source thay đổi:
 tl-action-bar tl-app tl-avatar tl-avatar-lg tl-avatar-md tl-avatar-sm
 tl-away-badge tl-badge tl-badge-gold tl-badge-green tl-badge-red
 tl-btn tl-btn-disabled tl-btn-ghost tl-btn-gold tl-btn-sm tl-btn-wide
-tl-capacity-btn tl-capacity-row tl-chat-hint tl-chat-input-row tl-count-badge
+tl-chat-hint tl-chat-viewer-tag tl-chat-input-row tl-count-badge
 tl-chat-btn tl-chat-bubble tl-chat-line tl-chat-overlay tl-chat-panel tl-crown tl-disconnect-overlay
 tl-felt tl-field-label tl-finish-banner tl-hand tl-hand-card tl-hint-btn tl-hint-step tl-icon-btn tl-input
 tl-ken-amount tl-ken-coin tl-ken-pill tl-kick-btn tl-loading tl-loading-sub

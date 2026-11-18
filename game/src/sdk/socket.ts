@@ -53,6 +53,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   joinRoom(roomId: string, password?: string): void;
   leaveRoom(roomId?: string): void;
   kickRoomMember(roomId: string, userId: string): void;
+  setRoomSeats(roomId: string, maxPlayers: number): void;
   setRoomReady(roomId: string, ready: boolean): void;
   startRoom(roomId: string): void;
   listRooms(): void;
@@ -165,6 +166,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
     leaveRoom: (roomId) => send(C2S.RoomLeave, roomId ? { roomId } : undefined),
     kickRoomMember: (roomId, userId) => send(C2S.RoomKick, { roomId, userId }),
+    setRoomSeats: (roomId, maxPlayers) => send(C2S.RoomSeats, { roomId, maxPlayers }),
     setRoomReady: (roomId, ready) => send(C2S.RoomReady, { roomId, ready }),
     startRoom: (roomId) => send(C2S.RoomStart, { roomId }),
     listRooms: () => send(C2S.RoomList),

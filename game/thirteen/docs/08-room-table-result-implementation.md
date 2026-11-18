@@ -98,14 +98,14 @@ Giao diện người xem:
 - topbar ghi “Đang xem” kèm icon mắt; nút back rời xem ngay, không hỏi xác nhận vì người xem không bị xử thua;
 - ghế 0 ngồi ở giữa phía dưới bàn (`.tl-seat-slot.bottom`, lưới `.tl-felt.watching` thêm hàng `bottom`), vẽ y như ghế đối diện: avatar, badge số lá, tên, hạng/bỏ lượt/mất kết nối. Không vẽ bài úp;
 - thanh dưới thay cho “Bỏ lượt / Đánh”: ghi chú “Bạn đang xem ván này” và nút “Rời xem”;
-- chat chỉ đọc: vẫn thấy tin nhắn và cảm xúc của người chơi, không có hàng cảm xúc, câu nhanh và ô nhập;
+- chat được (từ 18/11/2026): có câu nhanh và ô nhập (placeholder “Nhắn với bàn (bạn đang xem)...”), không có hàng cảm xúc vì cảm xúc gắn với ghế. Client gửi `CHAT_SEND { matchId }` như người chơi; server nhận ra socket đang xem ván đó (`spectating` theo socket) và gọi `SpectatorChat`, phát `CHAT_MESSAGE` kèm `spectator: true` cho người chơi và người xem. Tin người xem có nhãn “xem” sau tên, không hiện bong bóng trên ghế, không kêu `bridge.attention` của người chơi. Giới hạn 1 tin/0,5 s mỗi người, tối đa 120 ký tự như người chơi;
 - hết ván: không mở modal kết quả. Chờ bước đánh cuối phát xong (600 ms) và hạ bài (2,8 s) như người chơi, rồi chuyển sang bàn chờ của chính bàn đó (xem dưới). Nếu bàn đã giải tán thì về sảnh kèm toast “Ván đấu bạn đang xem đã kết thúc.”;
 - mất kết nối rồi có lại thì tự gửi lại yêu cầu xem; ván đã xong thì về sảnh kèm thông báo.
 
 Bàn chờ của người xem (giữa hai ván):
 - cùng lưới ghế với bàn chờ của người chơi (chủ bàn, đã/chưa sẵn sàng, ghế trống) nhưng không có nút mời ra; tiêu đề “Đang xem bàn chờ” kèm icon mắt;
 - thẻ trạng thái: “Đang chờ N người sẵn sàng” hoặc “Chờ chủ bàn bắt đầu ván mới”, dòng phụ “Ván mới bắt đầu bạn sẽ được xem tiếp”;
-- chat của bàn chỉ đọc (không có ô nhập);
+- chat được với bàn: gửi `CHAT_SEND { roomId }`, server thấy socket đang `ROOM_WATCH` đúng bàn thì gọi `WatcherRoomChat` (bàn phải cho xem), tin có `spectator: true`. Nếu người đó đã thành thành viên bàn thì tính là tin của thành viên;
 - nút “Rời xem” về sảnh; còn ghế trống thì có “Vào chơi” (gửi `ROOM_JOIN`, vào được thì thành người chơi của bàn), đủ người thì nút xám “Bàn đã đủ người”;
 - chủ bàn bắt đầu ván mới: sảnh nhận `ROOM_UPSERT` bàn `playing` kèm `matchId` mới, client tự gửi `SPECTATE_JOIN` và quay lại màn bàn đang xem;
 - bàn giải tán (`ROOM_CLOSED` hoặc `ROOM_REMOVED`) khi đang ở bàn chờ: về sảnh kèm toast “Bàn bạn đang xem đã giải tán.”. Nếu giải tán khi đang xem ván thì xem nốt ván rồi về sảnh.

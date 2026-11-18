@@ -1,4 +1,21 @@
 export const ROOM_PASSWORD_MAX_LENGTH = 32;
+export const ROOM_SEATS = 4;
+export const MIN_ROOM_SEATS = 2;
+
+export type RoomSeatSlot = { kind: 'member'; index: number } | { kind: 'open' } | { kind: 'closed' };
+
+export function roomSeatSlots(memberCount: number, maxPlayers: number | undefined): RoomSeatSlot[] {
+  const open = Math.min(ROOM_SEATS, Math.max(MIN_ROOM_SEATS, maxPlayers ?? ROOM_SEATS, memberCount));
+  return Array.from({ length: ROOM_SEATS }, (_, index): RoomSeatSlot => {
+    if (index < memberCount) return { kind: 'member', index };
+    return index < open ? { kind: 'open' } : { kind: 'closed' };
+  });
+}
+
+export function canCloseSeat(memberCount: number, maxPlayers: number | undefined): boolean {
+  const open = maxPlayers ?? ROOM_SEATS;
+  return open > MIN_ROOM_SEATS && open > memberCount;
+}
 
 export function formatKen(value: number): string {
   const safeValue = Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;

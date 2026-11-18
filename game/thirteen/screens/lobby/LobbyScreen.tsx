@@ -3,7 +3,6 @@ import type { RoomInfo } from '../../../src/sdk';
 import backIcon from '../../assets/icons/ic-back.svg';
 import botIcon from '../../assets/icons/ic-bot.svg';
 import cardsEmptyIcon from '../../assets/icons/ic-cards-empty.svg';
-import checkIcon from '../../assets/icons/ic-check.svg';
 import eyeIcon from '../../assets/icons/ic-eye.svg';
 import historyIcon from '../../assets/icons/ic-history.svg';
 import lockIcon from '../../assets/icons/ic-lock.svg';
@@ -51,7 +50,6 @@ function SeatDots({ players, maxPlayers }: { players: number; maxPlayers: number
 function CreateRoomModal({ onClose }: { onClose: () => void }) {
   const createRoom = useThirteen((s) => s.createRoom);
   const user = useThirteen((s) => s.user);
-  const [capacity, setCapacity] = useState(4);
   const [betInput, setBetInput] = useState('0');
   const [password, setPassword] = useState('');
   const canVoice = user?.vipType != null;
@@ -65,7 +63,7 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
   const submit = () => {
     if (createError) return;
     if (canVoice) writeVoiceFlag(VOICE_CREATE_ROOM_KEY, voice);
-    createRoom(capacity, password.trim(), bet, canVoice && voice);
+    createRoom(password.trim(), bet, canVoice && voice);
     onClose();
   };
   return (
@@ -87,21 +85,6 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
         <span className="tl-modal-accent" aria-hidden="true" />
         <div id="tl-create-room-title" className="tl-modal-title">
           Tạo bàn mới
-        </div>
-        <div className="tl-field-label">Số người chơi</div>
-        <div className="tl-capacity-row">
-          {[2, 3, 4].map((n) => (
-            <button
-              key={n}
-              type="button"
-              className={'tl-capacity-btn' + (capacity === n ? ' active' : '')}
-              aria-pressed={capacity === n}
-              onClick={() => setCapacity(n)}
-            >
-              <span>{n} người</span>
-              {capacity === n && <img className="tl-capacity-check" src={checkIcon} alt="" />}
-            </button>
-          ))}
         </div>
         <label className="tl-field-label" htmlFor="tl-create-room-bet">
           Cược mỗi người
