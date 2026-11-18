@@ -17,6 +17,7 @@ import {
   isMinUploadLongestSide,
   nextUploadLongestSide,
   preservesAlpha,
+  uploadNameForType,
   withUploadExtension,
 } from '@ola/shared/lib';
 
@@ -99,7 +100,9 @@ export async function compressImageForUpload(file: NativeUploadFile): Promise<Na
   }
 
   const described = await describeUploadFile(file);
-  if (canUploadImageOriginal(described)) return described;
+  if (canUploadImageOriginal(described)) {
+    return { ...described, name: uploadNameForType(described.name, described.type) };
+  }
 
   let longest =
     described.width != null && described.height != null

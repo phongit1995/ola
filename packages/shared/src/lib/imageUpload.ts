@@ -49,9 +49,23 @@ export function preservesAlpha(type: string): boolean {
   return type === 'image/png' || type === 'image/webp';
 }
 
-export function withUploadExtension(name: string, extension: 'jpg' | 'png'): string {
+type UploadExtension = 'jpg' | 'png' | 'webp';
+
+const UPLOAD_EXTENSION_BY_MIME: Record<string, UploadExtension> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+
+export function withUploadExtension(name: string, extension: UploadExtension): string {
   const base = name.replace(/\.[^./\\]+$/, '');
   return `${base === '' ? 'image' : base}.${extension}`;
+}
+
+export function uploadNameForType(name: string, type: string): string {
+  const extension = UPLOAD_EXTENSION_BY_MIME[type];
+  if (extension == null || mimeFromUploadName(name) === type) return name;
+  return withUploadExtension(name, extension);
 }
 
 export function assertUploadSize(size: number | undefined): void {
