@@ -2,6 +2,7 @@ import type {
   MegaphoneConfig,
   MegaphoneLuckyGame,
   MegaphoneSenderDisplay,
+  MegaphoneTicketSource,
   MegaphoneType,
 } from '../types/api/megaphone.type';
 import type { MegaphoneErrorKey } from '../types/lib.type';
@@ -35,7 +36,13 @@ export const DEFAULT_MEGAPHONE_CONFIG: MegaphoneConfig = {
   todayCount: 0,
   cooldownRemaining: 0,
   queueWaitSeconds: 0,
+  ticketCount: 0,
 };
+
+export const MEGAPHONE_TICKET_SOURCE = {
+  admin: 'admin',
+  giftCode: 'gift_code',
+} as const satisfies Record<string, MegaphoneTicketSource>;
 
 export const MEGAPHONE_ERROR_KEYS: Record<string, MegaphoneErrorKey> = {
   MEGAPHONE_DISABLED: 'megaphone.errors.disabled',
@@ -48,5 +55,6 @@ export const MEGAPHONE_ERROR_KEYS: Record<string, MegaphoneErrorKey> = {
   MEGAPHONE_QUEUE_FULL: 'megaphone.errors.queueFull',
   MEGAPHONE_INSUFFICIENT_KEN: 'megaphone.errors.insufficientKen',
   MEGAPHONE_REQUEST_CONFLICT: 'megaphone.errors.failed',
+  MEGAPHONE_NO_TICKET: 'megaphone.errors.noTicket',
   RATE_LIMITED: 'megaphone.errors.rateLimited',
 };

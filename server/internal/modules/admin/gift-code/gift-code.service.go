@@ -14,6 +14,7 @@ import (
 	admincommon "ola-chat-server/internal/modules/admin/common"
 	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	giftcode "ola-chat-server/internal/modules/gift-code"
+	"ola-chat-server/internal/modules/megaphone"
 	"ola-chat-server/internal/services"
 
 	"github.com/google/uuid"
@@ -608,6 +609,14 @@ func buildDraft(req *CampaignRequest) (campaignDraft, error) {
 			}
 			frames[r.FrameID] = struct{}{}
 			d.rewards = append(d.rewards, models.GiftCodeReward{Type: r.Type, FrameID: r.FrameID, ExpiresInDays: r.ExpiresInDays})
+		case models.GiftCodeRewardMegaphoneTicket:
+			if r.Count < 1 || r.Count > megaphone.TicketMaxPerGrant {
+				return d, invalidInput("Số vé loa từ 1 đến 100")
+			}
+			if r.ExpiresInDays > megaphone.TicketMaxDays {
+				return d, invalidInput("Hạn vé loa tối đa 365 ngày")
+			}
+			d.rewards = append(d.rewards, models.GiftCodeReward{Type: r.Type, Count: r.Count, ExpiresInDays: r.ExpiresInDays})
 		}
 	}
 	if len(d.rewards) == 0 {
@@ -657,7 +666,7 @@ func mapCodeConflict(err error) error {
 func toRewardItems(rewards models.GiftCodeRewards) []RewardItem {
 	items := make([]RewardItem, 0, len(rewards))
 	for _, r := range rewards {
-		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID, ExpiresInDays: r.ExpiresInDays})
+		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID, Count: r.Count, ExpiresInDays: r.ExpiresInDays})
 	}
 	return items
 }

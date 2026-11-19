@@ -2,9 +2,12 @@ import { OPEN_PLATFORM_RULES } from '@/lib/platformRules'
 import type {
   ContentCheckReason,
   ContentFilterSetting,
+  MegaphonePaidWith,
   MegaphoneSenderDisplay,
   MegaphoneSetting,
   MegaphoneStatus,
+  MegaphoneTicketSource,
+  MegaphoneTicketStatus,
   MegaphoneType,
 } from '@/types'
 
@@ -72,6 +75,27 @@ export const MEGAPHONE_TYPE_TAG: Record<MegaphoneType, { label: string; color: s
   gift: { label: 'Loa quà', color: 'magenta' },
   lucky: { label: 'Loa trúng thưởng', color: 'gold' },
 }
+
+export const MEGAPHONE_PAID_WITH_OPTIONS: { value: 'all' | Exclude<MegaphonePaidWith, 'free'>; label: string }[] = [
+  { value: 'all', label: 'Trả bằng: tất cả' },
+  { value: 'ken', label: 'Trả bằng KEN' },
+  { value: 'ticket', label: 'Trả bằng vé loa' },
+]
+
+export const MEGAPHONE_TICKET_SOURCE_LABEL: Record<MegaphoneTicketSource, string> = {
+  admin: 'Admin tặng',
+  gift_code: 'Mã quà tặng',
+}
+
+export const MEGAPHONE_TICKET_STATUS_TAG: Record<MegaphoneTicketStatus, { label: string; color: string }> = {
+  usable: { label: 'Còn dùng được', color: 'green' },
+  used: { label: 'Đã dùng', color: 'blue' },
+  expired: { label: 'Hết hạn', color: 'default' },
+  revoked: { label: 'Thu hồi', color: 'red' },
+}
+
+export const MEGAPHONE_TICKET_GRANT_MAX = 100
+export const MEGAPHONE_TICKET_DAYS_MAX = 365
 
 export const MEGAPHONE_TYPE_OPTIONS = [
   { value: 'all', label: 'Tất cả loại' },

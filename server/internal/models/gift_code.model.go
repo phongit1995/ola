@@ -16,6 +16,8 @@ const (
 	GiftCodeRewardVipDays     = "vip_days"
 	GiftCodeRewardVipIcon     = "vip_icon"
 	GiftCodeRewardAvatarFrame = "avatar_frame"
+
+	GiftCodeRewardMegaphoneTicket = "megaphone_ticket"
 )
 
 type GiftCodeReward struct {
@@ -23,6 +25,7 @@ type GiftCodeReward struct {
 	Days      int    `json:"days,omitempty"`
 	VipIconID int16  `json:"vipIconId,omitempty"`
 	FrameID   string `json:"frameId,omitempty"`
+	Count     int    `json:"count,omitempty"`
 
 	ExpiresInDays int `json:"expiresInDays,omitempty"`
 }

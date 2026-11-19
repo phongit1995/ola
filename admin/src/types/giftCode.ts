@@ -4,7 +4,7 @@ export type GiftCodeKind = 'shared' | 'unique'
 
 export type GiftCodeStatus = 'running' | 'scheduled' | 'soldout' | 'expired' | 'off'
 
-export type GiftCodeRewardType = 'vip_days' | 'vip_icon' | 'avatar_frame'
+export type GiftCodeRewardType = 'vip_days' | 'vip_icon' | 'avatar_frame' | 'megaphone_ticket'
 
 export type GiftCodeCodeStatus = 'unused' | 'used' | 'locked'
 
@@ -39,6 +39,7 @@ export interface GiftCodeReward {
   days?: number
   vipIconId?: number
   frameId?: string
+  count?: number
   expiresInDays?: number
 }
 
@@ -108,6 +109,7 @@ export interface GiftCodeCampaignStats {
   redeemedToday: number
   redeemedTotal: number
   vipDaysGiven: number
+  megaphoneTicketsGiven: number
 }
 
 export interface GiftCodeCampaignListParams {

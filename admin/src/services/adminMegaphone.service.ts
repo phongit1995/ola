@@ -1,7 +1,10 @@
 import http from '@/api/http'
 import type {
+  AdminUserMegaphoneTicket,
+  AdminUserMegaphoneTicketList,
   ApiResponse,
   ContentCheckResult,
+  GrantMegaphoneTicketsRequest,
   MegaphoneListParams,
   MegaphoneListResult,
   RemoveMegaphoneRequest,
@@ -16,6 +19,26 @@ export const AdminMegaphoneService = {
 
   async remove(id: string, payload: RemoveMegaphoneRequest): Promise<RemoveMegaphoneResult> {
     const { data } = await http.post<ApiResponse<RemoveMegaphoneResult>>(`/admin/megaphones/${id}/remove`, payload)
+    return data.data
+  },
+
+  async userTickets(userId: string): Promise<AdminUserMegaphoneTicketList> {
+    const { data } = await http.get<ApiResponse<AdminUserMegaphoneTicketList>>(`/admin/users/${userId}/megaphone-tickets`)
+    return data.data
+  },
+
+  async grantUserTickets(userId: string, payload: GrantMegaphoneTicketsRequest): Promise<AdminUserMegaphoneTicketList> {
+    const { data } = await http.post<ApiResponse<AdminUserMegaphoneTicketList>>(
+      `/admin/users/${userId}/megaphone-tickets`,
+      payload,
+    )
+    return data.data
+  },
+
+  async revokeUserTicket(userId: string, ticketId: string): Promise<AdminUserMegaphoneTicket> {
+    const { data } = await http.post<ApiResponse<AdminUserMegaphoneTicket>>(
+      `/admin/users/${userId}/megaphone-tickets/${ticketId}/revoke`,
+    )
     return data.data
   },
 

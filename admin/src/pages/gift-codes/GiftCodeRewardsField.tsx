@@ -2,7 +2,12 @@ import { Button, Divider, Form, InputNumber, Select, Space, Typography } from 'a
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { AvatarFrameSelect } from '@/components/AvatarFrameSelect'
 import { VIP_CATALOG, vipIconUrl } from '@/lib/vipCatalog'
-import { GIFT_CODE_MAX_REWARDS, GIFT_CODE_REWARD_TYPE_OPTIONS } from './constants'
+import {
+  GIFT_CODE_MAX_REWARDS,
+  GIFT_CODE_REWARD_TYPE_OPTIONS,
+  GIFT_CODE_TICKET_MAX_COUNT,
+  GIFT_CODE_TICKET_MAX_DAYS,
+} from './constants'
 import type { GiftCodeFormValues } from './types'
 import { cleanRewards } from './utils'
 
@@ -41,6 +46,10 @@ function GiftCodeRewardRow({ name, disabled, onRemove }: { name: number; disable
             filterOption={(input, option) => String(option?.name ?? '').toLowerCase().includes(input.toLowerCase())}
           />
         </Form.Item>
+      ) : type === 'megaphone_ticket' ? (
+        <Form.Item name={[name, 'count']} style={{ flex: 1, marginBottom: 12 }} rules={[{ required: true, message: 'Nhập số vé' }]}>
+          <InputNumber disabled={disabled} min={1} max={GIFT_CODE_TICKET_MAX_COUNT} precision={0} addonAfter="vé" style={{ width: '100%' }} />
+        </Form.Item>
       ) : (
         <Form.Item name={[name, 'days']} style={{ flex: 1, marginBottom: 12 }} rules={[{ required: true, message: 'Nhập số ngày' }]}>
           <InputNumber disabled={disabled} min={1} max={3650} addonAfter="ngày" style={{ width: '100%' }} />
@@ -49,6 +58,10 @@ function GiftCodeRewardRow({ name, disabled, onRemove }: { name: number; disable
       {type === 'avatar_frame' || type === 'vip_icon' ? (
         <Form.Item name={[name, 'expiresInDays']} style={{ width: 130, marginBottom: 12 }}>
           <InputNumber disabled={disabled} min={0} max={3650} precision={0} placeholder="Vĩnh viễn" addonAfter="ngày" />
+        </Form.Item>
+      ) : type === 'megaphone_ticket' ? (
+        <Form.Item name={[name, 'expiresInDays']} style={{ width: 130, marginBottom: 12 }}>
+          <InputNumber disabled={disabled} min={0} max={GIFT_CODE_TICKET_MAX_DAYS} precision={0} placeholder="Không hạn" addonAfter="ngày" />
         </Form.Item>
       ) : null}
       <Button type="text" danger icon={<DeleteOutlined />} disabled={disabled || onRemove == null} onClick={onRemove} />
@@ -98,6 +111,7 @@ export function GiftCodeRewardsField({ locked }: { locked: boolean }) {
       <Typography.Paragraph type="secondary" style={{ fontSize: 13 }}>
         Ngày VIP tính từ lúc nhận, đang có VIP thì cộng dồn. Icon và khung luôn bị khoá (không chuyển được cho người khác); để trống ô ngày thì giữ vĩnh viễn, nhập số ngày thì hết hạn sau từng ấy ngày kể từ lúc nhập mã.
         Khung cần còn VIP mới đeo được. Ai đã có sẵn khung thì chỉ nhận các quà còn lại; mã chỉ có khung thì họ không nhận được và không mất lượt.
+        Vé loa: mỗi vé phát được 1 loa miễn phí, không chuyển được; để trống ô ngày thì vé không hạn, tối đa 365 ngày.
       </Typography.Paragraph>
     </>
   )

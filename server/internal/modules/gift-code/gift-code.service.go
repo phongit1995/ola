@@ -9,6 +9,7 @@ import (
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
 	avatarframe "ola-chat-server/internal/modules/avatar-frame"
+	"ola-chat-server/internal/modules/megaphone"
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/user"
@@ -297,6 +298,13 @@ func grantRewards(tx *gorm.DB, userID uuid.UUID, code string, campaign *models.G
 			if !granted {
 				return &rejection{reason: ReasonOwned, campaignID: &campaign.ID}
 			}
+		case models.GiftCodeRewardMegaphoneTicket:
+			if r.Count <= 0 {
+				continue
+			}
+			if _, err := megaphone.GrantTicketsTx(tx, userID, r.Count, models.MegaphoneTicketSourceGiftCode, &campaign.ID, r.ExpiresInDays, now); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -389,7 +397,7 @@ func (s *Service) PurgeAttempts() (int64, error) {
 func toRewardItems(rewards models.GiftCodeRewards) []RewardItem {
 	items := make([]RewardItem, 0, len(rewards))
 	for _, r := range rewards {
-		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID, ExpiresInDays: r.ExpiresInDays})
+		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID, Count: r.Count, ExpiresInDays: r.ExpiresInDays})
 	}
 	return items
 }

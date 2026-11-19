@@ -119,6 +119,10 @@ func (s *Service) Config(client setting.Client, userID uuid.UUID) (*ConfigRespon
 	if err != nil {
 		return nil, err
 	}
+	ticketCount, err := s.repo.UsableTicketCount(userID, now)
+	if err != nil {
+		return nil, err
+	}
 	return &ConfigResponse{
 		Enabled:           cfg.EnabledFor(client),
 		KenPrice:          cfg.KenPrice,
@@ -130,7 +134,29 @@ func (s *Service) Config(client setting.Client, userID uuid.UUID) (*ConfigRespon
 		TodayCount:        int(today),
 		CooldownRemaining: ceilSeconds(cooldownLeft),
 		QueueWaitSeconds:  ceilSeconds(queueWait(waiting, cfg.SlotSeconds(), s.runningSlot(now))),
+		TicketCount:       ticketCount,
 	}, nil
+}
+
+func (s *Service) Tickets(userID uuid.UUID) (*TicketListResponse, error) {
+	tickets, err := s.repo.UsableTickets(userID, time.Now().UTC())
+	if err != nil {
+		return nil, err
+	}
+	items := make([]TicketItem, 0, len(tickets))
+	for _, t := range tickets {
+		items = append(items, TicketItem{ID: t.ID.String(), Source: t.Source, ExpiresAt: t.ExpiresAt, CreatedAt: t.CreatedAt})
+	}
+	return &TicketListResponse{Items: items}, nil
+}
+
+func (s *Service) ticketCount(userID uuid.UUID) int {
+	count, err := s.repo.UsableTicketCount(userID, time.Now().UTC())
+	if err != nil {
+		s.logger.Warnw("Failed to count megaphone tickets", "user_id", userID, "error", err.Error())
+		return 0
+	}
+	return count
 }
 
 func (s *Service) validateContent(raw string, maxLength int) (string, error) {
@@ -184,6 +210,7 @@ func (s *Service) Send(client setting.Client, senderID uuid.UUID, req SendReques
 		DayStart:        dayStart(now),
 		Cooldown:        cooldownOf(cfg),
 		ClientRequestID: clientRequestID,
+		UseTicket:       req.UseTicket,
 		Now:             now,
 	})
 	if err != nil {
@@ -200,7 +227,13 @@ func (s *Service) Send(client setting.Client, senderID uuid.UUID, req SendReques
 
 	view := s.ToView(&result.Megaphone)
 	s.afterSend(senderID, result.SenderBalance, view)
-	return &SendResponse{Megaphone: view, KenBalance: result.SenderBalance, WaitSeconds: ceilSeconds(result.Wait)}, nil
+	return &SendResponse{
+		Megaphone:   view,
+		KenBalance:  result.SenderBalance,
+		WaitSeconds: ceilSeconds(result.Wait),
+		UsedTicket:  result.Megaphone.TicketID != nil,
+		TicketCount: s.ticketCount(senderID),
+	}, nil
 }
 
 func (s *Service) replay(existing *models.Megaphone, content string) (*SendResponse, error) {
@@ -211,7 +244,13 @@ func (s *Service) replay(existing *models.Megaphone, content string) (*SendRespo
 	if err != nil {
 		return nil, err
 	}
-	return &SendResponse{Megaphone: s.ToView(existing), KenBalance: balance, WaitSeconds: s.replayWait(existing)}, nil
+	return &SendResponse{
+		Megaphone:   s.ToView(existing),
+		KenBalance:  balance,
+		WaitSeconds: s.replayWait(existing),
+		UsedTicket:  existing.TicketID != nil,
+		TicketCount: s.ticketCount(existing.SenderID),
+	}, nil
 }
 
 func (s *Service) replayWait(existing *models.Megaphone) int {

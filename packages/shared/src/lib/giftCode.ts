@@ -37,6 +37,9 @@ export function giftCodeRewardText(t: TFunction, reward: GiftCodeReward): string
   if (reward.type === GIFT_CODE_REWARD_TYPE.avatarFrame && reward.frameId != null) {
     return withRewardDays(t, t('giftCode.rewardAvatarFrame'), reward);
   }
+  if (reward.type === GIFT_CODE_REWARD_TYPE.megaphoneTicket && reward.count != null) {
+    return withRewardDays(t, t('giftCode.rewardMegaphoneTicket', { count: reward.count }), reward);
+  }
   return null;
 }
 

@@ -54,23 +54,43 @@ export interface MegaphoneConfig {
   todayCount: number;
   cooldownRemaining: number;
   queueWaitSeconds: number;
+  ticketCount: number;
 }
 
 export type MegaphoneSenderDisplay = 'vip' | 'avatar';
 
-export type MegaphoneAppConfig = Omit<MegaphoneConfig, 'todayCount' | 'cooldownRemaining' | 'queueWaitSeconds'> & {
+export type MegaphoneAppConfig = Omit<
+  MegaphoneConfig,
+  'todayCount' | 'cooldownRemaining' | 'queueWaitSeconds' | 'ticketCount'
+> & {
   senderDisplay?: MegaphoneSenderDisplay;
 };
 
 export interface SendMegaphoneRequest {
   content: string;
   clientRequestId: string;
+  useTicket?: boolean;
 }
 
 export interface SendMegaphoneResult {
   megaphone: Megaphone;
   kenBalance: number;
   waitSeconds: number;
+  usedTicket?: boolean;
+  ticketCount?: number;
+}
+
+export type MegaphoneTicketSource = 'admin' | 'gift_code';
+
+export interface MegaphoneTicket {
+  id: string;
+  source: MegaphoneTicketSource | (string & {});
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface MegaphoneTicketListResult {
+  items: MegaphoneTicket[];
 }
 
 export interface MegaphoneHistoryParams {

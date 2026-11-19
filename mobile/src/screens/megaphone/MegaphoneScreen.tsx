@@ -9,6 +9,7 @@ import { colorForName, megaphoneSenderName } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { selectMegaphoneEnabled, useMegaphoneConfigStore } from '@ola/shared/stores/megaphone/megaphoneConfigStore';
 import { useMegaphoneHistory } from '@ola/shared/stores/megaphone/useMegaphoneHistory';
+import { useMegaphoneTicketStore } from '@ola/shared/stores/megaphone/megaphoneTicketStore';
 import type { Megaphone } from '@ola/shared/types';
 import { MEGAPHONE_IMAGE, MEGAPHONE_LINE } from '@components/megaphone/megaphoneAssets';
 import { InsetListSeparator } from '@components/ui/InsetListSeparator';
@@ -20,6 +21,8 @@ import { ROOT_ROUTES } from '@navigation/routes';
 import type { RootStackParamList } from '@navigation/types';
 import { MegaphoneComposeDialog } from './components/MegaphoneComposeDialog';
 import { MegaphoneHistoryItem } from './components/MegaphoneHistoryItem';
+import { MegaphoneTicketListDialog } from './components/MegaphoneTicketListDialog';
+import { MegaphoneTicketSummary } from './components/MegaphoneTicketSummary';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.Megaphone>;
 
@@ -34,12 +37,14 @@ export function MegaphoneScreen({ navigation }: Props) {
   const history = useMegaphoneHistory();
   const megaphoneEnabled = useMegaphoneConfigStore(selectMegaphoneEnabled);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [ticketsOpen, setTicketsOpen] = useState(false);
   const [menuTarget, setMenuTarget] = useState<Megaphone | null>(null);
   const [reportTarget, setReportTarget] = useState<Megaphone | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
     void useMegaphoneConfigStore.getState().load();
+    void useMegaphoneTicketStore.getState().load();
   }, []);
 
   function openProfile(megaphone: Megaphone) {
@@ -78,7 +83,10 @@ export function MegaphoneScreen({ navigation }: Props) {
             style={{ width: HERO_IMAGE_SIZE, height: HERO_IMAGE_SIZE }}
             resizeMode="contain"
           />
-          <Text className="min-w-0 flex-1 text-base font-semibold text-ola-ink">{t('megaphone.composeTitle')}</Text>
+          <View className="min-w-0 flex-1">
+            <Text className="text-base font-semibold text-ola-ink">{t('megaphone.composeTitle')}</Text>
+            <MegaphoneTicketSummary onOpen={() => setTicketsOpen(true)} />
+          </View>
           <Pressable
             onPress={() => setComposeOpen(true)}
             className="rounded-full bg-ola-warning px-4 py-2 active:opacity-80"
@@ -152,6 +160,7 @@ export function MegaphoneScreen({ navigation }: Props) {
           }}
         />
       )}
+      {ticketsOpen && <MegaphoneTicketListDialog onClose={() => setTicketsOpen(false)} />}
       <ListOptionDialog
         visible={menuTarget != null}
         title={menuTarget != null ? megaphoneSenderName(menuTarget) : ''}

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, Spinner, VipIcon } from '@components';
-import { GIFT_CODE_MAX_LENGTH, GIFT_CODE_REWARD_TYPE } from '@constants';
+import { GIFT_CODE_MAX_LENGTH, GIFT_CODE_REWARD_TYPE, MEGAPHONE_TICKET_ICON } from '@constants';
 import { giftCodeRewardText } from '@lib';
 import { avatarFrameById } from '@ola/shared/lib/avatarFrame';
 import { useGiftCodeRedeem } from '@ola/shared/stores/gift-code/useGiftCodeRedeem';
@@ -13,25 +13,30 @@ interface GiftCodeDialogProps {
   onClose: () => void;
 }
 
-function RewardChip({ reward }: { reward: GiftCodeReward }) {
-  const { t } = useTranslation();
-  const text = giftCodeRewardText(t, reward);
-  if (text == null) return null;
-  const isIcon =
-    reward.type === GIFT_CODE_REWARD_TYPE.vipIcon && reward.vipIconId != null;
+function RewardIcon({ reward }: { reward: GiftCodeReward }) {
+  if (reward.type === GIFT_CODE_REWARD_TYPE.megaphoneTicket) {
+    return <img src={MEGAPHONE_TICKET_ICON} alt="" className="h-6 w-6 object-contain" />;
+  }
+  if (reward.type === GIFT_CODE_REWARD_TYPE.vipIcon && reward.vipIconId != null) {
+    return <VipIcon typeId={reward.vipIconId} className="h-6 w-6" />;
+  }
   const frameUrl =
     reward.type === GIFT_CODE_REWARD_TYPE.avatarFrame
       ? avatarFrameById(reward.frameId)?.url
       : undefined;
+  if (frameUrl != null) {
+    return <img src={frameUrl} alt="" className="h-6 w-6 object-contain" />;
+  }
+  return <img src={vipCrownIcon} alt="" className="h-5 w-6 object-contain" />;
+}
+
+function RewardChip({ reward }: { reward: GiftCodeReward }) {
+  const { t } = useTranslation();
+  const text = giftCodeRewardText(t, reward);
+  if (text == null) return null;
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-ola-primary/10 py-1 pl-1.5 pr-3 text-sm font-semibold text-black/87">
-      {frameUrl != null ? (
-        <img src={frameUrl} alt="" className="h-6 w-6 object-contain" />
-      ) : isIcon ? (
-        <VipIcon typeId={reward.vipIconId} className="h-6 w-6" />
-      ) : (
-        <img src={vipCrownIcon} alt="" className="h-5 w-6 object-contain" />
-      )}
+      <RewardIcon reward={reward} />
       {text}
     </span>
   );

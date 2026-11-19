@@ -5,12 +5,44 @@ import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useMegaphoneComposer, type MegaphoneComposer } from '@ola/shared/stores/megaphone/useMegaphoneComposer';
 import type { SendMegaphoneResult } from '@ola/shared/types';
 import { GIFT_ASSETS } from '@components/gift/giftAssets';
-import { MEGAPHONE_IMAGE } from '@components/megaphone/megaphoneAssets';
+import { MEGAPHONE_IMAGE, MEGAPHONE_LINE, MEGAPHONE_TICKET_IMAGE } from '@components/megaphone/megaphoneAssets';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { MegaphoneContentInput } from './MegaphoneContentInput';
 import { MegaphonePreview } from './MegaphonePreview';
 
 const KEN_ICON_STYLE = { width: 16, height: 16 };
+const TICKET_ICON_STYLE = { width: 20, height: 20 };
+const CHECKBOX_SIZE = 18;
+
+function TicketToggle({ composer }: { composer: MegaphoneComposer }) {
+  const { t } = useTranslation();
+  const checked = composer.useTicket;
+  return (
+    <Pressable
+      onPress={composer.toggleUseTicket}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked }}
+      className={`flex-row items-center gap-2 rounded-lg px-3 py-2 active:opacity-80 ${checked ? 'bg-ola-megaphone-soft' : ''}`}
+      style={{ borderWidth: 1, borderColor: checked ? MEGAPHONE_LINE : 'rgba(0,0,0,0.12)' }}
+    >
+      <View
+        className={`items-center justify-center rounded ${checked ? 'bg-ola-warning' : ''}`}
+        style={{
+          width: CHECKBOX_SIZE,
+          height: CHECKBOX_SIZE,
+          borderWidth: checked ? 0 : 2,
+          borderColor: 'rgba(0,0,0,0.38)',
+        }}
+      >
+        {checked && <Text className="text-xs font-bold text-white">✓</Text>}
+      </View>
+      <Image source={MEGAPHONE_TICKET_IMAGE} style={TICKET_ICON_STYLE} resizeMode="contain" />
+      <Text className={`flex-1 text-sm font-medium ${checked ? 'text-ola-megaphone-ink' : 'text-ola-ink'}`}>
+        {t('megaphone.ticket.useLabel', { count: composer.ticketCount })}
+      </Text>
+    </Pressable>
+  );
+}
 
 interface MegaphoneComposeDialogProps {
   onClose: () => void;
@@ -38,7 +70,9 @@ function ConfirmStep({ composer }: { composer: MegaphoneComposer }) {
         content={composer.normalizedContent}
       />
       <Text className="text-center text-base text-ola-ink">
-        {t('megaphone.confirmMessage', { ken: formatKen(composer.config.kenPrice) })}
+        {composer.payingWithTicket
+          ? t('megaphone.confirmPlain')
+          : t('megaphone.confirmMessage', { ken: formatKen(composer.config.kenPrice) })}
       </Text>
       {composer.waitMinutes > 0 && (
         <Text className="text-center text-sm text-ola-megaphone-ink">
@@ -58,8 +92,10 @@ function ComposeStep({ composer, onTopUp }: { composer: MegaphoneComposer; onTop
     if (composer.dailyLeft === 0) return t('megaphone.dailyReached');
     if (composer.cooldownLeft > 0) return t('megaphone.cooldown', { seconds: composer.cooldownLeft });
     if (composer.waitMinutes > 0) return t('megaphone.queueWait', { minutes: composer.waitMinutes });
-    return t('megaphone.dailyLeft', { count: composer.dailyLeft });
+    return null;
   }
+
+  const status = statusLine();
 
   if (!composer.loaded) {
     return (
@@ -78,14 +114,24 @@ function ComposeStep({ composer, onTopUp }: { composer: MegaphoneComposer; onTop
         counter={t('megaphone.remaining', { count: composer.length, max: config.maxLength })}
         onChange={composer.changeContent}
       />
-      <Text className="text-xs text-ola-ink-faint">{t('megaphone.rules')}</Text>
-      <Text className="text-center text-sm font-medium text-ola-megaphone-ink">{statusLine()}</Text>
+      <Text className="text-xs text-ola-ink-faint">
+        {t(composer.payingWithTicket ? 'megaphone.rulesTicket' : 'megaphone.rules')}
+      </Text>
+      {status != null && (
+        <Text className="text-center text-sm font-medium text-ola-megaphone-ink">{status}</Text>
+      )}
+      {composer.canUseTicket && <TicketToggle composer={composer} />}
       <View className="flex-row items-center justify-between rounded-lg bg-ola-surface px-3 py-2">
         <View className="flex-row items-center gap-1">
           <Text className="text-sm text-ola-ink-soft">{t('megaphone.balance')}</Text>
           <KenValue ken={composer.balance} className="text-ola-ink" />
         </View>
-        {composer.affordable ? (
+        {composer.payingWithTicket ? (
+          <View className="flex-row items-center gap-1">
+            <Text className="text-sm text-ola-ink-soft">{t('megaphone.price')}</Text>
+            <Text className="text-sm font-bold text-ola-megaphone-ink">{t('megaphone.ticket.price')}</Text>
+          </View>
+        ) : composer.affordable ? (
           <View className="flex-row items-center gap-1">
             <Text className="text-sm text-ola-ink-soft">{t('megaphone.price')}</Text>
             {config.kenPrice > 0 ? (

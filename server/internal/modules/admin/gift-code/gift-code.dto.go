@@ -7,10 +7,11 @@ import (
 )
 
 type RewardInput struct {
-	Type      string `json:"type" binding:"required,oneof=vip_days vip_icon avatar_frame" example:"vip_days"`
+	Type      string `json:"type" binding:"required,oneof=vip_days vip_icon avatar_frame megaphone_ticket" example:"vip_days"`
 	Days      int    `json:"days" binding:"omitempty,min=1,max=3650" example:"7"`
 	VipIconID int16  `json:"vipIconId" binding:"omitempty,min=1,max=138" example:"15"`
 	FrameID   string `json:"frameId" binding:"omitempty,len=3,numeric" example:"001"`
+	Count     int    `json:"count" binding:"omitempty,min=1,max=100" example:"3"`
 
 	ExpiresInDays int `json:"expiresInDays" binding:"omitempty,min=0,max=3650" example:"7"`
 }
@@ -59,6 +60,7 @@ type RewardItem struct {
 	Days      int    `json:"days,omitempty"`
 	VipIconID int16  `json:"vipIconId,omitempty"`
 	FrameID   string `json:"frameId,omitempty"`
+	Count     int    `json:"count,omitempty"`
 
 	ExpiresInDays int `json:"expiresInDays,omitempty"`
 }
@@ -96,6 +98,8 @@ type CampaignStats struct {
 	RedeemedToday int64 `json:"redeemedToday"`
 	RedeemedTotal int64 `json:"redeemedTotal"`
 	VipDaysGiven  int64 `json:"vipDaysGiven"`
+
+	MegaphoneTicketsGiven int64 `json:"megaphoneTicketsGiven"`
 }
 
 type CampaignListResponse struct {

@@ -1,5 +1,5 @@
 import { Badge, Space, Tag } from 'antd'
-import { CrownOutlined } from '@ant-design/icons'
+import { CrownOutlined, SoundOutlined } from '@ant-design/icons'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { avatarFrameName, avatarFrameUrl } from '@/pages/avatar-frames/utils'
 import type { GiftCodeKind, GiftCodeReward, GiftCodeStatus } from '@/types'
@@ -18,6 +18,11 @@ export function GiftCodeRewardTags({ rewards }: { rewards: GiftCodeReward[] }) {
         reward.type === 'vip_days' ? (
           <Tag key={index} color="gold" icon={<CrownOutlined />} style={{ marginInlineEnd: 0 }}>
             {reward.days} ngày VIP
+          </Tag>
+        ) : reward.type === 'megaphone_ticket' ? (
+          <Tag key={index} color="orange" icon={<SoundOutlined />} style={{ marginInlineEnd: 0 }}>
+            {reward.count} vé loa
+            {rewardDaysSuffix(reward)}
           </Tag>
         ) : reward.type === 'avatar_frame' ? (
           <Tag key={index} color="cyan" style={{ marginInlineEnd: 0 }}>

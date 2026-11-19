@@ -15,9 +15,12 @@ import type { Megaphone } from '@app-types';
 import megaphoneImage from '@/assets/images/member-megaphone.webp';
 import { selectMegaphoneEnabled, useMegaphoneConfigStore } from '@ola/shared/stores/megaphone/megaphoneConfigStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
+import { useMegaphoneTicketStore } from '@ola/shared/stores/megaphone/megaphoneTicketStore';
 import { UserProfileView } from '../profile/UserProfileView';
 import { MegaphoneComposeDialog } from './components/MegaphoneComposeDialog';
 import { MegaphoneHistoryItem } from './components/MegaphoneHistoryItem';
+import { MegaphoneTicketListDialog } from './components/MegaphoneTicketListDialog';
+import { MegaphoneTicketSummary } from './components/MegaphoneTicketSummary';
 
 interface ProfileTarget {
   username: string;
@@ -34,6 +37,7 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
   const history = useMegaphoneHistory();
   const megaphoneEnabled = useMegaphoneConfigStore(selectMegaphoneEnabled);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [ticketsOpen, setTicketsOpen] = useState(false);
   const [menuTarget, setMenuTarget] = useState<Megaphone | null>(null);
   const [reportTarget, setReportTarget] = useState<Megaphone | null>(null);
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
@@ -41,6 +45,7 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
 
   useEffect(() => {
     void useMegaphoneConfigStore.getState().load();
+    void useMegaphoneTicketStore.getState().load();
   }, []);
 
   function openProfile(megaphone: Megaphone) {
@@ -76,6 +81,7 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
             <img src={megaphoneImage} alt="" className="h-14 w-14 shrink-0 object-contain" draggable={false} />
             <div className="min-w-0 flex-1">
               <p className="text-base font-semibold text-black/87">{t('megaphone.composeTitle')}</p>
+              <MegaphoneTicketSummary onOpen={() => setTicketsOpen(true)} />
             </div>
             <button
               type="button"
@@ -132,6 +138,7 @@ export function MegaphonePage({ onClose }: MegaphonePageProps) {
           }}
         />
       )}
+      {ticketsOpen && <MegaphoneTicketListDialog onClose={() => setTicketsOpen(false)} />}
       <ListOptionDialog
         open={menuTarget != null}
         title={menuTarget != null ? megaphoneSenderName(menuTarget) : ''}

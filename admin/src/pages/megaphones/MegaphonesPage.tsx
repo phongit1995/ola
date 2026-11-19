@@ -7,9 +7,11 @@ import { UserBriefCell } from '@/components/UserBriefCell'
 import { PAGE_SIZE } from '@/lib/constants'
 import { toIsoRange } from '@/lib/dateRange'
 import { formatCount, formatDateTime } from '@/lib/format'
-import type { AdminMegaphone, MegaphoneStatus, MegaphoneType } from '@/types'
+import type { AdminMegaphone, MegaphonePaidWith, MegaphoneStatus, MegaphoneType } from '@/types'
 import { MegaphoneRemoveModal } from './MegaphoneRemoveModal'
+import { MegaphonePaidWithCell } from './MegaphoneTicketInfo'
 import {
+  MEGAPHONE_PAID_WITH_OPTIONS,
   MEGAPHONE_STATUS_OPTIONS,
   MEGAPHONE_STATUS_TAG,
   MEGAPHONE_TYPE_OPTIONS,
@@ -24,6 +26,7 @@ export function MegaphonesPage() {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<'all' | MegaphoneStatus>('all')
   const [type, setType] = useState<'all' | MegaphoneType>('all')
+  const [paidWith, setPaidWith] = useState<'all' | Exclude<MegaphonePaidWith, 'free'>>('all')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [page, setPage] = useState(1)
@@ -36,11 +39,12 @@ export function MegaphonesPage() {
       q: query || undefined,
       status: status === 'all' ? undefined : status,
       type: type === 'all' ? undefined : type,
+      paidWith: paidWith === 'all' ? undefined : paidWith,
       ...range,
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
     }),
-    [senderId, query, status, type, range, page],
+    [senderId, query, status, type, paidWith, range, page],
   )
   const { data, isFetching, refetch } = useMegaphones(params)
 
@@ -76,11 +80,11 @@ export function MegaphonesPage() {
       render: (value: string) => <Typography.Text style={{ whiteSpace: 'pre-wrap' }}>{value}</Typography.Text>,
     },
     {
-      title: 'KEN',
-      dataIndex: 'kenPrice',
-      width: 100,
+      title: 'Trả bằng',
+      key: 'paidWith',
+      width: 120,
       align: 'right',
-      render: (value: number) => <Typography.Text strong>{formatCount(value)}</Typography.Text>,
+      render: (_, row) => <MegaphonePaidWithCell row={row} />,
     },
     {
       title: 'Trạng thái',
@@ -138,6 +142,12 @@ export function MegaphonesPage() {
             onChange={resetPage(setType)}
             style={{ width: 150 }}
             options={MEGAPHONE_TYPE_OPTIONS}
+          />
+          <Select
+            value={paidWith}
+            onChange={resetPage(setPaidWith)}
+            style={{ width: 170 }}
+            options={MEGAPHONE_PAID_WITH_OPTIONS}
           />
           <DateRangeFilter from={from} to={to} onFromChange={resetPage(setFrom)} onToChange={resetPage(setTo)} />
           <Button icon={<ReloadOutlined />} onClick={() => void refetch()}>

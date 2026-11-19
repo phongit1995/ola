@@ -20,12 +20,19 @@ import type {
 import { setAuthUserKen, useAuthStore } from '../auth/authStore';
 import { useMegaphoneConfigStore } from './megaphoneConfigStore';
 import { useMegaphoneStore } from './megaphoneStore';
+import { useMegaphoneTicketStore } from './megaphoneTicketStore';
 
 export type { MegaphoneComposer, MegaphoneComposerOptions } from '../../types/client/megaphone.type';
 
 const COOLDOWN_TICK_MS = 1000;
 const OWN_MEGAPHONE_PLAY_DELAY_MS = 500;
-const REFRESH_CONFIG_CODES = new Set(['MEGAPHONE_COOLDOWN', 'MEGAPHONE_DAILY_LIMIT', 'MEGAPHONE_QUEUE_FULL']);
+const NO_TICKET_CODE = 'MEGAPHONE_NO_TICKET';
+const REFRESH_CONFIG_CODES = new Set([
+  'MEGAPHONE_COOLDOWN',
+  'MEGAPHONE_DAILY_LIMIT',
+  'MEGAPHONE_QUEUE_FULL',
+  NO_TICKET_CODE,
+]);
 
 interface LoadedConfig {
   config: MegaphoneConfig;
@@ -42,6 +49,7 @@ export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptio
   const [submitting, setSubmitting] = useState(false);
   const [requestId, setRequestId] = useState(randomUuid);
   const [now, setNow] = useState(() => Date.now());
+  const [useTicket, setUseTicket] = useState(false);
 
   const loadConfig = useCallback(async () => {
     try {
@@ -73,7 +81,10 @@ export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptio
   const length = megaphoneLength(content);
   const remaining = config.maxLength - length;
   const tooLong = remaining < 0;
-  const affordable = balance >= config.kenPrice;
+  const ticketCount = config.ticketCount;
+  const canUseTicket = loaded != null && ticketCount > 0 && config.kenPrice > 0;
+  const payingWithTicket = canUseTicket && useTicket;
+  const affordable = payingWithTicket || balance >= config.kenPrice;
   const dailyLeft = Math.max(0, config.dailyLimit - config.todayCount);
   const canSend =
     loaded != null &&
@@ -91,13 +102,15 @@ export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptio
       const result = await MegaphoneService.send({
         content: normalizedContent,
         clientRequestId: requestId,
+        useTicket: payingWithTicket,
       });
       setAuthUserKen(result.kenBalance);
-      toast.success(
+      const sentText =
         result.waitSeconds > 0
           ? i18n.t('megaphone.sentQueued', { minutes: megaphoneWaitMinutes(result.waitSeconds) })
-          : i18n.t('megaphone.sent')
-      );
+          : i18n.t('megaphone.sent');
+      toast.success(result.usedTicket === true ? `${sentText} · ${i18n.t('megaphone.ticket.used')}` : sentText);
+      if (result.usedTicket === true) void useMegaphoneTicketStore.getState().load();
       onSent?.(result);
       onClose();
       if (result.waitSeconds === 0) {
@@ -107,6 +120,10 @@ export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptio
       const apiError = toApiError(error);
       toast.error(megaphoneErrorText(i18n.t, apiError));
       setStep('compose');
+      if (apiError.code === NO_TICKET_CODE) {
+        setUseTicket(false);
+        void useMegaphoneTicketStore.getState().load();
+      }
       if (apiError.code != null && REFRESH_CONFIG_CODES.has(apiError.code)) void loadConfig();
     } finally {
       setSubmitting(false);
@@ -124,6 +141,11 @@ export function useMegaphoneComposer({ onClose, onSent }: MegaphoneComposerOptio
     tooLong,
     balance,
     affordable,
+    ticketCount,
+    canUseTicket,
+    useTicket: payingWithTicket,
+    payingWithTicket,
+    toggleUseTicket: () => setUseTicket((value) => !value),
     cooldownLeft,
     dailyLeft,
     waitMinutes: config.queueWaitSeconds > 0 ? megaphoneWaitMinutes(config.queueWaitSeconds) : 0,

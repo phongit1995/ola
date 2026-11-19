@@ -32,6 +32,7 @@ export function rewardsText(rewards: GiftCodeReward[], withIconNames = false): s
   const days = rewards.reduce((sum, r) => sum + (r.type === 'vip_days' ? r.days ?? 0 : 0), 0)
   const icons = rewards.filter((r) => r.type === 'vip_icon' && r.vipIconId)
   const frames = rewards.filter((r) => r.type === 'avatar_frame' && r.frameId)
+  const tickets = rewards.reduce((sum, r) => sum + (r.type === 'megaphone_ticket' ? r.count ?? 0 : 0), 0)
   const parts: string[] = []
   if (days > 0) parts.push(`${days} ngày VIP`)
   if (withIconNames) {
@@ -48,6 +49,7 @@ export function rewardsText(rewards: GiftCodeReward[], withIconNames = false): s
   } else if (frames.length > 1) {
     parts.push(`${frames.length} khung avatar`)
   }
+  if (tickets > 0) parts.push(`${tickets} vé loa`)
   return parts.join(' và ')
 }
 
@@ -68,6 +70,8 @@ function cleanReward(r: GiftCodeFormValues['rewards'][number]): GiftCodeReward[]
       return (r.vipIconId ?? 0) > 0 ? [{ type: r.type, vipIconId: r.vipIconId, ...rewardExpiry(r) }] : []
     case 'avatar_frame':
       return r.frameId ? [{ type: r.type, frameId: r.frameId, ...rewardExpiry(r) }] : []
+    case 'megaphone_ticket':
+      return (r.count ?? 0) > 0 ? [{ type: r.type, count: r.count, ...rewardExpiry(r) }] : []
     default:
       return []
   }

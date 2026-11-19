@@ -23,6 +23,7 @@ type ListFilter struct {
 	SenderID *uuid.UUID
 	Status   string
 	Type     string
+	PaidWith string
 	Query    string
 	From     *time.Time
 	To       *time.Time
@@ -45,6 +46,12 @@ func listScope(f ListFilter) func(*gorm.DB) *gorm.DB {
 		}
 		if f.Type != "" {
 			db = db.Where("type = ?", f.Type)
+		}
+		switch f.PaidWith {
+		case PaidWithTicket:
+			db = db.Where("ticket_id IS NOT NULL")
+		case PaidWithKen:
+			db = db.Where("ticket_id IS NULL AND ken_price > 0")
 		}
 		if f.Query != "" {
 			db = db.Where("content ILIKE ?", utils.LikeContains(f.Query))
@@ -73,4 +80,34 @@ func (r *Repository) List(f ListFilter) ([]models.Megaphone, totals, error) {
 
 func (r *Repository) FindUsersByIDs(ids []uuid.UUID) (map[uuid.UUID]models.User, error) {
 	return admincommon.FindUsersByIDs(r.db, ids)
+}
+
+func (r *Repository) AdminNames(ids []uuid.UUID) (map[uuid.UUID]string, error) {
+	out := make(map[uuid.UUID]string, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+	var admins []models.AdminUser
+	if err := r.db.Unscoped().Select("id", "username").Where("id IN ?", ids).Find(&admins).Error; err != nil {
+		return out, err
+	}
+	for i := range admins {
+		out[admins[i].ID] = admins[i].Username
+	}
+	return out, nil
+}
+
+func (r *Repository) CampaignNames(ids []uuid.UUID) (map[uuid.UUID]string, error) {
+	out := make(map[uuid.UUID]string, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+	var campaigns []models.GiftCodeCampaign
+	if err := r.db.Unscoped().Select("id", "name").Where("id IN ?", ids).Find(&campaigns).Error; err != nil {
+		return out, err
+	}
+	for i := range campaigns {
+		out[campaigns[i].ID] = campaigns[i].Name
+	}
+	return out, nil
 }

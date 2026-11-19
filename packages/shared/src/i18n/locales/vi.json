@@ -2717,11 +2717,12 @@
     "notEnoughKen": "Không đủ KEN",
     "queueWait": "Đang có loa xếp hàng, loa của bạn sẽ phát sau khoảng {{minutes}} phút",
     "cooldown": "Chờ {{seconds}} giây nữa để phát tiếp",
-    "dailyLeft": "Hôm nay còn {{count}} lượt phát",
     "dailyReached": "Bạn đã hết lượt phát loa hôm nay",
     "rules": "Không chứa link, số điện thoại mời chào hay lời lẽ xúc phạm. Loa vi phạm sẽ bị gỡ và không hoàn KEN.",
+    "rulesTicket": "Không chứa link, số điện thoại mời chào hay lời lẽ xúc phạm. Loa vi phạm sẽ bị gỡ và không hoàn vé.",
     "confirmTitle": "Xác nhận phát loa",
     "confirmMessage": "Phát loa này tới mọi người với giá {{ken}} KEN?",
+    "confirmPlain": "Phát loa này tới mọi người?",
     "sent": "Đã phát loa",
     "sentQueued": "Đã xếp hàng, loa sẽ phát sau khoảng {{minutes}} phút",
     "disabled": "Tính năng loa đang tạm tắt",
@@ -2742,7 +2743,21 @@
       "queueFull": "Hàng chờ loa đang đầy, thử lại sau ít phút",
       "insufficientKen": "Bạn không đủ KEN để phát loa",
       "rateLimited": "Bạn phát quá nhanh, thử lại sau ít phút",
-      "failed": "Phát loa thất bại, thử lại sau"
+      "failed": "Phát loa thất bại, thử lại sau",
+      "noTicket": "Vé loa không còn dùng được, chọn lại cách phát nhé"
+    },
+    "ticket": {
+      "useLabel": "Dùng vé loa · còn {{count}} vé",
+      "price": "Dùng 1 vé loa",
+      "used": "Đã dùng 1 vé loa",
+      "summary": "Còn {{count}} vé loa",
+      "listTitle": "Vé loa của bạn",
+      "listHint": "Vé gần hết hạn được dùng trước, vé không hạn dùng sau cùng.",
+      "noExpiry": "Không hạn",
+      "empty": "Bạn không còn vé loa nào",
+      "sourceAdmin": "Quà từ Ola",
+      "sourceGiftCode": "Mã quà tặng",
+      "sourceOther": "Vé loa"
     }
   },
   "itemExpiry": {
@@ -2783,7 +2798,8 @@
       "frameOwned": "Bạn đã có khung avatar của mã này rồi",
       "rateLimited": "Bạn thao tác quá nhanh, thử lại sau ít phút",
       "failed": "Không nhận được quà, thử lại sau"
-    }
+    },
+    "rewardMegaphoneTicket": "{{count}} vé loa"
   },
   "friendContent": {
     "post": "vừa đăng bài mới",

@@ -14,6 +14,13 @@ const (
 	ErrorCodeMegaphoneInsufficientKen = "MEGAPHONE_INSUFFICIENT_KEN"
 	ErrorCodeMegaphoneRequestConflict = "MEGAPHONE_REQUEST_CONFLICT"
 	ErrorCodeMegaphoneNotFound        = "MEGAPHONE_NOT_FOUND"
+	ErrorCodeMegaphoneNoTicket        = "MEGAPHONE_NO_TICKET"
+	ErrorCodeMegaphoneTicketCount     = "MEGAPHONE_TICKET_COUNT_INVALID"
+	ErrorCodeMegaphoneTicketDays      = "MEGAPHONE_TICKET_DAYS_INVALID"
+	ErrorCodeMegaphoneTicketNotUsable = "MEGAPHONE_TICKET_NOT_USABLE"
+
+	TicketMaxPerGrant = 100
+	TicketMaxDays     = 365
 
 	HistoryWindow       = 24 * time.Hour
 	HistoryDefaultLimit = 20

@@ -2717,11 +2717,12 @@
     "notEnoughKen": "Not enough KEN",
     "queueWait": "Other messages are queued, yours will play in about {{minutes}} min",
     "cooldown": "Wait {{seconds}}s before broadcasting again",
-    "dailyLeft": "{{count}} broadcasts left today",
     "dailyReached": "You've used all your broadcasts for today",
     "rules": "No links, promotional phone numbers or abusive language. Violating messages are removed without a KEN refund.",
+    "rulesTicket": "No links, promotional phone numbers or abusive language. Violating messages are removed and the ticket is not returned.",
     "confirmTitle": "Confirm broadcast",
     "confirmMessage": "Broadcast this message to everyone for {{ken}} KEN?",
+    "confirmPlain": "Broadcast this message to everyone?",
     "sent": "Broadcast sent",
     "sentQueued": "Queued, it will play in about {{minutes}} min",
     "disabled": "Megaphone is temporarily off",
@@ -2742,7 +2743,21 @@
       "queueFull": "The queue is full, try again in a few minutes",
       "insufficientKen": "You don't have enough KEN to broadcast",
       "rateLimited": "Too fast, try again in a few minutes",
-      "failed": "Broadcast failed, try again later"
+      "failed": "Broadcast failed, try again later",
+      "noTicket": "That megaphone ticket can no longer be used, please choose again"
+    },
+    "ticket": {
+      "useLabel": "Use a megaphone ticket · {{count}} left",
+      "price": "1 megaphone ticket",
+      "used": "Used 1 megaphone ticket",
+      "summary": "{{count}} megaphone tickets left",
+      "listTitle": "Your megaphone tickets",
+      "listHint": "Tickets expiring soonest are used first, tickets without expiry last.",
+      "noExpiry": "No expiry",
+      "empty": "You have no megaphone tickets",
+      "sourceAdmin": "Gift from Ola",
+      "sourceGiftCode": "Gift code",
+      "sourceOther": "Megaphone ticket"
     }
   },
   "itemExpiry": {
@@ -2783,7 +2798,8 @@
       "frameOwned": "You already own the avatar frame from this code",
       "rateLimited": "You are going too fast, try again in a few minutes",
       "failed": "Could not claim the gift, try again later"
-    }
+    },
+    "rewardMegaphoneTicket": "{{count}} megaphone tickets"
   },
   "friendContent": {
     "post": "shared a new post",
