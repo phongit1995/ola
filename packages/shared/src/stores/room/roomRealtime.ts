@@ -12,7 +12,7 @@ import {
   messageMentionsUser,
   reconcileRoomServerMessage,
   withSenderVip,
-  withVipTypeId,
+  toRoomMemberList,
 } from './roomHelpers';
 import type { RoomChatGet as RoomGet, RoomChatSet as RoomSet } from './roomChatState';
 import { claimRealtimeRegistration } from '../realtimeRegistration.state';
@@ -21,7 +21,7 @@ async function reloadMembers(get: RoomGet, set: RoomSet, roomId: string) {
   try {
     const result = await RoomService.members(roomId);
     if (get().activeRoom?.id !== roomId) return;
-    set({ members: withVipTypeId(result.items), memberCount: result.total });
+    set({ members: toRoomMemberList(result.items), memberCount: result.total });
   } catch {
     return;
   }

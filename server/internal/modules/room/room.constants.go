@@ -16,6 +16,9 @@ const (
 	RoomReplyExcerptMaxRunes = 120
 	RoomMaxBlockedUsers      = 500
 
+	RoomMemberShortNameMinLen = 2
+	RoomMemberShortNameMaxLen = 5
+
 	ErrorCodeRoomVipRequired = "ROOM_VIP_REQUIRED"
 
 	CacheTTLRoomUnblocked = 2592000

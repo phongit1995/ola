@@ -15,7 +15,7 @@ import {
   capPinnedRoomMessages,
   mergeRoomMessageSnapshot,
   withSenderVip,
-  withVipTypeId,
+  toRoomMemberList,
 } from './roomHelpers';
 import {
   initialRoomChatState,
@@ -63,7 +63,7 @@ export function createRoomLifecycleActions(
       return {
         status: ROOM_CHAT_STATUS.joined,
         ...patch,
-        members: withVipTypeId(membersResult.items),
+        members: toRoomMemberList(membersResult.items),
         memberCount: membersResult.total,
         hasMore: messagesResult.hasMore || patch.hasMore === true,
       };
