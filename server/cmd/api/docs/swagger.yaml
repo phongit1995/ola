@@ -329,9 +329,17 @@ definitions:
     type: object
   internal_modules_admin_avatar-frame.GrantUserFrameRequest:
     properties:
+      expiresInDays:
+        example: 7
+        maximum: 3650
+        minimum: 0
+        type: integer
       frameId:
         example: "001"
         type: string
+      locked:
+        example: true
+        type: boolean
     required:
     - frameId
     type: object
@@ -347,6 +355,15 @@ definitions:
         items:
           $ref: '#/definitions/ola-chat-server_internal_modules_avatar-frame.FrameSalesRow'
         type: array
+    type: object
+  internal_modules_admin_avatar-frame.UpdateUserFrameRequest:
+    properties:
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
+      locked:
+        example: true
+        type: boolean
     type: object
   internal_modules_admin_clan.ClanListResponse:
     properties:
@@ -1446,6 +1463,8 @@ definitions:
     type: object
   internal_modules_admin_gift-code.CampaignStats:
     properties:
+      megaphoneTicketsGiven:
+        type: integer
       redeemedToday:
         type: integer
       redeemedTotal:
@@ -1565,10 +1584,20 @@ definitions:
     type: object
   internal_modules_admin_gift-code.RewardInput:
     properties:
+      count:
+        example: 3
+        maximum: 100
+        minimum: 1
+        type: integer
       days:
         example: 7
         maximum: 3650
         minimum: 1
+        type: integer
+      expiresInDays:
+        example: 7
+        maximum: 3650
+        minimum: 0
         type: integer
       frameId:
         example: "001"
@@ -1578,6 +1607,7 @@ definitions:
         - vip_days
         - vip_icon
         - avatar_frame
+        - megaphone_ticket
         example: vip_days
         type: string
       vipIconId:
@@ -1590,7 +1620,11 @@ definitions:
     type: object
   internal_modules_admin_gift-code.RewardItem:
     properties:
+      count:
+        type: integer
       days:
+        type: integer
+      expiresInDays:
         type: integer
       frameId:
         type: string
@@ -2533,6 +2567,8 @@ definitions:
         $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
       checkIn:
         $ref: '#/definitions/internal_modules_admin_me.CheckInResponse'
+      clanId:
+        type: string
       commentCount:
         type: integer
       content:
@@ -2666,6 +2702,8 @@ definitions:
         $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
       checkIn:
         $ref: '#/definitions/internal_modules_admin_me.CheckInResponse'
+      clanId:
+        type: string
       commentCount:
         type: integer
       content:
@@ -2701,6 +2739,19 @@ definitions:
       visibility:
         type: string
     type: object
+  internal_modules_admin_me.UpdateVisibilityRequest:
+    properties:
+      visibility:
+        enum:
+        - public
+        - friend
+        - private
+        - profile
+        example: profile
+        type: string
+    required:
+    - visibility
+    type: object
   internal_modules_admin_megaphone.CheckContentRequest:
     properties:
       text:
@@ -2726,6 +2777,21 @@ definitions:
         type: string
       traceId:
         type: string
+    type: object
+  internal_modules_admin_megaphone.GrantTicketsRequest:
+    properties:
+      count:
+        example: 3
+        maximum: 100
+        minimum: 1
+        type: integer
+      expiresInDays:
+        example: 7
+        maximum: 365
+        minimum: 0
+        type: integer
+    required:
+    - count
     type: object
   internal_modules_admin_megaphone.ListResponse:
     properties:
@@ -2783,6 +2849,9 @@ definitions:
       kenPrice:
         example: 2000
         type: integer
+      paidWith:
+        example: ticket
+        type: string
       removedAt:
         example: "2026-11-06T10:05:00Z"
         type: string
@@ -2797,6 +2866,8 @@ definitions:
       status:
         example: active
         type: string
+      ticket:
+        $ref: '#/definitions/internal_modules_admin_megaphone.TicketBrief'
       type:
         example: message
         type: string
@@ -2848,6 +2919,107 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_admin_megaphone.RemoveResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_megaphone.TicketBrief:
+    properties:
+      createdAt:
+        example: "2026-11-18T10:00:00Z"
+        type: string
+      expiresAt:
+        example: "2026-11-25T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      source:
+        example: gift_code
+        type: string
+      sourceName:
+        example: Tết 2027
+        type: string
+      sourceRef:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  internal_modules_admin_megaphone.UserTicketItem:
+    properties:
+      createdAt:
+        example: "2026-11-18T10:00:00Z"
+        type: string
+      expiresAt:
+        example: "2026-11-25T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      megaphoneId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      revokedAt:
+        example: "2026-11-19T09:00:00Z"
+        type: string
+      revokedByName:
+        example: admin
+        type: string
+      source:
+        example: gift_code
+        type: string
+      sourceName:
+        example: Tết 2027
+        type: string
+      sourceRef:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      status:
+        example: usable
+        type: string
+      usedAt:
+        example: "2026-11-19T08:00:00Z"
+        type: string
+    type: object
+  internal_modules_admin_megaphone.UserTicketListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketItem'
+        type: array
+      usableCount:
+        example: 2
+        type: integer
+    type: object
+  internal_modules_admin_megaphone.UserTicketListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_megaphone.UserTicketSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketItem'
       error:
         type: string
       path:
@@ -3940,6 +4112,14 @@ definitions:
     type: object
   internal_modules_admin_user.GrantVipRequest:
     properties:
+      expiresInDays:
+        example: 7
+        maximum: 3650
+        minimum: 0
+        type: integer
+      locked:
+        example: true
+        type: boolean
       vipTypeId:
         example: 4
         maximum: 138
@@ -4021,9 +4201,22 @@ definitions:
     required:
     - username
     type: object
+  internal_modules_admin_user.UpdateVipRequest:
+    properties:
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
+      locked:
+        example: true
+        type: boolean
+    type: object
   internal_modules_admin_user.UserDetail:
     properties:
       avatar:
+        type: string
+      avatarFrameExpiresAt:
+        type: string
+      avatarFrameId:
         type: string
       bio:
         type: string
@@ -4072,6 +4265,8 @@ definitions:
       vipEndTime:
         type: string
       vipUsed:
+        type: string
+      vipUsedExpiresAt:
         type: string
     type: object
   internal_modules_admin_user.UserListItem:
@@ -4179,11 +4374,17 @@ definitions:
     properties:
       acquiredAt:
         type: string
+      expired:
+        type: boolean
+      expiresAt:
+        type: string
       instanceId:
         type: string
       isLocked:
         type: boolean
       isUsing:
+        type: boolean
+      locked:
         type: boolean
       source:
         type: string
@@ -4895,11 +5096,23 @@ definitions:
       acquiredAt:
         example: "2026-11-09T10:00:00Z"
         type: string
+      expired:
+        example: false
+        type: boolean
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
       frameId:
         example: "001"
         type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       isEquipped:
         example: true
+        type: boolean
+      locked:
+        example: false
         type: boolean
       source:
         example: purchase
@@ -4984,6 +5197,9 @@ definitions:
     type: object
   internal_modules_avatar-frame.StoreResponse:
     properties:
+      asOf:
+        example: "2026-11-18T08:00:00Z"
+        type: string
       equippedFrameId:
         example: "001"
         type: string
@@ -5785,7 +6001,13 @@ definitions:
     type: object
   internal_modules_gift-code.RewardItem:
     properties:
+      count:
+        example: 3
+        type: integer
       days:
+        example: 7
+        type: integer
+      expiresInDays:
         example: 7
         type: integer
       frameId:
@@ -6731,6 +6953,7 @@ definitions:
         - public
         - friend
         - private
+        - profile
         example: public
         type: string
     type: object
@@ -6985,6 +7208,7 @@ definitions:
         - public
         - friend
         - private
+        - profile
         type: string
     type: object
   internal_modules_me.UploadAudioResponse:
@@ -7058,6 +7282,9 @@ definitions:
       queueWaitSeconds:
         example: 25
         type: integer
+      ticketCount:
+        example: 2
+        type: integer
       todayCount:
         example: 2
         type: integer
@@ -7115,6 +7342,9 @@ definitions:
         example: "Chúc cả nhà buổi tối vui vẻ \U0001F389"
         maxLength: 1000
         type: string
+      useTicket:
+        example: true
+        type: boolean
     required:
     - clientRequestId
     - content
@@ -7126,6 +7356,12 @@ definitions:
         type: integer
       megaphone:
         $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone'
+      ticketCount:
+        example: 1
+        type: integer
+      usedTicket:
+        example: true
+        type: boolean
       waitSeconds:
         example: 25
         type: integer
@@ -7134,6 +7370,45 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_megaphone.SendResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_megaphone.TicketItem:
+    properties:
+      createdAt:
+        example: "2026-11-18T10:00:00Z"
+        type: string
+      expiresAt:
+        example: "2026-11-25T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      source:
+        example: gift_code
+        type: string
+    type: object
+  internal_modules_megaphone.TicketListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_megaphone.TicketItem'
+        type: array
+    type: object
+  internal_modules_megaphone.TicketListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_megaphone.TicketListResponse'
       error:
         type: string
       path:
@@ -7183,6 +7458,9 @@ definitions:
         type: string
       senderAvatar:
         example: https://example.com/avatar.jpg
+        type: string
+      senderFullName:
+        example: John Doe
         type: string
       senderId:
         example: ca4c6d54-870c-4735-b9a6-cce05a04aedb
@@ -9084,6 +9362,24 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_social-limit.PostQuota:
+    properties:
+      limit:
+        type: integer
+      upgradable:
+        type: boolean
+      used:
+        type: integer
+    type: object
+  internal_modules_social-limit.PostQuotaResponse:
+    properties:
+      isVip:
+        type: boolean
+      me:
+        $ref: '#/definitions/internal_modules_social-limit.PostQuota'
+      moment:
+        $ref: '#/definitions/internal_modules_social-limit.PostQuota'
+    type: object
   internal_modules_story.ChapterListResponse:
     properties:
       items:
@@ -10313,6 +10609,9 @@ definitions:
       activeTypeId:
         example: 4
         type: integer
+      asOf:
+        example: "2026-11-18T08:00:00Z"
+        type: string
       days:
         example: 30
         type: integer
@@ -10435,6 +10734,9 @@ definitions:
       acquiredAt:
         example: "2026-06-19T10:00:00Z"
         type: string
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
       instanceId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -10443,6 +10745,9 @@ definitions:
         type: boolean
       isUsing:
         example: true
+        type: boolean
+      locked:
+        example: false
         type: boolean
       source:
         example: purchase
@@ -10959,11 +11264,23 @@ definitions:
       acquiredAt:
         example: "2026-11-09T10:00:00Z"
         type: string
+      expired:
+        example: false
+        type: boolean
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
       frameId:
         example: "001"
         type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       isEquipped:
         example: true
+        type: boolean
+      locked:
+        example: false
         type: boolean
       source:
         example: purchase
@@ -11051,6 +11368,9 @@ definitions:
     type: object
   ola-chat-server_internal_modules_avatar-frame.StoreResponse:
     properties:
+      asOf:
+        example: "2026-11-18T08:00:00Z"
+        type: string
       equippedFrameId:
         example: "001"
         type: string
@@ -11785,6 +12105,7 @@ definitions:
         - public
         - friend
         - private
+        - profile
         example: public
         type: string
     type: object
@@ -13919,6 +14240,7 @@ definitions:
       code:
         example: MESSAGE_BLOCKED
         type: string
+      details: {}
       error:
         example: validation error
         type: string
@@ -15459,6 +15781,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_room_wordchain.WinListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_social-limit_PostQuotaResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_social-limit.PostQuotaResponse'
       error:
         type: string
       path:
@@ -18609,7 +18948,7 @@ paths:
         in: query
         name: enabled
         type: boolean
-      - description: Filter by visibility (public, friend, private)
+      - description: Filter by visibility (public, friend, private, profile)
         in: query
         name: visibility
         type: string
@@ -18752,6 +19091,35 @@ paths:
       summary: Enable/disable a post (admin)
       tags:
       - admin-me
+  /admin/me/{id}/visibility:
+    patch:
+      consumes:
+      - application/json
+      description: Clan posts are rejected; their visibility follows the clan rules.
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Visibility Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_me.UpdateVisibilityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail'
+      security:
+      - BearerAuth: []
+      summary: Change who can see a post (admin)
+      tags:
+      - admin-me
   /admin/megaphones:
     get:
       parameters:
@@ -18766,6 +19134,10 @@ paths:
       - description: 'Loại tin: message, gift, lucky'
         in: query
         name: type
+        type: string
+      - description: 'Trả bằng: ken, ticket'
+        in: query
+        name: paidWith
         type: string
       - description: Tìm trong nội dung
         in: query
@@ -20873,6 +21245,137 @@ paths:
       summary: Thu hồi một khung avatar khỏi kho của user, tự gỡ nếu đang đeo (admin)
       tags:
       - admin-avatar-frame
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Mã khung
+        in: path
+        name: frameId
+        required: true
+        type: string
+      - description: expiresAt null = vĩnh viễn
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_avatar-frame.UpdateUserFrameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_avatar-frame.OwnedFrame'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Sửa hạn và khoá của một khung avatar trong kho user (admin)
+      tags:
+      - admin-avatar-frame
+  /admin/users/{id}/megaphone-tickets:
+    get:
+      description: 'Tất cả vé kèm trạng thái: usable, used, expired, revoked.'
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketListSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Vé loa của một user (admin)
+      tags:
+      - admin-megaphones
+    post:
+      consumes:
+      - application/json
+      description: expiresInDays = 0 là vé không hạn. Tối đa 100 vé mỗi lần, hạn 1–365
+        ngày.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Số vé + hạn
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_megaphone.GrantTicketsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Tặng vé loa cho user (admin)
+      tags:
+      - admin-megaphones
+  /admin/users/{id}/megaphone-tickets/{ticketId}/revoke:
+    post:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Ticket ID
+        in: path
+        name: ticketId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketSuccessResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Thu hồi một vé loa còn dùng được (admin)
+      tags:
+      - admin-megaphones
   /admin/users/{id}/password:
     patch:
       consumes:
@@ -21304,6 +21807,38 @@ paths:
       summary: Xoá VIP icon khỏi kho của user
       tags:
       - admin-user
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Instance ID
+        in: path
+        name: instanceId
+        required: true
+        type: string
+      - description: expiresAt null = vĩnh viễn
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_user.UpdateVipRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_user.VipIconItem'
+      security:
+      - BearerAuth: []
+      summary: Sửa hạn và khoá của một VIP trong kho user
+      tags:
+      - admin-users
   /admin/vip/history:
     get:
       parameters:
@@ -25011,9 +25546,10 @@ paths:
       consumes:
       - application/json
       description: Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày
-        trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối,
-        không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId
-        chống trừ hai lần khi gửi lại.
+        trước khi trừ KEN (MEGAPHONE). useTicket = true và giá > 0 thì dùng vé loa
+        gần hết hạn nhất thay cho KEN (hết vé trả MEGAPHONE_NO_TICKET). Đang có quá
+        nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch
+        trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.
       parameters:
       - description: Megaphone
         in: body
@@ -25063,6 +25599,22 @@ paths:
       security:
       - BearerAuth: []
       summary: Cấu hình phát loa + trạng thái của người gọi
+      tags:
+      - megaphones
+  /megaphones/tickets:
+    get:
+      description: 'Theo đúng thứ tự sẽ dùng: vé gần hết hạn trước, vé không hạn sau
+        cùng, cùng hạn thì vé nhận trước.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_megaphone.TicketListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Vé loa còn dùng được của người gọi
       tags:
       - megaphones
   /messages:
@@ -27315,6 +27867,21 @@ paths:
         bằng KEN)
       tags:
       - settings
+  /social-limit/posts:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_social-limit_PostQuotaResponse'
+      security:
+      - BearerAuth: []
+      summary: Today's Me and moment posting usage of the current user (limit 0 =
+        unlimited)
+      tags:
+      - social-limit
   /stories:
     get:
       parameters:

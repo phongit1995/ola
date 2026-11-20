@@ -16,7 +16,7 @@ func (s *Service) MomentPublished(authorID, momentID uuid.UUID) {
 }
 
 func (s *Service) notifyFriendsOfPost(post *models.Me) {
-	if post.ClanID != nil || post.Visibility == models.MeVisibilityPrivate {
+	if post.ClanID != nil || !post.Visibility.ShownInFeeds() {
 		return
 	}
 	s.publishFriendContent(constants.FriendContentPost, post.AuthorID, post.ID, excerptText(post.Content))

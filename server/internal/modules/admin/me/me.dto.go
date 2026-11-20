@@ -56,6 +56,7 @@ type MeDetail struct {
 	CheckIn      *CheckInResponse  `json:"checkIn,omitempty"`
 	Sticker      string            `json:"sticker,omitempty"`
 	Visibility   string            `json:"visibility"`
+	ClanID       string            `json:"clanId,omitempty"`
 	Enabled      bool              `json:"enabled"`
 	HiddenBy     string            `json:"hiddenBy,omitempty"`
 	HiddenAt     string            `json:"hiddenAt,omitempty"`
@@ -76,6 +77,10 @@ type PenaltyRequest struct {
 type UpdateStatusRequest struct {
 	Enabled *bool           `json:"enabled" binding:"required" example:"false"`
 	Penalty *PenaltyRequest `json:"penalty"`
+}
+
+type UpdateVisibilityRequest struct {
+	Visibility string `json:"visibility" binding:"required,oneof=public friend private profile" example:"profile"`
 }
 
 type UpdateStatusResponse struct {

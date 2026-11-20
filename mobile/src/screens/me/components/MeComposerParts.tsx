@@ -86,7 +86,7 @@ export function PrivacyRow({ options, privacy, onChange }: PrivacyRowProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   return (
-    <View className="flex-row items-center gap-2 px-4 pt-3">
+    <View className="flex-row flex-wrap items-center gap-2 px-4 pt-3">
       <Text className="text-sm text-ola-ink-soft">{t('me.privacyTo')}</Text>
       {options.map(option => {
         const active = option === privacy;

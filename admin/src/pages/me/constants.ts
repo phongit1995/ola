@@ -1,11 +1,17 @@
 import { REPORT_REASON_LABEL } from '@/lib/moderation'
-import type { MeHiddenBy, PostLimitSetting, ReportReason } from '@/types'
+import type { MeHiddenBy, MeVisibility, PostLimitSetting, ReportReason } from '@/types'
 
 export const VISIBILITY: Record<string, { label: string; color: string }> = {
   public: { label: 'Công khai', color: 'green' },
+  profile: { label: 'Trang cá nhân', color: 'purple' },
   friend: { label: 'Bạn bè', color: 'blue' },
   private: { label: 'Riêng tư', color: 'default' },
-}
+} satisfies Record<MeVisibility, { label: string; color: string }>
+
+export const VISIBILITY_OPTIONS = Object.entries(VISIBILITY).map(([value, { label }]) => ({
+  value: value as MeVisibility,
+  label,
+}))
 
 export const SORT_OPTIONS = [
   { value: 'newest', label: 'Mới nhất', params: {} as { sortBy?: string; sortDir?: string } },

@@ -8,6 +8,7 @@ import {
   Image,
   List,
   Modal,
+  Select,
   Skeleton,
   Space,
   Switch,
@@ -20,10 +21,12 @@ import {
   useMeComments,
   useMeDetail,
   useUpdateMeStatus,
+  useUpdateMeVisibility,
 } from '@/hooks/useMeQueries'
 import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
-import { VISIBILITY } from './constants'
+import type { MeVisibility } from '@/types'
+import { VISIBILITY, VISIBILITY_OPTIONS } from './constants'
 import { MeHideModal } from './MeHideModal'
 import { meHiddenByLabel } from './utils'
 
@@ -74,6 +77,7 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
   const { data, isLoading } = useMeDetail(id)
   const { data: comments, isLoading: commentsLoading } = useMeComments(id)
   const updateStatus = useUpdateMeStatus()
+  const updateVisibility = useUpdateMeVisibility()
   const deleteComment = useDeleteMeComment()
   const [hiding, setHiding] = useState(false)
 
@@ -97,6 +101,16 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
         }
       },
     })
+  }
+
+  async function changeVisibility(visibility: MeVisibility) {
+    if (!postId) return
+    try {
+      await updateVisibility.mutateAsync({ id: postId, visibility })
+      message.success(`Đã chuyển sang ${VISIBILITY[visibility].label}`)
+    } catch (err) {
+      message.error(errorMessage(err, 'Đổi chế độ thất bại'))
+    }
   }
 
   function removeComment(commentId: string) {
@@ -161,7 +175,19 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
               )}
             </div>
             <Space style={{ marginLeft: 'auto' }} direction="vertical" align="end" size={6}>
-              {visibility && <Tag color={visibility.color}>{visibility.label}</Tag>}
+              {data.clanId ? (
+                visibility && <Tag color={visibility.color}>{visibility.label} · bài clan</Tag>
+              ) : (
+                <Select
+                  size="small"
+                  value={data.visibility}
+                  options={VISIBILITY_OPTIONS}
+                  loading={updateVisibility.isPending}
+                  disabled={updateVisibility.isPending}
+                  onChange={changeVisibility}
+                  style={{ width: 150 }}
+                />
+              )}
               <Switch
                 checked={data.enabled}
                 checkedChildren="Hiện"

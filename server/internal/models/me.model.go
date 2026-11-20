@@ -15,7 +15,18 @@ const (
 	MeVisibilityPublic  MeVisibility = "public"
 	MeVisibilityFriend  MeVisibility = "friend"
 	MeVisibilityPrivate MeVisibility = "private"
+	MeVisibilityProfile MeVisibility = "profile"
 )
+
+var MeFeedVisibilities = []MeVisibility{MeVisibilityPublic, MeVisibilityFriend}
+
+func (v MeVisibility) VisibleToAnyone() bool {
+	return v == MeVisibilityPublic || v == MeVisibilityProfile
+}
+
+func (v MeVisibility) ShownInFeeds() bool {
+	return v == MeVisibilityPublic || v == MeVisibilityFriend
+}
 
 type MeImage struct {
 	URL      string `json:"url"`

@@ -32,7 +32,7 @@ type CreateMeRequest struct {
 	Audios     []MeAudioInput `json:"audios" binding:"omitempty,max=1,dive"`
 	CheckIn    *CheckInInput  `json:"checkIn" binding:"omitempty"`
 	Sticker    string         `json:"sticker" binding:"omitempty,max=500"`
-	Visibility string         `json:"visibility" binding:"omitempty,oneof=public friend private" example:"public"`
+	Visibility string         `json:"visibility" binding:"omitempty,oneof=public friend private profile" example:"public"`
 }
 
 type UpdateMeRequest struct {
@@ -42,7 +42,7 @@ type UpdateMeRequest struct {
 	CheckIn      *CheckInInput   `json:"checkIn" binding:"omitempty"`
 	ClearCheckIn bool            `json:"clearCheckIn" binding:"omitempty"`
 	Sticker      *string         `json:"sticker" binding:"omitempty,max=500"`
-	Visibility   *string         `json:"visibility" binding:"omitempty,oneof=public friend private"`
+	Visibility   *string         `json:"visibility" binding:"omitempty,oneof=public friend private profile"`
 }
 
 type CheckInResponse struct {

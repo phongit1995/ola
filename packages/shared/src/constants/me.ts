@@ -1,4 +1,4 @@
-import type { PostReaction } from '../types/api/me.type';
+import type { PostReaction, PostVisibility } from '../types/api/me.type';
 
 export const EDIT_WINDOW_MS = 60 * 60 * 1000;
 
@@ -13,3 +13,10 @@ export const POST_REACTION = {
   like: 'like',
   dislike: 'dislike',
 } as const satisfies Record<string, PostReaction>;
+
+export const POST_VISIBILITY = {
+  public: 'public',
+  friend: 'friend',
+  private: 'private',
+  profile: 'profile',
+} as const satisfies Record<string, PostVisibility>;

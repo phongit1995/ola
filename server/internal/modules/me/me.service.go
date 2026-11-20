@@ -144,7 +144,7 @@ func (s *Service) canView(viewerID uuid.UUID, post *models.Me) bool {
 		}
 		return s.clanGate.CanView(viewerID, *post.ClanID) == nil
 	}
-	if post.Visibility == models.MeVisibilityPublic {
+	if post.Visibility.VisibleToAnyone() {
 		return true
 	}
 	if post.AuthorID == viewerID {
@@ -169,6 +169,8 @@ func parseVisibility(value string) models.MeVisibility {
 		return models.MeVisibilityFriend
 	case string(models.MeVisibilityPrivate):
 		return models.MeVisibilityPrivate
+	case string(models.MeVisibilityProfile):
+		return models.MeVisibilityProfile
 	default:
 		return models.MeVisibilityPublic
 	}

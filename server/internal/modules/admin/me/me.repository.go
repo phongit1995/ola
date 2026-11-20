@@ -96,6 +96,10 @@ func (r *Repository) SetEnabled(id uuid.UUID, enabled bool) error {
 	return r.db.Model(&models.Me{}).Where("id = ?", id).Updates(meModule.HiddenFields(!enabled, meModule.MeHiddenByAdmin, time.Now())).Error
 }
 
+func (r *Repository) SetVisibility(id uuid.UUID, visibility models.MeVisibility) error {
+	return r.db.Model(&models.Me{}).Where("id = ?", id).UpdateColumn("visibility", visibility).Error
+}
+
 func (r *Repository) GetCommentByID(id uuid.UUID) (*models.MeComment, error) {
 	var comment models.MeComment
 	if err := r.db.First(&comment, "id = ?", id).Error; err != nil {

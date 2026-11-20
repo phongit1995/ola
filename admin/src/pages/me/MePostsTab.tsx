@@ -27,7 +27,7 @@ import { formatDateTime } from '@/lib/format'
 import { errorMessage } from '@/lib/apiError'
 import { MeDetailModal } from './MeDetailModal'
 import { MeHideModal } from './MeHideModal'
-import { SORT_OPTIONS, VISIBILITY } from './constants'
+import { SORT_OPTIONS, VISIBILITY, VISIBILITY_OPTIONS } from './constants'
 import type { MeListItem } from '@/types'
 import { PAGE_SIZE } from '@/lib/constants'
 import type { TriState } from './types'
@@ -295,12 +295,7 @@ export function MePostsTab() {
           value={visibility}
           onChange={resetPage(setVisibility)}
           style={{ width: 150 }}
-          options={[
-            { value: 'all', label: 'Mọi hiển thị' },
-            { value: 'public', label: 'Công khai' },
-            { value: 'friend', label: 'Bạn bè' },
-            { value: 'private', label: 'Riêng tư' },
-          ]}
+          options={[{ value: 'all', label: 'Mọi hiển thị' }, ...VISIBILITY_OPTIONS]}
         />
         <Select
           value={hasImages}

@@ -40,7 +40,7 @@ func (r *Repository) ContentLive(ctx context.Context, kind string, authorID, con
 	switch kind {
 	case constants.FriendContentPost:
 		db = db.Model(&models.Me{}).
-			Where("id = ? AND author_id = ? AND enabled AND clan_id IS NULL AND visibility <> ?", contentID, authorID, models.MeVisibilityPrivate)
+			Where("id = ? AND author_id = ? AND enabled AND clan_id IS NULL AND visibility IN ?", contentID, authorID, models.MeFeedVisibilities)
 	case constants.FriendContentMoment:
 		db = db.Model(&models.Moment{}).
 			Where("id = ? AND author_id = ? AND enabled AND status = ? AND expires_at > ?", contentID, authorID, momentStatusReady, now)

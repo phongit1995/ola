@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminMeService } from '@/services/adminMe.service'
-import type { MeListParams, MePenaltyRequest } from '@/types'
+import type { MeListParams, MePenaltyRequest, MeVisibility } from '@/types'
 import { USERS_KEY } from './useUserQueries'
 
 const ME_KEY = 'admin-me'
@@ -50,6 +50,18 @@ export function useUpdateMeStatus() {
       void queryClient.invalidateQueries({ queryKey: [ME_KEY, 'detail', variables.id] })
       void queryClient.invalidateQueries({ queryKey: [ME_KEY] })
       if (variables.penalty) void queryClient.invalidateQueries({ queryKey: [USERS_KEY] })
+    },
+  })
+}
+
+export function useUpdateMeVisibility() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, visibility }: { id: string; visibility: MeVisibility }) =>
+      AdminMeService.setVisibility(id, visibility),
+    onSettled: (_data, _err, variables) => {
+      void queryClient.invalidateQueries({ queryKey: [ME_KEY, 'detail', variables.id] })
+      void queryClient.invalidateQueries({ queryKey: [ME_KEY] })
     },
   })
 }

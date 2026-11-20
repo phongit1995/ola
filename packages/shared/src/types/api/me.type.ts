@@ -1,6 +1,6 @@
 import type { RelationshipStatus } from './user.type';
 
-export type PostVisibility = 'public' | 'friend' | 'private';
+export type PostVisibility = 'public' | 'friend' | 'private' | 'profile';
 
 export type PostReaction = 'like' | 'dislike';
 

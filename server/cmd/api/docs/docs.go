@@ -4053,7 +4053,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Filter by visibility (public, friend, private)",
+                        "description": "Filter by visibility (public, friend, private, profile)",
                         "name": "visibility",
                         "in": "query"
                     },
@@ -4270,6 +4270,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/me/{id}/visibility": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Clan posts are rejected; their visibility follows the clan rules.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-me"
+                ],
+                "summary": "Change who can see a post (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Visibility Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_me.UpdateVisibilityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/megaphones": {
             "get": {
                 "security": [
@@ -4301,6 +4347,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Loại tin: message, gift, lucky",
                         "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Trả bằng: ken, ticket",
+                        "name": "paidWith",
                         "in": "query"
                     },
                     {
@@ -7657,6 +7709,210 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Sửa hạn và khoá của một khung avatar trong kho user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Mã khung",
+                        "name": "frameId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "expiresAt null = vĩnh viễn",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_avatar-frame.UpdateUserFrameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.OwnedFrame"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/megaphone-tickets": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Tất cả vé kèm trạng thái: usable, used, expired, revoked.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Vé loa của một user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketListSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "expiresInDays = 0 là vé không hạn. Tối đa 100 vé mỗi lần, hạn 1–365 ngày.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Tặng vé loa cho user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Số vé + hạn",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.GrantTicketsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/megaphone-tickets/{ticketId}/revoke": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Thu hồi một vé loa còn dùng được (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Ticket ID",
+                        "name": "ticketId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketSuccessResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
             }
         },
         "/admin/users/{id}/password": {
@@ -8322,6 +8578,56 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-users"
+                ],
+                "summary": "Sửa hạn và khoá của một VIP trong kho user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Instance ID",
+                        "name": "instanceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "expiresAt null = vĩnh viễn",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_user.UpdateVipRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_user.VipIconItem"
                         }
                     }
                 }
@@ -14236,7 +14542,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.",
+                "description": "Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). useTicket = true và giá \u003e 0 thì dùng vé loa gần hết hạn nhất thay cho KEN (hết vé trả MEGAPHONE_NO_TICKET). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.",
                 "consumes": [
                     "application/json"
                 ],
@@ -14312,6 +14618,31 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_megaphone.ConfigSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/megaphones/tickets": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Theo đúng thứ tự sẽ dùng: vé gần hết hạn trước, vé không hạn sau cùng, cùng hạn thì vé nhận trước.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "megaphones"
+                ],
+                "summary": "Vé loa còn dùng được của người gọi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.TicketListSuccessResponse"
                         }
                     }
                 }
@@ -17839,6 +18170,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/social-limit/posts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "social-limit"
+                ],
+                "summary": "Today's Me and moment posting usage of the current user (limit 0 = unlimited)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_social-limit_PostQuotaResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/stories": {
             "get": {
                 "security": [
@@ -20302,9 +20657,19 @@ const docTemplate = `{
                 "frameId"
             ],
             "properties": {
+                "expiresInDays": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 0,
+                    "example": 7
+                },
                 "frameId": {
                     "type": "string",
                     "example": "001"
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -20325,6 +20690,19 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.FrameSalesRow"
                     }
+                }
+            }
+        },
+        "internal_modules_admin_avatar-frame.UpdateUserFrameRequest": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -21966,6 +22344,9 @@ const docTemplate = `{
         "internal_modules_admin_gift-code.CampaignStats": {
             "type": "object",
             "properties": {
+                "megaphoneTicketsGiven": {
+                    "type": "integer"
+                },
                 "redeemedToday": {
                     "type": "integer"
                 },
@@ -22150,10 +22531,22 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
+                "count": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1,
+                    "example": 3
+                },
                 "days": {
                     "type": "integer",
                     "maximum": 3650,
                     "minimum": 1,
+                    "example": 7
+                },
+                "expiresInDays": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 0,
                     "example": 7
                 },
                 "frameId": {
@@ -22165,7 +22558,8 @@ const docTemplate = `{
                     "enum": [
                         "vip_days",
                         "vip_icon",
-                        "avatar_frame"
+                        "avatar_frame",
+                        "megaphone_ticket"
                     ],
                     "example": "vip_days"
                 },
@@ -22180,7 +22574,13 @@ const docTemplate = `{
         "internal_modules_admin_gift-code.RewardItem": {
             "type": "object",
             "properties": {
+                "count": {
+                    "type": "integer"
+                },
                 "days": {
+                    "type": "integer"
+                },
+                "expiresInDays": {
                     "type": "integer"
                 },
                 "frameId": {
@@ -23523,6 +23923,9 @@ const docTemplate = `{
                 "checkIn": {
                     "$ref": "#/definitions/internal_modules_admin_me.CheckInResponse"
                 },
+                "clanId": {
+                    "type": "string"
+                },
                 "commentCount": {
                     "type": "integer"
                 },
@@ -23719,6 +24122,9 @@ const docTemplate = `{
                 "checkIn": {
                     "$ref": "#/definitions/internal_modules_admin_me.CheckInResponse"
                 },
+                "clanId": {
+                    "type": "string"
+                },
                 "commentCount": {
                     "type": "integer"
                 },
@@ -23772,6 +24178,24 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_me.UpdateVisibilityRequest": {
+            "type": "object",
+            "required": [
+                "visibility"
+            ],
+            "properties": {
+                "visibility": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "friend",
+                        "private",
+                        "profile"
+                    ],
+                    "example": "profile"
+                }
+            }
+        },
         "internal_modules_admin_megaphone.CheckContentRequest": {
             "type": "object",
             "required": [
@@ -23808,6 +24232,26 @@ const docTemplate = `{
                 },
                 "traceId": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.GrantTicketsRequest": {
+            "type": "object",
+            "required": [
+                "count"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1,
+                    "example": 3
+                },
+                "expiresInDays": {
+                    "type": "integer",
+                    "maximum": 365,
+                    "minimum": 0,
+                    "example": 7
                 }
             }
         },
@@ -23891,6 +24335,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 2000
                 },
+                "paidWith": {
+                    "type": "string",
+                    "example": "ticket"
+                },
                 "removedAt": {
                     "type": "string",
                     "example": "2026-11-06T10:05:00Z"
@@ -23909,6 +24357,9 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "active"
+                },
+                "ticket": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.TicketBrief"
                 },
                 "type": {
                     "type": "string",
@@ -23980,6 +24431,151 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_megaphone.RemoveResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.TicketBrief": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-18T10:00:00Z"
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "gift_code"
+                },
+                "sourceName": {
+                    "type": "string",
+                    "example": "Tết 2027"
+                },
+                "sourceRef": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.UserTicketItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-18T10:00:00Z"
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "megaphoneId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "revokedAt": {
+                    "type": "string",
+                    "example": "2026-11-19T09:00:00Z"
+                },
+                "revokedByName": {
+                    "type": "string",
+                    "example": "admin"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "gift_code"
+                },
+                "sourceName": {
+                    "type": "string",
+                    "example": "Tết 2027"
+                },
+                "sourceRef": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "usable"
+                },
+                "usedAt": {
+                    "type": "string",
+                    "example": "2026-11-19T08:00:00Z"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.UserTicketListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketItem"
+                    }
+                },
+                "usableCount": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.UserTicketListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.UserTicketSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketItem"
                 },
                 "error": {
                     "type": "string"
@@ -25607,6 +26203,16 @@ const docTemplate = `{
                 "vipTypeId"
             ],
             "properties": {
+                "expiresInDays": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 0,
+                    "example": 7
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "vipTypeId": {
                     "type": "integer",
                     "maximum": 138,
@@ -25726,10 +26332,29 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_user.UpdateVipRequest": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "internal_modules_admin_user.UserDetail": {
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameExpiresAt": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "bio": {
@@ -25802,6 +26427,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "vipUsed": {
+                    "type": "string"
+                },
+                "vipUsedExpiresAt": {
                     "type": "string"
                 }
             }
@@ -25964,6 +26592,12 @@ const docTemplate = `{
                 "acquiredAt": {
                     "type": "string"
                 },
+                "expired": {
+                    "type": "boolean"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
                 "instanceId": {
                     "type": "string"
                 },
@@ -25971,6 +26605,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "isUsing": {
+                    "type": "boolean"
+                },
+                "locked": {
                     "type": "boolean"
                 },
                 "source": {
@@ -27009,13 +27646,29 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-09T10:00:00Z"
                 },
+                "expired": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
                 "frameId": {
                     "type": "string",
                     "example": "001"
                 },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "isEquipped": {
                     "type": "boolean",
                     "example": true
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "source": {
                     "type": "string",
@@ -27135,6 +27788,10 @@ const docTemplate = `{
         "internal_modules_avatar-frame.StoreResponse": {
             "type": "object",
             "properties": {
+                "asOf": {
+                    "type": "string",
+                    "example": "2026-11-18T08:00:00Z"
+                },
                 "equippedFrameId": {
                     "type": "string",
                     "example": "001"
@@ -28318,7 +28975,15 @@ const docTemplate = `{
         "internal_modules_gift-code.RewardItem": {
             "type": "object",
             "properties": {
+                "count": {
+                    "type": "integer",
+                    "example": 3
+                },
                 "days": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "expiresInDays": {
                     "type": "integer",
                     "example": 7
                 },
@@ -29686,7 +30351,8 @@ const docTemplate = `{
                     "enum": [
                         "public",
                         "friend",
-                        "private"
+                        "private",
+                        "profile"
                     ],
                     "example": "public"
                 }
@@ -30065,7 +30731,8 @@ const docTemplate = `{
                     "enum": [
                         "public",
                         "friend",
-                        "private"
+                        "private",
+                        "profile"
                     ]
                 }
             }
@@ -30174,6 +30841,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 25
                 },
+                "ticketCount": {
+                    "type": "integer",
+                    "example": 2
+                },
                 "todayCount": {
                     "type": "integer",
                     "example": 2
@@ -30262,6 +30933,10 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 1000,
                     "example": "Chúc cả nhà buổi tối vui vẻ 🎉"
+                },
+                "useTicket": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -30275,6 +30950,14 @@ const docTemplate = `{
                 "megaphone": {
                     "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone"
                 },
+                "ticketCount": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "usedTicket": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "waitSeconds": {
                     "type": "integer",
                     "example": 25
@@ -30286,6 +30969,64 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_megaphone.SendResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_megaphone.TicketItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-18T10:00:00Z"
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "gift_code"
+                }
+            }
+        },
+        "internal_modules_megaphone.TicketListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_megaphone.TicketItem"
+                    }
+                }
+            }
+        },
+        "internal_modules_megaphone.TicketListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_megaphone.TicketListResponse"
                 },
                 "error": {
                     "type": "string"
@@ -30357,6 +31098,10 @@ const docTemplate = `{
                 "senderAvatar": {
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
+                },
+                "senderFullName": {
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "senderId": {
                     "type": "string",
@@ -33176,6 +33921,34 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_social-limit.PostQuota": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "upgradable": {
+                    "type": "boolean"
+                },
+                "used": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_social-limit.PostQuotaResponse": {
+            "type": "object",
+            "properties": {
+                "isVip": {
+                    "type": "boolean"
+                },
+                "me": {
+                    "$ref": "#/definitions/internal_modules_social-limit.PostQuota"
+                },
+                "moment": {
+                    "$ref": "#/definitions/internal_modules_social-limit.PostQuota"
+                }
+            }
+        },
         "internal_modules_story.ChapterListResponse": {
             "type": "object",
             "properties": {
@@ -34963,6 +35736,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 4
                 },
+                "asOf": {
+                    "type": "string",
+                    "example": "2026-11-18T08:00:00Z"
+                },
                 "days": {
                     "type": "integer",
                     "example": 30
@@ -35138,6 +35915,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-06-19T10:00:00Z"
                 },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
                 "instanceId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -35149,6 +35930,10 @@ const docTemplate = `{
                 "isUsing": {
                     "type": "boolean",
                     "example": true
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "source": {
                     "type": "string",
@@ -35905,13 +36690,29 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-09T10:00:00Z"
                 },
+                "expired": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
                 "frameId": {
                     "type": "string",
                     "example": "001"
                 },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "isEquipped": {
                     "type": "boolean",
                     "example": true
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "source": {
                     "type": "string",
@@ -36037,6 +36838,10 @@ const docTemplate = `{
         "ola-chat-server_internal_modules_avatar-frame.StoreResponse": {
             "type": "object",
             "properties": {
+                "asOf": {
+                    "type": "string",
+                    "example": "2026-11-18T08:00:00Z"
+                },
                 "equippedFrameId": {
                     "type": "string",
                     "example": "001"
@@ -37127,7 +37932,8 @@ const docTemplate = `{
                     "enum": [
                         "public",
                         "friend",
-                        "private"
+                        "private",
+                        "profile"
                     ],
                     "example": "public"
                 }
@@ -40311,6 +41117,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "MESSAGE_BLOCKED"
                 },
+                "details": {},
                 "error": {
                     "type": "string",
                     "example": "validation error"
@@ -42662,6 +43469,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_room_wordchain.WinListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_social-limit_PostQuotaResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_social-limit.PostQuotaResponse"
                 },
                 "error": {
                     "type": "string"
