@@ -4,5 +4,6 @@ export * from './socialLinks';
 export * from './deviceIcons';
 export * from './itemGrantIcons';
 export * from './megaphoneTicket';
+export * from './dailyCheckinIcons';
 export * from './analytics';
 export * from '@ola/shared/constants';

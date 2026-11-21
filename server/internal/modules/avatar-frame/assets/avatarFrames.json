@@ -1,0 +1,4388 @@
+[
+  {
+    "id": "001",
+    "name": "Carrot",
+    "file": "001.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/001.webp"
+  },
+  {
+    "id": "002",
+    "name": "Rabbit",
+    "file": "002.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/002.webp"
+  },
+  {
+    "id": "003",
+    "name": "Husky",
+    "file": "003.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/003.webp"
+  },
+  {
+    "id": "004",
+    "name": "Ác Ma",
+    "file": "004.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/004.webp"
+  },
+  {
+    "id": "005",
+    "name": "Chanh Leo",
+    "file": "005.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/005.webp"
+  },
+  {
+    "id": "006",
+    "name": "Wave to fly",
+    "file": "006.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/006.webp"
+  },
+  {
+    "id": "007",
+    "name": "Măm Măm",
+    "file": "007.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/007.webp"
+  },
+  {
+    "id": "008",
+    "name": "Mùa Hè Rực Rỡ",
+    "file": "008.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/008.webp"
+  },
+  {
+    "id": "009",
+    "name": "Yellow Duck",
+    "file": "009.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/009.webp"
+  },
+  {
+    "id": "010",
+    "name": "Go Travel",
+    "file": "010.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/010.webp"
+  },
+  {
+    "id": "011",
+    "name": "Học Hành Chăm Chỉ",
+    "file": "011.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/011.webp"
+  },
+  {
+    "id": "012",
+    "name": "Công Viên Sắc Màu",
+    "file": "012.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/012.webp"
+  },
+  {
+    "id": "013",
+    "name": "Ok Fine",
+    "file": "013.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/013.webp"
+  },
+  {
+    "id": "014",
+    "name": "Phi Hành Gia",
+    "file": "014.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/014.webp"
+  },
+  {
+    "id": "015",
+    "name": "Ngựa Bảy Màu",
+    "file": "015.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/015.webp"
+  },
+  {
+    "id": "016",
+    "name": "Hồ Ly Khả Ái",
+    "file": "016.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/016.webp"
+  },
+  {
+    "id": "017",
+    "name": "Sức Mạnh Trà Sữa",
+    "file": "017.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/017.webp"
+  },
+  {
+    "id": "018",
+    "name": "Star Dream",
+    "file": "018.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/018.webp"
+  },
+  {
+    "id": "019",
+    "name": "ROCK",
+    "file": "019.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/019.webp"
+  },
+  {
+    "id": "020",
+    "name": "Phù Thủy Nhỏ",
+    "file": "020.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/020.webp"
+  },
+  {
+    "id": "021",
+    "name": "Kim Cương Xanh",
+    "file": "021.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/021.webp"
+  },
+  {
+    "id": "022",
+    "name": "Ngôi Sao Tím",
+    "file": "022.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/022.webp"
+  },
+  {
+    "id": "023",
+    "name": "Lông Vũ Rực Rỡ",
+    "file": "023.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/023.webp"
+  },
+  {
+    "id": "028",
+    "name": "Mũi Tên Nhân Mã",
+    "file": "028.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/028.webp"
+  },
+  {
+    "id": "029",
+    "name": "Sound of Sheep",
+    "file": "029.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/029.webp"
+  },
+  {
+    "id": "030",
+    "name": "Phượt Thủ",
+    "file": "030.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/030.webp"
+  },
+  {
+    "id": "031",
+    "name": "Thỏ Dễ Thương",
+    "file": "031.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/031.webp"
+  },
+  {
+    "id": "032",
+    "name": "Ngôi Sao Âm Nhạc",
+    "file": "032.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/032.webp"
+  },
+  {
+    "id": "036",
+    "name": "Mèo Máy Xanh",
+    "file": "036.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/036.webp"
+  },
+  {
+    "id": "037",
+    "name": "Hoa Nhỏ",
+    "file": "037.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/037.webp"
+  },
+  {
+    "id": "038",
+    "name": "Thỏ Ham Chơi",
+    "file": "038.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/038.webp"
+  },
+  {
+    "id": "039",
+    "name": "Lấp Lánh Cánh Hoa",
+    "file": "039.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/039.webp"
+  },
+  {
+    "id": "040",
+    "name": "Nơ Hồng",
+    "file": "040.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/040.webp"
+  },
+  {
+    "id": "041",
+    "name": "Tuyết Đầu Mùa",
+    "file": "041.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/041.webp"
+  },
+  {
+    "id": "042",
+    "name": "Hươu Sao",
+    "file": "042.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/042.webp"
+  },
+  {
+    "id": "043",
+    "name": "Liên Hoàn Sao",
+    "file": "043.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/043.webp"
+  },
+  {
+    "id": "044",
+    "name": "Hoa Iris",
+    "file": "044.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/044.webp"
+  },
+  {
+    "id": "045",
+    "name": "Pháo Bông",
+    "file": "045.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/045.webp"
+  },
+  {
+    "id": "046",
+    "name": "Tuần Lộc Đáng Yêu",
+    "file": "046.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/046.webp"
+  },
+  {
+    "id": "047",
+    "name": "Rồng Xanh",
+    "file": "047.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/047.webp"
+  },
+  {
+    "id": "048",
+    "name": "Thỏ Ngại Ngùng",
+    "file": "048.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/048.webp"
+  },
+  {
+    "id": "049",
+    "name": "Gấu Trúc May Mắn",
+    "file": "049.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/049.webp"
+  },
+  {
+    "id": "050",
+    "name": "Mèo Mun",
+    "file": "050.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/050.webp"
+  },
+  {
+    "id": "051",
+    "name": "Bồ Công Anh",
+    "file": "051.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/051.webp"
+  },
+  {
+    "id": "052",
+    "name": "Phép Thuật Ngôi Sao",
+    "file": "052.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/052.webp"
+  },
+  {
+    "id": "053",
+    "name": "Thỏ Xinh",
+    "file": "053.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/053.webp"
+  },
+  {
+    "id": "054",
+    "name": "Flaming Ball",
+    "file": "054.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/054.webp"
+  },
+  {
+    "id": "058",
+    "name": "Đôi Cánh Trắng",
+    "file": "058.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/058.webp"
+  },
+  {
+    "id": "059",
+    "name": "Somtam",
+    "file": "059.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/059.webp"
+  },
+  {
+    "id": "060",
+    "name": "Tiên Phong",
+    "file": "060.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/060.webp"
+  },
+  {
+    "id": "061",
+    "name": "Kẹo Ngọt Ngào",
+    "file": "061.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/061.webp"
+  },
+  {
+    "id": "062",
+    "name": "Hoa Đăng (Nam)",
+    "file": "062.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/062.webp"
+  },
+  {
+    "id": "063",
+    "name": "Hoa Đăng (Nữ)",
+    "file": "063.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/063.webp"
+  },
+  {
+    "id": "064",
+    "name": "Party",
+    "file": "064.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/064.webp"
+  },
+  {
+    "id": "065",
+    "name": "Tình Bạn",
+    "file": "065.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/065.webp"
+  },
+  {
+    "id": "066",
+    "name": "Định Luật Tình Yêu (Nam)",
+    "file": "066.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/066.webp"
+  },
+  {
+    "id": "067",
+    "name": "Định Luật Tình Yêu (Nữ)",
+    "file": "067.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/067.webp"
+  },
+  {
+    "id": "068",
+    "name": "Mũ Noel",
+    "file": "068.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/068.webp"
+  },
+  {
+    "id": "069",
+    "name": "Birthday",
+    "file": "069.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/069.webp"
+  },
+  {
+    "id": "070",
+    "name": "Lạc Đà",
+    "file": "070.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/070.webp"
+  },
+  {
+    "id": "071",
+    "name": "Love U",
+    "file": "071.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/071.webp"
+  },
+  {
+    "id": "072",
+    "name": "Love U（Nữ）",
+    "file": "072.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/072.webp"
+  },
+  {
+    "id": "073",
+    "name": "Rare Gems",
+    "file": "073.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/073.webp"
+  },
+  {
+    "id": "074",
+    "name": "Mặt Trời Bé Con",
+    "file": "074.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/074.webp"
+  },
+  {
+    "id": "075",
+    "name": "Bạn Thân",
+    "file": "075.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/075.webp"
+  },
+  {
+    "id": "079",
+    "name": "Best Wishes",
+    "file": "079.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/079.webp"
+  },
+  {
+    "id": "080",
+    "name": "Cutie",
+    "file": "080.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/080.webp"
+  },
+  {
+    "id": "081",
+    "name": "Kim Cương Tím",
+    "file": "081.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/081.webp"
+  },
+  {
+    "id": "083",
+    "name": "Hoa Mộc Lan",
+    "file": "083.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/083.webp"
+  },
+  {
+    "id": "084",
+    "name": "Đại Minh Tinh",
+    "file": "084.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/084.webp"
+  },
+  {
+    "id": "085",
+    "name": "Vòng Năng Lượng",
+    "file": "085.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/085.webp"
+  },
+  {
+    "id": "086",
+    "name": "Nữ Thần Tự Do",
+    "file": "086.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/086.webp"
+  },
+  {
+    "id": "087",
+    "name": "Xác Ướp",
+    "file": "087.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/087.webp"
+  },
+  {
+    "id": "088",
+    "name": "Pumpkin Head",
+    "file": "088.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/088.webp"
+  },
+  {
+    "id": "089",
+    "name": "Wkwk wkwk",
+    "file": "089.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/089.webp"
+  },
+  {
+    "id": "090",
+    "name": "Bữa Tiệc Đầu Năm",
+    "file": "090.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/090.webp"
+  },
+  {
+    "id": "091",
+    "name": "Cánh Sen",
+    "file": "091.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/091.webp"
+  },
+  {
+    "id": "092",
+    "name": "Cánh Thiên Thần",
+    "file": "092.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/092.webp"
+  },
+  {
+    "id": "093",
+    "name": "Tuần Lộc Ngộ Nghĩnh",
+    "file": "093.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/093.webp"
+  },
+  {
+    "id": "096",
+    "name": "Cơ Trưởng Will",
+    "file": "096.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/096.webp"
+  },
+  {
+    "id": "097",
+    "name": "Xuân Sum Vầy",
+    "file": "097.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/097.webp"
+  },
+  {
+    "id": "098",
+    "name": "Trái Tim Tình Yêu",
+    "file": "098.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/098.webp"
+  },
+  {
+    "id": "099",
+    "name": "Gift Box",
+    "file": "099.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/099.webp"
+  },
+  {
+    "id": "100",
+    "name": "",
+    "file": "100.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/100.webp"
+  },
+  {
+    "id": "101",
+    "name": "Love Booth",
+    "file": "101.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/101.webp"
+  },
+  {
+    "id": "102",
+    "name": "Rapper",
+    "file": "102.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/102.webp"
+  },
+  {
+    "id": "103",
+    "name": "Happy 3rd anniversary!",
+    "file": "103.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/103.webp"
+  },
+  {
+    "id": "104",
+    "name": "Súng Nước",
+    "file": "104.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/104.webp"
+  },
+  {
+    "id": "105",
+    "name": "Kim Hoa Lấp Lánh",
+    "file": "105.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/105.webp"
+  },
+  {
+    "id": "106",
+    "name": "Happy Anniversary",
+    "file": "106.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/106.webp"
+  },
+  {
+    "id": "107",
+    "name": "Sói Xám",
+    "file": "107.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/107.webp"
+  },
+  {
+    "id": "108",
+    "name": "Phong Cách",
+    "file": "108.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/108.webp"
+  },
+  {
+    "id": "109",
+    "name": "Lucky Koi",
+    "file": "109.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/109.webp"
+  },
+  {
+    "id": "110",
+    "name": "Hôn Lễ Lãng Mạn",
+    "file": "110.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/110.webp"
+  },
+  {
+    "id": "111",
+    "name": "Mũ Tốt Nghiệp",
+    "file": "111.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/111.webp"
+  },
+  {
+    "id": "112",
+    "name": "Game Thủ",
+    "file": "112.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/112.webp"
+  },
+  {
+    "id": "113",
+    "name": "Love is Love",
+    "file": "113.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/113.webp"
+  },
+  {
+    "id": "114",
+    "name": "Bé Khỏe Bé Đẹp",
+    "file": "114.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/114.webp"
+  },
+  {
+    "id": "115",
+    "name": "Tay Câu Cừ Khôi",
+    "file": "115.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/115.webp"
+  },
+  {
+    "id": "116",
+    "name": "Thiên Nhãn",
+    "file": "116.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/116.webp"
+  },
+  {
+    "id": "117",
+    "name": "Super VIP",
+    "file": "117.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/117.webp"
+  },
+  {
+    "id": "118",
+    "name": "Ánh Sáng Của Tri Thức",
+    "file": "118.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/118.webp"
+  },
+  {
+    "id": "119",
+    "name": "Bữa Tiệc Ánh Sáng",
+    "file": "119.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/119.webp"
+  },
+  {
+    "id": "120",
+    "name": "Starlight",
+    "file": "120.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/120.webp"
+  },
+  {
+    "id": "121",
+    "name": "Sao May Mắn",
+    "file": "121.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/121.webp"
+  },
+  {
+    "id": "122",
+    "name": "Slime",
+    "file": "122.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/122.webp"
+  },
+  {
+    "id": "123",
+    "name": "Dragon Baby",
+    "file": "123.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/123.webp"
+  },
+  {
+    "id": "124",
+    "name": "Hào Quang Ánh Sao",
+    "file": "124.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/124.webp"
+  },
+  {
+    "id": "125",
+    "name": "Cao Thủ OMC",
+    "file": "125.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/125.webp"
+  },
+  {
+    "id": "126",
+    "name": "Chiến Thần OMC",
+    "file": "126.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/126.webp"
+  },
+  {
+    "id": "127",
+    "name": "Hào Quang Gia Tộc",
+    "file": "127.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/127.webp"
+  },
+  {
+    "id": "128",
+    "name": "Tiệc Tùng",
+    "file": "128.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/128.webp"
+  },
+  {
+    "id": "129",
+    "name": "Ngôi Sao Xanh",
+    "file": "129.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/129.webp"
+  },
+  {
+    "id": "130",
+    "name": "Lover Star",
+    "file": "130.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/130.webp"
+  },
+  {
+    "id": "131",
+    "name": "Cúp Vô Địch",
+    "file": "131.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/131.webp"
+  },
+  {
+    "id": "132",
+    "name": "Bức Thư Tình",
+    "file": "132.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/132.webp"
+  },
+  {
+    "id": "133",
+    "name": "Happy Halloween",
+    "file": "133.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/133.webp"
+  },
+  {
+    "id": "134",
+    "name": "Người Cá Nhỏ",
+    "file": "134.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/134.webp"
+  },
+  {
+    "id": "135",
+    "name": "Celebrate 2025",
+    "file": "135.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/135.webp"
+  },
+  {
+    "id": "136",
+    "name": "Silver Diamond",
+    "file": "136.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/136.webp"
+  },
+  {
+    "id": "137",
+    "name": "Snow Paul",
+    "file": "137.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/137.webp"
+  },
+  {
+    "id": "138",
+    "name": "Xương Rồng",
+    "file": "138.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/138.webp"
+  },
+  {
+    "id": "139",
+    "name": "Xạ Thủ Sao Băng",
+    "file": "139.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/139.webp"
+  },
+  {
+    "id": "140",
+    "name": "Nghệ Nhân Hồng Treo Gió",
+    "file": "140.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/140.webp"
+  },
+  {
+    "id": "141",
+    "name": "In Love",
+    "file": "141.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/141.webp"
+  },
+  {
+    "id": "142",
+    "name": "Single",
+    "file": "142.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/142.webp"
+  },
+  {
+    "id": "143",
+    "name": "CP Love",
+    "file": "143.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/143.webp"
+  },
+  {
+    "id": "144",
+    "name": "CP Love (Male)",
+    "file": "144.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/144.webp"
+  },
+  {
+    "id": "145",
+    "name": "Bánh Cốm",
+    "file": "145.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/145.webp"
+  },
+  {
+    "id": "146",
+    "name": "Vòng Lửa",
+    "file": "146.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/146.webp"
+  },
+  {
+    "id": "147",
+    "name": "Cá Và Sứa",
+    "file": "147.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/147.webp"
+  },
+  {
+    "id": "148",
+    "name": "New Money",
+    "file": "148.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/148.webp"
+  },
+  {
+    "id": "149",
+    "name": "Cute Rabbit",
+    "file": "149.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/149.webp"
+  },
+  {
+    "id": "150",
+    "name": "Khăn Tắm Đôi",
+    "file": "150.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/150.webp"
+  },
+  {
+    "id": "151",
+    "name": "Happy Bunny",
+    "file": "151.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/151.webp"
+  },
+  {
+    "id": "152",
+    "name": "Sầu Riêng",
+    "file": "152.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/152.webp"
+  },
+  {
+    "id": "153",
+    "name": "Măng Cụt",
+    "file": "153.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/153.webp"
+  },
+  {
+    "id": "154",
+    "name": "Boss",
+    "file": "154.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/154.webp"
+  },
+  {
+    "id": "155",
+    "name": "Heo Đen",
+    "file": "155.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/155.webp"
+  },
+  {
+    "id": "156",
+    "name": "Vị Ngọt Mùa Hè",
+    "file": "156.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/156.webp"
+  },
+  {
+    "id": "157",
+    "name": "Spring Day",
+    "file": "157.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/157.webp"
+  },
+  {
+    "id": "158",
+    "name": "Tẩu Thuốc",
+    "file": "158.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/158.webp"
+  },
+  {
+    "id": "159",
+    "name": "Hoa Tulip",
+    "file": "159.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/159.webp"
+  },
+  {
+    "id": "160",
+    "name": "Tôi yêu Việt Nam",
+    "file": "160.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/160.webp"
+  },
+  {
+    "id": "161",
+    "name": "Thuỷ Thần Kiếm",
+    "file": "161.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/161.webp"
+  },
+  {
+    "id": "162",
+    "name": "Hộ Vệ Trái Tim",
+    "file": "162.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/162.webp"
+  },
+  {
+    "id": "163",
+    "name": "Hamster",
+    "file": "163.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/163.webp"
+  },
+  {
+    "id": "164",
+    "name": "Winner",
+    "file": "164.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/164.webp"
+  },
+  {
+    "id": "165",
+    "name": "Nailoong",
+    "file": "165.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/165.webp"
+  },
+  {
+    "id": "166",
+    "name": "Bombloong Đến",
+    "file": "166.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/166.webp"
+  },
+  {
+    "id": "167",
+    "name": "Purtato",
+    "file": "167.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/167.webp"
+  },
+  {
+    "id": "168",
+    "name": "Fall in Love",
+    "file": "168.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/168.webp"
+  },
+  {
+    "id": "169",
+    "name": "Hoa Mặt Trời",
+    "file": "169.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/169.webp"
+  },
+  {
+    "id": "170",
+    "name": "Hướng Dẫn Viên Will",
+    "file": "170.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/170.webp"
+  },
+  {
+    "id": "171",
+    "name": "Tóc Tết",
+    "file": "171.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/171.webp"
+  },
+  {
+    "id": "172",
+    "name": "Good Luck",
+    "file": "172.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/172.webp"
+  },
+  {
+    "id": "173",
+    "name": "Nailoong Phát Tài",
+    "file": "173.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/173.webp"
+  },
+  {
+    "id": "174",
+    "name": "Hạc Tiên",
+    "file": "174.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/174.webp"
+  },
+  {
+    "id": "175",
+    "name": "Polaroid Nailoong",
+    "file": "175.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/175.webp"
+  },
+  {
+    "id": "176",
+    "name": "Shining Story",
+    "file": "176.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/176.webp"
+  },
+  {
+    "id": "177",
+    "name": "NO.3 Tương Tác",
+    "file": "177.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/177.webp"
+  },
+  {
+    "id": "178",
+    "name": "Đồng Cảm",
+    "file": "178.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/178.webp"
+  },
+  {
+    "id": "179",
+    "name": "Thương Thương",
+    "file": "179.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/179.webp"
+  },
+  {
+    "id": "180",
+    "name": "Thả Tim",
+    "file": "180.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/180.webp"
+  },
+  {
+    "id": "181",
+    "name": "Mũ Xông Hơi",
+    "file": "181.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/181.webp"
+  },
+  {
+    "id": "182",
+    "name": "Hoa Hạnh Phúc",
+    "file": "182.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/182.webp"
+  },
+  {
+    "id": "183",
+    "name": "Bò Sữa",
+    "file": "183.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/183.webp"
+  },
+  {
+    "id": "184",
+    "name": "Khóc lớn",
+    "file": "184.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/184.webp"
+  },
+  {
+    "id": "185",
+    "name": "Bắn Tim",
+    "file": "185.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/185.webp"
+  },
+  {
+    "id": "186",
+    "name": "Thích Kỳ Cọ",
+    "file": "186.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/186.webp"
+  },
+  {
+    "id": "187",
+    "name": "Quốc Khánh",
+    "file": "187.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/187.webp"
+  },
+  {
+    "id": "188",
+    "name": "Super Lucky",
+    "file": "188.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/188.webp"
+  },
+  {
+    "id": "189",
+    "name": "Huyền ảo",
+    "file": "189.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/189.webp"
+  },
+  {
+    "id": "190",
+    "name": "Số 1 Ham Chơi",
+    "file": "190.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/190.webp"
+  },
+  {
+    "id": "191",
+    "name": "Nốt Nhạc Trăng Non",
+    "file": "191.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/191.webp"
+  },
+  {
+    "id": "192",
+    "name": "Cool Girl",
+    "file": "192.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/192.webp"
+  },
+  {
+    "id": "193",
+    "name": "Hoa Hồng Tím",
+    "file": "193.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/193.webp"
+  },
+  {
+    "id": "194",
+    "name": "Nhện Con",
+    "file": "194.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/194.webp"
+  },
+  {
+    "id": "195",
+    "name": "Song Điệp",
+    "file": "195.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/195.webp"
+  },
+  {
+    "id": "196",
+    "name": "Đèn Đăng",
+    "file": "196.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/196.webp"
+  },
+  {
+    "id": "197",
+    "name": "What？",
+    "file": "197.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/197.webp"
+  },
+  {
+    "id": "198",
+    "name": "Kẹo Giáng Sinh",
+    "file": "198.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/198.webp"
+  },
+  {
+    "id": "199",
+    "name": "Pháo Bông",
+    "file": "199.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/199.webp"
+  },
+  {
+    "id": "200",
+    "name": "Nơ màu vàng",
+    "file": "200.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/200.webp"
+  },
+  {
+    "id": "201",
+    "name": "Hoa Tầm Gửi",
+    "file": "201.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/201.webp"
+  },
+  {
+    "id": "202",
+    "name": "Vua Phòng Hát",
+    "file": "202.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/202.webp"
+  },
+  {
+    "id": "203",
+    "name": "Cá Hề Hề Hề",
+    "file": "203.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/203.webp"
+  },
+  {
+    "id": "204",
+    "name": "Bé Gián",
+    "file": "204.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/204.webp"
+  },
+  {
+    "id": "205",
+    "name": "Khuynh Chuyển Càn Khôn",
+    "file": "205.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/205.webp"
+  },
+  {
+    "id": "206",
+    "name": "Happy New Year",
+    "file": "206.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/206.webp"
+  },
+  {
+    "id": "207",
+    "name": "Hoàng Tử Bé",
+    "file": "207.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/207.webp"
+  },
+  {
+    "id": "208",
+    "name": "Bông Hồng",
+    "file": "208.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/208.webp"
+  },
+  {
+    "id": "209",
+    "name": "Phi Công",
+    "file": "209.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/209.webp"
+  },
+  {
+    "id": "210",
+    "name": "Rắn",
+    "file": "210.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/210.webp"
+  },
+  {
+    "id": "211",
+    "name": "Cáo",
+    "file": "211.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/211.webp"
+  },
+  {
+    "id": "212",
+    "name": "Thần Bài",
+    "file": "212.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/212.webp"
+  },
+  {
+    "id": "213",
+    "name": "Team Single",
+    "file": "213.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/213.webp"
+  },
+  {
+    "id": "214",
+    "name": "Nơ Xanh",
+    "file": "214.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/214.webp"
+  },
+  {
+    "id": "215",
+    "name": "Hoa Hồng Có Gai",
+    "file": "215.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/215.webp"
+  },
+  {
+    "id": "216",
+    "name": "Sói Tuyết",
+    "file": "216.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/216.webp"
+  },
+  {
+    "id": "217",
+    "name": "Blue Dream",
+    "file": "217.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/217.webp"
+  },
+  {
+    "id": "218",
+    "name": "Cheers 2026",
+    "file": "218.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/218.webp"
+  },
+  {
+    "id": "219",
+    "name": "Lời Chúc Của Maruko",
+    "file": "219.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/219.webp"
+  },
+  {
+    "id": "220",
+    "name": "Xe Hoa",
+    "file": "220.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/220.webp"
+  },
+  {
+    "id": "221",
+    "name": "Cố Lên",
+    "file": "221.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/221.webp"
+  },
+  {
+    "id": "222",
+    "name": "Mùa Anh Đào",
+    "file": "222.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/222.webp"
+  },
+  {
+    "id": "226",
+    "name": "Mũ Thuyền Trưởng",
+    "file": "226.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/226.webp"
+  },
+  {
+    "id": "227",
+    "name": "Cây Bút Sáng Tạo",
+    "file": "227.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/227.webp"
+  },
+  {
+    "id": "228",
+    "name": "Thiên Tài",
+    "file": "228.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/228.webp"
+  },
+  {
+    "id": "229",
+    "name": "Mochi Socola Dubai",
+    "file": "229.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/229.webp"
+  },
+  {
+    "id": "230",
+    "name": "Bé Dâu",
+    "file": "230.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/230.webp"
+  },
+  {
+    "id": "231",
+    "name": "Lục Bảo",
+    "file": "231.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/231.webp"
+  },
+  {
+    "id": "232",
+    "name": "Dễ Rung Động",
+    "file": "232.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/232.webp"
+  },
+  {
+    "id": "233",
+    "name": "Số Đào Hoa",
+    "file": "233.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/233.webp"
+  },
+  {
+    "id": "234",
+    "name": "Baby Bamboo",
+    "file": "234.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/234.webp"
+  },
+  {
+    "id": "235",
+    "name": "Đội Trưởng Đáng Yêu",
+    "file": "235.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/235.webp"
+  },
+  {
+    "id": "236",
+    "name": "Gemini",
+    "file": "236.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/236.webp"
+  },
+  {
+    "id": "237",
+    "name": "Hoa Linh Lan",
+    "file": "237.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/237.webp"
+  },
+  {
+    "id": "238",
+    "name": "Nước Chanh",
+    "file": "238.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/238.webp"
+  },
+  {
+    "id": "239",
+    "name": "Trăng Sao",
+    "file": "239.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/239.webp"
+  },
+  {
+    "id": "240",
+    "name": "Baby Shark",
+    "file": "240.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/240.webp"
+  },
+  {
+    "id": "241",
+    "name": "Trái Tim Cầu Vồng",
+    "file": "241.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/241.webp"
+  },
+  {
+    "id": "242",
+    "name": "Nạp Năng Lượng",
+    "file": "242.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/242.webp"
+  },
+  {
+    "id": "243",
+    "name": "Cherry Lady",
+    "file": "243.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/243.webp"
+  },
+  {
+    "id": "244",
+    "name": "Đảo Diệu Kỳ",
+    "file": "244.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/244.webp"
+  },
+  {
+    "id": "245",
+    "name": "Lemon Beat",
+    "file": "245.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/245.webp"
+  },
+  {
+    "id": "246",
+    "name": "Live Microphone",
+    "file": "246.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/246.webp"
+  },
+  {
+    "id": "247",
+    "name": "Nốt Nhạc Ngọt Ngào",
+    "file": "247.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/247.webp"
+  },
+  {
+    "id": "248",
+    "name": "Starlight",
+    "file": "248.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/248.webp"
+  },
+  {
+    "id": "249",
+    "name": "Oh My Dog",
+    "file": "249.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/249.webp"
+  },
+  {
+    "id": "250",
+    "name": "Paris Tour",
+    "file": "250.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/250.webp"
+  },
+  {
+    "id": "251",
+    "name": "Wonder Sky",
+    "file": "251.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/251.webp"
+  },
+  {
+    "id": "252",
+    "name": "QUBY Đa Nhân Cách",
+    "file": "252.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/252.webp"
+  },
+  {
+    "id": "253",
+    "name": "Vườn Hoa QUBY",
+    "file": "253.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/253.webp"
+  },
+  {
+    "id": "254",
+    "name": "QUBY Let's Party",
+    "file": "254.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/254.webp"
+  },
+  {
+    "id": "256",
+    "name": "",
+    "file": "256.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/256.webp"
+  },
+  {
+    "id": "257",
+    "name": "Phúc Tinh",
+    "file": "257.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/257.webp"
+  },
+  {
+    "id": "258",
+    "name": "Jelly Teddy",
+    "file": "258.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/258.webp"
+  },
+  {
+    "id": "259",
+    "name": "Nước Chanh Tươi",
+    "file": "259.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/259.webp"
+  },
+  {
+    "id": "260",
+    "name": "Cookie",
+    "file": "260.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/260.webp"
+  },
+  {
+    "id": "261",
+    "name": "Hè Vui Vẻ",
+    "file": "261.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/261.webp"
+  },
+  {
+    "id": "262",
+    "name": "Hoa Linh Lan",
+    "file": "262.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/262.webp"
+  },
+  {
+    "id": "263",
+    "name": "Thanh Long",
+    "file": "263.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/263.webp"
+  },
+  {
+    "id": "264",
+    "name": "Bé Bơ",
+    "file": "264.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/264.webp"
+  },
+  {
+    "id": "265",
+    "name": "Trà Chiều",
+    "file": "265.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/265.webp"
+  },
+  {
+    "id": "266",
+    "name": "Tàu Lượn Siêu Tốc",
+    "file": "266.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/266.webp"
+  },
+  {
+    "id": "267",
+    "name": "Đồng Tâm Hiệp Lực",
+    "file": "267.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/267.webp"
+  },
+  {
+    "id": "268",
+    "name": "Đồng Hành",
+    "file": "268.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/268.webp"
+  },
+  {
+    "id": "269",
+    "name": "Tui là Én",
+    "file": "269.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/269.webp"
+  },
+  {
+    "id": "270",
+    "name": "Clean‑Set",
+    "file": "270.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/270.webp"
+  },
+  {
+    "id": "271",
+    "name": "Eren",
+    "file": "271.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/271.webp"
+  },
+  {
+    "id": "272",
+    "name": "Tình Yêu Online",
+    "file": "272.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/272.webp"
+  },
+  {
+    "id": "273",
+    "name": "Mặt Trời Chân Lý",
+    "file": "273.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/273.webp"
+  },
+  {
+    "id": "274",
+    "name": "Mùa Bí Ngô",
+    "file": "274.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/274.webp"
+  },
+  {
+    "id": "275",
+    "name": "Vinh Diệu",
+    "file": "275.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/275.webp"
+  },
+  {
+    "id": "276",
+    "name": "Hãy Nhận Lấy",
+    "file": "276.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/276.webp"
+  },
+  {
+    "id": "277",
+    "name": "Bé Rồng Lửa",
+    "file": "277.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/277.webp"
+  },
+  {
+    "id": "278",
+    "name": "Heart (Nam)",
+    "file": "278.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/278.webp"
+  },
+  {
+    "id": "279",
+    "name": "Heart (Nữ)",
+    "file": "279.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/279.webp"
+  },
+  {
+    "id": "280",
+    "name": "Ánh Sáng Sakura",
+    "file": "280.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/280.webp"
+  },
+  {
+    "id": "281",
+    "name": "Vạm Vỡ",
+    "file": "281.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/281.webp"
+  },
+  {
+    "id": "282",
+    "name": "Kẻ Theo Đuổi Ánh Sáng",
+    "file": "282.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/282.webp"
+  },
+  {
+    "id": "283",
+    "name": "Ảo Thuật Tình Yêu",
+    "file": "283.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/283.webp"
+  },
+  {
+    "id": "284",
+    "name": "Shining Star",
+    "file": "284.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/284.webp"
+  },
+  {
+    "id": "285",
+    "name": "Noble Crown",
+    "file": "285.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/285.webp"
+  },
+  {
+    "id": "286",
+    "name": "Halloween Night",
+    "file": "286.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/286.webp"
+  },
+  {
+    "id": "287",
+    "name": "Ngọn Lửa Rực Rỡ",
+    "file": "287.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/287.webp"
+  },
+  {
+    "id": "288",
+    "name": "Vòng Quay May Mắn",
+    "file": "288.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/288.webp"
+  },
+  {
+    "id": "289",
+    "name": "Hồ Thiên Nga (Nam)",
+    "file": "289.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/289.webp"
+  },
+  {
+    "id": "290",
+    "name": "Hồ Thiên Nga (Nữ)",
+    "file": "290.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/290.webp"
+  },
+  {
+    "id": "291",
+    "name": "Lời Nói Ngọt Ngào",
+    "file": "291.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/291.webp"
+  },
+  {
+    "id": "292",
+    "name": "Chú Ong Chăm Chỉ",
+    "file": "292.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/292.webp"
+  },
+  {
+    "id": "293",
+    "name": "Sức Hút Tình Yêu",
+    "file": "293.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/293.webp"
+  },
+  {
+    "id": "294",
+    "name": "Sao Băng Sắc Màu",
+    "file": "294.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/294.webp"
+  },
+  {
+    "id": "295",
+    "name": "Người Bảo Vệ Vì Sao",
+    "file": "295.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/295.webp"
+  },
+  {
+    "id": "296",
+    "name": "Chú Mèo Ngọt Ngào",
+    "file": "296.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/296.webp"
+  },
+  {
+    "id": "297",
+    "name": "Ocean Dreams",
+    "file": "297.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/297.webp"
+  },
+  {
+    "id": "298",
+    "name": "Gấu Nâu",
+    "file": "298.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/298.webp"
+  },
+  {
+    "id": "299",
+    "name": "Rock Cat",
+    "file": "299.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/299.webp"
+  },
+  {
+    "id": "300",
+    "name": "Tiểu Quỷ",
+    "file": "300.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/300.webp"
+  },
+  {
+    "id": "301",
+    "name": "Tiểu Quỷ",
+    "file": "301.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/301.webp"
+  },
+  {
+    "id": "302",
+    "name": "Top 1",
+    "file": "302.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/302.webp"
+  },
+  {
+    "id": "303",
+    "name": "Đôi Cánh Bóng Đêm",
+    "file": "303.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/303.webp"
+  },
+  {
+    "id": "304",
+    "name": "Duyên Tiền Định (Nữ)",
+    "file": "304.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/304.webp"
+  },
+  {
+    "id": "305",
+    "name": "Duyên Tiền Định (Nam)",
+    "file": "305.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/305.webp"
+  },
+  {
+    "id": "306",
+    "name": "Người Bảo Vệ Ánh Trăng",
+    "file": "306.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/306.webp"
+  },
+  {
+    "id": "307",
+    "name": "Giấc Mơ Ánh Sao",
+    "file": "307.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/307.webp"
+  },
+  {
+    "id": "308",
+    "name": "Phượng Hoàng Truyền Kỳ",
+    "file": "308.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/308.webp"
+  },
+  {
+    "id": "309",
+    "name": "Kim Cương Tím",
+    "file": "309.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/309.webp"
+  },
+  {
+    "id": "310",
+    "name": "Pha Lê Xanh",
+    "file": "310.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/310.webp"
+  },
+  {
+    "id": "311",
+    "name": "Ngôi Sao Bạc",
+    "file": "311.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/311.webp"
+  },
+  {
+    "id": "312",
+    "name": "Thỏ Harry",
+    "file": "312.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/312.webp"
+  },
+  {
+    "id": "313",
+    "name": "Singing Master",
+    "file": "313.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/313.webp"
+  },
+  {
+    "id": "314",
+    "name": "Musician",
+    "file": "314.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/314.webp"
+  },
+  {
+    "id": "315",
+    "name": "Deer star",
+    "file": "315.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/315.webp"
+  },
+  {
+    "id": "316",
+    "name": "Nguyệt Thực Truyền Kỳ",
+    "file": "316.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/316.webp"
+  },
+  {
+    "id": "317",
+    "name": "Ngọt Ngào Sắc Màu",
+    "file": "317.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/317.webp"
+  },
+  {
+    "id": "318",
+    "name": "Star Party",
+    "file": "318.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/318.webp"
+  },
+  {
+    "id": "319",
+    "name": "Bạn Nhậu",
+    "file": "319.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/319.webp"
+  },
+  {
+    "id": "320",
+    "name": "Mèo Máy Âm Nhạc",
+    "file": "320.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/320.webp"
+  },
+  {
+    "id": "321",
+    "name": "Vinh Quang Chiến Thắng",
+    "file": "321.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/321.webp"
+  },
+  {
+    "id": "322",
+    "name": "Á Quân Danh Giá",
+    "file": "322.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/322.webp"
+  },
+  {
+    "id": "323",
+    "name": "Á Quân 2 Danh Giá",
+    "file": "323.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/323.webp"
+  },
+  {
+    "id": "324",
+    "name": "Cá Mập Con Nhăm Nhăm",
+    "file": "324.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/324.webp"
+  },
+  {
+    "id": "325",
+    "name": "Thỏ Buồn Ngủ",
+    "file": "325.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/325.webp"
+  },
+  {
+    "id": "326",
+    "name": "Quỷ Nghịch Ngợm",
+    "file": "326.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/326.webp"
+  },
+  {
+    "id": "327",
+    "name": "Panda",
+    "file": "327.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/327.webp"
+  },
+  {
+    "id": "328",
+    "name": "Vua Sư Tử",
+    "file": "328.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/328.webp"
+  },
+  {
+    "id": "329",
+    "name": "Drum Music",
+    "file": "329.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/329.webp"
+  },
+  {
+    "id": "330",
+    "name": "Thỏ Tinh Nghịch",
+    "file": "330.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/330.webp"
+  },
+  {
+    "id": "331",
+    "name": "Quấn Quýt Không Rời",
+    "file": "331.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/331.webp"
+  },
+  {
+    "id": "332",
+    "name": "Nụ Hôn Cuồng Nhiệt",
+    "file": "332.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/332.webp"
+  },
+  {
+    "id": "333",
+    "name": "Những Cánh Hoa Mơ",
+    "file": "333.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/333.webp"
+  },
+  {
+    "id": "334",
+    "name": "Báu Vật Thất Truyền",
+    "file": "334.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/334.webp"
+  },
+  {
+    "id": "335",
+    "name": "Tiệc Trên Cao",
+    "file": "335.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/335.webp"
+  },
+  {
+    "id": "336",
+    "name": "Love's rose",
+    "file": "336.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/336.webp"
+  },
+  {
+    "id": "337",
+    "name": "Mưa Sao Băng",
+    "file": "337.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/337.webp"
+  },
+  {
+    "id": "339",
+    "name": "Mũ Giáng Sinh",
+    "file": "339.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/339.webp"
+  },
+  {
+    "id": "340",
+    "name": "Cạn Ly",
+    "file": "340.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/340.webp"
+  },
+  {
+    "id": "341",
+    "name": "Romantic Melody",
+    "file": "341.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/341.webp"
+  },
+  {
+    "id": "342",
+    "name": "Valentine (Nữ)",
+    "file": "342.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/342.webp"
+  },
+  {
+    "id": "343",
+    "name": "Valentine (Nam)",
+    "file": "343.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/343.webp"
+  },
+  {
+    "id": "344",
+    "name": "Đóa Hoa Tình Yêu",
+    "file": "344.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/344.webp"
+  },
+  {
+    "id": "345",
+    "name": "Game Zone",
+    "file": "345.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/345.webp"
+  },
+  {
+    "id": "346",
+    "name": "Dạ Hồ Điệp",
+    "file": "346.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/346.webp"
+  },
+  {
+    "id": "347",
+    "name": "Người Vẽ Giấc Mơ",
+    "file": "347.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/347.webp"
+  },
+  {
+    "id": "348",
+    "name": "Fantasy World",
+    "file": "348.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/348.webp"
+  },
+  {
+    "id": "349",
+    "name": "Chuyên Gia Du Lịch",
+    "file": "349.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/349.webp"
+  },
+  {
+    "id": "350",
+    "name": "Sao Mơ",
+    "file": "350.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/350.webp"
+  },
+  {
+    "id": "351",
+    "name": "Valentine's Rose",
+    "file": "351.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/351.webp"
+  },
+  {
+    "id": "352",
+    "name": "Meow Whispers",
+    "file": "352.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/352.webp"
+  },
+  {
+    "id": "353",
+    "name": "Hồ Điệp Lấp Lánh",
+    "file": "353.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/353.webp"
+  },
+  {
+    "id": "354",
+    "name": "Vòng Quay Tinh Tú",
+    "file": "354.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/354.webp"
+  },
+  {
+    "id": "355",
+    "name": "Cửa Sổ Hoa Hồng",
+    "file": "355.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/355.webp"
+  },
+  {
+    "id": "356",
+    "name": "Ma Mị (Nam)",
+    "file": "356.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/356.webp"
+  },
+  {
+    "id": "357",
+    "name": "Ma Mị (Nữ)",
+    "file": "357.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/357.webp"
+  },
+  {
+    "id": "358",
+    "name": "New Year's Lucky",
+    "file": "358.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/358.webp"
+  },
+  {
+    "id": "359",
+    "name": "Ánh Sao Lấp Lánh",
+    "file": "359.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/359.webp"
+  },
+  {
+    "id": "360",
+    "name": "Sweet Party",
+    "file": "360.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/360.webp"
+  },
+  {
+    "id": "361",
+    "name": "Thánh Nguyện",
+    "file": "361.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/361.webp"
+  },
+  {
+    "id": "362",
+    "name": "Yêu Dịu Dàng",
+    "file": "362.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/362.webp"
+  },
+  {
+    "id": "363",
+    "name": "Cánh Của Trái Tim",
+    "file": "363.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/363.webp"
+  },
+  {
+    "id": "364",
+    "name": "Kẻ Mộng Mơ",
+    "file": "364.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/364.webp"
+  },
+  {
+    "id": "365",
+    "name": "Cánh Hồng Rơi",
+    "file": "365.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/365.webp"
+  },
+  {
+    "id": "366",
+    "name": "Ngọt Ngào Đáng Yêu",
+    "file": "366.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/366.webp"
+  },
+  {
+    "id": "367",
+    "name": "Ngôi Sao Hộ Vệ",
+    "file": "367.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/367.webp"
+  },
+  {
+    "id": "368",
+    "name": "Khuynh Tâm",
+    "file": "368.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/368.webp"
+  },
+  {
+    "id": "369",
+    "name": "Romance Forever (Nam)",
+    "file": "369.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/369.webp"
+  },
+  {
+    "id": "370",
+    "name": "Romance Forever (Nữ)",
+    "file": "370.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/370.webp"
+  },
+  {
+    "id": "371",
+    "name": "Sắc Hoa Sapphire",
+    "file": "371.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/371.webp"
+  },
+  {
+    "id": "372",
+    "name": "Nhất Kiến Chung Tình (Nam)",
+    "file": "372.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/372.webp"
+  },
+  {
+    "id": "373",
+    "name": "Nhất Kiến Chung Tình (Nữ)",
+    "file": "373.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/373.webp"
+  },
+  {
+    "id": "374",
+    "name": "Gold",
+    "file": "374.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/374.webp"
+  },
+  {
+    "id": "375",
+    "name": "Làn Sóng Âm Nhạc",
+    "file": "375.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/375.webp"
+  },
+  {
+    "id": "376",
+    "name": "Nữ Hoàng Phép Thuật",
+    "file": "376.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/376.webp"
+  },
+  {
+    "id": "377",
+    "name": "Công Chúa Phép Thuật",
+    "file": "377.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/377.webp"
+  },
+  {
+    "id": "378",
+    "name": "Cowboy Genius",
+    "file": "378.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/378.webp"
+  },
+  {
+    "id": "379",
+    "name": "Cowboy Talent",
+    "file": "379.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/379.webp"
+  },
+  {
+    "id": "380",
+    "name": "Pet Siêu Quậy",
+    "file": "380.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/380.webp"
+  },
+  {
+    "id": "381",
+    "name": "Diamond Love",
+    "file": "381.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/381.webp"
+  },
+  {
+    "id": "382",
+    "name": "Có Gấu Ôm",
+    "file": "382.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/382.webp"
+  },
+  {
+    "id": "383",
+    "name": "Good luck",
+    "file": "383.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/383.webp"
+  },
+  {
+    "id": "384",
+    "name": "Chợ Đêm Neon",
+    "file": "384.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/384.webp"
+  },
+  {
+    "id": "385",
+    "name": "Music Enthusiast",
+    "file": "385.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/385.webp"
+  },
+  {
+    "id": "386",
+    "name": "Ngọn Lửa",
+    "file": "386.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/386.webp"
+  },
+  {
+    "id": "387",
+    "name": "Thỏ Điệu Đà",
+    "file": "387.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/387.webp"
+  },
+  {
+    "id": "388",
+    "name": "Ngập Chìm",
+    "file": "388.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/388.webp"
+  },
+  {
+    "id": "389",
+    "name": "Stars and Moon",
+    "file": "389.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/389.webp"
+  },
+  {
+    "id": "390",
+    "name": "Thỏ Ngọc",
+    "file": "390.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/390.webp"
+  },
+  {
+    "id": "391",
+    "name": "Cừu Vui Vẻ",
+    "file": "391.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/391.webp"
+  },
+  {
+    "id": "392",
+    "name": "Bong Bóng Sắc Màu",
+    "file": "392.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/392.webp"
+  },
+  {
+    "id": "393",
+    "name": "Zombie",
+    "file": "393.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/393.webp"
+  },
+  {
+    "id": "394",
+    "name": "Phù Thủy",
+    "file": "394.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/394.webp"
+  },
+  {
+    "id": "395",
+    "name": "Chúa Hề",
+    "file": "395.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/395.webp"
+  },
+  {
+    "id": "396",
+    "name": "Người Sói",
+    "file": "396.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/396.webp"
+  },
+  {
+    "id": "397",
+    "name": "Ma Cà Rồng",
+    "file": "397.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/397.webp"
+  },
+  {
+    "id": "398",
+    "name": "Thành Phố Âm Nhạc",
+    "file": "398.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/398.webp"
+  },
+  {
+    "id": "399",
+    "name": "Mũi Tên Tình Yêu",
+    "file": "399.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/399.webp"
+  },
+  {
+    "id": "400",
+    "name": "Thành Phố Ánh Sáng",
+    "file": "400.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/400.webp"
+  },
+  {
+    "id": "401",
+    "name": "Vương Quốc Hoa",
+    "file": "401.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/401.webp"
+  },
+  {
+    "id": "402",
+    "name": "Boyfriend",
+    "file": "402.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/402.webp"
+  },
+  {
+    "id": "403",
+    "name": "Girlfriend",
+    "file": "403.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/403.webp"
+  },
+  {
+    "id": "404",
+    "name": "Bông Hồng Vàng",
+    "file": "404.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/404.webp"
+  },
+  {
+    "id": "405",
+    "name": "Rồng Xanh",
+    "file": "405.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/405.webp"
+  },
+  {
+    "id": "406",
+    "name": "Quả Cầu Tuyết",
+    "file": "406.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/406.webp"
+  },
+  {
+    "id": "407",
+    "name": "Super Star",
+    "file": "407.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/407.webp"
+  },
+  {
+    "id": "408",
+    "name": "Hào Quang Trở Lại",
+    "file": "408.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/408.webp"
+  },
+  {
+    "id": "409",
+    "name": "Kho Báu Vàng",
+    "file": "409.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/409.webp"
+  },
+  {
+    "id": "410",
+    "name": "Hổ Ngộ Nghĩnh",
+    "file": "410.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/410.webp"
+  },
+  {
+    "id": "411",
+    "name": "Mèo Thần Tài",
+    "file": "411.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/411.webp"
+  },
+  {
+    "id": "412",
+    "name": "Ngôi Sao Huyền Bí",
+    "file": "412.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/412.webp"
+  },
+  {
+    "id": "413",
+    "name": "Hoàng Tử Hoa Hồng",
+    "file": "413.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/413.webp"
+  },
+  {
+    "id": "414",
+    "name": "Công Chúa Hoa Hồng",
+    "file": "414.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/414.webp"
+  },
+  {
+    "id": "415",
+    "name": "Thiên Cung",
+    "file": "415.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/415.webp"
+  },
+  {
+    "id": "416",
+    "name": "Ngọn Lửa Gia Tộc",
+    "file": "416.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/416.webp"
+  },
+  {
+    "id": "417",
+    "name": "Thần Chiến Binh",
+    "file": "417.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/417.webp"
+  },
+  {
+    "id": "418",
+    "name": "Vũ Trụ Anh Hùng",
+    "file": "418.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/418.webp"
+  },
+  {
+    "id": "419",
+    "name": "Thiên Hà Rực Rỡ",
+    "file": "419.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/419.webp"
+  },
+  {
+    "id": "420",
+    "name": "Tinh Cầu Chí Tôn",
+    "file": "420.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/420.webp"
+  },
+  {
+    "id": "421",
+    "name": "Dynamic Universe",
+    "file": "421.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/421.webp"
+  },
+  {
+    "id": "422",
+    "name": "Đôi Cách Kim Cương",
+    "file": "422.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/422.webp"
+  },
+  {
+    "id": "423",
+    "name": "Star and Flower",
+    "file": "423.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/423.webp"
+  },
+  {
+    "id": "424",
+    "name": "Huyền Vũ",
+    "file": "424.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/424.webp"
+  },
+  {
+    "id": "425",
+    "name": "Bạch Hổ",
+    "file": "425.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/425.webp"
+  },
+  {
+    "id": "426",
+    "name": "Phượng Hoàng Lửa",
+    "file": "426.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/426.webp"
+  },
+  {
+    "id": "427",
+    "name": "Cà Phê Sáng",
+    "file": "427.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/427.webp"
+  },
+  {
+    "id": "428",
+    "name": "Gặp Gỡ Định Mệnh",
+    "file": "428.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/428.webp"
+  },
+  {
+    "id": "429",
+    "name": "Gặp Gỡ Định Mệnh",
+    "file": "429.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/429.webp"
+  },
+  {
+    "id": "430",
+    "name": "Vũ Điệu Tình Yêu",
+    "file": "430.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/430.webp"
+  },
+  {
+    "id": "431",
+    "name": "Dream Journey",
+    "file": "431.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/431.webp"
+  },
+  {
+    "id": "432",
+    "name": "Hải Vương",
+    "file": "432.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/432.webp"
+  },
+  {
+    "id": "433",
+    "name": "Bóng Chuyền Bãi Biển",
+    "file": "433.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/433.webp"
+  },
+  {
+    "id": "434",
+    "name": "Vòng Quay Ngựa Gỗ",
+    "file": "434.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/434.webp"
+  },
+  {
+    "id": "435",
+    "name": "Sóng Sắc Màu",
+    "file": "435.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/435.webp"
+  },
+  {
+    "id": "436",
+    "name": "Phú Quý",
+    "file": "436.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/436.webp"
+  },
+  {
+    "id": "437",
+    "name": "Mèo Công Nghệ",
+    "file": "437.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/437.webp"
+  },
+  {
+    "id": "438",
+    "name": "Vũ Đài Sang Trọng",
+    "file": "438.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/438.webp"
+  },
+  {
+    "id": "439",
+    "name": "Anh Hùng Vũ Trụ",
+    "file": "439.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/439.webp"
+  },
+  {
+    "id": "440",
+    "name": "Gia Tộc Xuất Sắc",
+    "file": "440.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/440.webp"
+  },
+  {
+    "id": "441",
+    "name": "Crystal Heart",
+    "file": "441.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/441.webp"
+  },
+  {
+    "id": "442",
+    "name": "Thần Băng Giá",
+    "file": "442.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/442.webp"
+  },
+  {
+    "id": "443",
+    "name": "TRAP GIRL",
+    "file": "443.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/443.webp"
+  },
+  {
+    "id": "444",
+    "name": "TRAP BOY",
+    "file": "444.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/444.webp"
+  },
+  {
+    "id": "445",
+    "name": "Giai Điệu Xanh",
+    "file": "445.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/445.webp"
+  },
+  {
+    "id": "446",
+    "name": "Hè Sôi Động (Nam)",
+    "file": "446.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/446.webp"
+  },
+  {
+    "id": "447",
+    "name": "Vị Thần Chiến Tranh",
+    "file": "447.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/447.webp"
+  },
+  {
+    "id": "448",
+    "name": "Hè Sôi Động (Nữ)",
+    "file": "448.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/448.webp"
+  },
+  {
+    "id": "449",
+    "name": "Blazing Star",
+    "file": "449.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/449.webp"
+  },
+  {
+    "id": "450",
+    "name": "Kỳ Lân Vàng",
+    "file": "450.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/450.webp"
+  },
+  {
+    "id": "451",
+    "name": "Câu Chuyện Lạ",
+    "file": "451.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/451.webp"
+  },
+  {
+    "id": "452",
+    "name": "Truyền Thuyết Bóng Đêm",
+    "file": "452.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/452.webp"
+  },
+  {
+    "id": "453",
+    "name": "Đôi Cánh Thiên Thần",
+    "file": "453.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/453.webp"
+  },
+  {
+    "id": "454",
+    "name": "Đôi Cách Phép Thuật",
+    "file": "454.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/454.webp"
+  },
+  {
+    "id": "455",
+    "name": "Hè Mát Lạnh",
+    "file": "455.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/455.webp"
+  },
+  {
+    "id": "456",
+    "name": "Nhót",
+    "file": "456.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/456.webp"
+  },
+  {
+    "id": "457",
+    "name": "Vị Thần Chí Tôn",
+    "file": "457.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/457.webp"
+  },
+  {
+    "id": "458",
+    "name": "Vị Thần Tối Thượng",
+    "file": "458.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/458.webp"
+  },
+  {
+    "id": "459",
+    "name": "Hào Quang",
+    "file": "459.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/459.webp"
+  },
+  {
+    "id": "460",
+    "name": "Thiên Sứ",
+    "file": "460.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/460.webp"
+  },
+  {
+    "id": "461",
+    "name": "Bánh Donut Thỏ",
+    "file": "461.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/461.webp"
+  },
+  {
+    "id": "462",
+    "name": "Donut Gấu",
+    "file": "462.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/462.webp"
+  },
+  {
+    "id": "463",
+    "name": "Poker Cat",
+    "file": "463.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/463.webp"
+  },
+  {
+    "id": "464",
+    "name": "Magic Love (Male)",
+    "file": "464.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/464.webp"
+  },
+  {
+    "id": "465",
+    "name": "The Gift",
+    "file": "465.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/465.webp"
+  },
+  {
+    "id": "466",
+    "name": "Pháp Sư Lửa",
+    "file": "466.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/466.webp"
+  },
+  {
+    "id": "467",
+    "name": "Magic Love (Female)",
+    "file": "467.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/467.webp"
+  },
+  {
+    "id": "468",
+    "name": "Người Chơi Tôn Quý",
+    "file": "468.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/468.webp"
+  },
+  {
+    "id": "469",
+    "name": "JSOL With Love",
+    "file": "469.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/469.webp"
+  },
+  {
+    "id": "470",
+    "name": "Bong Bóng Trái Tim",
+    "file": "470.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/470.webp"
+  },
+  {
+    "id": "472",
+    "name": "Cute Robot",
+    "file": "472.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/472.webp"
+  },
+  {
+    "id": "473",
+    "name": "Nón lá thân thương",
+    "file": "473.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/473.webp"
+  },
+  {
+    "id": "474",
+    "name": "Pha Lê Ma Thuật",
+    "file": "474.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/474.webp"
+  },
+  {
+    "id": "475",
+    "name": "Đỉnh Cao Danh Vọng (Nam)",
+    "file": "475.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/475.webp"
+  },
+  {
+    "id": "476",
+    "name": "Đỉnh Cao Danh Vọng (Nữ)",
+    "file": "476.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/476.webp"
+  },
+  {
+    "id": "477",
+    "name": "Duyên Dáng",
+    "file": "477.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/477.webp"
+  },
+  {
+    "id": "478",
+    "name": "Phong Cách",
+    "file": "478.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/478.webp"
+  },
+  {
+    "id": "479",
+    "name": "Kim Xà Bạch Mai",
+    "file": "479.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/479.webp"
+  },
+  {
+    "id": "480",
+    "name": "Biển Hoa Ngọt Ngào",
+    "file": "480.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/480.webp"
+  },
+  {
+    "id": "481",
+    "name": "Ghi Chú Tình Yêu(Nữ)",
+    "file": "481.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/481.webp"
+  },
+  {
+    "id": "482",
+    "name": "Ghi Chú Tình Yêu(Nam)",
+    "file": "482.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/482.webp"
+  },
+  {
+    "id": "483",
+    "name": "Vị Vua Trở Lại",
+    "file": "483.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/483.webp"
+  },
+  {
+    "id": "484",
+    "name": "Prince 2024",
+    "file": "484.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/484.webp"
+  },
+  {
+    "id": "485",
+    "name": "Princess 2024",
+    "file": "485.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/485.webp"
+  },
+  {
+    "id": "486",
+    "name": "Family 2024",
+    "file": "486.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/486.webp"
+  },
+  {
+    "id": "487",
+    "name": "Couple 2024",
+    "file": "487.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/487.webp"
+  },
+  {
+    "id": "488",
+    "name": "Dragon's Envoy",
+    "file": "488.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/488.webp"
+  },
+  {
+    "id": "489",
+    "name": "Mì Cay",
+    "file": "489.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/489.webp"
+  },
+  {
+    "id": "490",
+    "name": "Happy 2025",
+    "file": "490.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/490.webp"
+  },
+  {
+    "id": "491",
+    "name": "Bingo Ngũ Sắc",
+    "file": "491.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/491.webp"
+  },
+  {
+    "id": "492",
+    "name": "Shining Starlight",
+    "file": "492.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/492.webp"
+  },
+  {
+    "id": "493",
+    "name": "Black Diamonds",
+    "file": "493.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/493.webp"
+  },
+  {
+    "id": "494",
+    "name": "Candy House",
+    "file": "494.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/494.webp"
+  },
+  {
+    "id": "495",
+    "name": "BOSS",
+    "file": "495.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/495.webp"
+  },
+  {
+    "id": "496",
+    "name": "Cây Thông Noel",
+    "file": "496.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/496.webp"
+  },
+  {
+    "id": "497",
+    "name": "Year-End Party",
+    "file": "497.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/497.webp"
+  },
+  {
+    "id": "498",
+    "name": "Đôi Cánh Thiên Thần",
+    "file": "498.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/498.webp"
+  },
+  {
+    "id": "499",
+    "name": "Tề Thiên Đại Thánh",
+    "file": "499.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/499.webp"
+  },
+  {
+    "id": "500",
+    "name": "Siêu Nhân Trứng",
+    "file": "500.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/500.webp"
+  },
+  {
+    "id": "501",
+    "name": "Kiếm Ảnh Toạ",
+    "file": "501.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/501.webp"
+  },
+  {
+    "id": "502",
+    "name": "Ngai Rồng Lửa",
+    "file": "502.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/502.webp"
+  },
+  {
+    "id": "503",
+    "name": "Happy Birthday",
+    "file": "503.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/503.webp"
+  },
+  {
+    "id": "504",
+    "name": "Enjoy 2025 (Nam)",
+    "file": "504.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/504.webp"
+  },
+  {
+    "id": "505",
+    "name": "Enjoy 2025 (Nữ)",
+    "file": "505.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/505.webp"
+  },
+  {
+    "id": "506",
+    "name": "MC Quốc Dân",
+    "file": "506.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/506.webp"
+  },
+  {
+    "id": "507",
+    "name": "Đu Quay Pháo Hoa",
+    "file": "507.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/507.webp"
+  },
+  {
+    "id": "508",
+    "name": "Vương Miện Hoa",
+    "file": "508.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/508.webp"
+  },
+  {
+    "id": "509",
+    "name": "Vườn Hồng",
+    "file": "509.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/509.webp"
+  },
+  {
+    "id": "510",
+    "name": "Đôi Cánh Thượng Thần",
+    "file": "510.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/510.webp"
+  },
+  {
+    "id": "511",
+    "name": "Cute Snake",
+    "file": "511.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/511.webp"
+  },
+  {
+    "id": "513",
+    "name": "CP Bag (Nữ)",
+    "file": "513.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/513.webp"
+  },
+  {
+    "id": "514",
+    "name": "Bear Bag",
+    "file": "514.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/514.webp"
+  },
+  {
+    "id": "515",
+    "name": "Nàng Tiên Cá",
+    "file": "515.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/515.webp"
+  },
+  {
+    "id": "516",
+    "name": "Speed Racing",
+    "file": "516.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/516.webp"
+  },
+  {
+    "id": "517",
+    "name": "Hoa Hồng Pha Lê",
+    "file": "517.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/517.webp"
+  },
+  {
+    "id": "518",
+    "name": "Vuốt Mèo Tấn Công",
+    "file": "518.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/518.webp"
+  },
+  {
+    "id": "519",
+    "name": "Cupid's Arrow",
+    "file": "519.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/519.webp"
+  },
+  {
+    "id": "520",
+    "name": "Feather Crown",
+    "file": "520.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/520.webp"
+  },
+  {
+    "id": "521",
+    "name": "Hoa Mai",
+    "file": "521.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/521.webp"
+  },
+  {
+    "id": "522",
+    "name": "Bộ Ba Quyền Lực",
+    "file": "522.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/522.webp"
+  },
+  {
+    "id": "523",
+    "name": "Dream Princess",
+    "file": "523.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/523.webp"
+  },
+  {
+    "id": "524",
+    "name": "Dream Prince",
+    "file": "524.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/524.webp"
+  },
+  {
+    "id": "525",
+    "name": "Luxury Castle",
+    "file": "525.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/525.webp"
+  },
+  {
+    "id": "526",
+    "name": "Pink Heart",
+    "file": "526.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/526.webp"
+  },
+  {
+    "id": "527",
+    "name": "Blue Heart",
+    "file": "527.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/527.webp"
+  },
+  {
+    "id": "528",
+    "name": "PeachCat",
+    "file": "528.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/528.webp"
+  },
+  {
+    "id": "529",
+    "name": "Cute Cat Paradise",
+    "file": "529.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/529.webp"
+  },
+  {
+    "id": "530",
+    "name": "Shinning King",
+    "file": "530.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/530.webp"
+  },
+  {
+    "id": "531",
+    "name": "Shinning Queen",
+    "file": "531.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/531.webp"
+  },
+  {
+    "id": "532",
+    "name": "Thợ Săn Màu",
+    "file": "532.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/532.webp"
+  },
+  {
+    "id": "533",
+    "name": "The Round",
+    "file": "533.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/533.webp"
+  },
+  {
+    "id": "534",
+    "name": "Arena Pro",
+    "file": "534.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/534.webp"
+  },
+  {
+    "id": "535",
+    "name": "Bá Chủ Khu Vực",
+    "file": "535.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/535.webp"
+  },
+  {
+    "id": "536",
+    "name": "Vương Miện Hoàng Gia",
+    "file": "536.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/536.webp"
+  },
+  {
+    "id": "537",
+    "name": "Vương Miện Vương Tộc",
+    "file": "537.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/537.webp"
+  },
+  {
+    "id": "538",
+    "name": "Vương Miện Chư Hầu",
+    "file": "538.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/538.webp"
+  },
+  {
+    "id": "539",
+    "name": "Vương Miện Hoàng Gia",
+    "file": "539.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/539.webp"
+  },
+  {
+    "id": "540",
+    "name": "Vương Miện Vương Tộc",
+    "file": "540.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/540.webp"
+  },
+  {
+    "id": "541",
+    "name": "Vương Miện Chư Hầu",
+    "file": "541.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/541.webp"
+  },
+  {
+    "id": "542",
+    "name": "Full of Peach",
+    "file": "542.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/542.webp"
+  },
+  {
+    "id": "544",
+    "name": "BOSS Sơ Cấp",
+    "file": "544.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/544.webp"
+  },
+  {
+    "id": "545",
+    "name": "BOSS Trung Cấp",
+    "file": "545.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/545.webp"
+  },
+  {
+    "id": "546",
+    "name": "BOSS Cao Cấp",
+    "file": "546.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/546.webp"
+  },
+  {
+    "id": "547",
+    "name": "Song Tử",
+    "file": "547.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/547.webp"
+  },
+  {
+    "id": "548",
+    "name": "Huyền Thoại Ferrari",
+    "file": "548.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/548.webp"
+  },
+  {
+    "id": "549",
+    "name": "Đại Gia Will",
+    "file": "549.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/549.webp"
+  },
+  {
+    "id": "550",
+    "name": "Nữ Tài Phiệt",
+    "file": "550.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/550.webp"
+  },
+  {
+    "id": "551",
+    "name": "Nam Tài Phiệt",
+    "file": "551.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/551.webp"
+  },
+  {
+    "id": "552",
+    "name": "Bàn Cờ Sang Trọng",
+    "file": "552.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/552.webp"
+  },
+  {
+    "id": "553",
+    "name": "Nữ Cơ Trưởng",
+    "file": "553.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/553.webp"
+  },
+  {
+    "id": "554",
+    "name": "Nam Cơ Trưởng",
+    "file": "554.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/554.webp"
+  },
+  {
+    "id": "555",
+    "name": "",
+    "file": "555.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/555.webp"
+  },
+  {
+    "id": "556",
+    "name": "Vườn Hoa",
+    "file": "556.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/556.webp"
+  },
+  {
+    "id": "557",
+    "name": "Room Idol",
+    "file": "557.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/557.webp"
+  },
+  {
+    "id": "559",
+    "name": "Quý Ông",
+    "file": "559.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/559.webp"
+  },
+  {
+    "id": "560",
+    "name": "Quý Cô",
+    "file": "560.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/560.webp"
+  },
+  {
+    "id": "561",
+    "name": "Heo Lướt Sóng",
+    "file": "561.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/561.webp"
+  },
+  {
+    "id": "563",
+    "name": "ZENITH TOP 1",
+    "file": "563.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/563.webp"
+  },
+  {
+    "id": "564",
+    "name": "Bậc Thầy Phép Thuật",
+    "file": "564.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/564.webp"
+  },
+  {
+    "id": "565",
+    "name": "Gia Tộc Huyền Thoại",
+    "file": "565.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/565.webp"
+  },
+  {
+    "id": "566",
+    "name": "Ngôi Báu",
+    "file": "566.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/566.webp"
+  },
+  {
+    "id": "567",
+    "name": "Bé Khủng Long",
+    "file": "567.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/567.webp"
+  },
+  {
+    "id": "568",
+    "name": "Haley Bunny",
+    "file": "568.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/568.webp"
+  },
+  {
+    "id": "569",
+    "name": "Bunny Chill",
+    "file": "569.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/569.webp"
+  },
+  {
+    "id": "570",
+    "name": "Hè Thong Thả (Nam)",
+    "file": "570.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/570.webp"
+  },
+  {
+    "id": "571",
+    "name": "Hè Thong Thả (Nữ)",
+    "file": "571.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/571.webp"
+  },
+  {
+    "id": "572",
+    "name": "Dragon",
+    "file": "572.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/572.webp"
+  },
+  {
+    "id": "573",
+    "name": "Chín Tầng Mây Xanh",
+    "file": "573.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/573.webp"
+  },
+  {
+    "id": "574",
+    "name": "Universe Queen",
+    "file": "574.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/574.webp"
+  },
+  {
+    "id": "575",
+    "name": "Universe King",
+    "file": "575.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/575.webp"
+  },
+  {
+    "id": "576",
+    "name": "Sứ Giả Bóng Tối",
+    "file": "576.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/576.webp"
+  },
+  {
+    "id": "577",
+    "name": "Miêu Nữ",
+    "file": "577.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/577.webp"
+  },
+  {
+    "id": "578",
+    "name": "Công Chúa Hoa Hồng",
+    "file": "578.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/578.webp"
+  },
+  {
+    "id": "579",
+    "name": "Ánh Lam",
+    "file": "579.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/579.webp"
+  },
+  {
+    "id": "580",
+    "name": "Trăng Sao",
+    "file": "580.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/580.webp"
+  },
+  {
+    "id": "581",
+    "name": "Thần Đạn",
+    "file": "581.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/581.webp"
+  },
+  {
+    "id": "582",
+    "name": "Ngủ Nướng",
+    "file": "582.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/582.webp"
+  },
+  {
+    "id": "583",
+    "name": "Vũ Trụ Nailoong",
+    "file": "583.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/583.webp"
+  },
+  {
+    "id": "584",
+    "name": "Polaroid Nailoong",
+    "file": "584.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/584.webp"
+  },
+  {
+    "id": "585",
+    "name": "Tuyết Tinh Linh",
+    "file": "585.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/585.webp"
+  },
+  {
+    "id": "586",
+    "name": "Cánh Tiên",
+    "file": "586.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/586.webp"
+  },
+  {
+    "id": "587",
+    "name": "Gia Tộc Tinh Hoa",
+    "file": "587.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/587.webp"
+  },
+  {
+    "id": "588",
+    "name": "Mộng Mơ",
+    "file": "588.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/588.webp"
+  },
+  {
+    "id": "589",
+    "name": "Crystal Bloom",
+    "file": "589.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/589.webp"
+  },
+  {
+    "id": "590",
+    "name": "Celebrity Night",
+    "file": "590.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/590.webp"
+  },
+  {
+    "id": "591",
+    "name": "The Winner",
+    "file": "591.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/591.webp"
+  },
+  {
+    "id": "592",
+    "name": "Rose Holiday (Nam)",
+    "file": "592.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/592.webp"
+  },
+  {
+    "id": "593",
+    "name": "Rose Holiday (Nữ)",
+    "file": "593.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/593.webp"
+  },
+  {
+    "id": "594",
+    "name": "Chiến Binh Biến Hình",
+    "file": "594.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/594.webp"
+  },
+  {
+    "id": "595",
+    "name": "Athena",
+    "file": "595.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/595.webp"
+  },
+  {
+    "id": "596",
+    "name": "Lửa Phượng Hoàng",
+    "file": "596.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/596.webp"
+  },
+  {
+    "id": "597",
+    "name": "Gấu Giận Hờn",
+    "file": "597.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/597.webp"
+  },
+  {
+    "id": "598",
+    "name": "Vinh Quang",
+    "file": "598.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/598.webp"
+  },
+  {
+    "id": "599",
+    "name": "Non Nước Hữu Tình",
+    "file": "599.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/599.webp"
+  },
+  {
+    "id": "600",
+    "name": "Trăng Hoa",
+    "file": "600.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/600.webp"
+  },
+  {
+    "id": "601",
+    "name": "Mũ Cối",
+    "file": "601.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/601.webp"
+  },
+  {
+    "id": "602",
+    "name": "Vệ Binh Ngân Hà",
+    "file": "602.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/602.webp"
+  },
+  {
+    "id": "603",
+    "name": "Ánh Chu Sa",
+    "file": "603.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/603.webp"
+  },
+  {
+    "id": "604",
+    "name": "Trend King",
+    "file": "604.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/604.webp"
+  },
+  {
+    "id": "605",
+    "name": "Popular Story",
+    "file": "605.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/605.webp"
+  },
+  {
+    "id": "606",
+    "name": "Star Story",
+    "file": "606.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/606.webp"
+  },
+  {
+    "id": "607",
+    "name": "NO.1 Tương Tác",
+    "file": "607.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/607.webp"
+  },
+  {
+    "id": "608",
+    "name": "NO.2 Tương Tác",
+    "file": "608.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/608.webp"
+  },
+  {
+    "id": "609",
+    "name": "Kết Nối Tình Yêu (Nữ)",
+    "file": "609.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/609.webp"
+  },
+  {
+    "id": "611",
+    "name": "Vương Miện Nữ Thần",
+    "file": "611.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/611.webp"
+  },
+  {
+    "id": "613",
+    "name": "Suối Nguồn Sinh Mệnh",
+    "file": "613.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/613.webp"
+  },
+  {
+    "id": "614",
+    "name": "Vũ Điệu Tình Yêu (Nam)",
+    "file": "614.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/614.webp"
+  },
+  {
+    "id": "615",
+    "name": "Vũ Điệu Tình Yêu (Nữ)",
+    "file": "615.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/615.webp"
+  },
+  {
+    "id": "616",
+    "name": "Duyên Trời Ban",
+    "file": "616.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/616.webp"
+  },
+  {
+    "id": "617",
+    "name": "Rising Star",
+    "file": "617.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/617.webp"
+  },
+  {
+    "id": "618",
+    "name": "Thả Thính",
+    "file": "618.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/618.webp"
+  },
+  {
+    "id": "619",
+    "name": "Chú Rể",
+    "file": "619.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/619.webp"
+  },
+  {
+    "id": "620",
+    "name": "Cô Dâu",
+    "file": "620.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/620.webp"
+  },
+  {
+    "id": "621",
+    "name": "Wonderland",
+    "file": "621.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/621.webp"
+  },
+  {
+    "id": "622",
+    "name": "Chiến Binh Ngân Hà",
+    "file": "622.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/622.webp"
+  },
+  {
+    "id": "623",
+    "name": "Tai Nghe Mèo Xinh",
+    "file": "623.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/623.webp"
+  },
+  {
+    "id": "624",
+    "name": "Hột Xoàn",
+    "file": "624.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/624.webp"
+  },
+  {
+    "id": "625",
+    "name": "Lucky Card",
+    "file": "625.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/625.webp"
+  },
+  {
+    "id": "626",
+    "name": "Mèo Quấn Quýt",
+    "file": "626.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/626.webp"
+  },
+  {
+    "id": "627",
+    "name": "Nhẫn Tinh Nguyệt",
+    "file": "627.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/627.webp"
+  },
+  {
+    "id": "628",
+    "name": "Fairy Bunny",
+    "file": "628.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/628.webp"
+  },
+  {
+    "id": "629",
+    "name": "Kỳ lân",
+    "file": "629.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/629.webp"
+  },
+  {
+    "id": "630",
+    "name": "Cửu vĩ hộ mệnh",
+    "file": "630.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/630.webp"
+  },
+  {
+    "id": "631",
+    "name": "Hơi thở của rồng",
+    "file": "631.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/631.webp"
+  },
+  {
+    "id": "632",
+    "name": "Neon Heartbeat",
+    "file": "632.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/632.webp"
+  },
+  {
+    "id": "633",
+    "name": "Kiếm Vương",
+    "file": "633.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/633.webp"
+  },
+  {
+    "id": "634",
+    "name": "Người Tình Trong Mơ",
+    "file": "634.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/634.webp"
+  },
+  {
+    "id": "635",
+    "name": "Người Tình Trong Mơ",
+    "file": "635.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/635.webp"
+  },
+  {
+    "id": "636",
+    "name": "Đại Dương Xanh",
+    "file": "636.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/636.webp"
+  },
+  {
+    "id": "637",
+    "name": "Rosey World",
+    "file": "637.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/637.webp"
+  },
+  {
+    "id": "638",
+    "name": "Vườn Bí Ngô",
+    "file": "638.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/638.webp"
+  },
+  {
+    "id": "639",
+    "name": "Khí Cầu Kẹo Ngọt",
+    "file": "639.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/639.webp"
+  },
+  {
+    "id": "640",
+    "name": "Thuyền Trưởng York",
+    "file": "640.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/640.webp"
+  },
+  {
+    "id": "641",
+    "name": "Đấu Sĩ Luyện Ngục",
+    "file": "641.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/641.webp"
+  },
+  {
+    "id": "642",
+    "name": "Động Lòng (Nam)",
+    "file": "642.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/642.webp"
+  },
+  {
+    "id": "643",
+    "name": "Động Lòng (Nữ)",
+    "file": "643.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/643.webp"
+  },
+  {
+    "id": "644",
+    "name": "Happy Christmas",
+    "file": "644.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/644.webp"
+  },
+  {
+    "id": "645",
+    "name": "2025 All-Star King",
+    "file": "645.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/645.webp"
+  },
+  {
+    "id": "646",
+    "name": "2025 All-Star Queen",
+    "file": "646.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/646.webp"
+  },
+  {
+    "id": "647",
+    "name": "2025 All-Star CP",
+    "file": "647.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/647.webp"
+  },
+  {
+    "id": "648",
+    "name": "2025 All-Star Family",
+    "file": "648.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/648.webp"
+  },
+  {
+    "id": "649",
+    "name": "Báu Vật Biển Cả",
+    "file": "649.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/649.webp"
+  },
+  {
+    "id": "650",
+    "name": "Lông Khổng Tước Trắng",
+    "file": "650.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/650.webp"
+  },
+  {
+    "id": "651",
+    "name": "Chiếc Ô Xanh",
+    "file": "651.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/651.webp"
+  },
+  {
+    "id": "652",
+    "name": "Lữ Khách Thời Không",
+    "file": "652.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/652.webp"
+  },
+  {
+    "id": "653",
+    "name": "Hồ Ly Chín Đuôi",
+    "file": "653.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/653.webp"
+  },
+  {
+    "id": "654",
+    "name": "Nữ Hầu Xiya",
+    "file": "654.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/654.webp"
+  },
+  {
+    "id": "655",
+    "name": "Hiệp Sĩ Ánh Trăng",
+    "file": "655.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/655.webp"
+  },
+  {
+    "id": "656",
+    "name": "Party Time",
+    "file": "656.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/656.webp"
+  },
+  {
+    "id": "657",
+    "name": "",
+    "file": "657.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/657.webp"
+  },
+  {
+    "id": "658",
+    "name": "",
+    "file": "658.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/658.webp"
+  },
+  {
+    "id": "659",
+    "name": "Cổ Kim Đệ Nhất",
+    "file": "659.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/659.webp"
+  },
+  {
+    "id": "660",
+    "name": "Tầng Mây Rực Rỡ",
+    "file": "660.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/660.webp"
+  },
+  {
+    "id": "661",
+    "name": "Người Giữ Linh Khí",
+    "file": "661.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/661.webp"
+  },
+  {
+    "id": "662",
+    "name": "Lucky Star",
+    "file": "662.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/662.webp"
+  },
+  {
+    "id": "663",
+    "name": "Spotlight King",
+    "file": "663.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/663.webp"
+  },
+  {
+    "id": "664",
+    "name": "The Spotlight",
+    "file": "664.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/664.webp"
+  },
+  {
+    "id": "665",
+    "name": "Twin Dragons' Duel",
+    "file": "665.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/665.webp"
+  },
+  {
+    "id": "666",
+    "name": "Spotlight Queen",
+    "file": "666.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/666.webp"
+  },
+  {
+    "id": "667",
+    "name": "Sparklers",
+    "file": "667.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/667.webp"
+  },
+  {
+    "id": "668",
+    "name": "Kho Báu Ngàn Vàng",
+    "file": "668.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/668.webp"
+  },
+  {
+    "id": "669",
+    "name": "Pháp Sư Tập Sự",
+    "file": "669.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/669.webp"
+  },
+  {
+    "id": "670",
+    "name": "Vương Miện Hoàng Kim",
+    "file": "670.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/670.webp"
+  },
+  {
+    "id": "671",
+    "name": "Vua Ảo Thuật",
+    "file": "671.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/671.webp"
+  },
+  {
+    "id": "672",
+    "name": "Lều Xiếc",
+    "file": "672.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/672.webp"
+  },
+  {
+    "id": "673",
+    "name": "Ngôi Vương",
+    "file": "673.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/673.webp"
+  },
+  {
+    "id": "674",
+    "name": "Tỏ Tình Đêm Tuyết",
+    "file": "674.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/674.webp"
+  },
+  {
+    "id": "675",
+    "name": "The Little Prince",
+    "file": "675.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/675.webp"
+  },
+  {
+    "id": "676",
+    "name": "Dưới Ánh Trăng Vàng",
+    "file": "676.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/676.webp"
+  },
+  {
+    "id": "677",
+    "name": "Hoa Hồng Trắng",
+    "file": "677.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/677.webp"
+  },
+  {
+    "id": "678",
+    "name": "Mệnh Đào Hoa",
+    "file": "678.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/678.webp"
+  },
+  {
+    "id": "679",
+    "name": "Mùa Lá Đỏ",
+    "file": "679.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/679.webp"
+  },
+  {
+    "id": "680",
+    "name": "Sức Mạnh Thống Trị",
+    "file": "680.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/680.webp"
+  },
+  {
+    "id": "681",
+    "name": "Mưa Xuân Gặp Gỡ",
+    "file": "681.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/681.webp"
+  },
+  {
+    "id": "682",
+    "name": "Wonderland",
+    "file": "682.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/682.webp"
+  },
+  {
+    "id": "683",
+    "name": "Nữ Hoàng Gai Góc",
+    "file": "683.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/683.webp"
+  },
+  {
+    "id": "684",
+    "name": "Cầu Thủ Bóng Bầu Dục",
+    "file": "684.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/684.webp"
+  },
+  {
+    "id": "685",
+    "name": "Búp Bê Rối",
+    "file": "685.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/685.webp"
+  },
+  {
+    "id": "686",
+    "name": "Ẩn Sĩ",
+    "file": "686.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/686.webp"
+  },
+  {
+    "id": "687",
+    "name": "Thợ Máy",
+    "file": "687.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/687.webp"
+  },
+  {
+    "id": "688",
+    "name": "Druid",
+    "file": "688.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/688.webp"
+  },
+  {
+    "id": "689",
+    "name": "Gấu Mèo",
+    "file": "689.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/689.webp"
+  },
+  {
+    "id": "690",
+    "name": "Nâng Trứng Hứng Hoa",
+    "file": "690.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/690.webp"
+  },
+  {
+    "id": "691",
+    "name": "Football Legends",
+    "file": "691.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/691.webp"
+  },
+  {
+    "id": "692",
+    "name": "Nhịp Đập Trái Tim",
+    "file": "692.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/692.webp"
+  },
+  {
+    "id": "693",
+    "name": "Tớ Là Maruko",
+    "file": "693.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/693.webp"
+  },
+  {
+    "id": "694",
+    "name": "Ánh Dương Rực Rỡ",
+    "file": "694.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/694.webp"
+  },
+  {
+    "id": "695",
+    "name": "Chuyến Tàu Ký Ức",
+    "file": "695.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/695.webp"
+  },
+  {
+    "id": "696",
+    "name": "Anniversary Celebration",
+    "file": "696.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/696.webp"
+  },
+  {
+    "id": "697",
+    "name": "Vương Quyền",
+    "file": "697.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/697.webp"
+  },
+  {
+    "id": "698",
+    "name": "Ký Ức Khắc Ghi (Nữ)",
+    "file": "698.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/698.webp"
+  },
+  {
+    "id": "699",
+    "name": "Ký Ức Khắc Ghi (Nam)",
+    "file": "699.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/699.webp"
+  },
+  {
+    "id": "700",
+    "name": "Ocean World",
+    "file": "700.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/700.webp"
+  },
+  {
+    "id": "701",
+    "name": "Thám Hiểm Đại Dương (Nữ)",
+    "file": "701.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/701.webp"
+  },
+  {
+    "id": "702",
+    "name": "Con Của Biển Cả",
+    "file": "702.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/702.webp"
+  },
+  {
+    "id": "703",
+    "name": "Vườn Hoa Rực Rỡ",
+    "file": "703.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/703.webp"
+  },
+  {
+    "id": "704",
+    "name": "Thám Hiểm Đại Dương (Nam)",
+    "file": "704.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/704.webp"
+  },
+  {
+    "id": "705",
+    "name": "Vua Rung Động",
+    "file": "705.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/705.webp"
+  },
+  {
+    "id": "706",
+    "name": "Sao Rung Động",
+    "file": "706.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/706.webp"
+  },
+  {
+    "id": "707",
+    "name": "",
+    "file": "707.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/707.webp"
+  },
+  {
+    "id": "708",
+    "name": "Sao Đào Hoa",
+    "file": "708.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/708.webp"
+  },
+  {
+    "id": "709",
+    "name": "Thần Quyến Rũ",
+    "file": "709.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/709.webp"
+  },
+  {
+    "id": "710",
+    "name": "Tôn Quý",
+    "file": "710.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/710.webp"
+  },
+  {
+    "id": "711",
+    "name": "Uy Vũ",
+    "file": "711.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/711.webp"
+  },
+  {
+    "id": "712",
+    "name": "Kẻ Chinh Phục",
+    "file": "712.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/712.webp"
+  },
+  {
+    "id": "713",
+    "name": "Tâm Điểm Chú Ý",
+    "file": "713.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/713.webp"
+  },
+  {
+    "id": "714",
+    "name": "Tâm Điểm Chú Ý",
+    "file": "714.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/714.webp"
+  },
+  {
+    "id": "715",
+    "name": "Chúa Tể Thế Giới Mới",
+    "file": "715.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/715.webp"
+  },
+  {
+    "id": "716",
+    "name": "Người Thừa Kế",
+    "file": "716.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/716.webp"
+  },
+  {
+    "id": "717",
+    "name": "Phượng Hoàng Niết Bàn",
+    "file": "717.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/717.webp"
+  },
+  {
+    "id": "718",
+    "name": "Trái Tim Hoa",
+    "file": "718.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/718.webp"
+  },
+  {
+    "id": "719",
+    "name": "Thanh Long Ngự Thiên",
+    "file": "719.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/719.webp"
+  },
+  {
+    "id": "720",
+    "name": "Mỹ Nhân Ngư",
+    "file": "720.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/720.webp"
+  },
+  {
+    "id": "721",
+    "name": "Nữ Đầu Bếp",
+    "file": "721.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/721.webp"
+  },
+  {
+    "id": "722",
+    "name": "Đại Tá",
+    "file": "722.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/722.webp"
+  },
+  {
+    "id": "723",
+    "name": "Kỵ Sĩ Phá Trận",
+    "file": "723.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/723.webp"
+  },
+  {
+    "id": "724",
+    "name": "Lucky Golden Fish",
+    "file": "724.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/724.webp"
+  },
+  {
+    "id": "725",
+    "name": "Thần Cupid",
+    "file": "725.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/725.webp"
+  },
+  {
+    "id": "726",
+    "name": "Thiên Thần Bảo Vệ",
+    "file": "726.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/726.webp"
+  },
+  {
+    "id": "727",
+    "name": "Lâu Đài Kẹo Ngọt",
+    "file": "727.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/727.webp"
+  },
+  {
+    "id": "728",
+    "name": "Star Manager",
+    "file": "728.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/728.webp"
+  },
+  {
+    "id": "729",
+    "name": "Star Manager",
+    "file": "729.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/729.webp"
+  },
+  {
+    "id": "730",
+    "name": "Bậc Thầy Nghệ Thuật (Nam)",
+    "file": "730.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/730.webp"
+  },
+  {
+    "id": "731",
+    "name": "Bậc Thầy Nghệ Thuật (Nữ)",
+    "file": "731.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/731.webp"
+  },
+  {
+    "id": "732",
+    "name": "Sweet Castle",
+    "file": "732.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/732.webp"
+  },
+  {
+    "id": "733",
+    "name": "Love You",
+    "file": "733.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/733.webp"
+  },
+  {
+    "id": "734",
+    "name": "Kinh Đô Lãng Mạn",
+    "file": "734.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/734.webp"
+  },
+  {
+    "id": "735",
+    "name": "Đêm Định Mệnh",
+    "file": "735.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/735.webp"
+  },
+  {
+    "id": "736",
+    "name": "Bí Mật Rừng Xanh",
+    "file": "736.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/736.webp"
+  },
+  {
+    "id": "737",
+    "name": "Đêm Định Mệnh",
+    "file": "737.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/737.webp"
+  },
+  {
+    "id": "738",
+    "name": "Genius Club",
+    "file": "738.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/738.webp"
+  },
+  {
+    "id": "739",
+    "name": "Nghỉ Hè",
+    "file": "739.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/739.webp"
+  },
+  {
+    "id": "740",
+    "name": "Hạc Về Trong Sương",
+    "file": "740.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/740.webp"
+  },
+  {
+    "id": "741",
+    "name": "Tiếng Hét",
+    "file": "741.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/741.webp"
+  },
+  {
+    "id": "742",
+    "name": "Hide Master",
+    "file": "742.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/742.webp"
+  },
+  {
+    "id": "743",
+    "name": "Ở Đây Có Một Con Én",
+    "file": "743.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/743.webp"
+  },
+  {
+    "id": "744",
+    "name": "Tinh Hoa Hội Tụ",
+    "file": "744.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/744.webp"
+  },
+  {
+    "id": "745",
+    "name": "Rau Thơm",
+    "file": "745.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/745.webp"
+  },
+  {
+    "id": "746",
+    "name": "Khăn Đỏ Của Mikasa",
+    "file": "746.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/746.webp"
+  },
+  {
+    "id": "747",
+    "name": "Khoảnh Khắc Hiếm Hoi",
+    "file": "747.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/747.webp"
+  },
+  {
+    "id": "748",
+    "name": "Hồng Trà",
+    "file": "748.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/748.webp"
+  },
+  {
+    "id": "749",
+    "name": "Ngôi Sao Bí Ẩn",
+    "file": "749.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/749.webp"
+  },
+  {
+    "id": "750",
+    "name": "Kiếm Vinh Quang",
+    "file": "750.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/750.webp"
+  },
+  {
+    "id": "751",
+    "name": "Vương Miện Hoa Hồng",
+    "file": "751.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/751.webp"
+  },
+  {
+    "id": "752",
+    "name": "Đôi Cánh Tình Yêu",
+    "file": "752.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/752.webp"
+  },
+  {
+    "id": "753",
+    "name": "Kết Nối Định Mệnh (Nam)",
+    "file": "753.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/753.webp"
+  },
+  {
+    "id": "754",
+    "name": "Ẩm thực chữa lành",
+    "file": "754.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/754.webp"
+  },
+  {
+    "id": "755",
+    "name": "Xe Hoa Hồng",
+    "file": "755.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/755.webp"
+  },
+  {
+    "id": "756",
+    "name": "Đôi Cánh Lấp Lánh",
+    "file": "756.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/756.webp"
+  },
+  {
+    "id": "757",
+    "name": "Quà Hẹn Yêu",
+    "file": "757.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/757.webp"
+  },
+  {
+    "id": "758",
+    "name": "Khách VIP",
+    "file": "758.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/758.webp"
+  },
+  {
+    "id": "759",
+    "name": "Bữa Ăn Khổng Lồ",
+    "file": "759.webp",
+    "url": "https://s3.vn-hcm-1.vietnix.cloud/ola/avatar_frames/759.webp"
+  }
+]

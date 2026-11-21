@@ -35,7 +35,14 @@
   --color-ola-megaphone-line: #ffd59a;
   --color-ola-megaphone-ink: #e65100;
   --color-ola-megaphone-name: #eb7433;
+  --color-ola-checkin-gold-soft: #fff8e1;
+  --color-ola-checkin-gold-line: #ffca28;
+  --color-ola-checkin-gold-ink: #b26a00;
   --animate-blink: blink 1s steps(1, end) infinite;
+  --animate-checkin-shake: checkin-shake 0.7s ease-in-out;
+  --animate-checkin-burst: checkin-burst 0.45s ease-out both;
+  --animate-checkin-today: checkin-today 1.6s ease-in-out infinite;
+  --animate-checkin-wiggle: checkin-wiggle 2.6s ease-in-out infinite;
   --animate-ola-pop: ola-pop 0.4s ease;
   --animate-ola-pop-out: ola-pop-out 0.4s ease;
   --animate-ola-call-expand: ola-call-expand 0.25s ease;
@@ -239,6 +246,76 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
     U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@keyframes checkin-shake {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  15% {
+    transform: rotate(-9deg) scale(1.04);
+  }
+  30% {
+    transform: rotate(8deg) scale(1.06);
+  }
+  45% {
+    transform: rotate(-7deg) scale(1.06);
+  }
+  60% {
+    transform: rotate(6deg) scale(1.08);
+  }
+  80% {
+    transform: rotate(-3deg) scale(1.1);
+  }
+}
+
+@keyframes checkin-wiggle {
+  0%,
+  24%,
+  100% {
+    transform: rotate(0deg);
+  }
+  4% {
+    transform: rotate(-10deg);
+  }
+  8% {
+    transform: rotate(9deg);
+  }
+  12% {
+    transform: rotate(-7deg);
+  }
+  16% {
+    transform: rotate(5deg);
+  }
+  20% {
+    transform: rotate(-2deg);
+  }
+}
+
+@keyframes checkin-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes checkin-today {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-ola-primary) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-ola-primary) 0%, transparent);
+  }
 }
 
 @keyframes blink {

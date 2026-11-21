@@ -1,0 +1,10 @@
+export const CHECKIN_GOLD_SOFT = '#fff8e1';
+export const CHECKIN_GOLD_LINE = '#ffca28';
+export const CHECKIN_GOLD_INK = '#b26a00';
+export const CHECKIN_SURFACE = '#f3f3f3';
+export const CHECKIN_SURFACE_DIM = '#ececec';
+export const CHECKIN_GRID_GAP = 6;
+export const CHECKIN_SHAKE_MS = 750;
+export const CHECKIN_WIGGLE_MS = 600;
+export const CHECKIN_WIGGLE_REST_MS = 2000;
+export const CHECKIN_POPUP_DELAY_MS = 900;

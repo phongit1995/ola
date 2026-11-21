@@ -9,6 +9,7 @@ import (
 
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/checkin"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
@@ -286,6 +287,15 @@ func (ctrl *Controller) prepareValue(key string, value models.JSONB) (models.JSO
 		if err := setting.ValidateVipDayTransferValue(value); err != nil {
 			return nil, utils.NewHTTPError(400, err.Error())
 		}
+	case setting.KeyCheckin:
+		kept, err := ctrl.service.KeepStoredPlatforms(setting.KeyCheckin, value)
+		if err != nil {
+			return nil, utils.ServiceError(err)
+		}
+		if err := setting.ValidateCheckinValue(kept, checkin.IsTaskCode); err != nil {
+			return nil, utils.NewHTTPError(400, err.Error())
+		}
+		return kept, nil
 	case setting.KeyGiftCode:
 		kept, err := ctrl.service.KeepStoredPlatforms(setting.KeyGiftCode, value)
 		if err != nil {

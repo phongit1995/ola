@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const GameMatchStatusFinished = "finished"
+
 type GameMatch struct {
 	BaseModel
 	GameID      string     `gorm:"type:varchar(50);not null" json:"gameId"`

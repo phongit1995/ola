@@ -20,6 +20,7 @@ const (
 	PurchaseSourceIcon     = "icon"
 	PurchaseSourceGift     = "gift"
 	PurchaseSourceGiftCode = "gift_code"
+	PurchaseSourceCheckin  = "checkin"
 
 	PurchaseSourceDayTransferOut = "day_transfer_out"
 	PurchaseSourceDayTransferIn  = "day_transfer_in"
@@ -29,6 +30,7 @@ const (
 	IconSourceEgg      = "egg"
 	IconSourceWheel    = "wheel"
 	IconSourceGiftCode = "gift_code"
+	IconSourceCheckin  = "checkin"
 
 	kenRefTypePurchase = "vip_purchase"
 

@@ -33,3 +33,4 @@ export * from './gift.service';
 export * from './megaphone.service';
 export * from './giftCode.service';
 export * from './avatarFrame.service';
+export * from './dailyCheckin.service';

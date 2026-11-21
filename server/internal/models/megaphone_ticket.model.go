@@ -9,6 +9,7 @@ import (
 const (
 	MegaphoneTicketSourceAdmin    = "admin"
 	MegaphoneTicketSourceGiftCode = "gift_code"
+	MegaphoneTicketSourceCheckin  = "checkin"
 
 	MegaphoneTicketStatusUsable  = "usable"
 	MegaphoneTicketStatusUsed    = "used"

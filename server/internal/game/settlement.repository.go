@@ -29,7 +29,7 @@ import (
 
 const (
 	matchStatusPlaying  = "playing"
-	matchStatusFinished = "finished"
+	matchStatusFinished = models.GameMatchStatusFinished
 	reasonVoid          = "void"
 	staleMatchAge       = time.Hour
 )

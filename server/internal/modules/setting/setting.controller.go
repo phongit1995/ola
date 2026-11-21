@@ -219,6 +219,14 @@ func (ctrl *Controller) giftCodeConfigFor(client Client) (GiftCodePublicConfig, 
 	return GiftCodePublicConfig{Enabled: cfg.EnabledFor(client), RequireEmailVerified: cfg.RequireEmailVerified}, nil
 }
 
+func (ctrl *Controller) dailyCheckinConfigFor(client Client) (CheckinPublicConfig, error) {
+	cfg, err := ctrl.service.GetCheckin()
+	if err != nil {
+		return CheckinPublicConfig{}, err
+	}
+	return CheckinPublicConfig{Enabled: cfg.EnabledFor(client)}, nil
+}
+
 func (ctrl *Controller) megaphoneConfigFor(client Client) (MegaphonePublicConfig, error) {
 	cfg, err := ctrl.service.GetMegaphone()
 	if err != nil {

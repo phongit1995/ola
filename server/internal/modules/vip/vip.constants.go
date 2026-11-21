@@ -5,6 +5,9 @@ const (
 
 	CacheTTLVipPackages = 3600
 
+	VipTypeMinID int16 = 1
+	VipTypeMaxID int16 = 138
+
 	ErrorCodeVipNotTransferable = "VIP_NOT_TRANSFERABLE"
 	ErrorCodeVipIconExpired     = "VIP_ICON_EXPIRED"
 	ErrorCodeVipExpiryInPast    = "VIP_ICON_EXPIRY_IN_PAST"

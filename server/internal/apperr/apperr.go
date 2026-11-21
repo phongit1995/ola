@@ -9,7 +9,10 @@ import (
 
 var ErrUserNotFound = errors.New("user not found")
 
-const pgUniqueViolationCode = "23505"
+const (
+	pgUniqueViolationCode     = "23505"
+	pgForeignKeyViolationCode = "23503"
+)
 
 func IsUniqueViolation(err error) bool {
 	var pgErr *pgconn.PgError
@@ -17,6 +20,11 @@ func IsUniqueViolation(err error) bool {
 		return pgErr.Code == pgUniqueViolationCode
 	}
 	return err != nil && strings.Contains(err.Error(), "duplicate key value")
+}
+
+func IsForeignKeyViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == pgForeignKeyViolationCode
 }
 
 func IsDatabaseError(err error) bool {

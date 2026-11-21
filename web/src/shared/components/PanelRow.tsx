@@ -3,6 +3,7 @@ interface PanelRowProps {
   title: string;
   subtitle?: string;
   badge?: number;
+  dot?: boolean;
   onClick?: () => void;
 }
 
@@ -11,6 +12,7 @@ export function PanelRow({
   title,
   subtitle,
   badge,
+  dot = false,
   onClick,
 }: PanelRowProps) {
   return (
@@ -35,6 +37,9 @@ export function PanelRow({
             </span>
           )}
         </span>
+        {dot && (badge == null || badge <= 0) && (
+          <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-ola-accent" />
+        )}
         {badge != null && badge > 0 && (
           <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ola-accent px-1.5 text-xs font-bold text-white">
             {badge > 99 ? '99+' : badge}

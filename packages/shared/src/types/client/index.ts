@@ -39,3 +39,4 @@ export type * from './announcement.type';
 export type * from './menu.type';
 export type * from './media.type';
 export type * from './verifyEmail.type';
+export type * from './dailyCheckin.type';

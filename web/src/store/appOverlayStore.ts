@@ -13,7 +13,8 @@ export type AppOverlayKind =
   | 'gifts'
   | 'megaphone'
   | 'avatarFrameShop'
-  | 'avatarFrameStore';
+  | 'avatarFrameStore'
+  | 'dailyCheckin';
 
 export type VipBuyMode = 'give' | 'buy' | 'extend';
 

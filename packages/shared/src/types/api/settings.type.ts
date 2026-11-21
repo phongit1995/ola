@@ -1,5 +1,6 @@
 import type { ChatBotType } from '../client/chatBot.type';
 import type { GiftSettings } from './gift.type';
+import type { DailyCheckinAppConfig } from './dailyCheckin.type';
 import type { GiftCodeAppConfig } from './giftCode.type';
 import type { MegaphoneAppConfig } from './megaphone.type';
 import type { VipDayTransferConfig } from './vip.type';
@@ -96,6 +97,7 @@ export interface AppConfigs {
   megaphone: MegaphoneAppConfig;
   giftCode: GiftCodeAppConfig;
   vipDayTransfer: VipDayTransferConfig;
+  dailyCheckin: DailyCheckinAppConfig;
 }
 
 export interface AppUpdateResult {

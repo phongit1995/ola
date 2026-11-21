@@ -24,6 +24,12 @@ import { useStoryConfigStore } from '@ola/shared/stores/story/storyConfigStore';
 import { useGiftCatalogStore } from '@ola/shared/stores/gift/giftCatalogStore';
 import { useMegaphoneConfigStore } from '@ola/shared/stores/megaphone/megaphoneConfigStore';
 import { AppOverlay } from '../apps/AppOverlay';
+import { DailyCheckinHost } from '../daily-checkin/DailyCheckinHost';
+import { useHomeNavStore } from '@/store/homeNavStore';
+import {
+  selectDailyCheckinAttention,
+  useDailyCheckinStore,
+} from '@ola/shared/stores/daily-checkin/dailyCheckinStore';
 import { ClanOverlayHost } from '../clan/ClanOverlayHost';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
 import { useDownloadGuideStore } from '@/store/downloadGuideStore';
@@ -69,6 +75,7 @@ export function HomePage() {
     totalUnreadOf(state.conversations)
   );
   const notifUnread = useAppNotificationStore((state) => state.unreadCount);
+  const checkinAttention = useDailyCheckinStore(selectDailyCheckinAttention);
   const ActivePanel = storyPending ? null : PANELS[activeTab];
   const authReady = useAuthStore((state) => state.authReady);
   const ken = useAuthStore((state) => state.user?.ken);
@@ -122,6 +129,17 @@ export function HomePage() {
     []
   );
 
+  useEffect(
+    () =>
+      useHomeNavStore.subscribe((state, prev) => {
+        if (state.seq === prev.seq || state.tab == null) return;
+        closeOverlays();
+        sessionStorage.setItem(ACTIVE_TAB_KEY, state.tab);
+        setTab(state.tab);
+      }),
+    []
+  );
+
   useEffect(() => {
     if (!authReady) return;
     SocketService.connect();
@@ -156,7 +174,10 @@ export function HomePage() {
         active={activeTab}
         onChange={changeTab}
         badges={{ chat: chatUnread, personal: notifUnread }}
-        dots={{ room: roomUnread && activeTab !== 'room' }}
+        dots={{
+          room: roomUnread && activeTab !== 'room',
+          personal: checkinAttention,
+        }}
         hidden={{ story: storyEnabled !== true }}
       />
 
@@ -165,6 +186,7 @@ export function HomePage() {
       <AppOverlay />
       <ClanOverlayHost />
       <GiftAnimationOverlay />
+      <DailyCheckinHost />
 
       {guideOpen && (
         <Suspense fallback={null}>

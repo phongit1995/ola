@@ -85,6 +85,7 @@ export const MEGAPHONE_PAID_WITH_OPTIONS: { value: 'all' | Exclude<MegaphonePaid
 export const MEGAPHONE_TICKET_SOURCE_LABEL: Record<MegaphoneTicketSource, string> = {
   admin: 'Admin tặng',
   gift_code: 'Mã quà tặng',
+  checkin: 'Điểm danh',
 }
 
 export const MEGAPHONE_TICKET_STATUS_TAG: Record<MegaphoneTicketStatus, { label: string; color: string }> = {

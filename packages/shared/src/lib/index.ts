@@ -59,3 +59,4 @@ export * from './imageFit';
 export * from './emojiToken';
 export * from './eggReward';
 export * from './verifyEmail';
+export * from './dailyCheckin';

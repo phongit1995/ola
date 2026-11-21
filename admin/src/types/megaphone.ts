@@ -32,7 +32,7 @@ export type MegaphoneType = 'message' | 'gift' | 'lucky'
 
 export type MegaphonePaidWith = 'ken' | 'ticket' | 'free'
 
-export type MegaphoneTicketSource = 'admin' | 'gift_code'
+export type MegaphoneTicketSource = 'admin' | 'gift_code' | 'checkin'
 
 export type MegaphoneTicketStatus = 'usable' | 'used' | 'expired' | 'revoked'
 

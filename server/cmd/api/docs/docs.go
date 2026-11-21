@@ -836,6 +836,444 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/checkin/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "status: claimed | pending | missed | none. Lý do mất hộp tính lại lúc xem.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Lịch sử lượt điểm danh",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tên đăng nhập, tên hoặc ID",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID người dùng",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "claimed | pending | missed | none",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Ô",
+                        "name": "slot",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Mặc định 20",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Bắt đầu từ",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_utils_Page-internal_modules_admin_checkin_HistoryItem"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Danh sách lịch điểm danh các tháng",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "source=copy chép ô k sang ô k từ tháng copyFrom, ô dư bỏ, ô thiếu để trống. source=empty mọi ô chỉ điểm danh.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Tạo lịch tháng (nháp)",
+                "parameters": [
+                    {
+                        "description": "Tháng",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_checkin.CreateMonthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months/{month}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Lịch một tháng kèm cấu hình các ô",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Xoá lịch nháp hoặc lịch tháng chưa bắt đầu",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-any"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Tháng đang chạy chỉ được tăng.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Đổi số ô của tháng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Số ô",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_checkin.UpdateMonthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months/{month}/publish": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Không quay lại nháp được. Tháng đang chạy thì chạy ngay, ô khoá tính từ ngày phát hành.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Phát hành lịch nháp",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months/{month}/slots": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Ô đã khoá của tháng đang chạy bị từ chối. Mỗi ô tối đa 5 quà, mỗi quà 1–10 món, tổng tỉ lệ 100. Gửi kèm updatedAt đã đọc của ô: ô đã bị sửa ở nơi khác thì trả 409, không ghi.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Lưu một hoặc nhiều ô",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Các ô",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_checkin.SaveSlotsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months/{month}/slots/swap": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Server đổi nội dung hai ô trên dữ liệu mới nhất trong cùng transaction. Ô đã khoá của tháng đang chạy bị từ chối.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Đổi chỗ hai ô",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Hai ô",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_checkin.SwapSlotsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Thống kê điểm danh của tháng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_StatsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/users/{userId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Lịch điểm danh một tháng của một người",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID người dùng",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_UserMonthResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/clans": {
             "get": {
                 "security": [
@@ -10904,6 +11342,139 @@ const docTemplate = `{
                 }
             }
         },
+        "/checkin": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "enabled=false khi công tắc tổng hoặc nền tảng tắt, hoặc tháng này chưa có lịch đã phát hành. Không trả quà hay nhiệm vụ của ô chưa mở.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checkin"
+                ],
+                "summary": "Lịch điểm danh tháng này của người gọi",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_StatusResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Đi tiếp 1 ô. Ô có quà mà nhiệm vụ đã làm từ 0h (và đủ VIP nếu cần) thì mở hộp luôn, trả items. Còn lại trả reason task_pending / vip_required. Bấm lại trong ngày trả trạng thái hiện tại. clientRequestId sinh mới mỗi lần bấm, gửi lại thì dùng lại mã cũ: mã đã dùng thì trả kết quả của lượt đó (kể cả lượt của hôm trước), không tính thêm lượt.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checkin"
+                ],
+                "summary": "Điểm danh hôm nay",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Check-in",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_checkin.CheckInRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_ActionResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "CHECKIN_DISABLED, CHECKIN_EMAIL_NOT_VERIFIED",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "CHECKIN_COMPLETED",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/checkin/open": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Bốc mỗi quà 1 món theo cấu hình chụp lúc điểm danh và phát. Hộp đã mở thì trả lại đúng kết quả cũ.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checkin"
+                ],
+                "summary": "Mở hộp quà của hôm nay",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_ActionResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "CHECKIN_DISABLED, CHECKIN_VIP_REQUIRED",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "CHECKIN_TASK_NOT_DONE, CHECKIN_NOTHING_TO_OPEN",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/clans": {
             "post": {
                 "security": [
@@ -20706,6 +21277,383 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_checkin.CreateMonthRequest": {
+            "type": "object",
+            "required": [
+                "month",
+                "slotCount",
+                "source"
+            ],
+            "properties": {
+                "copyFrom": {
+                    "type": "string",
+                    "example": "2026-11"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2026-12"
+                },
+                "slotCount": {
+                    "type": "integer",
+                    "example": 28
+                },
+                "source": {
+                    "type": "string",
+                    "enum": [
+                        "copy",
+                        "empty"
+                    ],
+                    "example": "copy"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.HistoryItem": {
+            "type": "object",
+            "properties": {
+                "box": {
+                    "type": "string",
+                    "example": "big"
+                },
+                "claimedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "day": {
+                    "type": "string",
+                    "example": "2026-11-19"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "missReason": {
+                    "type": "string",
+                    "enum": [
+                        "task",
+                        "vip",
+                        "not_opened"
+                    ],
+                    "example": "task"
+                },
+                "requireVip": {
+                    "type": "boolean"
+                },
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinReward"
+                    }
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "claimed",
+                        "pending",
+                        "missed",
+                        "none"
+                    ],
+                    "example": "claimed"
+                },
+                "task": {
+                    "type": "string",
+                    "example": "me_post"
+                },
+                "taskDoneAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                },
+                "vipAtCheckin": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.MonthDTO": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2026-11"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "slotCount": {
+                    "type": "integer",
+                    "example": 28
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.MonthDetailDTO": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2026-11"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "slotCount": {
+                    "type": "integer",
+                    "example": 28
+                },
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.SlotDTO"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.MonthListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.MonthDTO"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_checkin.SaveSlotsRequest": {
+            "type": "object",
+            "required": [
+                "slots"
+            ],
+            "properties": {
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.SlotDTO"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_checkin.SlotDTO": {
+            "type": "object",
+            "properties": {
+                "featured": {
+                    "type": "boolean"
+                },
+                "gifts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinGift"
+                    }
+                },
+                "requireVip": {
+                    "type": "boolean"
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "task": {
+                    "type": "string",
+                    "example": "random"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsDay": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsGift": {
+            "type": "object",
+            "properties": {
+                "counts": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "boughtVipToOpen": {
+                    "type": "integer"
+                },
+                "boxesOpened": {
+                    "type": "integer"
+                },
+                "checkedInToday": {
+                    "type": "integer"
+                },
+                "checkedInUsers": {
+                    "type": "integer"
+                },
+                "completedUsers": {
+                    "type": "integer"
+                },
+                "daily": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.StatsDay"
+                    }
+                },
+                "lostNoVip": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "string"
+                },
+                "openedByType": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.StatsSlot"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.StatsTask"
+                    }
+                },
+                "ticketsExpired": {
+                    "type": "integer"
+                },
+                "ticketsGranted": {
+                    "type": "integer"
+                },
+                "ticketsUsed": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsSlot": {
+            "type": "object",
+            "properties": {
+                "box": {
+                    "type": "string"
+                },
+                "checkedIn": {
+                    "type": "integer"
+                },
+                "gifts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.StatsGift"
+                    }
+                },
+                "lost": {
+                    "type": "integer"
+                },
+                "opened": {
+                    "type": "integer"
+                },
+                "slot": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsTask": {
+            "type": "object",
+            "properties": {
+                "assigned": {
+                    "type": "integer"
+                },
+                "done": {
+                    "type": "integer"
+                },
+                "doneNotOpened": {
+                    "type": "integer"
+                },
+                "notDone": {
+                    "type": "integer"
+                },
+                "task": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.SwapSlotsRequest": {
+            "type": "object",
+            "required": [
+                "from",
+                "to"
+            ],
+            "properties": {
+                "from": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "to": {
+                    "type": "integer",
+                    "example": 7
+                }
+            }
+        },
+        "internal_modules_admin_checkin.UpdateMonthRequest": {
+            "type": "object",
+            "required": [
+                "slotCount"
+            ],
+            "properties": {
+                "slotCount": {
+                    "type": "integer",
+                    "example": 30
+                }
+            }
+        },
+        "internal_modules_admin_checkin.UserMonthResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.HistoryItem"
+                    }
+                },
+                "month": {
+                    "type": "string"
+                },
+                "slotCount": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                }
+            }
+        },
         "internal_modules_admin_clan.ClanListResponse": {
             "type": "object",
             "properties": {
@@ -28064,6 +29012,170 @@ const docTemplate = `{
                         "assistant"
                     ],
                     "example": "user"
+                }
+            }
+        },
+        "internal_modules_checkin.ActionResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinReward"
+                    }
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": [
+                        "task_pending",
+                        "vip_required"
+                    ],
+                    "example": "task_pending"
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 6
+                },
+                "status": {
+                    "$ref": "#/definitions/internal_modules_checkin.StatusResponse"
+                }
+            }
+        },
+        "internal_modules_checkin.CheckInRequest": {
+            "type": "object",
+            "required": [
+                "clientRequestId"
+            ],
+            "properties": {
+                "clientRequestId": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10"
+                }
+            }
+        },
+        "internal_modules_checkin.SlotState": {
+            "type": "object",
+            "properties": {
+                "box": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "normal",
+                        "big"
+                    ],
+                    "example": "big"
+                },
+                "checkedInOn": {
+                    "type": "string",
+                    "example": "2026-11-07"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinReward"
+                    }
+                },
+                "requireVip": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "claimed",
+                        "none",
+                        "missed",
+                        "pending",
+                        "today",
+                        "upcoming",
+                        "out_of_reach"
+                    ],
+                    "example": "claimed"
+                }
+            }
+        },
+        "internal_modules_checkin.StatusResponse": {
+            "type": "object",
+            "properties": {
+                "canOpen": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "checkedInToday": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "completed": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "count": {
+                    "type": "integer",
+                    "example": 16
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "endsAt": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2026-11"
+                },
+                "needsEmailVerify": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "popup": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "reachable": {
+                    "type": "integer",
+                    "example": 29
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 17
+                },
+                "slotCount": {
+                    "type": "integer",
+                    "example": 28
+                },
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_checkin.SlotState"
+                    }
+                },
+                "todayResult": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinReward"
+                    }
+                },
+                "todayTask": {
+                    "$ref": "#/definitions/internal_modules_checkin.TaskState"
+                }
+            }
+        },
+        "internal_modules_checkin.TaskState": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "me_post"
+                },
+                "done": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
@@ -36363,6 +37475,84 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_models.CheckinGift": {
+            "type": "object",
+            "properties": {
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinGiftOption"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_models.CheckinGiftOption": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "amountMax": {
+                    "type": "integer"
+                },
+                "amountMin": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "days": {
+                    "type": "integer"
+                },
+                "expiresInDays": {
+                    "type": "integer"
+                },
+                "frameId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "vipIconId": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_models.CheckinReward": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "amountMax": {
+                    "type": "integer"
+                },
+                "amountMin": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "days": {
+                    "type": "integer"
+                },
+                "expiresInDays": {
+                    "type": "integer"
+                },
+                "frameId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "vipIconId": {
+                    "type": "integer"
+                }
+            }
+        },
         "ola-chat-server_internal_models.EggCategoryType": {
             "type": "string",
             "enum": [
@@ -41144,6 +42334,30 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-any": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanResponse": {
             "type": "object",
             "properties": {
@@ -41285,6 +42499,110 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_auth.RefreshTokenResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_checkin.MonthDetailDTO"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_checkin.MonthListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_StatsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_checkin.StatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_UserMonthResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_checkin.UserMonthResponse"
                 },
                 "error": {
                     "type": "string"
@@ -42273,6 +43591,58 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_chat-bot.CompletionResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_ActionResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_checkin.ActionResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_StatusResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_checkin.StatusResponse"
                 },
                 "error": {
                     "type": "string"
@@ -44423,6 +45793,55 @@ const docTemplate = `{
                 },
                 "traceId": {
                     "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_utils_Page-internal_modules_admin_checkin_HistoryItem": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_utils.Page-internal_modules_admin_checkin_HistoryItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.Page-internal_modules_admin_checkin_HistoryItem": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.HistoryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },

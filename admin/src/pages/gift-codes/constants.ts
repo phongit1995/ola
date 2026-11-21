@@ -109,14 +109,4 @@ export const GIFT_CODE_HEAVY_FAILURES = 20
 export const GIFT_CODE_DATE_FORMAT = 'DD/MM/YYYY HH:mm'
 export const GIFT_CODE_SUMMARY_DATE_FORMAT = 'HH:mm DD/MM/YYYY'
 
-export const GIFT_CODE_REWARD_TYPE_OPTIONS = [
-  { value: 'vip_days', label: 'Ngày VIP' },
-  { value: 'vip_icon', label: 'Icon VIP' },
-  { value: 'avatar_frame', label: 'Khung avatar' },
-  { value: 'megaphone_ticket', label: 'Vé loa' },
-]
-
-export const GIFT_CODE_TICKET_MAX_COUNT = 100
-export const GIFT_CODE_TICKET_MAX_DAYS = 365
-
 export const GIFT_CODE_DETAIL_TABS = ['redemptions', 'codes'] as const

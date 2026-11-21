@@ -94,7 +94,7 @@ export interface AvatarFrameTransferListParams {
   offset?: number
 }
 
-export type UserAvatarFrameSource = 'purchase' | 'gift' | 'transfer' | 'gift_code' | 'admin'
+export type UserAvatarFrameSource = 'purchase' | 'gift' | 'transfer' | 'gift_code' | 'admin' | 'checkin'
 
 export interface AdminUserAvatarFrame {
   id?: string
