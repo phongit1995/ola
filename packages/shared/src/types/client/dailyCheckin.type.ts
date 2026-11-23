@@ -18,11 +18,6 @@ export type DailyCheckinTodayKind = 'checkin' | 'noGift' | 'task' | 'open' | 'op
 
 export type DailyCheckinFabKind = 'checkin' | 'task' | 'open';
 
-export type DailyCheckinRestInfo =
-  | { kind: 'rest'; days: number }
-  | { kind: 'lastRest'; slot: number }
-  | { kind: 'unreachable'; slot: number };
-
 export type DailyCheckinActionOutcome = 'done' | 'needsEmail' | 'vipRequired' | 'failed';
 
 export type DailyCheckinNotice = 'needsEmail' | 'vipRequired';

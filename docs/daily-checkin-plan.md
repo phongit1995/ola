@@ -51,7 +51,7 @@ Liên quan: [Vé loa](megaphone-feature-plan.md#15-vé-loa-plan--code-19112026) 
 | 30/11 | ô 28 | nghỉ 2 ngày vẫn tới ô cuối (theo cấu hình gợi ý là hộp đặc biệt lớn nhất tháng) |
 | 01/12 | ô 1 | lịch tháng 12 |
 
-**Người vào ngày 15/11, cùng lịch 28 ô:** 15/11 là ô 1, 16/11 ô 2 … 30/11 là ô 16. Ô 17–28 hiện "không kịp". Tháng 12 bắt đầu lại từ ô 1 như mọi người.
+**Người vào ngày 15/11, cùng lịch 28 ô:** 15/11 là ô 1, 16/11 ô 2 … 30/11 là ô 16. Ô 17–28 vẫn hiện như ô thường (số hoặc hộp quà), app không báo "không kịp" để không làm nản. Tháng 12 bắt đầu lại từ ô 1 như mọi người.
 
 ### 2.2 Hộp quà ẩn và quà random
 
@@ -86,7 +86,7 @@ Flow: **điểm danh trước → hiện nhiệm vụ → làm xong → mở h�
 
 1. Trên lưới chưa biết nhiệm vụ của hộp là gì.
 2. User bấm **Điểm danh**. Ô tiến lên như mọi ngày.
-3. Lúc này mới hiện "Nhiệm vụ hôm nay: Đăng 1 bài Me" kèm nút **Đi làm** mở thẳng chỗ cần làm. Hộp khoá. Dòng Điểm danh và tab Cá nhân có chấm đỏ.
+3. Lúc này mới hiện khung "Nhiệm vụ hôm nay": icon nhiệm vụ, tên nhiệm vụ (vd "Đăng 1 bài Me"), dòng "Làm xong trước 0h để mở hộp" và vòng tròn trống bên phải, dưới là nút **Đi làm** mở thẳng chỗ cần làm. Hộp khoá. Ô hôm nay trên lưới có huy hiệu nhiệm vụ ở góc. Dòng Điểm danh và tab Cá nhân có chấm đỏ. Làm xong thì khung chuyển xanh, vòng tròn thành ✓ và dòng dưới ghi "Đã hoàn thành"; mở quà xong vẫn giữ khung đã tích phía trên danh sách quà. Mỗi ô có quà chỉ có **1 nhiệm vụ**.
 4. Nếu từ 0h hôm nay user đã làm việc đó rồi thì hiện "Đã xong nhiệm vụ" và hộp mở luôn.
 5. Làm xong, quay lại màn Điểm danh: nút **Mở quà** sáng lên (server báo `canOpen`). Chưa làm thì chỉ có nút **Đi làm**.
 6. Qua 0h chưa làm thì mất hộp ô đó, hôm sau đi tiếp ô kế.
@@ -136,7 +136,7 @@ Công tắc **Xác thực email** ở tab Cài đặt của admin, **mặc đị
 
 | Hạng mục | Luật |
 |---|---|
-| Popup | **Tự hiện** khi mở app lần đầu trong ngày mà chưa điểm danh (và tháng chưa đi hết lịch). Đã điểm danh mà hộp còn chờ nhiệm vụ thì **không hiện lại**, chỉ có chấm đỏ. Admin tắt được ở tab Cài đặt, user không tự tắt. Thứ tự với các popup khác ở mục 10.2 |
+| Popup | Hộp gọn, rộng tối đa 340pt (web `max-w-[340px]`, mobile `CHECKIN_POPUP_MAX_WIDTH`), lưới cách ô 4pt. **Tự hiện** khi mở app lần đầu trong ngày mà chưa điểm danh (và tháng chưa đi hết lịch). Đã điểm danh mà hộp còn chờ nhiệm vụ thì **không hiện lại**, chỉ có chấm đỏ. Admin tắt được ở tab Cài đặt, user không tự tắt. Thứ tự với các popup khác ở mục 10.2 |
 | Dòng Điểm danh | Trong danh sách tab Cá nhân, ngay sau **Thông tin cá nhân**, phụ đề "Hôm nay chưa điểm danh" / "Còn hộp quà chưa mở" / "Đã điểm danh đủ tháng 11". "Còn hộp quà chưa mở" luôn ưu tiên hơn "Đã điểm danh đủ" |
 | Chấm đỏ | Ở **dòng Điểm danh** và **icon tab Cá nhân** trên thanh dưới, khi chưa điểm danh hoặc hộp hôm nay chưa mở được (chờ nhiệm vụ hoặc VIP) |
 | Nền tảng | Web + Android + iOS, bật/tắt theo nền tảng trong admin, thêm công tắc tổng **mặc định tắt**. Điểm danh chỉ chạy khi công tắc tổng bật, nền tảng bật **và** tháng hiện tại đã phát hành lịch. App cũ không có điểm danh, không lỗi gì |
@@ -179,7 +179,7 @@ Mock đầy đủ ở `~/Desktop/checkin-mock/index.html`. Tháng 11, lịch 28 
 
 ```
 ┌ Điểm danh                          Còn 05:12:30 ┐
-│ Tháng 11 · Đã điểm danh 16/28  Còn nghỉ được 1  │
+│ Tháng 11 · Đã điểm danh 16/28                    │
 │                                                  │
 │   1✓   2✓  🎁3✓  4✓  🎁5✓  6✓  🎁★7✓             │
 │   8✓   9✓ 🎁10✗ 11✓ 🎁12✓ 13✓ 🎁★14✓             │
@@ -191,9 +191,9 @@ Mock đầy đủ ở `~/Desktop/checkin-mock/index.html`. Tháng 11, lịch 28 
 └──────────────────────────────────────────────────┘
 ```
 
-- Số trơn: ô không có quà, chỉ điểm danh · 🎁 hộp chưa mở · ★ hộp đặc biệt · ✓ đã điểm danh (ô có hộp thì hiện ảnh hộp đã mở) · ✗ hộp mất (hết ngày chưa làm nhiệm vụ hoặc chưa có VIP) · 🔒 không kịp (không còn đủ ngày trong tháng để tới). Hộp chưa nhận của hôm nay (`today`, `pending`) lắc nhẹ khoảng 0,6 giây rồi nghỉ 2 giây, lặp lại. Không có dấu cần VIP trên lưới
+- Số trơn: ô không có quà, chỉ điểm danh · 🎁 hộp chưa mở · ★ hộp đặc biệt · ✓ đã điểm danh (ô có hộp thì hiện ảnh hộp đã mở) · ✗ hộp mất (hết ngày chưa làm nhiệm vụ hoặc chưa có VIP) Ô không còn đủ ngày để tới vẫn hiện như ô thường (không khoá, không làm xám). Hộp chưa nhận của hôm nay (`today`, `pending`) lắc nhẹ khoảng 0,6 giây rồi nghỉ 2 giây, lặp lại. Không có dấu cần VIP trên lưới
 - Ô cuối hiện như mọi ô, là hộp thường hay hộp đặc biệt theo cờ Đặc biệt admin đặt.
-- Dòng trên ghi "Đã điểm danh X/N" để không bị đọc nhầm số ô là ngày trong tháng, kèm "Còn nghỉ được K ngày" (vẫn tới ô cuối), "Nghỉ thêm là không tới ô N", hoặc "Không kịp ô N".
+- Dòng trên chỉ ghi "Đã điểm danh X/N" để không bị đọc nhầm số ô là ngày trong tháng. Không hiện "Còn nghỉ được / Không kịp ô N" (bỏ 23/11).
 - Hộp nào cũng có nhiệm vụ nên lưới không cần dấu nhiệm vụ. Tên nhiệm vụ chỉ hiện sau khi bấm Điểm danh.
 - Bấm ô đã qua thì hiện ngày thật đã điểm danh ("Điểm danh 15/11").
 
@@ -256,7 +256,7 @@ Dòng `pending` của ngày cũ (kể cả ngày cuối tháng trước) hiển 
 | `pending` | hôm nay, đã điểm danh, chờ mở (chờ nhiệm vụ hoặc VIP) | hộp viền cam |
 | `today` | hôm nay chưa điểm danh, đây là ô sẽ điểm danh | ô viền xanh nhấp nháy |
 | `upcoming` | chưa tới, vẫn còn kịp | hộp, hoặc số ô nếu ô đó không có quà |
-| `out_of_reach` | chưa tới nhưng không còn đủ ngày trong tháng để tới | xám + 🔒 |
+| `out_of_reach` | chưa tới nhưng không còn đủ ngày trong tháng để tới | app hiện như `upcoming` (số hoặc hộp quà), server vẫn trả trạng thái này cho admin/thống kê |
 
 Ô xa nhất còn tới được: `reachable = số lần đã điểm danh trong tháng + số ngày còn lại của tháng, tính cả hôm nay nếu hôm nay chưa điểm danh`. Ô có số lớn hơn `reachable` là `out_of_reach`. Số ngày còn nghỉ được mà vẫn tới ô cuối = `reachable − số ô`.
 
@@ -523,8 +523,8 @@ API và kiểm tra:
 - **Thứ tự popup lúc mở app** (chỉ hiện một popup một lúc):
   - mobile: chỉ hiện sau khi `AppLockGate` đã mở khoá và `AppUpdateGate` không chặn. Phiên đã hiện popup điểm danh thì không xin đánh giá store (`appReview`). Hiện sau khi màn chính sẵn sàng, tránh bẫy iOS bỏ qua Modal lúc vừa mở app;
   - web: chỉ hiện ở màn chính sau khi đăng nhập.
-- **Màn Điểm danh** (web overlay `checkin`, mobile screen `Checkin`): lưới 7 cột, số ô bằng `slotCount`, ô cuối hiện như mọi ô (hộp thường hay hộp đặc biệt theo cờ Đặc biệt). Đếm ngược tới 0h. Dòng trên "Tháng 11 · Đã điểm danh 16/28" kèm "Còn nghỉ được 1 ngày" / "Nghỉ thêm là không tới ô 28" / "Không kịp ô 28". Thẻ hôm nay bên dưới lưới: chưa điểm danh thì nút **Điểm danh** (hoặc **Xác thực email**); ô không có quà thì ghi "Ô 18 không có quà" và "Hộp quà tiếp theo: ô 19" (client tính từ `slots`); đang chờ thì hiện nhiệm vụ + **Đi làm**, làm rồi thì **Mở quà** (hộp cần VIP bấm vào mới báo Cần VIP); đã mở thì danh sách quà vừa nhận; đã điểm danh đủ và hộp hôm nay đã xong thì "Đã điểm danh đủ 28/28 ô tháng 11, hẹn 01/12". Hôm điểm danh ô cuối mà hộp còn chờ thì vẫn hiện thẻ chờ (nhiệm vụ + Đi làm / Mở quà), không hiện câu hoàn tất.
-- **Bấm vào ô**: ô chưa mở hiện "Hộp quà bí mật" + số ô + "Điểm danh xong sẽ hiện nhiệm vụ, làm xong mới mở được hộp" + Cần VIP nếu có (không hiện quà, không hiện tên nhiệm vụ); ô đã mở hiện đủ món đã nhận và ngày thật đã điểm danh; ô `missed` giải thích "Hết ngày mà hộp chưa được mở"; ô `out_of_reach` giải thích "Không còn đủ ngày trong tháng để tới ô này"; ô không có quà hiện "Ô này chỉ cần điểm danh".
+- **Màn Điểm danh** (web overlay `checkin`, mobile screen `Checkin`): lưới 7 cột, số ô bằng `slotCount`, ô cuối hiện như mọi ô (hộp thường hay hộp đặc biệt theo cờ Đặc biệt). Đếm ngược tới 0h. Dòng trên "Tháng 11 · Đã điểm danh 16/28". Thẻ hôm nay bên dưới lưới: chưa điểm danh thì nút **Điểm danh** (ô hôm nay có hộp thì kèm "Hộp quà bí mật", không có hộp thì chỉ có nút); đã điểm danh ô không có quà thì ghi "Ô 18 không có quà" và "Hộp quà tiếp theo: ô 19" (client tính từ `slots`, tính cả ô không kịp); đang chờ thì hiện nhiệm vụ + **Đi làm**, làm rồi thì **Mở quà** (hộp cần VIP bấm vào mới báo Cần VIP); đã mở thì danh sách quà vừa nhận; đã điểm danh đủ và hộp hôm nay đã xong thì "Đã điểm danh đủ 28/28 ô tháng 11, hẹn 01/12". Hôm điểm danh ô cuối mà hộp còn chờ thì vẫn hiện thẻ chờ (nhiệm vụ + Đi làm / Mở quà), không hiện câu hoàn tất.
+- **Bấm vào ô**: ô chưa mở hiện "Hộp quà bí mật" + số ô + "Điểm danh xong sẽ hiện nhiệm vụ, làm xong mới mở được hộp" + Cần VIP nếu có (không hiện quà, không hiện tên nhiệm vụ); ô đã mở hiện đủ món đã nhận và ngày thật đã điểm danh; ô `missed` giải thích "Hết ngày mà hộp chưa được mở"; ô `out_of_reach` hiện như ô chưa tới; ô không có quà hiện "Ô này chỉ cần điểm danh".
 - **Hiệu ứng mở hộp**: hộp lắc nhẹ rồi bung ra món, khoảng 1 giây, làm bằng animation thường (CSS ở web, `Animated` ở mobile), không cần thư viện mới.
 - Dòng **Điểm danh** trong `PERSONAL_ITEMS` (danh sách `PanelRow`, ngay sau Thông tin cá nhân) ([web](../web/src/pages/apps/constants.ts), [mobile](../mobile/src/screens/apps/constants.ts)). Chấm đỏ ở dòng này và ở icon tab Cá nhân trên thanh dưới khi chưa điểm danh hoặc có `pending`. `enabled: false` thì ẩn dòng và popup.
 - Thẻ VIP / khung trong kết quả hiện ảnh món + "3 ngày" và dấu khoá, dùng lại `ItemGrantMarks`.
@@ -535,7 +535,7 @@ API và kiểm tra:
 
 ### 10.3 Ảnh cần vẽ
 
-Đã vẽ 20/11 bằng Codex, cả bộ chung một kiểu: tô phẳng 2–3 tông, viền mảnh theo màu từng phần (giống icon Khung avatar), không 3D bóng. File nằm ở `packages/shared/assets/daily-checkin/` (webp, nền trong suốt), web lấy qua `web/src/shared/constants/dailyCheckinIcons.ts`, mobile qua `mobile/src/screens/daily-checkin/dailyCheckinAssets.ts`. Muốn đổi ảnh thì ghi đè file cùng tên, không phải sửa code. Hộp mất đã có ảnh xám riêng nên không làm mờ thêm, chỉ ô không kịp còn làm mờ.
+Đã vẽ 20/11 bằng Codex, cả bộ chung một kiểu: tô phẳng 2–3 tông, viền mảnh theo màu từng phần (giống icon Khung avatar), không 3D bóng. File nằm ở `packages/shared/assets/daily-checkin/` (webp, nền trong suốt), web lấy qua `web/src/shared/constants/dailyCheckinIcons.ts`, mobile qua `mobile/src/screens/daily-checkin/dailyCheckinAssets.ts`. Muốn đổi ảnh thì ghi đè file cùng tên, không phải sửa code. Hộp mất đã có ảnh xám riêng nên không làm mờ thêm; ô không kịp cũng không làm mờ.
 
 | File | Dùng ở | Cỡ file | Ghi chú |
 |---|---|---|---|
@@ -545,7 +545,7 @@ API và kiểm tra:
 | `box-opened.webp` | ô đã mở hộp (~28pt) | 256×256 | hộp mở nắp, bên trong trống (lưới không lộ quà) |
 | `box-big-opened.webp` | ô hộp đặc biệt đã mở (~36pt) | 256×256 | hộp đặc biệt mở nắp, cùng bố cục với `box-opened.webp` |
 | `menu.webp` | dòng **Điểm danh** ở tab Cá nhân (40pt) | 120×120 | cùng phong cách các icon menu (Quà tặng, Kho VIP…) |
-| `task.webp` | dấu nhiệm vụ trong khung cam "Nhiệm vụ hôm nay" (16pt) | 64×64 | ví dụ tờ giấy + bút |
+| `task.webp` | dòng nhiệm vụ trong khung "Nhiệm vụ hôm nay" (24pt), huy hiệu góc ô hôm nay khi hộp đang chờ nhiệm vụ (14pt, thay dấu "…"), chú thích "Có nhiệm vụ" dưới lưới | 64×64 | ví dụ tờ giấy + bút |
 
 Không cần vẽ: vương miện ở thẻ Hôm nay / hộp thoại ô cần VIP (dùng `vip-crown.webp`), ảnh quà KEN / ngày VIP / vé loa / thẻ VIP / khung (dùng ảnh có sẵn).
 

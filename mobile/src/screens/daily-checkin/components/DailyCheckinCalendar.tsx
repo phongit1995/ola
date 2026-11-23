@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { Image, Text, View } from 'react-native';
 import { DAILY_CHECKIN_GRID_COLUMNS } from '@ola/shared/constants';
-import { dailyCheckinMonthNumber, dailyCheckinRestInfo, dailyCheckinRestText } from '@ola/shared/lib';
+import { dailyCheckinMonthNumber } from '@ola/shared/lib';
 import type { DailyCheckinSlot, DailyCheckinStatus } from '@ola/shared/types';
-import { TEXT_PRIMARY, TEXT_SECONDARY, WARNING_INK, WARNING_SOFT } from '@constants';
-import { useThemeColors } from '@hooks/useThemeColors';
+import { TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { CHECKIN_GRID_GAP } from '../constants';
+import { DAILY_CHECKIN_IMAGES } from '../dailyCheckinAssets';
 import { DailyCheckinCell } from './DailyCheckinCell';
 
 interface DailyCheckinCalendarProps {
@@ -24,17 +24,17 @@ function Legend() {
       <Text style={style}>{t('dailyCheckin.legend.plain')}</Text>
       <Text style={style}>✓ {t('dailyCheckin.legend.done')}</Text>
       <Text style={style}>✕ {t('dailyCheckin.legend.missed')}</Text>
-      <Text style={style}>… {t('dailyCheckin.legend.pending')}</Text>
-      <Text style={style}>🔒 {t('dailyCheckin.legend.outOfReach')}</Text>
+      <View className="flex-row items-center gap-1">
+        <Image source={DAILY_CHECKIN_IMAGES.task} style={{ width: 14, height: 14 }} resizeMode="contain" />
+        <Text style={style}>{t('dailyCheckin.legend.pending')}</Text>
+      </View>
     </View>
   );
 }
 
 export function DailyCheckinCalendar({ status, onSelect, showSummary = true, showLegend = false }: DailyCheckinCalendarProps) {
   const { t } = useTranslation();
-  const colors = useThemeColors();
   const [width, setWidth] = useState(0);
-  const rest = dailyCheckinRestInfo(status);
   const cellSize = width > 0 ? Math.floor((width - CHECKIN_GRID_GAP * (DAILY_CHECKIN_GRID_COLUMNS - 1)) / DAILY_CHECKIN_GRID_COLUMNS) : 0;
 
   return (
@@ -44,16 +44,6 @@ export function DailyCheckinCalendar({ status, onSelect, showSummary = true, sho
           <Text numberOfLines={1} className="min-w-0 flex-1 text-sm font-bold" style={{ color: TEXT_PRIMARY }}>
             {t('dailyCheckin.summary', { month: dailyCheckinMonthNumber(status), count: status.count, total: status.slotCount })}
           </Text>
-          {rest != null && (
-            <View
-              className="rounded-full px-2 py-0.5"
-              style={{ backgroundColor: rest.kind === 'rest' ? colors.primaryLight : WARNING_SOFT }}
-            >
-              <Text className="text-xs font-semibold" style={{ color: rest.kind === 'rest' ? colors.primaryDark : WARNING_INK }}>
-                {dailyCheckinRestText(t, rest)}
-              </Text>
-            </View>
-          )}
         </View>
       )}
       <View

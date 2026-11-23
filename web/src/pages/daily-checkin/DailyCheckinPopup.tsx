@@ -4,8 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { CloseIcon } from '@components';
 import {
   dailyCheckinMonthNumber,
-  dailyCheckinRestInfo,
-  dailyCheckinRestText,
   formatDailyCheckinCountdown,
   portalRoot,
 } from '@lib';
@@ -28,13 +26,7 @@ export function DailyCheckinPopup({ status, onClose }: DailyCheckinPopupProps) {
   const remainingMs = useDailyCheckinCountdown(status);
   const goTask = useDailyCheckinTask();
   const [selected, setSelected] = useState<DailyCheckinSlot | null>(null);
-  const rest = dailyCheckinRestInfo(status);
-  const progress = [
-    t('dailyCheckin.progress', { count: status.count, total: status.slotCount }),
-    rest != null ? dailyCheckinRestText(t, rest) : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const progress = t('dailyCheckin.progress', { count: status.count, total: status.slotCount });
 
   function goToTask() {
     onClose();
@@ -53,13 +45,13 @@ export function DailyCheckinPopup({ status, onClose }: DailyCheckinPopupProps) {
       <div
         role="dialog"
         aria-modal="true"
-        className="flex max-h-[92dvh] w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+        className="flex max-h-[92dvh] w-full max-w-[340px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
       >
-        <header className="relative shrink-0 bg-ola-primary px-4 py-3 pr-11 text-ola-on-primary">
-          <p className="text-lg font-bold">
+        <header className="relative shrink-0 bg-ola-primary px-3.5 py-2.5 pr-10 text-ola-on-primary">
+          <p className="text-base font-bold">
             {t('dailyCheckin.popupTitle', { month: dailyCheckinMonthNumber(status) })}
           </p>
-          <div className="mt-1 flex items-center justify-between gap-2">
+          <div className="mt-0.5 flex items-center justify-between gap-2">
             <p className="min-w-0 truncate text-xs text-ola-on-primary/85">{progress}</p>
             <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold tabular-nums">
               {t('dailyCheckin.countdown', { time: formatDailyCheckinCountdown(remainingMs) })}
@@ -76,7 +68,7 @@ export function DailyCheckinPopup({ status, onClose }: DailyCheckinPopupProps) {
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
           <DailyCheckinCalendar status={status} onSelect={setSelected} showSummary={false} />
-          <div className="mt-3">
+          <div className="mt-2.5">
             <DailyCheckinTodayCard
               status={status}
               busy={acting}

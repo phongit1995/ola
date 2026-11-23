@@ -2830,11 +2830,6 @@
     "summary": "Month {{month}} · Checked in {{count}}/{{total}}",
     "progress": "Checked in {{count}}/{{total}}",
     "countdown": "{{time}} left",
-    "rest": {
-      "days": "You can still skip {{count}} days",
-      "last": "Skip another day and you won't reach slot {{slot}}",
-      "unreachable": "Slot {{slot}} is out of reach"
-    },
     "row": {
       "notCheckedIn": "Not checked in today",
       "pendingBox": "A gift box is waiting",
@@ -2851,8 +2846,7 @@
       "plain": "Plain number: no gift",
       "done": "Checked in",
       "missed": "Box lost",
-      "pending": "Waiting",
-      "outOfReach": "Out of reach"
+      "pending": "Has task"
     },
     "today": {
       "heading": "Today · Slot {{slot}}",
@@ -2861,16 +2855,14 @@
       "secretTitle": "Mystery gift box",
       "secretHint": "Check in to get the task that opens it",
       "noGiftTitle": "Slot {{slot}} has no gift",
-      "noGiftHint": "Check in to move on",
       "checkedIn": "Checked in",
       "nextGift": "Next gift box: slot {{slot}}",
       "noMoreGift": "No more gift boxes this month",
       "lockedTitle": "Box locked",
-      "lockedHint": "Finish the task to open it",
       "readyTitle": "Ready to open",
-      "taskTitle": "Today's task: {{task}}",
-      "taskHint": "Come back and open the box before midnight or it's lost",
-      "taskDone": "Task done: {{task}}",
+      "taskSection": "Today's task",
+      "taskCompleted": "Completed",
+      "taskPendingHint": "Finish before midnight to open the box",
       "vipHint": "VIP box: you need VIP when you tap Open",
       "openedTitle": "You received",
       "comeBack": "Come back tomorrow for slot {{slot}}",
@@ -2896,7 +2888,6 @@
       "checkedInOn": "Checked in {{date}}",
       "claimed": "You received",
       "missed": "The day ended before the box was opened",
-      "outOfReach": "Not enough days left this month to reach this slot",
       "plain": "Just check in on this slot",
       "plainDone": "You checked in on this slot",
       "pending": "Today's box is waiting to be opened"

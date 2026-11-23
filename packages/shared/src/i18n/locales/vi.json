@@ -2830,11 +2830,6 @@
     "summary": "Tháng {{month}} · Đã điểm danh {{count}}/{{total}}",
     "progress": "Đã điểm danh {{count}}/{{total}}",
     "countdown": "Còn {{time}}",
-    "rest": {
-      "days": "Còn nghỉ được {{count}} ngày",
-      "last": "Nghỉ thêm là không tới ô {{slot}}",
-      "unreachable": "Không kịp ô {{slot}}"
-    },
     "row": {
       "notCheckedIn": "Hôm nay chưa điểm danh",
       "pendingBox": "Còn hộp quà chưa mở",
@@ -2851,8 +2846,7 @@
       "plain": "Số trơn: không có quà",
       "done": "Đã điểm danh",
       "missed": "Hộp mất",
-      "pending": "Chờ mở",
-      "outOfReach": "Không kịp"
+      "pending": "Có nhiệm vụ"
     },
     "today": {
       "heading": "Hôm nay · Ô {{slot}}",
@@ -2861,16 +2855,14 @@
       "secretTitle": "Hộp quà bí mật",
       "secretHint": "Điểm danh để nhận nhiệm vụ mở hộp",
       "noGiftTitle": "Ô {{slot}} không có quà",
-      "noGiftHint": "Điểm danh để đi tiếp",
       "checkedIn": "Đã điểm danh",
       "nextGift": "Hộp quà tiếp theo: ô {{slot}}",
       "noMoreGift": "Tháng này không còn hộp quà nào",
       "lockedTitle": "Hộp đang khoá",
-      "lockedHint": "Làm nhiệm vụ để mở hộp",
       "readyTitle": "Sẵn sàng mở hộp",
-      "taskTitle": "Nhiệm vụ hôm nay: {{task}}",
-      "taskHint": "Làm xong quay lại mở hộp trước 0h, quá giờ là mất hộp này",
-      "taskDone": "Đã xong nhiệm vụ: {{task}}",
+      "taskSection": "Nhiệm vụ hôm nay",
+      "taskCompleted": "Đã hoàn thành",
+      "taskPendingHint": "Làm xong trước 0h để mở hộp",
       "vipHint": "Hộp này dành cho VIP: cần có VIP lúc bấm Mở quà",
       "openedTitle": "Bạn đã nhận",
       "comeBack": "Mai quay lại điểm danh ô {{slot}}",
@@ -2896,7 +2888,6 @@
       "checkedInOn": "Điểm danh {{date}}",
       "claimed": "Bạn đã nhận",
       "missed": "Hết ngày mà hộp chưa được mở",
-      "outOfReach": "Không còn đủ ngày trong tháng để tới ô này",
       "plain": "Ô này chỉ cần điểm danh",
       "plainDone": "Đã điểm danh ô này",
       "pending": "Hộp hôm nay đang chờ mở"

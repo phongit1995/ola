@@ -16,7 +16,7 @@ import { useAppLockStore } from '@store/appLockStore';
 import { useAppUpdateStore } from '@store/appUpdateStore';
 import { DailyCheckinNoticePanel, DailyCheckinOpenedPanel, DailyCheckinSlotPanel } from './components/DailyCheckinPanels';
 import { DailyCheckinPopupPanel } from './components/DailyCheckinPopupPanel';
-import { CHECKIN_POPUP_DELAY_MS } from './constants';
+import { CHECKIN_POPUP_DELAY_MS, CHECKIN_POPUP_MAX_WIDTH } from './constants';
 import { goDailyCheckinTask } from './useDailyCheckinTask';
 
 interface DailyCheckinHostProps {
@@ -126,7 +126,7 @@ export function DailyCheckinHost({ navigationRef }: DailyCheckinHostProps) {
         visible={popupVisible}
         bare
         showToasts
-        maxWidth={420}
+        maxWidth={CHECKIN_POPUP_MAX_WIDTH}
         avoidKeyboard={false}
         dismissOnBackdrop={opened == null}
         onClose={closePopup}

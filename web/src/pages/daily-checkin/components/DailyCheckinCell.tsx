@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ItemGrantIcon } from '@components';
-import { DAILY_CHECKIN_BOX, DAILY_CHECKIN_SLOT_STATUS } from '@constants';
+import { DAILY_CHECKIN_BOX, DAILY_CHECKIN_ICONS, DAILY_CHECKIN_SLOT_STATUS } from '@constants';
 import { cn } from '@lib';
 import type { DailyCheckinSlot } from '@app-types';
 import { boxImageSrc, cellToneClass, openedBoxImageSrc } from '../utils';
@@ -18,9 +17,12 @@ function CellBadge({ slot }: { slot: DailyCheckinSlot }) {
     return <span className={cn(base, 'bg-ola-primary')}>✓</span>;
   }
   if (slot.status === STATUS.missed) return <span className={cn(base, 'bg-black/35')}>✕</span>;
-  if (slot.status === STATUS.pending) return <span className={cn(base, 'bg-ola-warning')}>…</span>;
-  if (slot.status === STATUS.outOfReach) {
-    return <ItemGrantIcon kind="lock" className="absolute bottom-1 right-1 h-3 w-3" />;
+  if (slot.status === STATUS.pending) {
+    return (
+      <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-ola-warning bg-white shadow-sm">
+        <img src={DAILY_CHECKIN_ICONS.task} alt="" className="h-3.5 w-3.5 object-contain" />
+      </span>
+    );
   }
   return null;
 }
@@ -57,14 +59,13 @@ export function DailyCheckinCell({ slot, onSelect }: DailyCheckinCellProps) {
             'object-contain',
             big ? 'h-[72%] w-[72%]' : 'h-[58%] w-[58%]',
             waiting && 'origin-bottom motion-safe:animate-checkin-wiggle',
-            slot.status === STATUS.outOfReach && 'opacity-40 grayscale'
           )}
         />
       ) : (
         <span
           className={cn(
-            'text-base font-bold',
-            checked ? 'text-ola-primary-dark' : slot.status === STATUS.outOfReach ? 'text-black/30' : 'text-black/54'
+            'text-sm font-bold',
+            checked ? 'text-ola-primary-dark' : 'text-black/54'
           )}
         >
           {slot.slot}

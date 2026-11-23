@@ -2,8 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import {
   dailyCheckinMonthNumber,
-  dailyCheckinRestInfo,
-  dailyCheckinRestText,
   formatDailyCheckinCountdown,
 } from '@ola/shared/lib';
 import { useDailyCheckinStore } from '@ola/shared/stores/daily-checkin/dailyCheckinStore';
@@ -25,24 +23,18 @@ export function DailyCheckinPopupPanel({ status, onClose, onSelect, onGoTask }: 
   const colors = useThemeColors();
   const acting = useDailyCheckinStore((s) => s.acting);
   const remainingMs = useDailyCheckinCountdown(status);
-  const rest = dailyCheckinRestInfo(status);
-  const progress = [
-    t('dailyCheckin.progress', { count: status.count, total: status.slotCount }),
-    rest != null ? dailyCheckinRestText(t, rest) : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const progress = t('dailyCheckin.progress', { count: status.count, total: status.slotCount });
 
   return (
     <View
       className="w-full overflow-hidden bg-white"
       style={{ borderRadius: 16, maxHeight: '100%', shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 20, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}
     >
-      <View className="px-4 py-3" style={{ backgroundColor: colors.primary, paddingRight: 44 }}>
-        <Text className="text-lg font-bold" style={{ color: colors.onPrimary }}>
+      <View className="px-3.5 py-2.5" style={{ backgroundColor: colors.primary, paddingRight: 40 }}>
+        <Text className="text-base font-bold" style={{ color: colors.onPrimary }}>
           {t('dailyCheckin.popupTitle', { month: dailyCheckinMonthNumber(status) })}
         </Text>
-        <View className="mt-1 flex-row items-center justify-between gap-2">
+        <View className="mt-0.5 flex-row items-center justify-between gap-2">
           <Text numberOfLines={1} className="min-w-0 flex-1 text-xs" style={{ color: colors.onPrimary, opacity: 0.85 }}>
             {progress}
           </Text>
@@ -64,7 +56,7 @@ export function DailyCheckinPopupPanel({ status, onClose, onSelect, onGoTask }: 
       </View>
       <ScrollView contentContainerStyle={{ padding: 12 }} bounces={false}>
         <DailyCheckinCalendar status={status} onSelect={onSelect} showSummary={false} />
-        <View className="mt-3">
+        <View className="mt-2.5">
           <DailyCheckinTodayCard
             status={status}
             busy={acting}

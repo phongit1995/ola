@@ -33,37 +33,36 @@ function ActionButton({ tone, busy, onPress, children }: { tone: 'green' | 'oran
     <Pressable
       onPress={onPress}
       disabled={busy}
-      className="mt-3 h-11 items-center justify-center rounded-lg active:opacity-85"
+      className="mt-2.5 h-10 items-center justify-center rounded-lg active:opacity-85"
       style={{ backgroundColor: tone === 'green' ? colors.primary : WARNING, opacity: busy ? 0.6 : 1 }}
     >
-      {busy ? <ActivityIndicator color="#ffffff" /> : <Text className="text-base font-bold text-white">{children}</Text>}
+      {busy ? <ActivityIndicator color="#ffffff" /> : <Text className="text-sm font-bold text-white">{children}</Text>}
     </Pressable>
   );
 }
 
-function Notice({ tone, title, hint }: { tone: 'orange' | 'green'; title: string; hint?: string }) {
+function TaskRow({ name, done }: { name: string; done: boolean }) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
-  const ink = tone === 'orange' ? WARNING_INK : colors.primaryDark;
   return (
-    <View
-      className="mt-3 flex-row gap-2 rounded-lg px-3 py-2"
-      style={{ backgroundColor: tone === 'orange' ? WARNING_SOFT : colors.primaryLight }}
-    >
-      {tone === 'orange' ? (
-        <Image source={DAILY_CHECKIN_IMAGES.task} style={{ width: 16, height: 16, marginTop: 2 }} resizeMode="contain" />
-      ) : (
-        <Text className="text-sm font-bold" style={{ color: ink }}>
-          ✓
-        </Text>
-      )}
-      <View className="min-w-0 flex-1">
-        <Text className="text-sm font-semibold" style={{ color: ink }}>
-          {title}
-        </Text>
-        {hint != null && (
-          <Text className="text-sm" style={{ color: ink }}>
-            {hint}
+    <View className="mt-2.5 rounded-lg px-2.5 py-2" style={{ backgroundColor: done ? colors.primaryLight : WARNING_SOFT }}>
+      <Text style={{ fontSize: 11, fontWeight: '600', color: TEXT_SECONDARY }}>{t('dailyCheckin.today.taskSection')}</Text>
+      <View className="mt-1 flex-row items-center gap-2">
+        <Image source={DAILY_CHECKIN_IMAGES.task} style={{ width: 24, height: 24 }} resizeMode="contain" />
+        <View className="min-w-0 flex-1">
+          <Text numberOfLines={1} className="text-sm font-semibold" style={{ color: TEXT_PRIMARY }}>
+            {name}
           </Text>
+          <Text className="text-xs" style={{ color: done ? colors.primaryDark : WARNING_INK }}>
+            {done ? t('dailyCheckin.today.taskCompleted') : t('dailyCheckin.today.taskPendingHint')}
+          </Text>
+        </View>
+        {done ? (
+          <View className="h-6 w-6 items-center justify-center rounded-full" style={{ backgroundColor: colors.primary }}>
+            <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '700' }}>✓</Text>
+          </View>
+        ) : (
+          <View className="h-6 w-6 rounded-full bg-white" style={{ borderWidth: 2, borderColor: 'rgba(0,0,0,0.2)' }} />
         )}
       </View>
     </View>
@@ -115,30 +114,30 @@ export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTas
   }
 
   const checkedLine = (
-    <Text className="text-sm" style={{ color: colors.primaryDark }}>
+    <Text className="text-xs" style={{ color: colors.primaryDark }}>
       ✓ {t('dailyCheckin.today.checkedIn')}
     </Text>
   );
 
   function boxRow(title: string, lines: ReactNode, locked = false) {
     return (
-      <View className="mt-3 flex-row items-center gap-3">
-        <View className="h-16 w-16 items-center justify-center rounded-xl" style={{ backgroundColor: CHECKIN_GOLD_SOFT }}>
+      <View className="mt-2.5 flex-row items-center gap-2.5">
+        <View className="h-12 w-12 items-center justify-center rounded-xl" style={{ backgroundColor: CHECKIN_GOLD_SOFT }}>
           {hasBox ? (
-            <Image source={boxImage(box)} style={{ width: 48, height: 48 }} resizeMode="contain" />
+            <Image source={boxImage(box)} style={{ width: 36, height: 36 }} resizeMode="contain" />
           ) : (
-            <Text className="text-2xl font-bold" style={{ color: TEXT_SECONDARY }}>
+            <Text className="text-xl font-bold" style={{ color: TEXT_SECONDARY }}>
               {status.slot}
             </Text>
           )}
           {locked && (
-            <View style={{ position: 'absolute', right: 4, bottom: 4 }}>
-              <ItemGrantIcon kind="lock" size={16} />
+            <View style={{ position: 'absolute', right: 2, bottom: 2 }}>
+              <ItemGrantIcon kind="lock" size={14} />
             </View>
           )}
         </View>
         <View className="min-w-0 flex-1">
-          <Text className="text-base font-bold" style={{ color: TEXT_PRIMARY }}>
+          <Text className="text-sm font-bold" style={{ color: TEXT_PRIMARY }}>
             {title}
           </Text>
           {lines}
@@ -147,18 +146,18 @@ export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTas
     );
   }
 
-  const secretTitle = hasBox ? t('dailyCheckin.today.secretTitle') : t('dailyCheckin.today.noGiftTitle', { slot: status.slot });
   let body: ReactNode;
   switch (kind) {
     case 'checkin':
       body = (
         <>
-          {boxRow(
-            secretTitle,
-            <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
-              {hasBox ? t('dailyCheckin.today.secretHint') : t('dailyCheckin.today.noGiftHint')}
-            </Text>
-          )}
+          {hasBox &&
+            boxRow(
+              t('dailyCheckin.today.secretTitle'),
+              <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
+                {t('dailyCheckin.today.secretHint')}
+              </Text>
+            )}
           <ActionButton tone="green" busy={busy} onPress={onCheckIn}>
             {t('dailyCheckin.actions.checkIn')}
           </ActionButton>
@@ -170,7 +169,7 @@ export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTas
         t('dailyCheckin.today.noGiftTitle', { slot: status.slot }),
         <>
           {checkedLine}
-          <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
+          <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
             {nextGift != null ? t('dailyCheckin.today.nextGift', { slot: nextGift }) : t('dailyCheckin.today.noMoreGift')}
           </Text>
         </>
@@ -179,17 +178,8 @@ export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTas
     case 'task':
       body = (
         <>
-          {boxRow(
-            t('dailyCheckin.today.lockedTitle'),
-            <>
-              {checkedLine}
-              <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
-                {t('dailyCheckin.today.lockedHint')}
-              </Text>
-            </>,
-            true
-          )}
-          <Notice tone="orange" title={t('dailyCheckin.today.taskTitle', { task: taskName })} hint={t('dailyCheckin.today.taskHint')} />
+          {boxRow(t('dailyCheckin.today.lockedTitle'), checkedLine, true)}
+          <TaskRow name={taskName} done={false} />
           {vipHint}
           <ActionButton tone="orange" busy={false} onPress={onGoTask}>
             {t('dailyCheckin.actions.goTask')}
@@ -201,7 +191,7 @@ export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTas
       body = (
         <>
           {boxRow(t('dailyCheckin.today.readyTitle'), checkedLine)}
-          <Notice tone="green" title={t('dailyCheckin.today.taskDone', { task: taskName })} />
+          <TaskRow name={taskName} done />
           {vipHint}
           <ActionButton tone="green" busy={busy} onPress={onOpen}>
             {t('dailyCheckin.actions.open')}
@@ -212,7 +202,8 @@ export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTas
     default:
       body = (
         <>
-          <Text className="mt-3 text-sm font-semibold" style={{ color: 'rgba(0,0,0,0.7)' }}>
+          {status.todayTask != null && <TaskRow name={taskName} done />}
+          <Text className="mt-2.5 text-sm font-semibold" style={{ color: 'rgba(0,0,0,0.7)' }}>
             {t('dailyCheckin.today.openedTitle')}
           </Text>
           <View className="mt-2">
@@ -230,7 +221,7 @@ export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTas
   return (
     <View>
       <View className="flex-row flex-wrap items-center gap-2">
-        <Text className="text-base font-bold" style={{ color: TEXT_PRIMARY }}>
+        <Text className="font-bold" style={{ color: TEXT_PRIMARY, fontSize: 15 }}>
           {t('dailyCheckin.today.heading', { slot: status.slot })}
         </Text>
         {box === DAILY_CHECKIN_BOX.big && <Badge label={t('dailyCheckin.today.bigBadge')} />}

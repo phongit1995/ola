@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { DAILY_CHECKIN_BOX, DAILY_CHECKIN_SLOT_STATUS } from '@ola/shared/constants';
 import type { DailyCheckinSlot } from '@ola/shared/types';
-import { ItemGrantIcon } from '@components/ui/ItemGrantMarks';
-import { TEXT_FAINT, TEXT_SECONDARY, WARNING } from '@constants';
+import { TEXT_SECONDARY, WARNING } from '@constants';
+import { DAILY_CHECKIN_IMAGES } from '../dailyCheckinAssets';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { boxImage, cellToneStyle, openedBoxImage } from '../utils';
 import { WigglingImage } from './WigglingImage';
@@ -16,6 +16,7 @@ interface DailyCheckinCellProps {
 
 const STATUS = DAILY_CHECKIN_SLOT_STATUS;
 const BADGE = { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center' } as const;
+const TASK_BADGE = { top: -6, right: -6, width: 20, height: 20, borderRadius: 10, borderWidth: 1, borderColor: WARNING, backgroundColor: '#ffffff' } as const;
 
 function CellBadge({ slot }: { slot: DailyCheckinSlot }) {
   const colors = useThemeColors();
@@ -35,15 +36,8 @@ function CellBadge({ slot }: { slot: DailyCheckinSlot }) {
   }
   if (slot.status === STATUS.pending) {
     return (
-      <View style={[BADGE, { backgroundColor: WARNING }]}>
-        <Text style={{ color: '#ffffff', fontSize: 10, fontWeight: '700' }}>…</Text>
-      </View>
-    );
-  }
-  if (slot.status === STATUS.outOfReach) {
-    return (
-      <View style={{ position: 'absolute', right: 3, bottom: 3 }}>
-        <ItemGrantIcon kind="lock" size={12} />
+      <View style={[BADGE, TASK_BADGE]}>
+        <Image source={DAILY_CHECKIN_IMAGES.task} style={{ width: 14, height: 14 }} resizeMode="contain" />
       </View>
     );
   }
@@ -56,7 +50,6 @@ export function DailyCheckinCell({ slot, size, onSelect }: DailyCheckinCellProps
   const hasBox = slot.box !== DAILY_CHECKIN_BOX.none;
   const opened = slot.status === STATUS.claimed;
   const missed = slot.status === STATUS.missed;
-  const dimmed = slot.status === STATUS.outOfReach;
   const checked = opened || slot.status === STATUS.none;
   const waiting = slot.status === STATUS.today || slot.status === STATUS.pending;
   const boxSize = Math.round(size * (slot.box === DAILY_CHECKIN_BOX.big ? 0.72 : 0.58));
@@ -78,13 +71,13 @@ export function DailyCheckinCell({ slot, size, onSelect }: DailyCheckinCellProps
       ) : hasBox ? (
         <Image
           source={opened ? openedBoxImage(slot.box) : boxImage(slot.box, missed)}
-          style={{ width: boxSize, height: boxSize, opacity: dimmed ? 0.4 : 1 }}
+          style={{ width: boxSize, height: boxSize }}
           resizeMode="contain"
         />
       ) : (
         <Text
-          className="text-base font-bold"
-          style={{ color: checked ? colors.primaryDark : slot.status === STATUS.outOfReach ? TEXT_FAINT : TEXT_SECONDARY }}
+          className="text-sm font-bold"
+          style={{ color: checked ? colors.primaryDark : TEXT_SECONDARY }}
         >
           {slot.slot}
         </Text>

@@ -18,7 +18,6 @@ import type {
 import type { GiftCodeReward } from '../types/api/giftCode.type';
 import type {
   DailyCheckinFabKind,
-  DailyCheckinRestInfo,
   DailyCheckinTaskTarget,
   DailyCheckinTodayKind,
 } from '../types/client/dailyCheckin.type';
@@ -55,26 +54,10 @@ export function dailyCheckinNeedsAttention(status: DailyCheckinStatus | null): b
   return kind === 'checkin' || kind === 'task' || kind === 'open';
 }
 
-export function dailyCheckinRestInfo(status: DailyCheckinStatus): DailyCheckinRestInfo | null {
-  if (status.completed) return null;
-  const spare = status.reachable - status.slotCount;
-  if (spare > 0) return { kind: 'rest', days: spare };
-  if (spare === 0) return { kind: 'lastRest', slot: status.slotCount };
-  return { kind: 'unreachable', slot: status.slotCount };
-}
-
-export function dailyCheckinRestText(t: TFunction, info: DailyCheckinRestInfo): string {
-  if (info.kind === 'rest') return t('dailyCheckin.rest.days', { count: info.days });
-  if (info.kind === 'lastRest') return t('dailyCheckin.rest.last', { slot: info.slot });
-  return t('dailyCheckin.rest.unreachable', { slot: info.slot });
-}
-
 export function dailyCheckinNextGiftSlot(status: DailyCheckinStatus): number | null {
   const next = status.slots.find(
     (slot) =>
-      slot.slot > status.slot &&
-      slot.box !== DAILY_CHECKIN_BOX.none &&
-      slot.status !== DAILY_CHECKIN_SLOT_STATUS.outOfReach
+      slot.slot > status.slot && slot.box !== DAILY_CHECKIN_BOX.none
   );
   return next?.slot ?? null;
 }
@@ -151,8 +134,6 @@ export function dailyCheckinSlotHint(t: TFunction, slot: DailyCheckinSlot): stri
   switch (slot.status) {
     case DAILY_CHECKIN_SLOT_STATUS.missed:
       return t('dailyCheckin.slot.missed');
-    case DAILY_CHECKIN_SLOT_STATUS.outOfReach:
-      return t('dailyCheckin.slot.outOfReach');
     case DAILY_CHECKIN_SLOT_STATUS.pending:
       return t('dailyCheckin.slot.pending');
     case DAILY_CHECKIN_SLOT_STATUS.none:

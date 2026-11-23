@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { cn, dailyCheckinMonthNumber, dailyCheckinRestInfo, dailyCheckinRestText } from '@lib';
+import { DAILY_CHECKIN_ICONS } from '@constants';
+import { dailyCheckinMonthNumber } from '@lib';
 import type { DailyCheckinSlot, DailyCheckinStatus } from '@app-types';
 import { DailyCheckinCell } from './DailyCheckinCell';
 
@@ -17,15 +18,16 @@ function Legend() {
       <span>{t('dailyCheckin.legend.plain')}</span>
       <span>✓ {t('dailyCheckin.legend.done')}</span>
       <span>✕ {t('dailyCheckin.legend.missed')}</span>
-      <span>… {t('dailyCheckin.legend.pending')}</span>
-      <span>🔒 {t('dailyCheckin.legend.outOfReach')}</span>
+      <span className="inline-flex items-center gap-1">
+        <img src={DAILY_CHECKIN_ICONS.task} alt="" className="h-3.5 w-3.5 object-contain" />
+        {t('dailyCheckin.legend.pending')}
+      </span>
     </p>
   );
 }
 
 export function DailyCheckinCalendar({ status, onSelect, showSummary = true, showLegend = false }: DailyCheckinCalendarProps) {
   const { t } = useTranslation();
-  const rest = dailyCheckinRestInfo(status);
   return (
     <div>
       {showSummary && (
@@ -37,19 +39,9 @@ export function DailyCheckinCalendar({ status, onSelect, showSummary = true, sho
               total: status.slotCount,
             })}
           </p>
-          {rest != null && (
-            <span
-              className={cn(
-                'shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold',
-                rest.kind === 'rest' ? 'bg-ola-primary-light text-ola-primary-dark' : 'bg-ola-warning-soft text-ola-warning-ink'
-              )}
-            >
-              {dailyCheckinRestText(t, rest)}
-            </span>
-          )}
         </div>
       )}
-      <div className="grid grid-cols-7 gap-1.5">
+      <div className="grid grid-cols-7 gap-1">
         {status.slots.map((slot) => (
           <DailyCheckinCell key={slot.slot} slot={slot} onSelect={onSelect} />
         ))}

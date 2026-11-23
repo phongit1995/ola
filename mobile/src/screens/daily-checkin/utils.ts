@@ -8,7 +8,7 @@ import { avatarFrameById } from '@ola/shared/lib/avatarFrame';
 import type { DailyCheckinBox, DailyCheckinReward, DailyCheckinSlot, ThemeColors } from '@ola/shared/types';
 import { MEGAPHONE_TICKET_IMAGE } from '@components/megaphone/megaphoneAssets';
 import { WARNING, WARNING_SOFT } from '@constants';
-import { CHECKIN_GOLD_LINE, CHECKIN_GOLD_SOFT, CHECKIN_SURFACE, CHECKIN_SURFACE_DIM } from './constants';
+import { CHECKIN_GOLD_LINE, CHECKIN_GOLD_SOFT, CHECKIN_SURFACE } from './constants';
 import { DAILY_CHECKIN_IMAGES } from './dailyCheckinAssets';
 
 export function rewardImageSource(reward: DailyCheckinReward): ImageSourcePropType {
@@ -46,8 +46,6 @@ export function cellToneStyle(slot: DailyCheckinSlot, colors: ThemeColors): View
       return { borderWidth: 2, borderStyle: 'dashed', borderColor: WARNING, backgroundColor: WARNING_SOFT };
     case DAILY_CHECKIN_SLOT_STATUS.today:
       return { borderWidth: 2, borderColor: colors.primary, backgroundColor: '#ffffff' };
-    case DAILY_CHECKIN_SLOT_STATUS.outOfReach:
-      return { borderWidth: 1, borderColor: 'rgba(0,0,0,0.05)', backgroundColor: CHECKIN_SURFACE_DIM };
     default:
       return slot.box === DAILY_CHECKIN_BOX.big
         ? { borderWidth: 1, borderColor: CHECKIN_GOLD_LINE, backgroundColor: CHECKIN_GOLD_SOFT }

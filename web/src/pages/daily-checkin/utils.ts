@@ -41,8 +41,6 @@ export function cellToneClass(slot: DailyCheckinSlot): string {
       return 'border-2 border-dashed border-ola-warning bg-ola-warning-soft';
     case DAILY_CHECKIN_SLOT_STATUS.today:
       return 'border-2 border-ola-primary bg-white animate-checkin-today';
-    case DAILY_CHECKIN_SLOT_STATUS.outOfReach:
-      return 'border-black/5 bg-ola-surface-dim';
     default:
       return slot.box === DAILY_CHECKIN_BOX.big
         ? 'border-ola-checkin-gold-line bg-ola-checkin-gold-soft'
