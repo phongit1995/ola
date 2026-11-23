@@ -121,6 +121,13 @@ func TestSuccessMessage(t *testing.T) {
 	if got := RewardsText(models.GiftCodeRewards{rewards[0], frame, frame}); got != "7 ngày VIP và 2 khung avatar" {
 		t.Errorf("days and frames: %q", got)
 	}
+	tickets := models.GiftCodeReward{Type: models.GiftCodeRewardMegaphoneTicket, Count: 3, ExpiresInDays: 7}
+	if got := RewardsText(models.GiftCodeRewards{tickets}); got != "3 vé loa" {
+		t.Errorf("tickets: %q", got)
+	}
+	if got := RewardsText(models.GiftCodeRewards{rewards[0], tickets, tickets}); got != "7 ngày VIP và 6 vé loa" {
+		t.Errorf("days and tickets: %q", got)
+	}
 }
 
 func TestResolvedPlatform(t *testing.T) {

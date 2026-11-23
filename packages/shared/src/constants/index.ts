@@ -35,3 +35,4 @@ export * from './http';
 export * from './vip';
 export * from './wheel';
 export * from './egg';
+export * from './dailyCheckin';

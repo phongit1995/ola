@@ -836,6 +836,444 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/checkin/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "status: claimed | pending | missed | none. Lý do mất hộp tính lại lúc xem.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Lịch sử lượt điểm danh",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tên đăng nhập, tên hoặc ID",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID người dùng",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "claimed | pending | missed | none",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Ô",
+                        "name": "slot",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Mặc định 20",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Bắt đầu từ",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_utils_Page-internal_modules_admin_checkin_HistoryItem"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Danh sách lịch điểm danh các tháng",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "source=copy chép ô k sang ô k từ tháng copyFrom, ô dư bỏ, ô thiếu để trống. source=empty mọi ô chỉ điểm danh.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Tạo lịch tháng (nháp)",
+                "parameters": [
+                    {
+                        "description": "Tháng",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_checkin.CreateMonthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months/{month}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Lịch một tháng kèm cấu hình các ô",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Xoá lịch nháp hoặc lịch tháng chưa bắt đầu",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-any"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Tháng đang chạy chỉ được tăng.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Đổi số ô của tháng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Số ô",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_checkin.UpdateMonthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months/{month}/publish": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Không quay lại nháp được. Tháng đang chạy thì chạy ngay, ô khoá tính từ ngày phát hành.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Phát hành lịch nháp",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months/{month}/slots": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Ô đã khoá của tháng đang chạy bị từ chối. Mỗi ô tối đa 5 quà, mỗi quà 1–10 món, tổng tỉ lệ 100. Gửi kèm updatedAt đã đọc của ô: ô đã bị sửa ở nơi khác thì trả 409, không ghi.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Lưu một hoặc nhiều ô",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Các ô",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_checkin.SaveSlotsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/months/{month}/slots/swap": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Server đổi nội dung hai ô trên dữ liệu mới nhất trong cùng transaction. Ô đã khoá của tháng đang chạy bị từ chối.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Đổi chỗ hai ô",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Hai ô",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_checkin.SwapSlotsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Thống kê điểm danh của tháng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_StatsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/checkin/users/{userId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-checkin"
+                ],
+                "summary": "Lịch điểm danh một tháng của một người",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID người dùng",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_UserMonthResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/clans": {
             "get": {
                 "security": [
@@ -4053,7 +4491,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Filter by visibility (public, friend, private)",
+                        "description": "Filter by visibility (public, friend, private, profile)",
                         "name": "visibility",
                         "in": "query"
                     },
@@ -4270,6 +4708,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/me/{id}/visibility": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Clan posts are rejected; their visibility follows the clan rules.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-me"
+                ],
+                "summary": "Change who can see a post (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Visibility Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_me.UpdateVisibilityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/megaphones": {
             "get": {
                 "security": [
@@ -4301,6 +4785,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Loại tin: message, gift, lucky",
                         "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Trả bằng: ken, ticket",
+                        "name": "paidWith",
                         "in": "query"
                     },
                     {
@@ -7657,6 +8147,210 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-avatar-frame"
+                ],
+                "summary": "Sửa hạn và khoá của một khung avatar trong kho user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Mã khung",
+                        "name": "frameId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "expiresAt null = vĩnh viễn",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_avatar-frame.UpdateUserFrameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.OwnedFrame"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/megaphone-tickets": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Tất cả vé kèm trạng thái: usable, used, expired, revoked.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Vé loa của một user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketListSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "expiresInDays = 0 là vé không hạn. Tối đa 100 vé mỗi lần, hạn 1–365 ngày.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Tặng vé loa cho user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Số vé + hạn",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.GrantTicketsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/megaphone-tickets/{ticketId}/revoke": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-megaphones"
+                ],
+                "summary": "Thu hồi một vé loa còn dùng được (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Ticket ID",
+                        "name": "ticketId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketSuccessResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
             }
         },
         "/admin/users/{id}/password": {
@@ -8322,6 +9016,56 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-users"
+                ],
+                "summary": "Sửa hạn và khoá của một VIP trong kho user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Instance ID",
+                        "name": "instanceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "expiresAt null = vĩnh viễn",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_user.UpdateVipRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_user.VipIconItem"
                         }
                     }
                 }
@@ -10591,6 +11335,139 @@ const docTemplate = `{
                     },
                     "502": {
                         "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/checkin": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "enabled=false khi công tắc tổng hoặc nền tảng tắt, hoặc tháng này chưa có lịch đã phát hành. Không trả quà hay nhiệm vụ của ô chưa mở.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checkin"
+                ],
+                "summary": "Lịch điểm danh tháng này của người gọi",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_StatusResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Đi tiếp 1 ô. Ô có quà mà nhiệm vụ đã làm từ 0h (và đủ VIP nếu cần) thì mở hộp luôn, trả items. Còn lại trả reason task_pending / vip_required. Bấm lại trong ngày trả trạng thái hiện tại. clientRequestId sinh mới mỗi lần bấm, gửi lại thì dùng lại mã cũ: mã đã dùng thì trả kết quả của lượt đó (kể cả lượt của hôm trước), không tính thêm lượt.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checkin"
+                ],
+                "summary": "Điểm danh hôm nay",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Check-in",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_checkin.CheckInRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_ActionResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "CHECKIN_DISABLED, CHECKIN_EMAIL_NOT_VERIFIED",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "CHECKIN_COMPLETED",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/checkin/open": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Bốc mỗi quà 1 món theo cấu hình chụp lúc điểm danh và phát. Hộp đã mở thì trả lại đúng kết quả cũ.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checkin"
+                ],
+                "summary": "Mở hộp quà của hôm nay",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "web | android | ios",
+                        "name": "X-Platform",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_ActionResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "CHECKIN_DISABLED, CHECKIN_VIP_REQUIRED",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "CHECKIN_TASK_NOT_DONE, CHECKIN_NOTHING_TO_OPEN",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -14236,7 +15113,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.",
+                "description": "Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). useTicket = true và giá \u003e 0 thì dùng vé loa gần hết hạn nhất thay cho KEN (hết vé trả MEGAPHONE_NO_TICKET). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.",
                 "consumes": [
                     "application/json"
                 ],
@@ -14312,6 +15189,31 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_megaphone.ConfigSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/megaphones/tickets": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Theo đúng thứ tự sẽ dùng: vé gần hết hạn trước, vé không hạn sau cùng, cùng hạn thì vé nhận trước.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "megaphones"
+                ],
+                "summary": "Vé loa còn dùng được của người gọi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_megaphone.TicketListSuccessResponse"
                         }
                     }
                 }
@@ -17839,6 +18741,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/social-limit/posts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "social-limit"
+                ],
+                "summary": "Today's Me and moment posting usage of the current user (limit 0 = unlimited)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_social-limit_PostQuotaResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/stories": {
             "get": {
                 "security": [
@@ -20302,9 +21228,19 @@ const docTemplate = `{
                 "frameId"
             ],
             "properties": {
+                "expiresInDays": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 0,
+                    "example": 7
+                },
                 "frameId": {
                     "type": "string",
                     "example": "001"
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -20325,6 +21261,396 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/ola-chat-server_internal_modules_avatar-frame.FrameSalesRow"
                     }
+                }
+            }
+        },
+        "internal_modules_admin_avatar-frame.UpdateUserFrameRequest": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_modules_admin_checkin.CreateMonthRequest": {
+            "type": "object",
+            "required": [
+                "month",
+                "slotCount",
+                "source"
+            ],
+            "properties": {
+                "copyFrom": {
+                    "type": "string",
+                    "example": "2026-11"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2026-12"
+                },
+                "slotCount": {
+                    "type": "integer",
+                    "example": 28
+                },
+                "source": {
+                    "type": "string",
+                    "enum": [
+                        "copy",
+                        "empty"
+                    ],
+                    "example": "copy"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.HistoryItem": {
+            "type": "object",
+            "properties": {
+                "box": {
+                    "type": "string",
+                    "example": "big"
+                },
+                "claimedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "day": {
+                    "type": "string",
+                    "example": "2026-11-19"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "missReason": {
+                    "type": "string",
+                    "enum": [
+                        "task",
+                        "vip",
+                        "not_opened"
+                    ],
+                    "example": "task"
+                },
+                "requireVip": {
+                    "type": "boolean"
+                },
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinReward"
+                    }
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "claimed",
+                        "pending",
+                        "missed",
+                        "none"
+                    ],
+                    "example": "claimed"
+                },
+                "task": {
+                    "type": "string",
+                    "example": "me_post"
+                },
+                "taskDoneAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
+                },
+                "vipAtCheckin": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.MonthDTO": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2026-11"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "slotCount": {
+                    "type": "integer",
+                    "example": 28
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.MonthDetailDTO": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2026-11"
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "slotCount": {
+                    "type": "integer",
+                    "example": 28
+                },
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.SlotDTO"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.MonthListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.MonthDTO"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_checkin.SaveSlotsRequest": {
+            "type": "object",
+            "required": [
+                "slots"
+            ],
+            "properties": {
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.SlotDTO"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_checkin.SlotDTO": {
+            "type": "object",
+            "properties": {
+                "featured": {
+                    "type": "boolean"
+                },
+                "gifts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinGift"
+                    }
+                },
+                "requireVip": {
+                    "type": "boolean"
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "task": {
+                    "type": "string",
+                    "example": "random"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsDay": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsGift": {
+            "type": "object",
+            "properties": {
+                "counts": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "boughtVipToOpen": {
+                    "type": "integer"
+                },
+                "boxesOpened": {
+                    "type": "integer"
+                },
+                "checkedInToday": {
+                    "type": "integer"
+                },
+                "checkedInUsers": {
+                    "type": "integer"
+                },
+                "completedUsers": {
+                    "type": "integer"
+                },
+                "daily": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.StatsDay"
+                    }
+                },
+                "lostNoVip": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "string"
+                },
+                "openedByType": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.StatsSlot"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.StatsTask"
+                    }
+                },
+                "ticketsExpired": {
+                    "type": "integer"
+                },
+                "ticketsGranted": {
+                    "type": "integer"
+                },
+                "ticketsUsed": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsSlot": {
+            "type": "object",
+            "properties": {
+                "box": {
+                    "type": "string"
+                },
+                "checkedIn": {
+                    "type": "integer"
+                },
+                "gifts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.StatsGift"
+                    }
+                },
+                "lost": {
+                    "type": "integer"
+                },
+                "opened": {
+                    "type": "integer"
+                },
+                "slot": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.StatsTask": {
+            "type": "object",
+            "properties": {
+                "assigned": {
+                    "type": "integer"
+                },
+                "done": {
+                    "type": "integer"
+                },
+                "doneNotOpened": {
+                    "type": "integer"
+                },
+                "notDone": {
+                    "type": "integer"
+                },
+                "task": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_checkin.SwapSlotsRequest": {
+            "type": "object",
+            "required": [
+                "from",
+                "to"
+            ],
+            "properties": {
+                "from": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "to": {
+                    "type": "integer",
+                    "example": 7
+                }
+            }
+        },
+        "internal_modules_admin_checkin.UpdateMonthRequest": {
+            "type": "object",
+            "required": [
+                "slotCount"
+            ],
+            "properties": {
+                "slotCount": {
+                    "type": "integer",
+                    "example": 30
+                }
+            }
+        },
+        "internal_modules_admin_checkin.UserMonthResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.HistoryItem"
+                    }
+                },
+                "month": {
+                    "type": "string"
+                },
+                "slotCount": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief"
                 }
             }
         },
@@ -21966,6 +23292,9 @@ const docTemplate = `{
         "internal_modules_admin_gift-code.CampaignStats": {
             "type": "object",
             "properties": {
+                "megaphoneTicketsGiven": {
+                    "type": "integer"
+                },
                 "redeemedToday": {
                     "type": "integer"
                 },
@@ -22150,10 +23479,22 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
+                "count": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1,
+                    "example": 3
+                },
                 "days": {
                     "type": "integer",
                     "maximum": 3650,
                     "minimum": 1,
+                    "example": 7
+                },
+                "expiresInDays": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 0,
                     "example": 7
                 },
                 "frameId": {
@@ -22165,7 +23506,8 @@ const docTemplate = `{
                     "enum": [
                         "vip_days",
                         "vip_icon",
-                        "avatar_frame"
+                        "avatar_frame",
+                        "megaphone_ticket"
                     ],
                     "example": "vip_days"
                 },
@@ -22180,7 +23522,13 @@ const docTemplate = `{
         "internal_modules_admin_gift-code.RewardItem": {
             "type": "object",
             "properties": {
+                "count": {
+                    "type": "integer"
+                },
                 "days": {
+                    "type": "integer"
+                },
+                "expiresInDays": {
                     "type": "integer"
                 },
                 "frameId": {
@@ -23523,6 +24871,9 @@ const docTemplate = `{
                 "checkIn": {
                     "$ref": "#/definitions/internal_modules_admin_me.CheckInResponse"
                 },
+                "clanId": {
+                    "type": "string"
+                },
                 "commentCount": {
                     "type": "integer"
                 },
@@ -23719,6 +25070,9 @@ const docTemplate = `{
                 "checkIn": {
                     "$ref": "#/definitions/internal_modules_admin_me.CheckInResponse"
                 },
+                "clanId": {
+                    "type": "string"
+                },
                 "commentCount": {
                     "type": "integer"
                 },
@@ -23772,6 +25126,24 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_me.UpdateVisibilityRequest": {
+            "type": "object",
+            "required": [
+                "visibility"
+            ],
+            "properties": {
+                "visibility": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "friend",
+                        "private",
+                        "profile"
+                    ],
+                    "example": "profile"
+                }
+            }
+        },
         "internal_modules_admin_megaphone.CheckContentRequest": {
             "type": "object",
             "required": [
@@ -23808,6 +25180,26 @@ const docTemplate = `{
                 },
                 "traceId": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.GrantTicketsRequest": {
+            "type": "object",
+            "required": [
+                "count"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1,
+                    "example": 3
+                },
+                "expiresInDays": {
+                    "type": "integer",
+                    "maximum": 365,
+                    "minimum": 0,
+                    "example": 7
                 }
             }
         },
@@ -23891,6 +25283,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 2000
                 },
+                "paidWith": {
+                    "type": "string",
+                    "example": "ticket"
+                },
                 "removedAt": {
                     "type": "string",
                     "example": "2026-11-06T10:05:00Z"
@@ -23909,6 +25305,9 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "active"
+                },
+                "ticket": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.TicketBrief"
                 },
                 "type": {
                     "type": "string",
@@ -23980,6 +25379,151 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_megaphone.RemoveResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.TicketBrief": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-18T10:00:00Z"
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "gift_code"
+                },
+                "sourceName": {
+                    "type": "string",
+                    "example": "Tết 2027"
+                },
+                "sourceRef": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.UserTicketItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-18T10:00:00Z"
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "megaphoneId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "revokedAt": {
+                    "type": "string",
+                    "example": "2026-11-19T09:00:00Z"
+                },
+                "revokedByName": {
+                    "type": "string",
+                    "example": "admin"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "gift_code"
+                },
+                "sourceName": {
+                    "type": "string",
+                    "example": "Tết 2027"
+                },
+                "sourceRef": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "usable"
+                },
+                "usedAt": {
+                    "type": "string",
+                    "example": "2026-11-19T08:00:00Z"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.UserTicketListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketItem"
+                    }
+                },
+                "usableCount": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.UserTicketListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_megaphone.UserTicketSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_megaphone.UserTicketItem"
                 },
                 "error": {
                     "type": "string"
@@ -25607,6 +27151,16 @@ const docTemplate = `{
                 "vipTypeId"
             ],
             "properties": {
+                "expiresInDays": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 0,
+                    "example": 7
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "vipTypeId": {
                     "type": "integer",
                     "maximum": 138,
@@ -25726,10 +27280,29 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_user.UpdateVipRequest": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "internal_modules_admin_user.UserDetail": {
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "avatarFrameExpiresAt": {
+                    "type": "string"
+                },
+                "avatarFrameId": {
                     "type": "string"
                 },
                 "bio": {
@@ -25802,6 +27375,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "vipUsed": {
+                    "type": "string"
+                },
+                "vipUsedExpiresAt": {
                     "type": "string"
                 }
             }
@@ -25964,6 +27540,12 @@ const docTemplate = `{
                 "acquiredAt": {
                     "type": "string"
                 },
+                "expired": {
+                    "type": "boolean"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
                 "instanceId": {
                     "type": "string"
                 },
@@ -25971,6 +27553,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "isUsing": {
+                    "type": "boolean"
+                },
+                "locked": {
                     "type": "boolean"
                 },
                 "source": {
@@ -27009,13 +28594,29 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-09T10:00:00Z"
                 },
+                "expired": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
                 "frameId": {
                     "type": "string",
                     "example": "001"
                 },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "isEquipped": {
                     "type": "boolean",
                     "example": true
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "source": {
                     "type": "string",
@@ -27135,6 +28736,10 @@ const docTemplate = `{
         "internal_modules_avatar-frame.StoreResponse": {
             "type": "object",
             "properties": {
+                "asOf": {
+                    "type": "string",
+                    "example": "2026-11-18T08:00:00Z"
+                },
                 "equippedFrameId": {
                     "type": "string",
                     "example": "001"
@@ -27407,6 +29012,170 @@ const docTemplate = `{
                         "assistant"
                     ],
                     "example": "user"
+                }
+            }
+        },
+        "internal_modules_checkin.ActionResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinReward"
+                    }
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": [
+                        "task_pending",
+                        "vip_required"
+                    ],
+                    "example": "task_pending"
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 6
+                },
+                "status": {
+                    "$ref": "#/definitions/internal_modules_checkin.StatusResponse"
+                }
+            }
+        },
+        "internal_modules_checkin.CheckInRequest": {
+            "type": "object",
+            "required": [
+                "clientRequestId"
+            ],
+            "properties": {
+                "clientRequestId": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10"
+                }
+            }
+        },
+        "internal_modules_checkin.SlotState": {
+            "type": "object",
+            "properties": {
+                "box": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "normal",
+                        "big"
+                    ],
+                    "example": "big"
+                },
+                "checkedInOn": {
+                    "type": "string",
+                    "example": "2026-11-07"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinReward"
+                    }
+                },
+                "requireVip": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "claimed",
+                        "none",
+                        "missed",
+                        "pending",
+                        "today",
+                        "upcoming",
+                        "out_of_reach"
+                    ],
+                    "example": "claimed"
+                }
+            }
+        },
+        "internal_modules_checkin.StatusResponse": {
+            "type": "object",
+            "properties": {
+                "canOpen": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "checkedInToday": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "completed": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "count": {
+                    "type": "integer",
+                    "example": 16
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "endsAt": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2026-11"
+                },
+                "needsEmailVerify": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "popup": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "reachable": {
+                    "type": "integer",
+                    "example": 29
+                },
+                "slot": {
+                    "type": "integer",
+                    "example": 17
+                },
+                "slotCount": {
+                    "type": "integer",
+                    "example": 28
+                },
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_checkin.SlotState"
+                    }
+                },
+                "todayResult": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinReward"
+                    }
+                },
+                "todayTask": {
+                    "$ref": "#/definitions/internal_modules_checkin.TaskState"
+                }
+            }
+        },
+        "internal_modules_checkin.TaskState": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "me_post"
+                },
+                "done": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
@@ -28318,7 +30087,15 @@ const docTemplate = `{
         "internal_modules_gift-code.RewardItem": {
             "type": "object",
             "properties": {
+                "count": {
+                    "type": "integer",
+                    "example": 3
+                },
                 "days": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "expiresInDays": {
                     "type": "integer",
                     "example": 7
                 },
@@ -29686,7 +31463,8 @@ const docTemplate = `{
                     "enum": [
                         "public",
                         "friend",
-                        "private"
+                        "private",
+                        "profile"
                     ],
                     "example": "public"
                 }
@@ -30065,7 +31843,8 @@ const docTemplate = `{
                     "enum": [
                         "public",
                         "friend",
-                        "private"
+                        "private",
+                        "profile"
                     ]
                 }
             }
@@ -30174,6 +31953,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 25
                 },
+                "ticketCount": {
+                    "type": "integer",
+                    "example": 2
+                },
                 "todayCount": {
                     "type": "integer",
                     "example": 2
@@ -30262,6 +32045,10 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 1000,
                     "example": "Chúc cả nhà buổi tối vui vẻ 🎉"
+                },
+                "useTicket": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -30275,6 +32062,14 @@ const docTemplate = `{
                 "megaphone": {
                     "$ref": "#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone"
                 },
+                "ticketCount": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "usedTicket": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "waitSeconds": {
                     "type": "integer",
                     "example": 25
@@ -30286,6 +32081,64 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_megaphone.SendResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_megaphone.TicketItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-11-18T10:00:00Z"
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "gift_code"
+                }
+            }
+        },
+        "internal_modules_megaphone.TicketListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_megaphone.TicketItem"
+                    }
+                }
+            }
+        },
+        "internal_modules_megaphone.TicketListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_megaphone.TicketListResponse"
                 },
                 "error": {
                     "type": "string"
@@ -30357,6 +32210,10 @@ const docTemplate = `{
                 "senderAvatar": {
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
+                },
+                "senderFullName": {
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "senderId": {
                     "type": "string",
@@ -33176,6 +35033,34 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_social-limit.PostQuota": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "upgradable": {
+                    "type": "boolean"
+                },
+                "used": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_social-limit.PostQuotaResponse": {
+            "type": "object",
+            "properties": {
+                "isVip": {
+                    "type": "boolean"
+                },
+                "me": {
+                    "$ref": "#/definitions/internal_modules_social-limit.PostQuota"
+                },
+                "moment": {
+                    "$ref": "#/definitions/internal_modules_social-limit.PostQuota"
+                }
+            }
+        },
         "internal_modules_story.ChapterListResponse": {
             "type": "object",
             "properties": {
@@ -34963,6 +36848,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 4
                 },
+                "asOf": {
+                    "type": "string",
+                    "example": "2026-11-18T08:00:00Z"
+                },
                 "days": {
                     "type": "integer",
                     "example": 30
@@ -35138,6 +37027,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-06-19T10:00:00Z"
                 },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
                 "instanceId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -35149,6 +37042,10 @@ const docTemplate = `{
                 "isUsing": {
                     "type": "boolean",
                     "example": true
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "source": {
                     "type": "string",
@@ -35578,6 +37475,84 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_models.CheckinGift": {
+            "type": "object",
+            "properties": {
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.CheckinGiftOption"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_models.CheckinGiftOption": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "amountMax": {
+                    "type": "integer"
+                },
+                "amountMin": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "days": {
+                    "type": "integer"
+                },
+                "expiresInDays": {
+                    "type": "integer"
+                },
+                "frameId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "vipIconId": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_models.CheckinReward": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "amountMax": {
+                    "type": "integer"
+                },
+                "amountMin": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "days": {
+                    "type": "integer"
+                },
+                "expiresInDays": {
+                    "type": "integer"
+                },
+                "frameId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "vipIconId": {
+                    "type": "integer"
+                }
+            }
+        },
         "ola-chat-server_internal_models.EggCategoryType": {
             "type": "string",
             "enum": [
@@ -35905,13 +37880,29 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-09T10:00:00Z"
                 },
+                "expired": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "expiresAt": {
+                    "type": "string",
+                    "example": "2026-11-25T13:00:00Z"
+                },
                 "frameId": {
                     "type": "string",
                     "example": "001"
                 },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "isEquipped": {
                     "type": "boolean",
                     "example": true
+                },
+                "locked": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "source": {
                     "type": "string",
@@ -36037,6 +38028,10 @@ const docTemplate = `{
         "ola-chat-server_internal_modules_avatar-frame.StoreResponse": {
             "type": "object",
             "properties": {
+                "asOf": {
+                    "type": "string",
+                    "example": "2026-11-18T08:00:00Z"
+                },
                 "equippedFrameId": {
                     "type": "string",
                     "example": "001"
@@ -37127,7 +39122,8 @@ const docTemplate = `{
                     "enum": [
                         "public",
                         "friend",
-                        "private"
+                        "private",
+                        "profile"
                     ],
                     "example": "public"
                 }
@@ -40311,6 +42307,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "MESSAGE_BLOCKED"
                 },
+                "details": {},
                 "error": {
                     "type": "string",
                     "example": "validation error"
@@ -40334,6 +42331,30 @@ const docTemplate = `{
                 "traceId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-any": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
@@ -40478,6 +42499,110 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_auth.RefreshTokenResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_checkin.MonthDetailDTO"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_checkin.MonthListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_StatsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_checkin.StatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_UserMonthResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_checkin.UserMonthResponse"
                 },
                 "error": {
                     "type": "string"
@@ -41466,6 +43591,58 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_chat-bot.CompletionResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_ActionResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_checkin.ActionResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_StatusResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_checkin.StatusResponse"
                 },
                 "error": {
                     "type": "string"
@@ -42683,6 +44860,32 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_social-limit_PostQuotaResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_social-limit.PostQuotaResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterListResponse": {
             "type": "object",
             "properties": {
@@ -43590,6 +45793,55 @@ const docTemplate = `{
                 },
                 "traceId": {
                     "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_utils_Page-internal_modules_admin_checkin_HistoryItem": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_utils.Page-internal_modules_admin_checkin_HistoryItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.Page-internal_modules_admin_checkin_HistoryItem": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_checkin.HistoryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },

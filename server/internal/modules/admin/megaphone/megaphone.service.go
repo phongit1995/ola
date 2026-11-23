@@ -44,6 +44,17 @@ func NewService(
 	}
 }
 
+func paidWithOf(m *models.Megaphone) string {
+	switch {
+	case m.TicketID != nil:
+		return PaidWithTicket
+	case m.KenPrice > 0:
+		return PaidWithKen
+	default:
+		return PaidWithFree
+	}
+}
+
 func toItem(m *models.Megaphone, sender admincommon.UserBrief) MegaphoneItem {
 	item := MegaphoneItem{
 		ID:             m.ID.String(),
@@ -57,6 +68,7 @@ func toItem(m *models.Megaphone, sender admincommon.UserBrief) MegaphoneItem {
 		Status:         m.Status,
 		RemovedReason:  m.RemovedReason,
 		CreatedAt:      m.CreatedAt.UTC().Format(time.RFC3339),
+		PaidWith:       paidWithOf(m),
 	}
 	if m.RemovedAt != nil {
 		item.RemovedAt = m.RemovedAt.UTC().Format(time.RFC3339)
@@ -94,9 +106,19 @@ func (s *Service) List(f ListFilter) (*ListResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	ticketBriefs, err := s.ticketBriefs(items)
+	if err != nil {
+		return nil, err
+	}
 	out := make([]MegaphoneItem, 0, len(items))
 	for i := range items {
-		out = append(out, toItem(&items[i], briefs[items[i].SenderID]))
+		item := toItem(&items[i], briefs[items[i].SenderID])
+		if items[i].TicketID != nil {
+			if brief, ok := ticketBriefs[*items[i].TicketID]; ok {
+				item.Ticket = &brief
+			}
+		}
+		out = append(out, item)
 	}
 	return &ListResponse{Items: out, Total: t.Count, TotalKen: t.Ken, Limit: f.Limit, Offset: f.Offset}, nil
 }
@@ -159,4 +181,33 @@ func (s *Service) Remove(adminID, id uuid.UUID, req *RemoveRequest) (*RemoveResp
 
 func (s *Service) CheckContent(text string) contentfilter.Result {
 	return s.filter.Check(contentfilter.NormalizeContent(text))
+}
+
+func (s *Service) ticketBriefs(items []models.Megaphone) (map[uuid.UUID]TicketBrief, error) {
+	ids := make([]uuid.UUID, 0)
+	for i := range items {
+		if items[i].TicketID != nil {
+			ids = append(ids, *items[i].TicketID)
+		}
+	}
+	out := make(map[uuid.UUID]TicketBrief, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+	byID, err := s.megaphoneRepo.TicketsByIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+	tickets := make([]models.UserMegaphoneTicket, 0, len(byID))
+	for _, t := range byID {
+		tickets = append(tickets, t)
+	}
+	names, err := s.ticketNames(tickets)
+	if err != nil {
+		return nil, err
+	}
+	for i := range tickets {
+		out[tickets[i].ID] = toTicketBrief(&tickets[i], names)
+	}
+	return out, nil
 }

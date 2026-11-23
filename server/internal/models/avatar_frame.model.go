@@ -12,6 +12,7 @@ const (
 	AvatarFrameSourceTransfer = "transfer"
 	AvatarFrameSourceGiftCode = "gift_code"
 	AvatarFrameSourceAdmin    = "admin"
+	AvatarFrameSourceCheckin  = "checkin"
 )
 
 type AvatarFrameShopItem struct {
@@ -32,10 +33,16 @@ type UserAvatarFrame struct {
 	FrameID    string    `gorm:"type:varchar(8);not null"`
 	Source     string    `gorm:"type:varchar(20);not null"`
 	AcquiredAt time.Time `gorm:"not null"`
+	Locked     bool      `gorm:"column:locked;not null;default:false"`
+	ExpiresAt  *time.Time
 }
 
 func (UserAvatarFrame) TableName() string {
 	return "user_avatar_frames"
+}
+
+func (f *UserAvatarFrame) Expired(now time.Time) bool {
+	return ItemExpired(f.ExpiresAt, now)
 }
 
 type AvatarFramePurchase struct {

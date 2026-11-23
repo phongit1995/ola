@@ -1140,6 +1140,7 @@
     "privacy_public": "Cộng đồng",
     "privacy_friend": "Bạn bè",
     "privacy_private": "Riêng tư",
+    "privacy_profile": "Trang cá nhân",
     "privacy_clan": "Clan",
     "justNow": "vừa xong",
     "newPosts": "↑ Me mới",
@@ -1339,6 +1340,7 @@
     "saveError": "Cập nhật trạng thái thất bại, vui lòng thử lại."
   },
   "vip": {
+    "lockedNotTransferable": "VIP đã khoá, không thể chuyển",
     "title": "Kho VIP",
     "history": "Lịch sử",
     "historyDialog": {
@@ -1366,6 +1368,7 @@
         "day_transfer_out": "Chuyển NSD",
         "day_transfer_in": "Nhận NSD",
         "gift_code": "Mã quà tặng",
+        "checkin": "Điểm danh",
         "other": "Khác"
       }
     },
@@ -1489,6 +1492,7 @@
     }
   },
   "avatarFrame": {
+    "lockedNotTransferable": "Khung đã khoá, không thể chuyển",
     "title": "Khung avatar",
     "shopTitle": "Mua / Tặng",
     "selectFrame": "Chọn khung",
@@ -1552,7 +1556,8 @@
       "receiverOwns": "Người nhận đã có khung này",
       "notOwned": "Bạn không sở hữu khung này",
       "inUse": "Hãy tháo khung trước khi chuyển",
-      "notTransferable": "Khung từ mã quà tặng không chuyển được",
+      "notTransferable": "Khung này không thể chuyển",
+      "expired": "Khung đã hết hạn",
       "vipRequired": "Cần còn VIP để đeo khung",
       "insufficientKen": "Không đủ KEN",
       "wrongPassword": "Mật khẩu không đúng",
@@ -2013,6 +2018,7 @@
         "WORD_CHAIN_HINT": "Gợi ý nối từ",
         "WORD_CHAIN_GUESS": "Mua lượt nối từ",
         "MEGAPHONE": "Phát loa",
+        "CHECKIN": "Điểm danh",
         "UNKNOWN": "Giao dịch KEN"
       }
     },
@@ -2714,11 +2720,12 @@
     "notEnoughKen": "Không đủ KEN",
     "queueWait": "Đang có loa xếp hàng, loa của bạn sẽ phát sau khoảng {{minutes}} phút",
     "cooldown": "Chờ {{seconds}} giây nữa để phát tiếp",
-    "dailyLeft": "Hôm nay còn {{count}} lượt phát",
     "dailyReached": "Bạn đã hết lượt phát loa hôm nay",
     "rules": "Không chứa link, số điện thoại mời chào hay lời lẽ xúc phạm. Loa vi phạm sẽ bị gỡ và không hoàn KEN.",
+    "rulesTicket": "Không chứa link, số điện thoại mời chào hay lời lẽ xúc phạm. Loa vi phạm sẽ bị gỡ và không hoàn vé.",
     "confirmTitle": "Xác nhận phát loa",
     "confirmMessage": "Phát loa này tới mọi người với giá {{ken}} KEN?",
+    "confirmPlain": "Phát loa này tới mọi người?",
     "sent": "Đã phát loa",
     "sentQueued": "Đã xếp hàng, loa sẽ phát sau khoảng {{minutes}} phút",
     "disabled": "Tính năng loa đang tạm tắt",
@@ -2739,8 +2746,28 @@
       "queueFull": "Hàng chờ loa đang đầy, thử lại sau ít phút",
       "insufficientKen": "Bạn không đủ KEN để phát loa",
       "rateLimited": "Bạn phát quá nhanh, thử lại sau ít phút",
-      "failed": "Phát loa thất bại, thử lại sau"
+      "failed": "Phát loa thất bại, thử lại sau",
+      "noTicket": "Vé loa không còn dùng được, chọn lại cách phát nhé"
+    },
+    "ticket": {
+      "useLabel": "Dùng vé loa · còn {{count}} vé",
+      "price": "Dùng 1 vé loa",
+      "used": "Đã dùng 1 vé loa",
+      "summary": "Còn {{count}} vé loa",
+      "listTitle": "Vé loa của bạn",
+      "listHint": "Vé gần hết hạn được dùng trước, vé không hạn dùng sau cùng.",
+      "noExpiry": "Không hạn",
+      "empty": "Bạn không còn vé loa nào",
+      "sourceAdmin": "Quà từ Ola",
+      "sourceGiftCode": "Mã quà tặng",
+      "sourceOther": "Vé loa"
     }
+  },
+  "itemExpiry": {
+    "days": "{{count}} ngày",
+    "dayHour": "{{days}} ngày {{hours}} giờ",
+    "until": "Hết hạn {{time}}",
+    "notice": "Hết hạn lúc {{time}} · còn {{left}}"
   },
   "giftCode": {
     "menuTitle": "Nhập mã quà tặng",
@@ -2754,7 +2781,8 @@
     "rewardVipDays": "+{{count}} ngày VIP",
     "rewardVipIcon": "Icon VIP {{name}}",
     "rewardAvatarFrame": "Khung avatar",
-    "notTransferable": "Từ mã quà tặng, không chuyển được",
+    "rewardForDays": "({{count}} ngày)",
+    "notTransferable": "Không thể chuyển",
     "verifyGuide": "Cách xác thực: Cá nhân → Trang cá nhân → Email → Xác thực.",
     "errors": {
       "empty": "Bạn chưa nhập mã",
@@ -2773,7 +2801,8 @@
       "frameOwned": "Bạn đã có khung avatar của mã này rồi",
       "rateLimited": "Bạn thao tác quá nhanh, thử lại sau ít phút",
       "failed": "Không nhận được quà, thử lại sau"
-    }
+    },
+    "rewardMegaphoneTicket": "{{count}} vé loa"
   },
   "friendContent": {
     "post": "vừa đăng bài mới",
@@ -2793,5 +2822,117 @@
     "tomorrow": "Quay lại vào ngày mai nhé.",
     "confirm": "Xác nhận",
     "buyVip": "Mua ngày VIP"
+  },
+  "dailyCheckin": {
+    "menuTitle": "Điểm danh",
+    "title": "Điểm danh",
+    "popupTitle": "Điểm danh tháng {{month}}",
+    "summary": "Tháng {{month}} · Đã điểm danh {{count}}/{{total}}",
+    "progress": "Đã điểm danh {{count}}/{{total}}",
+    "countdown": "Còn {{time}}",
+    "row": {
+      "notCheckedIn": "Hôm nay chưa điểm danh",
+      "pendingBox": "Còn hộp quà chưa mở",
+      "completed": "Đã điểm danh đủ tháng {{month}}",
+      "checkedIn": "Hôm nay đã điểm danh"
+    },
+    "fab": {
+      "checkin": "Điểm danh",
+      "task": "Làm nhiệm vụ",
+      "open": "Mở quà",
+      "hide": "Ẩn hôm nay"
+    },
+    "legend": {
+      "plain": "Số trơn: không có quà",
+      "done": "Đã điểm danh",
+      "missed": "Hộp mất",
+      "pending": "Có nhiệm vụ"
+    },
+    "today": {
+      "heading": "Hôm nay · Ô {{slot}}",
+      "bigBadge": "Đặc biệt",
+      "vipBadge": "Cần VIP",
+      "secretTitle": "Hộp quà bí mật",
+      "secretHint": "Điểm danh để nhận nhiệm vụ mở hộp",
+      "noGiftTitle": "Ô {{slot}} không có quà",
+      "checkedIn": "Đã điểm danh",
+      "nextGift": "Hộp quà tiếp theo: ô {{slot}}",
+      "noMoreGift": "Tháng này không còn hộp quà nào",
+      "lockedTitle": "Hộp đang khoá",
+      "readyTitle": "Sẵn sàng mở hộp",
+      "taskSection": "Nhiệm vụ hôm nay",
+      "taskCompleted": "Đã hoàn thành",
+      "taskPendingHint": "Làm xong trước 0h để mở hộp",
+      "vipHint": "Hộp này dành cho VIP: cần có VIP lúc bấm Mở quà",
+      "openedTitle": "Bạn đã nhận",
+      "comeBack": "Mai quay lại điểm danh ô {{slot}}",
+      "completedTitle": "Đã điểm danh đủ {{count}}/{{total}} ô tháng {{month}}",
+      "completedHint": "Hẹn gặp lại ngày {{date}}",
+      "emailGuide": "Cách xác thực: Cá nhân → Trang cá nhân → Email → Xác thực."
+    },
+    "actions": {
+      "checkIn": "Điểm danh",
+      "verifyEmail": "Xác thực email",
+      "goTask": "Đi làm",
+      "open": "Mở quà",
+      "close": "Đóng",
+      "great": "Tuyệt",
+      "viewCalendar": "Xem lịch"
+    },
+    "slot": {
+      "title": "Ô {{slot}}",
+      "secretTitle": "Hộp quà bí mật",
+      "bigTitle": "Hộp quà đặc biệt",
+      "secretHint": "Điểm danh xong sẽ hiện nhiệm vụ, làm xong mới mở được hộp",
+      "vip": "Cần VIP để mở hộp này",
+      "checkedInOn": "Điểm danh {{date}}",
+      "claimed": "Bạn đã nhận",
+      "missed": "Hết ngày mà hộp chưa được mở",
+      "plain": "Ô này chỉ cần điểm danh",
+      "plainDone": "Đã điểm danh ô này",
+      "pending": "Hộp hôm nay đang chờ mở"
+    },
+    "opened": {
+      "title": "Mở hộp · Ô {{slot}}",
+      "titleBig": "Mở hộp đặc biệt · Ô {{slot}}",
+      "subtitle": "Bạn nhận được",
+      "locked": "Khoá"
+    },
+    "vipDialog": {
+      "title": "Hộp này dành cho VIP",
+      "message": "Hộp chỉ mở được khi bạn đang có VIP, trước 0h hôm nay."
+    },
+    "emailDialog": {
+      "title": "Cần xác thực email",
+      "message": "Bạn cần xác thực email để điểm danh."
+    },
+    "tasks": {
+      "me_post": "Đăng 1 bài Me",
+      "me_comment": "Bình luận 1 bài Me",
+      "me_react": "Thả cảm xúc 1 bài Me",
+      "moment_post": "Đăng 1 khoảnh khắc",
+      "moment_comment": "Bình luận 1 khoảnh khắc",
+      "story_comment": "Bình luận 1 truyện",
+      "send_gift": "Tặng 1 món quà",
+      "send_megaphone": "Phát 1 loa",
+      "play_game": "Chơi xong 1 ván game online",
+      "unknown": "Nhiệm vụ trong ngày"
+    },
+    "rewardKen": "{{amount}} KEN",
+    "caption": {
+      "vipDays": "+{{count}} ngày",
+      "count": "×{{count}}",
+      "days": "{{count}} ngày",
+      "permanent": "Vĩnh viễn"
+    },
+    "errors": {
+      "disabled": "Điểm danh đang tạm tắt",
+      "completed": "Bạn đã điểm danh đủ tháng này",
+      "emailNotVerified": "Bạn cần xác thực email để điểm danh",
+      "taskNotDone": "Bạn chưa làm xong nhiệm vụ hôm nay",
+      "nothingToOpen": "Hôm nay không có hộp quà để mở",
+      "rateLimited": "Bạn thao tác quá nhanh, thử lại sau ít phút",
+      "failed": "Không thực hiện được, thử lại sau"
+    }
   }
 }

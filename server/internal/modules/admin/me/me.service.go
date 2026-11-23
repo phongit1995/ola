@@ -16,8 +16,9 @@ import (
 )
 
 var (
-	errPostNotFound    = errors.New("post not found")
-	errCommentNotFound = errors.New("comment not found")
+	errPostNotFound       = errors.New("post not found")
+	errCommentNotFound    = errors.New("comment not found")
+	errClanPostVisibility = errors.New("clan post visibility cannot be changed by admin")
 )
 
 type Service struct {
@@ -109,6 +110,25 @@ func (s *Service) SetEnabled(adminID, id uuid.UUID, req *UpdateStatusRequest) (*
 	return resp, nil
 }
 
+func (s *Service) SetVisibility(id uuid.UUID, req *UpdateVisibilityRequest) (*MeDetail, error) {
+	post, err := s.getPost(id)
+	if err != nil {
+		return nil, err
+	}
+	if post.ClanID != nil {
+		return nil, errClanPostVisibility
+	}
+	visibility := models.MeVisibility(req.Visibility)
+	if post.Visibility != visibility {
+		if err := s.repo.SetVisibility(id, visibility); err != nil {
+			return nil, err
+		}
+		s.logger.Infow("Admin updated post visibility", "post_id", id, "from", post.Visibility, "to", visibility)
+		post.Visibility = visibility
+	}
+	return toDetail(post), nil
+}
+
 func (s *Service) ListComments(postID uuid.UUID, limit, offset int) (*CommentListResponse, error) {
 	if _, err := s.getPost(postID); err != nil {
 		return nil, err
@@ -198,6 +218,7 @@ func toDetail(p *models.Me) *MeDetail {
 		CheckIn:      toCheckIn(p.CheckIn),
 		Sticker:      p.Sticker,
 		Visibility:   string(p.Visibility),
+		ClanID:       clanID(p),
 		Enabled:      p.Enabled,
 		HiddenBy:     hiddenBy(p),
 		HiddenAt:     hiddenAt(p),
@@ -208,6 +229,13 @@ func toDetail(p *models.Me) *MeDetail {
 		CreatedAt:    p.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:    p.UpdatedAt.UTC().Format(time.RFC3339),
 	}
+}
+
+func clanID(p *models.Me) string {
+	if p.ClanID == nil {
+		return ""
+	}
+	return p.ClanID.String()
 }
 
 func toImages(imgs models.MeImages) []MeImageResponse {

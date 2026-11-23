@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type TouchEvent } from 'react';
+import { useHomeNavIntent } from '@hooks';
 import { useTranslation } from 'react-i18next';
 import {
   activeMomentGroups,
@@ -39,6 +40,7 @@ export function MomentTray() {
   const [session, setSession] = useState<MomentViewerSession | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const openComposer = usePostQuotaGate('momentPost', () => setComposerOpen(true));
+  useHomeNavIntent('momentComposer', openComposer);
   const [profileTarget, setProfileTarget] = useState<{
     username: string;
     color: string;

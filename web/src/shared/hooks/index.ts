@@ -15,3 +15,4 @@ export * from './useUnreadTitle';
 export * from './useLobbyWallpaperStyle';
 export * from './useDraggableOffset';
 export * from './useMessageHighlight';
+export * from './useHomeNavIntent';

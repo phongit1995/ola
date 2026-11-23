@@ -1140,6 +1140,7 @@
     "privacy_public": "Public",
     "privacy_friend": "Friends",
     "privacy_private": "Private",
+    "privacy_profile": "Profile only",
     "privacy_clan": "Clan",
     "justNow": "just now",
     "newPosts": "↑ You have new posts",
@@ -1339,6 +1340,7 @@
     "saveError": "Couldn't update status, please try again."
   },
   "vip": {
+    "lockedNotTransferable": "This VIP is locked and cannot be transferred",
     "title": "VIP Store",
     "history": "History",
     "historyDialog": {
@@ -1366,6 +1368,7 @@
         "day_transfer_out": "Days transferred",
         "day_transfer_in": "Days received",
         "gift_code": "Gift code",
+        "checkin": "Check-in",
         "other": "Other"
       }
     },
@@ -1489,6 +1492,7 @@
     }
   },
   "avatarFrame": {
+    "lockedNotTransferable": "This frame is locked and cannot be transferred",
     "title": "Avatar frames",
     "shopTitle": "Buy / Gift",
     "selectFrame": "Choose a frame",
@@ -1552,7 +1556,8 @@
       "receiverOwns": "The receiver already owns this frame",
       "notOwned": "You don't own this frame",
       "inUse": "Remove the frame before transferring it",
-      "notTransferable": "Frames from a gift code cannot be transferred",
+      "notTransferable": "This frame cannot be transferred",
+      "expired": "This frame has expired",
       "vipRequired": "VIP is required to wear a frame",
       "insufficientKen": "Not enough KEN",
       "wrongPassword": "Wrong password",
@@ -2013,6 +2018,7 @@
         "WORD_CHAIN_HINT": "Word chain hint",
         "WORD_CHAIN_GUESS": "Word chain guesses",
         "MEGAPHONE": "Megaphone",
+        "CHECKIN": "Check-in",
         "UNKNOWN": "KEN transaction"
       }
     },
@@ -2714,11 +2720,12 @@
     "notEnoughKen": "Not enough KEN",
     "queueWait": "Other messages are queued, yours will play in about {{minutes}} min",
     "cooldown": "Wait {{seconds}}s before broadcasting again",
-    "dailyLeft": "{{count}} broadcasts left today",
     "dailyReached": "You've used all your broadcasts for today",
     "rules": "No links, promotional phone numbers or abusive language. Violating messages are removed without a KEN refund.",
+    "rulesTicket": "No links, promotional phone numbers or abusive language. Violating messages are removed and the ticket is not returned.",
     "confirmTitle": "Confirm broadcast",
     "confirmMessage": "Broadcast this message to everyone for {{ken}} KEN?",
+    "confirmPlain": "Broadcast this message to everyone?",
     "sent": "Broadcast sent",
     "sentQueued": "Queued, it will play in about {{minutes}} min",
     "disabled": "Megaphone is temporarily off",
@@ -2739,8 +2746,28 @@
       "queueFull": "The queue is full, try again in a few minutes",
       "insufficientKen": "You don't have enough KEN to broadcast",
       "rateLimited": "Too fast, try again in a few minutes",
-      "failed": "Broadcast failed, try again later"
+      "failed": "Broadcast failed, try again later",
+      "noTicket": "That megaphone ticket can no longer be used, please choose again"
+    },
+    "ticket": {
+      "useLabel": "Use a megaphone ticket · {{count}} left",
+      "price": "1 megaphone ticket",
+      "used": "Used 1 megaphone ticket",
+      "summary": "{{count}} megaphone tickets left",
+      "listTitle": "Your megaphone tickets",
+      "listHint": "Tickets expiring soonest are used first, tickets without expiry last.",
+      "noExpiry": "No expiry",
+      "empty": "You have no megaphone tickets",
+      "sourceAdmin": "Gift from Ola",
+      "sourceGiftCode": "Gift code",
+      "sourceOther": "Megaphone ticket"
     }
+  },
+  "itemExpiry": {
+    "days": "{{count}}d",
+    "dayHour": "{{days}}d {{hours}}h",
+    "until": "Expires {{time}}",
+    "notice": "Expires at {{time}} · {{left}} left"
   },
   "giftCode": {
     "menuTitle": "Redeem gift code",
@@ -2754,7 +2781,8 @@
     "rewardVipDays": "+{{count}} VIP days",
     "rewardVipIcon": "VIP icon {{name}}",
     "rewardAvatarFrame": "Avatar frame",
-    "notTransferable": "From a gift code, cannot be transferred",
+    "rewardForDays": "({{count}} days)",
+    "notTransferable": "Cannot be transferred",
     "verifyGuide": "How to verify: Personal → Profile → Email → Verify.",
     "errors": {
       "empty": "Please enter a code",
@@ -2773,7 +2801,8 @@
       "frameOwned": "You already own the avatar frame from this code",
       "rateLimited": "You are going too fast, try again in a few minutes",
       "failed": "Could not claim the gift, try again later"
-    }
+    },
+    "rewardMegaphoneTicket": "{{count}} megaphone tickets"
   },
   "friendContent": {
     "post": "shared a new post",
@@ -2793,5 +2822,117 @@
     "tomorrow": "Come back tomorrow.",
     "confirm": "OK",
     "buyVip": "Buy VIP days"
+  },
+  "dailyCheckin": {
+    "menuTitle": "Daily check-in",
+    "title": "Daily check-in",
+    "popupTitle": "Check-in for month {{month}}",
+    "summary": "Month {{month}} · Checked in {{count}}/{{total}}",
+    "progress": "Checked in {{count}}/{{total}}",
+    "countdown": "{{time}} left",
+    "row": {
+      "notCheckedIn": "Not checked in today",
+      "pendingBox": "A gift box is waiting",
+      "completed": "All check-ins done for month {{month}}",
+      "checkedIn": "Checked in today"
+    },
+    "fab": {
+      "checkin": "Check in",
+      "task": "Do task",
+      "open": "Open gift",
+      "hide": "Hide for today"
+    },
+    "legend": {
+      "plain": "Plain number: no gift",
+      "done": "Checked in",
+      "missed": "Box lost",
+      "pending": "Has task"
+    },
+    "today": {
+      "heading": "Today · Slot {{slot}}",
+      "bigBadge": "Special",
+      "vipBadge": "VIP only",
+      "secretTitle": "Mystery gift box",
+      "secretHint": "Check in to get the task that opens it",
+      "noGiftTitle": "Slot {{slot}} has no gift",
+      "checkedIn": "Checked in",
+      "nextGift": "Next gift box: slot {{slot}}",
+      "noMoreGift": "No more gift boxes this month",
+      "lockedTitle": "Box locked",
+      "readyTitle": "Ready to open",
+      "taskSection": "Today's task",
+      "taskCompleted": "Completed",
+      "taskPendingHint": "Finish before midnight to open the box",
+      "vipHint": "VIP box: you need VIP when you tap Open",
+      "openedTitle": "You received",
+      "comeBack": "Come back tomorrow for slot {{slot}}",
+      "completedTitle": "Checked in {{count}}/{{total}} slots for month {{month}}",
+      "completedHint": "See you on {{date}}",
+      "emailGuide": "How: Personal → Profile → Email → Verify."
+    },
+    "actions": {
+      "checkIn": "Check in",
+      "verifyEmail": "Verify email",
+      "goTask": "Go",
+      "open": "Open",
+      "close": "Close",
+      "great": "Great",
+      "viewCalendar": "View calendar"
+    },
+    "slot": {
+      "title": "Slot {{slot}}",
+      "secretTitle": "Mystery gift box",
+      "bigTitle": "Special gift box",
+      "secretHint": "After you check in, a task appears. Finish it to open the box",
+      "vip": "VIP needed to open this box",
+      "checkedInOn": "Checked in {{date}}",
+      "claimed": "You received",
+      "missed": "The day ended before the box was opened",
+      "plain": "Just check in on this slot",
+      "plainDone": "You checked in on this slot",
+      "pending": "Today's box is waiting to be opened"
+    },
+    "opened": {
+      "title": "Opened · Slot {{slot}}",
+      "titleBig": "Special box opened · Slot {{slot}}",
+      "subtitle": "You received",
+      "locked": "Locked"
+    },
+    "vipDialog": {
+      "title": "This box is for VIP members",
+      "message": "You can open it while you have VIP, before midnight today."
+    },
+    "emailDialog": {
+      "title": "Verify your email",
+      "message": "You need a verified email to check in."
+    },
+    "tasks": {
+      "me_post": "Post on Me",
+      "me_comment": "Comment on a Me post",
+      "me_react": "React to a Me post",
+      "moment_post": "Post a moment",
+      "moment_comment": "Comment on a moment",
+      "story_comment": "Comment on a story",
+      "send_gift": "Send a gift",
+      "send_megaphone": "Send a megaphone",
+      "play_game": "Finish an online game",
+      "unknown": "Today's task"
+    },
+    "rewardKen": "{{amount}} KEN",
+    "caption": {
+      "vipDays": "+{{count}} days",
+      "count": "×{{count}}",
+      "days": "{{count}} days",
+      "permanent": "Permanent"
+    },
+    "errors": {
+      "disabled": "Check-in is turned off for now",
+      "completed": "You've checked in every slot this month",
+      "emailNotVerified": "Verify your email to check in",
+      "taskNotDone": "You haven't finished today's task",
+      "nothingToOpen": "There is no box to open today",
+      "rateLimited": "Too fast, try again in a few minutes",
+      "failed": "Something went wrong, try again later"
+    }
   }
 }

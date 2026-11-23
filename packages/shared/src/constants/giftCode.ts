@@ -7,6 +7,7 @@ export const GIFT_CODE_REWARD_TYPE = {
   vipDays: 'vip_days',
   vipIcon: 'vip_icon',
   avatarFrame: 'avatar_frame',
+  megaphoneTicket: 'megaphone_ticket',
 } as const satisfies Record<string, GiftCodeRewardType>;
 
 export const VIP_ICON_SOURCE_GIFT_CODE = 'gift_code';

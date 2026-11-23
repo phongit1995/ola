@@ -4,7 +4,9 @@ import { useGrantVip } from '@/hooks/useUserQueries'
 import { errorMessage } from '@/lib/apiError'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { GrantVipRequest } from '@/types'
-import { VIP_OPTIONS } from './constants'
+import { ITEM_GRANT_INITIAL_VALUES, VIP_OPTIONS } from './constants'
+import { ItemGrantFields } from './ItemGrantFields'
+import { itemGrantSummary } from './utils'
 
 interface GrantVipModalProps {
   open: boolean
@@ -27,12 +29,12 @@ export function GrantVipModal({ open, userId, username, onClose }: GrantVipModal
     const values = await form.validateFields()
     modal.confirm({
       title: 'Xác nhận tặng VIP?',
-      content: `Tặng VIP "${vipName(values.vipTypeId)}"${username ? ` cho @${username}` : ''}?`,
+      content: `Tặng VIP "${vipName(values.vipTypeId)}"${username ? ` cho @${username}` : ''} (${itemGrantSummary(values)})?`,
       okText: 'Tặng',
       cancelText: 'Huỷ',
       onOk: async () => {
         try {
-          await grant.mutateAsync({ id: userId, payload: values })
+          await grant.mutateAsync({ id: userId, payload: { ...values, expiresInDays: values.expiresInDays ?? 0 } })
           message.success(`Đã tặng VIP "${vipName(values.vipTypeId)}"`)
           onClose()
         } catch (err) {
@@ -54,7 +56,7 @@ export function GrantVipModal({ open, userId, username, onClose }: GrantVipModal
       confirmLoading={grant.isPending}
       destroyOnHidden
     >
-      <Form form={form} layout="vertical" requiredMark={false}>
+      <Form form={form} layout="vertical" requiredMark={false} initialValues={ITEM_GRANT_INITIAL_VALUES}>
         <Form.Item
           name="vipTypeId"
           label="Loại VIP"
@@ -82,6 +84,7 @@ export function GrantVipModal({ open, userId, username, onClose }: GrantVipModal
             )}
           />
         </Form.Item>
+        <ItemGrantFields />
       </Form>
     </Modal>
   )

@@ -28,6 +28,7 @@ var (
 	PolicyGiftSend       = RateLimitPolicy{Name: "gift_send", Limit: perWindow(20, time.Minute)}
 	PolicyMegaphoneSend  = RateLimitPolicy{Name: "megaphone_send", Limit: perWindow(6, time.Minute)}
 	PolicyGiftCodeRedeem = RateLimitPolicy{Name: "gift_code_redeem", Limit: perWindow(10, time.Minute)}
+	PolicyCheckin        = RateLimitPolicy{Name: "checkin", Limit: perWindow(20, time.Minute)}
 
 	PolicyStoryChapter = RateLimitPolicy{Name: "story_chapter", Limit: perWindow(60, time.Minute)}
 

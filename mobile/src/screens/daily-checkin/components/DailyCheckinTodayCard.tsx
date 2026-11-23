@@ -1,0 +1,233 @@
+import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { DAILY_CHECKIN_BOX } from '@ola/shared/constants';
+import {
+  dailyCheckinMonthNumber,
+  dailyCheckinNextGiftSlot,
+  dailyCheckinNextMonthLabel,
+  dailyCheckinTaskName,
+  dailyCheckinTodayKind,
+  dailyCheckinTodaySlot,
+} from '@ola/shared/lib';
+import type { DailyCheckinStatus } from '@ola/shared/types';
+import { ItemGrantIcon } from '@components/ui/ItemGrantMarks';
+import { TEXT_PRIMARY, TEXT_SECONDARY, WARNING, WARNING_INK, WARNING_SOFT } from '@constants';
+import { useThemeColors } from '@hooks/useThemeColors';
+import { CHECKIN_GOLD_INK, CHECKIN_GOLD_SOFT } from '../constants';
+import { DAILY_CHECKIN_IMAGES } from '../dailyCheckinAssets';
+import { boxImage } from '../utils';
+import { DailyCheckinRewardList } from './DailyCheckinRewardList';
+
+interface DailyCheckinTodayCardProps {
+  status: DailyCheckinStatus;
+  busy: boolean;
+  onCheckIn: () => void;
+  onOpen: () => void;
+  onGoTask: () => void;
+}
+
+function ActionButton({ tone, busy, onPress, children }: { tone: 'green' | 'orange'; busy: boolean; onPress: () => void; children: string }) {
+  const colors = useThemeColors();
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={busy}
+      className="mt-2.5 h-10 items-center justify-center rounded-lg active:opacity-85"
+      style={{ backgroundColor: tone === 'green' ? colors.primary : WARNING, opacity: busy ? 0.6 : 1 }}
+    >
+      {busy ? <ActivityIndicator color="#ffffff" /> : <Text className="text-sm font-bold text-white">{children}</Text>}
+    </Pressable>
+  );
+}
+
+function TaskRow({ name, done }: { name: string; done: boolean }) {
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  return (
+    <View className="mt-2.5 rounded-lg px-2.5 py-2" style={{ backgroundColor: done ? colors.primaryLight : WARNING_SOFT }}>
+      <Text style={{ fontSize: 11, fontWeight: '600', color: TEXT_SECONDARY }}>{t('dailyCheckin.today.taskSection')}</Text>
+      <View className="mt-1 flex-row items-center gap-2">
+        <Image source={DAILY_CHECKIN_IMAGES.task} style={{ width: 24, height: 24 }} resizeMode="contain" />
+        <View className="min-w-0 flex-1">
+          <Text numberOfLines={1} className="text-sm font-semibold" style={{ color: TEXT_PRIMARY }}>
+            {name}
+          </Text>
+          <Text className="text-xs" style={{ color: done ? colors.primaryDark : WARNING_INK }}>
+            {done ? t('dailyCheckin.today.taskCompleted') : t('dailyCheckin.today.taskPendingHint')}
+          </Text>
+        </View>
+        {done ? (
+          <View className="h-6 w-6 items-center justify-center rounded-full" style={{ backgroundColor: colors.primary }}>
+            <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '700' }}>✓</Text>
+          </View>
+        ) : (
+          <View className="h-6 w-6 rounded-full bg-white" style={{ borderWidth: 2, borderColor: 'rgba(0,0,0,0.2)' }} />
+        )}
+      </View>
+    </View>
+  );
+}
+
+function Badge({ label, icon }: { label: string; icon?: boolean }) {
+  return (
+    <View className="flex-row items-center gap-1 rounded-full px-2 py-0.5" style={{ backgroundColor: CHECKIN_GOLD_SOFT }}>
+      {icon === true && <Image source={DAILY_CHECKIN_IMAGES.vipBadge} style={{ width: 12, height: 12 }} resizeMode="contain" />}
+      <Text style={{ fontSize: 11, fontWeight: '700', color: CHECKIN_GOLD_INK }}>{label}</Text>
+    </View>
+  );
+}
+
+export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTask }: DailyCheckinTodayCardProps) {
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const kind = dailyCheckinTodayKind(status);
+  const slot = dailyCheckinTodaySlot(status);
+  const month = dailyCheckinMonthNumber(status);
+  const box = slot?.box ?? DAILY_CHECKIN_BOX.none;
+  const hasBox = box !== DAILY_CHECKIN_BOX.none;
+  const taskName = dailyCheckinTaskName(t, status.todayTask?.code);
+  const nextGift = dailyCheckinNextGiftSlot(status);
+  const vipHint =
+    slot?.requireVip === true ? (
+      <Text className="mt-2 text-xs" style={{ color: CHECKIN_GOLD_INK }}>
+        {t('dailyCheckin.today.vipHint')}
+      </Text>
+    ) : null;
+
+  if (kind === 'completed') {
+    return (
+      <View className="items-center">
+        <Text className="text-center text-base font-bold" style={{ color: colors.primaryDark }}>
+          {t('dailyCheckin.today.completedTitle', { count: status.count, total: status.slotCount, month })}
+        </Text>
+        <Text className="mt-1 text-center text-sm" style={{ color: TEXT_SECONDARY }}>
+          {t('dailyCheckin.today.completedHint', { date: dailyCheckinNextMonthLabel(status) })}
+        </Text>
+        {status.todayResult != null && status.todayResult.length > 0 && (
+          <View className="mt-3 w-full">
+            <DailyCheckinRewardList items={status.todayResult} />
+          </View>
+        )}
+      </View>
+    );
+  }
+
+  const checkedLine = (
+    <Text className="text-xs" style={{ color: colors.primaryDark }}>
+      ✓ {t('dailyCheckin.today.checkedIn')}
+    </Text>
+  );
+
+  function boxRow(title: string, lines: ReactNode, locked = false) {
+    return (
+      <View className="mt-2.5 flex-row items-center gap-2.5">
+        <View className="h-12 w-12 items-center justify-center rounded-xl" style={{ backgroundColor: CHECKIN_GOLD_SOFT }}>
+          {hasBox ? (
+            <Image source={boxImage(box)} style={{ width: 36, height: 36 }} resizeMode="contain" />
+          ) : (
+            <Text className="text-xl font-bold" style={{ color: TEXT_SECONDARY }}>
+              {status.slot}
+            </Text>
+          )}
+          {locked && (
+            <View style={{ position: 'absolute', right: 2, bottom: 2 }}>
+              <ItemGrantIcon kind="lock" size={14} />
+            </View>
+          )}
+        </View>
+        <View className="min-w-0 flex-1">
+          <Text className="text-sm font-bold" style={{ color: TEXT_PRIMARY }}>
+            {title}
+          </Text>
+          {lines}
+        </View>
+      </View>
+    );
+  }
+
+  let body: ReactNode;
+  switch (kind) {
+    case 'checkin':
+      body = (
+        <>
+          {hasBox &&
+            boxRow(
+              t('dailyCheckin.today.secretTitle'),
+              <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
+                {t('dailyCheckin.today.secretHint')}
+              </Text>
+            )}
+          <ActionButton tone="green" busy={busy} onPress={onCheckIn}>
+            {t('dailyCheckin.actions.checkIn')}
+          </ActionButton>
+        </>
+      );
+      break;
+    case 'noGift':
+      body = boxRow(
+        t('dailyCheckin.today.noGiftTitle', { slot: status.slot }),
+        <>
+          {checkedLine}
+          <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>
+            {nextGift != null ? t('dailyCheckin.today.nextGift', { slot: nextGift }) : t('dailyCheckin.today.noMoreGift')}
+          </Text>
+        </>
+      );
+      break;
+    case 'task':
+      body = (
+        <>
+          {boxRow(t('dailyCheckin.today.lockedTitle'), checkedLine, true)}
+          <TaskRow name={taskName} done={false} />
+          {vipHint}
+          <ActionButton tone="orange" busy={false} onPress={onGoTask}>
+            {t('dailyCheckin.actions.goTask')}
+          </ActionButton>
+        </>
+      );
+      break;
+    case 'open':
+      body = (
+        <>
+          {boxRow(t('dailyCheckin.today.readyTitle'), checkedLine)}
+          <TaskRow name={taskName} done />
+          {vipHint}
+          <ActionButton tone="green" busy={busy} onPress={onOpen}>
+            {t('dailyCheckin.actions.open')}
+          </ActionButton>
+        </>
+      );
+      break;
+    default:
+      body = (
+        <>
+          {status.todayTask != null && <TaskRow name={taskName} done />}
+          <Text className="mt-2.5 text-sm font-semibold" style={{ color: 'rgba(0,0,0,0.7)' }}>
+            {t('dailyCheckin.today.openedTitle')}
+          </Text>
+          <View className="mt-2">
+            <DailyCheckinRewardList items={status.todayResult ?? slot?.items ?? []} />
+          </View>
+          {status.slot < status.slotCount && (
+            <Text className="mt-3 text-center text-xs" style={{ color: TEXT_SECONDARY }}>
+              {t('dailyCheckin.today.comeBack', { slot: status.slot + 1 })}
+            </Text>
+          )}
+        </>
+      );
+  }
+
+  return (
+    <View>
+      <View className="flex-row flex-wrap items-center gap-2">
+        <Text className="font-bold" style={{ color: TEXT_PRIMARY, fontSize: 15 }}>
+          {t('dailyCheckin.today.heading', { slot: status.slot })}
+        </Text>
+        {box === DAILY_CHECKIN_BOX.big && <Badge label={t('dailyCheckin.today.bigBadge')} />}
+        {slot?.requireVip === true && <Badge label={t('dailyCheckin.today.vipBadge')} icon />}
+      </View>
+      {body}
+    </View>
+  );
+}

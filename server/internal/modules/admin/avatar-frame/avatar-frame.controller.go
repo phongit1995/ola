@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"ola-chat-server/internal/models"
 	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	"ola-chat-server/internal/utils"
 
@@ -285,10 +286,39 @@ func (ctrl *Controller) GrantUserFrame(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := ctrl.service.AdminGrant(userID, strings.TrimSpace(req.FrameID)); err != nil {
+	grant := models.ItemGrant{Locked: req.Locked, Duration: time.Duration(req.ExpiresInDays) * 24 * time.Hour}
+	if err := ctrl.service.AdminGrant(userID, strings.TrimSpace(req.FrameID), grant); err != nil {
 		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"frameId": strings.TrimSpace(req.FrameID)}, nil
+}
+
+// @Summary      Sửa hạn và khoá của một khung avatar trong kho user (admin)
+// @Tags         admin-avatar-frame
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path string                 true "User ID"
+// @Param        frameId path string                 true "Mã khung"
+// @Param        body    body UpdateUserFrameRequest true "expiresAt null = vĩnh viễn"
+// @Success      200  {object}  avatarframe.OwnedFrame
+// @Failure      400  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/avatar-frames/{frameId} [patch]
+func (ctrl *Controller) UpdateUserFrame(c *gin.Context) (interface{}, error) {
+	userID, err := utils.ParseUUIDParam(c, "id", "user id")
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[UpdateUserFrameRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	item, err := ctrl.service.AdminUpdate(userID, strings.TrimSpace(c.Param("frameId")), req.Locked, req.ExpiresAt)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return item, nil
 }
 
 // @Summary      Thu hồi một khung avatar khỏi kho của user, tự gỡ nếu đang đeo (admin)

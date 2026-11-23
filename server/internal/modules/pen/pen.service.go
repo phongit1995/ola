@@ -307,7 +307,7 @@ func toBrief(u *models.User) *UserBrief {
 		Username:   u.Username,
 		FullName:   u.FullName,
 		Avatar:     u.Avatar,
-		VipUsed:    u.VipUsed,
+		VipUsed:    u.ActiveVipUsed(time.Now()),
 		VipEndTime: formatOptionalTime(u.VipEndTime),
 	}
 }

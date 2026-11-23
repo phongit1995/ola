@@ -36,6 +36,7 @@ import { MeAnnouncementCard } from './components/MeAnnouncementCard';
 import { useMomentOverlays } from '@screens/moment/useMomentOverlays';
 import { useMomentTraySync } from '@screens/moment/useMomentTraySync';
 import { useMomentEnabled } from '@ola/shared/stores/moment/momentConfigStore';
+import { useNavIntent } from '@hooks/useNavIntent';
 import { useQuickComment } from './useQuickComment';
 import { TAB_FILTER } from './constants';
 import type { MeTab } from './types';
@@ -82,6 +83,8 @@ export function MeFeedScreen() {
   const [tab, setTab] = useState<MeTab>('community');
   const [composerOpen, setComposerOpen] = useState(false);
   const openComposer = usePostQuotaGate('mePost', () => setComposerOpen(true));
+  useNavIntent('meComposer', openComposer);
+  useNavIntent('momentComposer', moment.openComposer);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [commentFocusInput, setCommentFocusInput] = useState(false);

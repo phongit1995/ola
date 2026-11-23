@@ -6,6 +6,7 @@ import (
 	adminaudit "ola-chat-server/internal/modules/admin/audit"
 	adminauth "ola-chat-server/internal/modules/admin/auth"
 	adminavatarframe "ola-chat-server/internal/modules/admin/avatar-frame"
+	admincheckin "ola-chat-server/internal/modules/admin/checkin"
 	adminclan "ola-chat-server/internal/modules/admin/clan"
 	adminconversation "ola-chat-server/internal/modules/admin/conversation"
 	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
@@ -69,11 +70,12 @@ type Router struct {
 	pushCampaignRouter *adminpushcampaign.Router
 	conversationRouter *adminconversation.Router
 	giftCodeRouter     *admingiftcode.Router
+	checkinRouter      *admincheckin.Router
 	avatarFrameRouter  *adminavatarframe.Router
 }
 
-func NewRouter(auditMiddleware *adminaudit.Middleware, auditRouter *adminaudit.Router, analyticsRouter *adminanalytics.Router, dashboardRouter *admindashboard.Router, authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, momentRouter *adminmoment.Router, roomRouter *adminroom.Router, clanRouter *adminclan.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, giftRouter *admingift.Router, megaphoneRouter *adminmegaphone.Router, penRouter *adminpen.Router, gameMatchRouter *admingamematch.Router, marriageRouter *adminmarriage.Router, relationshipRouter *adminrelationship.Router, settingRouter *adminsetting.Router, miniGameRouter *adminminigame.Router, announcementRouter *adminannouncement.Router, topupRouter *admintopup.Router, wordChainRouter *adminwordchain.Router, storyRouter *adminstory.Router, reportRouter *adminreport.Router, pushCampaignRouter *adminpushcampaign.Router, conversationRouter *adminconversation.Router, giftCodeRouter *admingiftcode.Router, avatarFrameRouter *adminavatarframe.Router) *Router {
-	return &Router{auditMiddleware: auditMiddleware, auditRouter: auditRouter, analyticsRouter: analyticsRouter, dashboardRouter: dashboardRouter, authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, momentRouter: momentRouter, roomRouter: roomRouter, clanRouter: clanRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, giftRouter: giftRouter, megaphoneRouter: megaphoneRouter, penRouter: penRouter, gameMatchRouter: gameMatchRouter, marriageRouter: marriageRouter, relationshipRouter: relationshipRouter, settingRouter: settingRouter, miniGameRouter: miniGameRouter, announcementRouter: announcementRouter, topupRouter: topupRouter, wordChainRouter: wordChainRouter, storyRouter: storyRouter, reportRouter: reportRouter, pushCampaignRouter: pushCampaignRouter, conversationRouter: conversationRouter, giftCodeRouter: giftCodeRouter, avatarFrameRouter: avatarFrameRouter}
+func NewRouter(auditMiddleware *adminaudit.Middleware, auditRouter *adminaudit.Router, analyticsRouter *adminanalytics.Router, dashboardRouter *admindashboard.Router, authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, momentRouter *adminmoment.Router, roomRouter *adminroom.Router, clanRouter *adminclan.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, giftRouter *admingift.Router, megaphoneRouter *adminmegaphone.Router, penRouter *adminpen.Router, gameMatchRouter *admingamematch.Router, marriageRouter *adminmarriage.Router, relationshipRouter *adminrelationship.Router, settingRouter *adminsetting.Router, miniGameRouter *adminminigame.Router, announcementRouter *adminannouncement.Router, topupRouter *admintopup.Router, wordChainRouter *adminwordchain.Router, storyRouter *adminstory.Router, reportRouter *adminreport.Router, pushCampaignRouter *adminpushcampaign.Router, conversationRouter *adminconversation.Router, giftCodeRouter *admingiftcode.Router, avatarFrameRouter *adminavatarframe.Router, checkinRouter *admincheckin.Router) *Router {
+	return &Router{auditMiddleware: auditMiddleware, auditRouter: auditRouter, analyticsRouter: analyticsRouter, dashboardRouter: dashboardRouter, authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, momentRouter: momentRouter, roomRouter: roomRouter, clanRouter: clanRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, giftRouter: giftRouter, megaphoneRouter: megaphoneRouter, penRouter: penRouter, gameMatchRouter: gameMatchRouter, marriageRouter: marriageRouter, relationshipRouter: relationshipRouter, settingRouter: settingRouter, miniGameRouter: miniGameRouter, announcementRouter: announcementRouter, topupRouter: topupRouter, wordChainRouter: wordChainRouter, storyRouter: storyRouter, reportRouter: reportRouter, pushCampaignRouter: pushCampaignRouter, conversationRouter: conversationRouter, giftCodeRouter: giftCodeRouter, avatarFrameRouter: avatarFrameRouter, checkinRouter: checkinRouter}
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
@@ -111,5 +113,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		r.conversationRouter.Setup(admin)
 		r.giftCodeRouter.Setup(admin)
 		r.avatarFrameRouter.Setup(admin)
+		r.checkinRouter.Setup(admin)
 	}
 }

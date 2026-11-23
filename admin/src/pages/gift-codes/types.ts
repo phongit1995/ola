@@ -6,6 +6,8 @@ export interface GiftCodeRewardFormValue {
   days?: number
   vipIconId?: number
   frameId?: string
+  count?: number
+  expiresInDays?: number | null
 }
 
 export interface GiftCodeFormValues {

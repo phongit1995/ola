@@ -159,7 +159,7 @@ func (r *Repository) ListPhotosByAuthor(authorID uuid.UUID, visibilities []model
 	return rows, total, nil
 }
 
-const likedVisibilityCond = `(me.visibility = ? OR me.author_id = ? OR (me.visibility = ? AND EXISTS (
+const likedVisibilityCond = `(me.visibility IN ? OR me.author_id = ? OR (me.visibility = ? AND EXISTS (
 	SELECT 1 FROM relationships rel
 	WHERE rel.status = ?
 	  AND ((rel.requester_id = ? AND rel.addressee_id = me.author_id)
@@ -170,7 +170,7 @@ func (r *Repository) ListLikedByUser(userID uuid.UUID, limit, offset int) ([]*mo
 	db := r.db.Model(&models.Me{}).
 		Joins("JOIN me_reactions mr ON mr.post_id = me.id AND mr.user_id = ? AND mr.type = ?", userID, models.MeReactionLike).
 		Where("me.enabled = ?", true).
-		Where(likedVisibilityCond, models.MeVisibilityPublic, userID, models.MeVisibilityFriend, models.RelationshipStatusAccepted, userID, userID).
+		Where(likedVisibilityCond, strangerVisibilities, userID, models.MeVisibilityFriend, models.RelationshipStatusAccepted, userID, userID).
 		Where(clanVisibleCond)
 
 	var total int64
@@ -193,6 +193,10 @@ type feedRow struct {
 	CreatedAt time.Time `gorm:"column:created_at"`
 }
 
+func visibilityIs(v models.MeVisibility) string {
+	return "m.visibility = '" + string(v) + "'"
+}
+
 func feedFilterFragment(filter string) string {
 	switch filter {
 	case "media":
@@ -206,22 +210,30 @@ func feedFilterFragment(filter string) string {
 	}
 }
 
-func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]*models.Me, bool, error) {
+func feedQuery(filter string, hasCursor bool) string {
 	filterFrag := feedFilterFragment(filter)
 	cursorFrag := ""
-	if cursorTime != nil && cursorID != nil {
+	if hasCursor {
 		cursorFrag = " AND (m.created_at, m.id) < (@curTs, @curId)"
 	}
 
+	postCond := "m.deleted_at IS NULL AND m.enabled = true AND " + clanVisibleCondAliasM + filterFrag + cursorFrag
+	newestFirst := " ORDER BY m.created_at DESC, m.id DESC LIMIT @lim"
 	branch := func(cond string) string {
-		return "(SELECT m.id, m.created_at FROM me m WHERE m.deleted_at IS NULL AND m.enabled = true AND " + clanVisibleCondAliasM + " AND " + cond + filterFrag + cursorFrag +
-			" ORDER BY m.created_at DESC, m.id DESC LIMIT @lim)"
+		return "(SELECT m.id, m.created_at FROM me m WHERE " + postCond + " AND " + cond + newestFirst + ")"
 	}
-	friendCond := "m.visibility = 'friend' AND EXISTS (SELECT 1 FROM relationships rel WHERE rel.status = 'accepted'" +
-		" AND ((rel.requester_id = @viewer AND rel.addressee_id = m.author_id)" +
-		" OR (rel.addressee_id = @viewer AND rel.requester_id = m.author_id)))"
+	perAuthorBranch := func(authors, cond string) string {
+		return "(SELECT p.id, p.created_at FROM " + authors + " CROSS JOIN LATERAL (SELECT m.id, m.created_at FROM me m" +
+			" WHERE m.author_id = a.uid AND " + postCond + " AND " + cond + newestFirst + ") p" +
+			" ORDER BY p.created_at DESC, p.id DESC LIMIT @lim)"
+	}
+	public := visibilityIs(models.MeVisibilityPublic)
+	friendOnly := visibilityIs(models.MeVisibilityFriend)
+	friendsCTE := "WITH fr AS (SELECT rel.addressee_id AS uid FROM relationships rel WHERE rel.requester_id = @viewer AND rel.status = @accepted" +
+		" UNION SELECT rel.requester_id FROM relationships rel WHERE rel.addressee_id = @viewer AND rel.status = @accepted) "
+	followees := "(SELECT f.followee_id AS uid, EXISTS (SELECT 1 FROM fr WHERE fr.uid = f.followee_id) AS is_friend" +
+		" FROM follows f WHERE f.follower_id = @viewer) a"
 
-	followeeCond := "m.author_id IN (SELECT f.followee_id FROM follows f WHERE f.follower_id = @viewer)"
 	clanPublicBranch := "(SELECT m.id, m.created_at FROM me m WHERE m.deleted_at IS NULL AND m.enabled = true" +
 		" AND m.clan_id IS NOT NULL AND m.visibility = 'public'" +
 		" AND EXISTS (SELECT 1 FROM clans c WHERE c.id = m.clan_id AND c.policy != 4 AND c.deleted_at IS NULL)" +
@@ -231,25 +243,27 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 		" WHERE cm.user_id = @viewer AND cm.deleted_at IS NULL AND c.deleted_at IS NULL" +
 		" AND (c.policy != 4 OR cm.role != 'member' OR cm.verified))" +
 		cursorFrag + " ORDER BY m.created_at DESC, m.id DESC LIMIT @lim)"
-	var query string
 	if filter == "clan" {
-		query = "SELECT id, created_at FROM (" + clanPublicBranch + " UNION " + clanMemberBranch +
-			") u ORDER BY created_at DESC, id DESC LIMIT @lim"
-	} else if filter == "following" {
-		query = "SELECT id, created_at FROM (" +
-			branch("m.author_id = @viewer") + " UNION " +
-			branch("m.visibility = 'public' AND "+followeeCond) + " UNION " +
-			branch(friendCond+" AND "+followeeCond) +
-			") u ORDER BY created_at DESC, id DESC LIMIT @lim"
-	} else {
-		query = "SELECT id, created_at FROM (" +
-			branch("m.visibility = 'public'") + " UNION " +
-			branch("m.author_id = @viewer") + " UNION " +
-			branch(friendCond) +
+		return "SELECT id, created_at FROM (" + clanPublicBranch + " UNION " + clanMemberBranch +
 			") u ORDER BY created_at DESC, id DESC LIMIT @lim"
 	}
+	if filter == "following" {
+		return friendsCTE + "SELECT id, created_at FROM (" +
+			branch("m.author_id = @viewer") + " UNION " +
+			perAuthorBranch(followees, "("+public+" OR ("+friendOnly+" AND a.is_friend))") +
+			") u ORDER BY created_at DESC, id DESC LIMIT @lim"
+	}
+	return friendsCTE + "SELECT id, created_at FROM (" +
+		branch(public) + " UNION " +
+		branch("m.author_id = @viewer AND m.visibility <> '"+string(models.MeVisibilityProfile)+"'") + " UNION " +
+		perAuthorBranch("fr a", friendOnly) +
+		") u ORDER BY created_at DESC, id DESC LIMIT @lim"
+}
 
-	args := map[string]interface{}{"viewer": viewerID, "lim": limit + 1}
+func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]*models.Me, bool, error) {
+	hasCursor := cursorTime != nil && cursorID != nil
+	query := feedQuery(filter, hasCursor)
+	args := map[string]interface{}{"viewer": viewerID, "lim": limit + 1, "accepted": models.RelationshipStatusAccepted}
 	if filter == "mentions" {
 		target, err := json.Marshal([]string{viewerID.String()})
 		if err != nil {
@@ -257,7 +271,7 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 		}
 		args["viewerJson"] = string(target)
 	}
-	if cursorTime != nil && cursorID != nil {
+	if hasCursor {
 		args["curTs"] = *cursorTime
 		args["curId"] = *cursorID
 	}
@@ -362,7 +376,7 @@ func (r *Repository) ListLikers(viewerID, postID uuid.UUID, limit, offset int) (
 
 	var rows []LikerRow
 	if err := base.
-		Select("users.id, users.username, users.full_name, users.avatar, users.avatar_frame_id, users.vip_end_time, "+likerFriendExists,
+		Select("users.id, users.username, users.full_name, users.avatar, "+models.ActiveAvatarFrameIDSQL("users")+" AS avatar_frame_id, users.vip_end_time, "+likerFriendExists,
 			models.RelationshipStatusAccepted, viewerID, viewerID).
 		Order("me_reactions.created_at DESC").
 		Limit(limit).Offset(offset).
@@ -709,7 +723,7 @@ func (r *Repository) ListCommentLikers(viewerID, commentID uuid.UUID, limit, off
 
 	var rows []LikerRow
 	if err := base.
-		Select("users.id, users.username, users.full_name, users.avatar, users.avatar_frame_id, users.vip_end_time, "+likerFriendExists,
+		Select("users.id, users.username, users.full_name, users.avatar, "+models.ActiveAvatarFrameIDSQL("users")+" AS avatar_frame_id, users.vip_end_time, "+likerFriendExists,
 			models.RelationshipStatusAccepted, viewerID, viewerID).
 		Order("me_comment_likes.created_at DESC").
 		Limit(limit).Offset(offset).

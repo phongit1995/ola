@@ -4,13 +4,17 @@ import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, PanelRow } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { ROUTES } from '@constants';
-import { formatKen, toast } from '@lib';
+import { dailyCheckinRowSubtitle, formatKen, toast } from '@lib';
 import { AuthService, SocketService } from '@services';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import {
   selectGiftCodeEnabled,
   useGiftCodeConfigStore,
 } from '@ola/shared/stores/gift-code/giftCodeConfigStore';
+import {
+  selectDailyCheckinAttention,
+  useDailyCheckinStore,
+} from '@ola/shared/stores/daily-checkin/dailyCheckinStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import { useLobbyWallpaperStyle } from '@hooks';
@@ -35,12 +39,25 @@ export function PersonalPanel() {
   const [giftCodeOpen, setGiftCodeOpen] = useState(false);
   const giftCodeEnabled = useGiftCodeConfigStore(selectGiftCodeEnabled);
   const loadGiftCodeConfig = useGiftCodeConfigStore((s) => s.load);
+  const checkinStatus = useDailyCheckinStore((s) => s.status);
+  const checkinAttention = useDailyCheckinStore(selectDailyCheckinAttention);
+  const checkinVisible = checkinStatus?.enabled === true;
   const items = PERSONAL_ITEMS.filter(
-    (item) => item.action !== 'gift-code' || giftCodeEnabled
+    (item) =>
+      (item.action !== 'gift-code' || giftCodeEnabled) &&
+      (item.app !== 'dailyCheckin' || checkinVisible)
   );
+
+  function subtitleOf(item: AppItem): string | undefined {
+    if (item.app === 'dailyCheckin' && checkinStatus != null) {
+      return dailyCheckinRowSubtitle(t, checkinStatus);
+    }
+    return item.subtitleKey ? t(item.subtitleKey) : undefined;
+  }
 
   useEffect(() => {
     void loadGiftCodeConfig();
+    void useDailyCheckinStore.getState().load();
   }, [loadGiftCodeConfig]);
 
   function handleOpen(item: AppItem): (() => void) | undefined {
@@ -112,8 +129,9 @@ export function PersonalPanel() {
               key={item.titleKey}
               icon={item.icon}
               title={t(item.titleKey)}
-              subtitle={item.subtitleKey ? t(item.subtitleKey) : undefined}
+              subtitle={subtitleOf(item)}
               badge={item.app === 'notifications' ? notifUnread : undefined}
+              dot={item.app === 'dailyCheckin' && checkinAttention}
               onClick={handleOpen(item)}
             />
           ))}

@@ -54,7 +54,7 @@ func toCommentAuthor(user *models.User) *StoryCommentAuthor {
 		Username:      user.Username,
 		FullName:      user.FullName,
 		Avatar:        user.Avatar,
-		VipUsed:       user.VipUsed,
+		VipUsed:       user.ActiveVipUsed(time.Now()),
 		AvatarFrameID: user.ActiveAvatarFrameID(time.Now()),
 	}
 	if user.VipEndTime != nil {

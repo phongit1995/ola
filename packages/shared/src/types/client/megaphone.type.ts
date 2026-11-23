@@ -1,4 +1,10 @@
-import type { Megaphone, MegaphoneAppConfig, MegaphoneConfig, SendMegaphoneResult } from '../api/megaphone.type';
+import type {
+  Megaphone,
+  MegaphoneAppConfig,
+  MegaphoneConfig,
+  MegaphoneTicket,
+  SendMegaphoneResult,
+} from '../api/megaphone.type';
 
 export interface MegaphoneConfigState {
   config: MegaphoneAppConfig | null;
@@ -18,6 +24,13 @@ export interface MegaphoneState {
 
 export type PersistedMegaphoneState = Pick<MegaphoneState, 'seenIds'>;
 
+export interface MegaphoneTicketState {
+  tickets: MegaphoneTicket[];
+  loaded: boolean;
+  load: () => Promise<void>;
+  reset: () => void;
+}
+
 export type MegaphoneComposerStep = 'compose' | 'confirm';
 
 export interface MegaphoneComposerOptions {
@@ -36,6 +49,11 @@ export interface MegaphoneComposer {
   tooLong: boolean;
   balance: number;
   affordable: boolean;
+  ticketCount: number;
+  canUseTicket: boolean;
+  useTicket: boolean;
+  payingWithTicket: boolean;
+  toggleUseTicket: () => void;
   cooldownLeft: number;
   dailyLeft: number;
   waitMinutes: number;

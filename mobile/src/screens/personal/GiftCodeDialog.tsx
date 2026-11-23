@@ -5,6 +5,7 @@ import { giftCodeRewardText, withAlpha } from '@ola/shared/lib';
 import { avatarFrameById } from '@ola/shared/lib/avatarFrame';
 import { useGiftCodeRedeem } from '@ola/shared/stores/gift-code/useGiftCodeRedeem';
 import type { GiftCodeReward } from '@ola/shared/types';
+import { MEGAPHONE_TICKET_IMAGE } from '@components/megaphone/megaphoneAssets';
 import { CachedImage } from '@components/ui/CachedImage';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { VipIcon } from '@components/ui/VipIcon';
@@ -19,25 +20,31 @@ interface GiftCodeDialogProps {
   onClose: () => void;
 }
 
+function RewardIcon({ reward }: { reward: GiftCodeReward }) {
+  if (reward.type === GIFT_CODE_REWARD_TYPE.megaphoneTicket) {
+    return <Image source={MEGAPHONE_TICKET_IMAGE} style={{ width: 24, height: 24 }} resizeMode="contain" />;
+  }
+  if (reward.type === GIFT_CODE_REWARD_TYPE.vipIcon && reward.vipIconId != null) {
+    return <VipIcon typeId={reward.vipIconId} size={24} />;
+  }
+  const frameUrl = reward.type === GIFT_CODE_REWARD_TYPE.avatarFrame ? avatarFrameById(reward.frameId)?.url : undefined;
+  if (frameUrl != null) {
+    return <CachedImage uri={frameUrl} style={{ width: 24, height: 24 }} resizeMode="contain" />;
+  }
+  return <Image source={vipCrownIcon} style={{ width: 24, height: 20 }} resizeMode="contain" />;
+}
+
 function RewardChip({ reward }: { reward: GiftCodeReward }) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const text = giftCodeRewardText(t, reward);
   if (text == null) return null;
-  const isIcon = reward.type === GIFT_CODE_REWARD_TYPE.vipIcon && reward.vipIconId != null;
-  const frameUrl = reward.type === GIFT_CODE_REWARD_TYPE.avatarFrame ? avatarFrameById(reward.frameId)?.url : undefined;
   return (
     <View
       className="flex-row items-center gap-1.5 rounded-full py-1 pl-1.5 pr-3"
       style={{ backgroundColor: withAlpha(colors.primary, 0.12) }}
     >
-      {frameUrl != null ? (
-        <CachedImage uri={frameUrl} style={{ width: 24, height: 24 }} resizeMode="contain" />
-      ) : isIcon ? (
-        <VipIcon typeId={reward.vipIconId} size={24} />
-      ) : (
-        <Image source={vipCrownIcon} style={{ width: 24, height: 20 }} resizeMode="contain" />
-      )}
+      <RewardIcon reward={reward} />
       <Text className="text-sm font-semibold" style={{ color: TEXT_PRIMARY }}>
         {text}
       </Text>

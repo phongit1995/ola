@@ -32,38 +32,40 @@ func (j *JSONB) Scan(value interface{}) error {
 
 type User struct {
 	BaseModel
-	Username          string     `gorm:"unique;not null"`
-	Email             string     `gorm:"type:varchar(255)"`
-	Password          string     `gorm:"not null"`
-	Avatar            string     `gorm:"type:varchar(500)"`
-	Phone             string     `gorm:"type:varchar(20)"`
-	FullName          string     `gorm:"type:varchar(100)"`
-	Gender            string     `gorm:"type:varchar(10);not null;default:'male'"`
-	Bio               string     `gorm:"type:text"`
-	DateOfBirth       *time.Time `gorm:"type:date"`
-	CustomInfo        JSONB      `gorm:"type:jsonb"`
-	Ken               int        `gorm:"not null;default:0"`
-	VipUsed           *string    `gorm:"type:varchar(50)"`
-	VipUsedInstanceID *uuid.UUID `gorm:"type:uuid"`
-	VipEndTime        *time.Time
-	AvatarFrameID     *string    `gorm:"type:varchar(8)"`
-	FollowerCount     int        `gorm:"not null;default:0"`
-	FollowingCount    int        `gorm:"not null;default:0"`
-	AntiCount         int        `gorm:"not null;default:0"`
-	SpouseID          *uuid.UUID `gorm:"type:uuid;index"`
-	CoverPhoto        string     `gorm:"type:varchar(500)"`
-	BioImage          *string    `gorm:"type:varchar(500)"`
-	Verified          bool       `gorm:"not null;default:false"`
-	EmailVerified     bool       `gorm:"not null;default:false"`
-	EmailVerifiedAt   *time.Time
-	Kisses            int  `gorm:"not null;default:0"`
-	Charm             int  `gorm:"not null;default:0"`
-	IsActive          bool `gorm:"not null;default:true"`
-	LockedUntil       *time.Time
-	LockReason        string `gorm:"type:varchar(20);not null;default:''"`
-	RefreshToken      string `gorm:"type:text"`
-	LastLoginIP       string `gorm:"type:varchar(45)"`
-	LastLoginAt       *time.Time
+	Username             string     `gorm:"unique;not null"`
+	Email                string     `gorm:"type:varchar(255)"`
+	Password             string     `gorm:"not null"`
+	Avatar               string     `gorm:"type:varchar(500)"`
+	Phone                string     `gorm:"type:varchar(20)"`
+	FullName             string     `gorm:"type:varchar(100)"`
+	Gender               string     `gorm:"type:varchar(10);not null;default:'male'"`
+	Bio                  string     `gorm:"type:text"`
+	DateOfBirth          *time.Time `gorm:"type:date"`
+	CustomInfo           JSONB      `gorm:"type:jsonb"`
+	Ken                  int        `gorm:"not null;default:0"`
+	VipUsed              *string    `gorm:"type:varchar(50)"`
+	VipUsedInstanceID    *uuid.UUID `gorm:"type:uuid"`
+	VipUsedExpiresAt     *time.Time
+	VipEndTime           *time.Time
+	AvatarFrameID        *string `gorm:"type:varchar(8)"`
+	AvatarFrameExpiresAt *time.Time
+	FollowerCount        int        `gorm:"not null;default:0"`
+	FollowingCount       int        `gorm:"not null;default:0"`
+	AntiCount            int        `gorm:"not null;default:0"`
+	SpouseID             *uuid.UUID `gorm:"type:uuid;index"`
+	CoverPhoto           string     `gorm:"type:varchar(500)"`
+	BioImage             *string    `gorm:"type:varchar(500)"`
+	Verified             bool       `gorm:"not null;default:false"`
+	EmailVerified        bool       `gorm:"not null;default:false"`
+	EmailVerifiedAt      *time.Time
+	Kisses               int  `gorm:"not null;default:0"`
+	Charm                int  `gorm:"not null;default:0"`
+	IsActive             bool `gorm:"not null;default:true"`
+	LockedUntil          *time.Time
+	LockReason           string `gorm:"type:varchar(20);not null;default:''"`
+	RefreshToken         string `gorm:"type:text"`
+	LastLoginIP          string `gorm:"type:varchar(45)"`
+	LastLoginAt          *time.Time
 
 	Spouse *User `gorm:"foreignKey:SpouseID;references:ID"`
 }
@@ -72,9 +74,31 @@ func (u *User) HasActiveVip(now time.Time) bool {
 	return u != nil && u.VipEndTime != nil && u.VipEndTime.After(now)
 }
 
+func (u *User) ActiveVipUsed(now time.Time) *string {
+	if u == nil || u.VipUsed == nil || *u.VipUsed == "" || ItemExpired(u.VipUsedExpiresAt, now) {
+		return nil
+	}
+	return u.VipUsed
+}
+
+func (u *User) ActiveVipUsedInstanceID(now time.Time) *uuid.UUID {
+	if u.ActiveVipUsed(now) == nil {
+		return nil
+	}
+	return u.VipUsedInstanceID
+}
+
+func (u *User) VipUsedExpired(now time.Time) bool {
+	return u != nil && u.VipUsed != nil && ItemExpired(u.VipUsedExpiresAt, now)
+}
+
 func (u *User) ActiveAvatarFrameID(now time.Time) *string {
-	if u == nil || u.AvatarFrameID == nil || *u.AvatarFrameID == "" || !u.HasActiveVip(now) {
+	if u == nil || u.AvatarFrameID == nil || *u.AvatarFrameID == "" || !u.HasActiveVip(now) || ItemExpired(u.AvatarFrameExpiresAt, now) {
 		return nil
 	}
 	return u.AvatarFrameID
+}
+
+func (u *User) AvatarFrameExpired(now time.Time) bool {
+	return u != nil && u.AvatarFrameID != nil && ItemExpired(u.AvatarFrameExpiresAt, now)
 }

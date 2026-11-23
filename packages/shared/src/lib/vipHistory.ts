@@ -14,6 +14,7 @@ const VIP_HISTORY_SOURCE_KEYS = [
   'gift_code',
   'day_transfer_out',
   'day_transfer_in',
+  'checkin',
 ] as const;
 
 type VipHistorySourceKey = (typeof VIP_HISTORY_SOURCE_KEYS)[number];

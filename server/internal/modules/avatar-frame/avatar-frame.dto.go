@@ -40,10 +40,14 @@ type GiftResponse struct {
 }
 
 type OwnedFrame struct {
-	FrameID    string `json:"frameId" example:"001"`
-	Source     string `json:"source" example:"purchase"`
-	AcquiredAt string `json:"acquiredAt" example:"2026-11-09T10:00:00Z"`
-	IsEquipped bool   `json:"isEquipped" example:"true"`
+	ID         string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	FrameID    string  `json:"frameId" example:"001"`
+	Source     string  `json:"source" example:"purchase"`
+	AcquiredAt string  `json:"acquiredAt" example:"2026-11-09T10:00:00Z"`
+	IsEquipped bool    `json:"isEquipped" example:"true"`
+	Locked     bool    `json:"locked" example:"false"`
+	ExpiresAt  *string `json:"expiresAt,omitempty" example:"2026-11-25T13:00:00Z"`
+	Expired    bool    `json:"expired,omitempty" example:"false"`
 }
 
 type StoreResponse struct {
@@ -54,6 +58,7 @@ type StoreResponse struct {
 	Total           int          `json:"total" example:"3"`
 	Limit           int          `json:"limit" example:"50"`
 	Offset          int          `json:"offset" example:"0"`
+	AsOf            string       `json:"asOf" example:"2026-11-18T08:00:00Z"`
 	Items           []OwnedFrame `json:"items"`
 }
 

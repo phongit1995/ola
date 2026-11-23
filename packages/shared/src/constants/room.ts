@@ -10,6 +10,8 @@ export const DEFAULT_ROOM_FILTERS: RoomFilters = {
 };
 
 export const ROOM_MAX_BLOCKED_USERS = 500;
+export const ROOM_MEMBER_SHORT_NAME_MIN_LENGTH = 2;
+export const ROOM_MEMBER_SHORT_NAME_MAX_LENGTH = 5;
 export const ROOM_MESSAGE_PAGE_SIZE = 50;
 export const ROOM_BROWSE_LIMIT = 50;
 export const ROOM_MESSAGE_CACHE_LIMIT = 200;

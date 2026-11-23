@@ -26,13 +26,15 @@ export interface MeCheckIn {
 
 export type MeHiddenBy = 'owner' | 'admin' | 'clan'
 
+export type MeVisibility = 'public' | 'friend' | 'private' | 'profile'
+
 export interface MeListItem {
   id: string
   content?: string
   images: MeImage[]
   checkIn?: MeCheckIn
   sticker?: string
-  visibility: string
+  visibility: MeVisibility
   enabled: boolean
   hiddenBy?: MeHiddenBy
   hiddenAt?: string
@@ -50,7 +52,8 @@ export interface MeDetail {
   mentions?: string[]
   checkIn?: MeCheckIn
   sticker?: string
-  visibility: string
+  visibility: MeVisibility
+  clanId?: string
   enabled: boolean
   hiddenBy?: MeHiddenBy
   hiddenAt?: string

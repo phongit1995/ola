@@ -9,6 +9,7 @@ import (
 	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	"ola-chat-server/internal/modules/call"
 	chatbot "ola-chat-server/internal/modules/chat-bot"
+	"ola-chat-server/internal/modules/checkin"
 	"ola-chat-server/internal/modules/clan"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/egg"
@@ -81,6 +82,7 @@ func CreateServer(
 	giftRouter *gift.Router,
 	megaphoneRouter *megaphone.Router,
 	giftCodeRouter *giftcode.Router,
+	checkinRouter *checkin.Router,
 	marriageRouter *marriage.Router,
 	marriageDiaryRouter *marriagediary.Router,
 	penRouter *pen.Router,
@@ -154,6 +156,7 @@ func CreateServer(
 		giftRouter.Setup(api)
 		megaphoneRouter.Setup(api)
 		giftCodeRouter.Setup(api)
+		checkinRouter.Setup(api)
 		marriageRouter.Setup(api)
 		marriageDiaryRouter.Setup(api)
 		penRouter.Setup(api)

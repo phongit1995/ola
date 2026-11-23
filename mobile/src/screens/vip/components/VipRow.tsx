@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { isVipIconTransferable, vipName } from '@ola/shared/lib';
+import { ItemCountdown, ItemLockButton } from '@components/ui/ItemGrantMarks';
 import type { VipIconInstance } from '@ola/shared/types';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
@@ -45,10 +46,16 @@ export function VipRow({ icon, selectMode, selected, selectable, onSelect, onTog
         )}
         <VipIconImage typeId={icon.typeId} size={40} rounded />
         <View className="ml-2 min-w-0 flex-1 justify-center">
-          <Text className="text-base" style={{ color: TEXT_PRIMARY }}>{vipName(icon.typeId)}</Text>
+          <View className="flex-row items-center" style={{ gap: 6 }}>
+            <Text numberOfLines={1} className="text-base" style={{ color: TEXT_PRIMARY, flexShrink: 1 }}>
+              {vipName(icon.typeId)}
+            </Text>
+            {!isVipIconTransferable(icon) && <ItemLockButton message={t('vip.lockedNotTransferable')} />}
+            <View style={{ flex: 1 }} />
+            <ItemCountdown expiresAt={icon.expiresAt} style={{ fontSize: 13, paddingLeft: 8 }} />
+          </View>
           <Text numberOfLines={1} className="mt-0.5 text-xs" style={{ color: TEXT_SECONDARY }}>
             {t(stateKey)}
-            {!isVipIconTransferable(icon) && ` · ${t('giftCode.notTransferable')}`}
           </Text>
         </View>
       </View>

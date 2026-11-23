@@ -3,6 +3,7 @@ import voiceIcon from '@/assets/icons/chat/ic_voice.png';
 import tabCommunity from '@/assets/icons/me/header/ic_header_community.png';
 import tabPersonal from '@/assets/icons/me/header/ic_header_personal.png';
 import tabClan from '@/assets/icons/me/header/ic_header_clan.png';
+import { POST_VISIBILITY } from '@ola/shared/constants';
 import type { MeFeedFilter, PostVisibility } from '@app-types';
 import type { MeTab } from './types';
 
@@ -51,9 +52,10 @@ export const ME_TABS = [
 }>;
 
 export const PRIVACY_OPTIONS: PostVisibility[] = [
-  'public',
-  'friend',
-  'private',
+  POST_VISIBILITY.public,
+  POST_VISIBILITY.profile,
+  POST_VISIBILITY.friend,
+  POST_VISIBILITY.private,
 ];
 
 export { EDIT_WINDOW_MS } from '@ola/shared/constants';

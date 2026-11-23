@@ -394,3 +394,118 @@ Chốt 06/11/2026:
 - **Migration:** giữ nguyên các file của nhánh `production`, chỉ thêm một migration `20261106000001_add_gifts_megaphones` cho quà và loa. Deploy tự chạy file này, không cần thao tác tay.
 - **Không hoàn KEN:** user đã chốt không hoàn tiền. Loa đã trả tiền mà hết hạn chưa phát, ví dụ do admin tắt Loa lâu hơn thời gian sống, thì mất KEN.
 - **Chưa làm:** chạy nhiều bản API cần gia hạn khoá `MEGAPHONE:LOCK`. Hiện prod chạy một bản nên chưa cần.
+
+## 15. Vé loa (plan + code 19/11/2026)
+
+Vé loa = quyền phát **1 loa thường miễn phí**, **không chuyển được**. Làm **trước** Điểm danh. Lúc ra mắt có 2 nguồn: **admin tặng tay** và **mã quà tặng**. Điểm danh ([daily-checkin-plan.md](daily-checkin-plan.md)) làm sau và dùng lại cùng hàm phát vé; vòng quay, đập trứng để sau.
+
+### 15.1 Đã chốt
+
+| Câu hỏi | Chốt |
+|---|---|
+| Hạn vé | Có hạn hoặc không hạn. `expires_at = NULL` = **không hạn**. Có hạn thì tính **từ lúc nhận** theo số ngày nơi phát cấu hình, giống hạn thẻ VIP / khung. Quá hạn chưa dùng thì hết hiệu lực, không gia hạn, không đổi ra KEN |
+| Thứ tự dùng | Còn nhiều vé thì dùng vé **gần hết hạn nhất trước**, vé không hạn **sau cùng**, cùng hạn thì vé nhận trước dùng trước. User không chọn vé |
+| Dùng vé hay không | User tự quyết bằng **ô tick "Dùng vé loa"** trong hộp gửi. Ô chỉ hiện khi **còn vé** và giá loa > 0. **Mặc định tắt** (mở hộp là trả KEN như cũ, muốn dùng vé thì tick) |
+| Loa đang giá 0 KEN | **Không dùng vé**: phát miễn phí như bình thường, ẩn ô tick, server bỏ qua `useTicket` |
+| Giới hạn | Loa dùng vé **vẫn tính** vào giới hạn số loa mỗi ngày, thời gian chờ giữa 2 lần, bộ lọc từ cấm, hàng chờ đầy |
+| Admin tắt Loa (toàn bộ / theo nền tảng) | **Hạn vé vẫn chạy**, không bù thời gian tắt |
+| Loa dùng vé bị gỡ / hết thời gian sống chưa phát | **Không trả lại vé**, giống loa trả KEN không hoàn KEN |
+| Loại loa | Chỉ **loa thường**; loa quà và loa trúng thưởng vốn miễn phí |
+| Nguồn lúc ra mắt | Admin tặng tay (1–100 vé mỗi lần, không gửi thông báo, giống tặng VIP từ admin) + phần thưởng **mã quà tặng** |
+| Hiển thị loa đã phát | Viên loa và lịch sử trên app **giống hệt** loa trả KEN, không ghi "miễn phí". Chỉ admin thấy loa nào dùng vé |
+
+### 15.2 Dữ liệu
+
+Migration riêng `20261120000001_add_megaphone_tickets` (sau `20261119000001_vip_frame_lock_expiry`; không sửa migration đã chạy).
+
+```sql
+CREATE TABLE user_megaphone_tickets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  source varchar(20) NOT NULL,               -- admin | gift_code (sau: checkin, wheel, egg)
+  source_ref uuid,                           -- mã quà tặng nào / admin nào tặng
+  expires_at timestamptz,                    -- NULL = không hạn
+  used_at timestamptz,
+  megaphone_id uuid,
+  revoked_at timestamptz,                    -- admin thu hồi
+  revoked_by uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CHECK (expires_at IS NULL OR expires_at > created_at)
+);
+CREATE INDEX idx_megaphone_tickets_usable
+  ON user_megaphone_tickets (user_id, expires_at)
+  WHERE used_at IS NULL AND revoked_at IS NULL;
+
+ALTER TABLE megaphones ADD COLUMN ticket_id uuid;   -- NULL = trả KEN
+```
+
+- Mỗi vé một dòng (giống thẻ VIP) thay vì cột đếm trên `users`: mỗi lần nhận có hạn khác nhau, tra được vé từ đâu và dùng cho loa nào, thu hồi đúng vé.
+- Trạng thái suy từ cột, không cần cột status: **dùng được** (`used_at IS NULL AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at > now)`) / **đã dùng** (`used_at`) / **hết hạn** (`expires_at <= now`) / **thu hồi** (`revoked_at`). Vé hết hạn không xoá, không cần job.
+- Loa cũ có `ticket_id = NULL` = trả KEN, không phải sửa dữ liệu.
+
+### 15.3 Server
+
+- `megaphone.GrantTicketsTx(tx, userID, n, source, sourceRef, days)`: insert n dòng; `days > 0` → `expires_at = now + days`, `days = 0` → `NULL`. Chạy trong transaction của nơi phát (admin, mã quà tặng, sau này điểm danh).
+- Gửi loa: `SendRequest` thêm `useTicket bool`. Giá loa 0 KEN thì bỏ qua `useTicket`. Trong transaction gửi loa hiện có ([megaphone.repository.go `Send`](../server/internal/modules/megaphone/megaphone.repository.go)), sau bước khoá dòng user, khi `useTicket` và giá > 0:
+  1. Lấy vé dùng được của user `ORDER BY expires_at ASC NULLS LAST, created_at ASC LIMIT 1 FOR UPDATE`. Không có → `MEGAPHONE_NO_TICKET`.
+  2. Bỏ qua kiểm tra và trừ KEN; dòng loa ghi `ken_price = 0`, `ticket_id = vé`; không ghi `ken_transactions`.
+  3. `UPDATE user_megaphone_tickets SET used_at = now, megaphone_id = loa WHERE id = vé AND used_at IS NULL`, kiểm tra RowsAffected = 1.
+- Chống dùng trùng: khoá hàng chờ + khoá dòng user có sẵn (2 request của một user chạy lần lượt), `clientRequestId` có sẵn (gửi lại trả loa cũ, không lấy thêm vé), `WHERE used_at IS NULL` là chốt cuối.
+- `GET /megaphones/config` thêm `ticketCount` (số vé còn dùng được). Hạn từng vé lấy ở `GET /megaphones/tickets`.
+- `GET /megaphones/tickets`: danh sách vé còn dùng được của mình theo đúng thứ tự sẽ dùng (nguồn, nhận lúc, hạn).
+- **App cũ** không gửi `useTicket` nên vẫn trả KEN như cũ; vé chờ tới khi user cập nhật app. Server không tự dùng vé vì app cũ vẫn hiện giá KEN.
+
+### 15.4 Mã quà tặng
+
+- Loại phần thưởng mới `megaphone_ticket` trong `GiftCodeReward` ([gift_code.model.go](../server/internal/models/gift_code.model.go)): `count` (1–100) + `expiresInDays` (0 = không hạn), cùng trường hạn với thẻ VIP / khung.
+- Nhập mã: thêm nhánh trong `switch` phát quà của [gift-code.service.go](../server/internal/modules/gift-code/gift-code.service.go), gọi `GrantTicketsTx(tx, userID, count, "gift_code", campaignID, expiresInDays)` trong cùng transaction.
+- `RewardsText` thêm "n vé loa" để câu báo thành công có chữ vé loa.
+- Shared `giftCodeRewardText` + `GIFT_CODE_REWARD_TYPE.megaphoneTicket` + i18n "{{count}} vé loa", kèm "trong X ngày" khi có hạn.
+- Admin: `GiftCodeRewardsField` thêm loại "Vé loa" (số vé + hạn), `GiftCodeBadges` hiện badge; thống kê chiến dịch thêm "vé loa đã phát".
+- **App cũ** gặp loại quà lạ thì `giftCodeRewardText` trả `null` và bỏ qua dòng đó; câu thành công từ server vẫn có "n vé loa", không lỗi.
+
+### 15.5 Admin
+
+**Lịch sử loa** ([MegaphonesPage](../admin/src/pages/megaphones/MegaphonesPage.tsx)):
+
+- Cột "KEN" đổi thành **"Trả bằng"**: loa trả KEN hiện "5.000 KEN" như cũ; loa dùng vé hiện tag **"Vé loa"**, rê chuột thấy vé từ đâu (Admin / Mã quà tặng + mã nào), nhận lúc nào, hạn hoặc "Không hạn". Loa quà và loa trúng thưởng giữ nguyên.
+- Bộ lọc mới **Trả bằng**: Tất cả / KEN / Vé loa.
+- API admin danh sách loa thêm `paidWith` (`ken` | `ticket`) và `ticket {id, source, sourceRef, createdAt, expiresAt}`; lọc theo `ticket_id IS NULL / IS NOT NULL`.
+
+**Chi tiết user → mục Vé loa**:
+
+- Bảng tất cả vé: nguồn, nhận lúc, hạn, trạng thái **Còn dùng được** ("còn X ngày" / "Không hạn"), **Đã dùng** (link tới loa đã phát), **Hết hạn**, **Thu hồi** (admin nào, lúc nào).
+- Nút **Tặng vé loa**: số vé (1–100) + số ngày hạn (1–365, để trống = không hạn). Nút **Thu hồi** chỉ cho vé còn dùng được.
+- API `/admin/users/:id/megaphone-tickets` (GET danh sách, POST tặng, POST `/:ticketId/revoke`), ghi `admin_audit_logs`.
+
+### 15.6 Client (web + mobile)
+
+- **Màn Loa**, thẻ "Phát loa" trên cùng: còn vé thì thêm dòng "🎫 Còn 2 vé loa ›", **chỉ có số vé**, không hiện hạn. Bấm mới mở hộp liệt kê từng vé theo thứ tự sẽ dùng, kèm hạn từng vé.
+- Hạn trong hộp danh sách dùng lại `ItemCountdown` của thẻ VIP / khung: từ 1 ngày trở lên "X ngày Y giờ", dưới 24 giờ đếm ngược chữ đỏ.
+- **Hộp gửi loa**: còn vé và giá > 0 thì hiện **ô tick "🎫 Dùng vé loa · còn 2"** dưới ô nhập nội dung, **mặc định tắt**. Tick thì dòng giá ghi "Dùng 1 vé loa" và không cần đủ KEN; không tick thì trả KEN như cũ (thiếu KEN vẫn báo nạp). Hết vé hoặc loa 0 KEN thì không có ô tick.
+- **Hộp xác nhận**: đang tick thì **không nhắc lại vé** (đã chọn ở ô tick), chỉ hỏi "Phát loa này tới mọi người?". Không tick thì giữ câu có giá KEN. Phát xong toast "Đã dùng 1 vé loa".
+- Hộp gửi loa **không hiện "Hôm nay còn X lượt phát"** nữa (bỏ cho cả loa trả KEN). Dòng trạng thái chỉ còn khi bị chặn hoặc phải chờ: hết lượt hôm nay, đang chờ cooldown, hàng chờ.
+- `MEGAPHONE_NO_TICKET` (vé vừa hết hạn / bị thu hồi lúc đang mở hộp): **không tự chuyển sang trả KEN**; báo "Vé loa không còn dùng được", tải lại config, bỏ tick.
+- **Menu Cá nhân "Loa Loa Loa"**: **không hiện số vé**, vào màn Loa mới thấy.
+- Shared: `MegaphoneConfig` thêm `ticketCount`; `megaphone.service.send` thêm `useTicket`; `megaphone.service.tickets()`; i18n `megaphone.ticket.*`.
+- Icon vé loa: user tự vẽ, chừa slot trong map icon trung tâm, tạm dùng icon loa thành viên.
+
+### 15.7 Thứ tự làm
+
+| Bước | Việc | Ước lượng |
+|---|---|---|
+| 1 | Migration + model | 0,25 ngày |
+| 2 | Server vé: `GrantTicketsTx`, dùng vé trong `Send`, config, `/megaphones/tickets` + test Go (dùng vé, hết vé, vé hết hạn, thứ tự gần hết hạn trước / không hạn sau cùng, 2 request cùng lúc, giới hạn ngày vẫn chặn, giá 0 KEN không trừ vé, gửi lại cùng `clientRequestId` không trừ vé lần 2, thu hồi) | 0,75 ngày |
+| 3 | Mã quà tặng: server + shared + admin form/badge/thống kê + test | 0,5 ngày |
+| 4 | Admin: lịch sử loa "Trả bằng" + bộ lọc, Vé loa trong chi tiết user | 0,75 ngày |
+| 5 | Web: màn Loa, hộp gửi có ô tick, hộp danh sách vé, số vé ở menu | 0,5 ngày |
+| 6 | Mobile: như web | 0,5 ngày |
+| 7 | E2E local (tặng vé, nhập mã, phát bằng vé, vé hết hạn, admin xem lịch sử), ảnh xác nhận web + simulator | 0,25 ngày |
+
+Tổng khoảng **3,5 ngày**. Deploy: migration trước, rồi api, rồi admin, rồi web và app. Không cần deploy chat/game. App cũ vẫn phát loa trả KEN bình thường.
+
+### 15.8 Đã làm (19/11/2026)
+
+- Server: `megaphone.ticket.go` (`GrantTicketsTx`, chọn vé `FOR UPDATE` theo `expires_at ASC NULLS LAST, created_at, id`, `useTicketTx` kiểm RowsAffected), `Send` nhận `useTicket`, `GET /megaphones/tickets`, config thêm `ticketCount`, response gửi loa thêm `usedTicket` / `ticketCount`; admin `paidWith` (`ken` | `ticket` | `free`) + bộ lọc, `/admin/users/:id/megaphone-tickets` (danh sách, tặng, thu hồi), tên nguồn = username admin hoặc tên đợt mã; mã quà tặng loại `megaphone_ticket` (`count` 1–100, `expiresInDays` 0–365), `RewardsText` thêm "n vé loa", thống kê `megaphoneTicketsGiven`.
+- Client: store `megaphoneTicketStore` (reset khi đăng xuất), hook soạn loa có `canUseTicket` / `useTicket` / `toggleUseTicket` (mặc định tắt), dòng tóm tắt + hộp danh sách vé ở màn Loa, ô tick trong hộp gửi, câu xác nhận không nhắc vé, bỏ dòng "Hôm nay còn X lượt phát", menu Cá nhân không hiện số vé (web + mobile), dòng luật ghi "không hoàn vé" khi đang tick vé, chip quà trong hộp nhập mã dùng icon vé (web + mobile); admin hiện hạn còn lại theo giờ khi dưới 24 giờ, tải danh sách vé lỗi thì hiện lỗi + "Thử lại" và khoá nút tặng; icon vé tạm dùng icon loa thành viên qua `MEGAPHONE_TICKET_ICON` (web) / `MEGAPHONE_TICKET_IMAGE` (mobile).
+- Kiểm tra: test Go (hạn vé, trạng thái vé, `paidWithOf`, chữ phần thưởng), jest store vé, E2E local 45/45 (thứ tự dùng, 3 request song song với 2 vé chỉ 2 thành công, gửi lại cùng `clientRequestId`, vé hết hạn, thu hồi, giá 0 KEN không trừ vé, lọc admin, nhập mã nhận vé).

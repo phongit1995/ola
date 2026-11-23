@@ -21,6 +21,7 @@ export interface MeFeedState {
   nextCursor: string | null;
   reacting: Set<string>;
   refreshing: boolean;
+  feedFilter?: MeFeedFilter;
   loadFeed: (filter?: MeFeedFilter) => Promise<void>;
   refreshFeed: (filter?: MeFeedFilter) => Promise<void>;
   loadMore: (filter?: MeFeedFilter) => Promise<void>;

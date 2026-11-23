@@ -53,8 +53,7 @@ func (s *Service) ClanFeed(viewerID, clanID uuid.UUID, excludeID *uuid.UUID, cur
 }
 
 func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*MeListResponse, error) {
-	all := []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend, models.MeVisibilityPrivate}
-	posts, total, err := s.repo.ListByAuthor(userID, all, limit, offset)
+	posts, total, err := s.repo.ListByAuthor(userID, ownerVisibilities, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +61,7 @@ func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*MeListResponse
 }
 
 func (s *Service) ListMyPhotos(userID uuid.UUID, limit, offset int) (*MePhotoListResponse, error) {
-	all := []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend, models.MeVisibilityPrivate}
-	rows, total, err := s.repo.ListPhotosByAuthor(userID, all, limit, offset)
+	rows, total, err := s.repo.ListPhotosByAuthor(userID, ownerVisibilities, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +88,7 @@ func (s *Service) ListLiked(userID uuid.UUID, limit, offset int) (*MeListRespons
 }
 
 func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*MeListResponse, error) {
-	scopes := []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend, models.MeVisibilityPrivate}
+	scopes := ownerVisibilities
 	if viewerID != authorID {
 		blocked, err := s.relRepo.IsBlocked(authorID, viewerID)
 		if err != nil {
@@ -104,7 +102,7 @@ func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*
 			return nil, err
 		}
 		if friends {
-			scopes = []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend}
+			scopes = friendVisibilities
 		} else {
 			settings, err := s.userSettingSvc.GetSettings(authorID)
 			if err != nil {
@@ -113,7 +111,7 @@ func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*
 			if settings.MeVisibility == models.SettingMeVisibilityFriends {
 				return nil, errMeFriendsOnly
 			}
-			scopes = []models.MeVisibility{models.MeVisibilityPublic}
+			scopes = strangerVisibilities
 		}
 	}
 	posts, total, err := s.repo.ListByAuthor(authorID, scopes, limit, offset)

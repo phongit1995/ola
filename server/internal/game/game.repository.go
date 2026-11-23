@@ -60,10 +60,10 @@ func (r *Repository) GetUserInfo(gameID, userID string) (*protocol.UserInfoData,
 	}
 	applyGameLevel(r.db, info, gameID, uid)
 
-	if u.VipUsed != nil && u.VipEndTime != nil {
+	if vipUsed := u.ActiveVipUsed(time.Now()); vipUsed != nil && u.VipEndTime != nil {
 		left := time.Until(*u.VipEndTime)
 		if left > 0 {
-			info.VipType = u.VipUsed
+			info.VipType = vipUsed
 			info.VipDays = int(math.Ceil(left.Hours() / 24))
 		}
 	}
@@ -215,7 +215,7 @@ func normalizeLeaderboardBoard(board string) string {
 func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) leaderboardSpec {
 	if board == protocol.LeaderboardBoardLevel {
 		query := r.db.Table("user_game_levels AS levels").
-			Select(`levels.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
+			Select(`levels.user_id, users.username, `+models.ActiveVipUsedSQL("users")+` AS vip_type, users.vip_end_time,
 				0 AS ken, 0 AS wins, 0 AS losses, levels.exp AS game_exp`).
 			Joins("JOIN users ON users.id = levels.user_id").
 			Where("levels.game_id = ? AND levels.exp > 0 AND users.deleted_at IS NULL", gameID)
@@ -228,7 +228,7 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 	}
 	if gameID == thirteen.GameID || gameID == tycoon.GameID {
 		query := r.db.Table("game_matches").
-			Select(`seats.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
+			Select(`seats.user_id, users.username, `+models.ActiveVipUsedSQL("users")+` AS vip_type, users.vip_end_time,
 				COALESCE(SUM(CASE WHEN seats.user_id = game_matches.winner_id THEN game_matches.ken_delta ELSE 0 END), 0) AS ken,
 				COUNT(*) FILTER (WHERE seats.user_id = game_matches.winner_id) AS wins,
 				COUNT(*) FILTER (WHERE seats.user_id <> game_matches.winner_id) AS losses,
@@ -240,7 +240,7 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 				AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
 				AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL`,
 				gameID, matchStatusFinished, from, to).
-			Group("seats.user_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
+			Group("seats.user_id, users.username, users.vip_used, users.vip_used_expires_at, users.vip_end_time, levels.exp").
 			Having("COUNT(*) FILTER (WHERE seats.user_id = game_matches.winner_id) > 0")
 		return leaderboardSpec{
 			query:      query,
@@ -251,7 +251,7 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 	}
 	if gameID == caro.GameID || gameID == wargod.GameID || gameID == xiangqi.GameID {
 		query := r.db.Table("game_matches").
-			Select(`results.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
+			Select(`results.user_id, users.username, `+models.ActiveVipUsedSQL("users")+` AS vip_type, users.vip_end_time,
 				COALESCE(SUM(results.ken), 0) AS ken,
 				COALESCE(SUM(results.wins), 0) AS wins,
 				COALESCE(SUM(results.losses), 0) AS losses,
@@ -267,7 +267,7 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 				AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL
 				AND results.user_id IS NOT NULL`,
 				gameID, matchStatusFinished, from, to).
-			Group("results.user_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
+			Group("results.user_id, users.username, users.vip_used, users.vip_used_expires_at, users.vip_end_time, levels.exp").
 			Having("COALESCE(SUM(results.wins), 0) > 0")
 		return leaderboardSpec{
 			query:      query,
@@ -277,7 +277,7 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 		}
 	}
 	query := r.db.Table("game_matches").
-		Select(`game_matches.winner_id AS user_id, users.username, users.vip_used AS vip_type,
+		Select(`game_matches.winner_id AS user_id, users.username, `+models.ActiveVipUsedSQL("users")+` AS vip_type,
 			users.vip_end_time, COALESCE(SUM(game_matches.ken_delta), 0) AS ken,
 			COALESCE(levels.exp, 0) AS game_exp, COUNT(*) AS matches`).
 		Joins("JOIN users ON users.id = game_matches.winner_id").
@@ -286,7 +286,7 @@ func (r *Repository) leaderboardQuery(gameID, board string, from, to time.Time) 
 			AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
 			AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL`,
 			gameID, matchStatusFinished, from, to).
-		Group("game_matches.winner_id, users.username, users.vip_used, users.vip_end_time, levels.exp").
+		Group("game_matches.winner_id, users.username, users.vip_used, users.vip_used_expires_at, users.vip_end_time, levels.exp").
 		Having("COALESCE(SUM(game_matches.ken_delta), 0) > 0")
 	return leaderboardSpec{
 		query:      query,
@@ -436,8 +436,8 @@ func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryD
 			game_matches.player_count, game_matches.player0_id, game_matches.player1_id, game_matches.winner_id,
 			game_matches.bet, game_matches.ken_delta, game_matches.end_reason,
 			player0.username AS player0_name, player1.username AS player1_name,
-			player0.vip_used AS player0_vip, player0.vip_end_time AS player0_vip_end,
-			player1.vip_used AS player1_vip, player1.vip_end_time AS player1_vip_end`).
+			`+models.ActiveVipUsedSQL("player0")+` AS player0_vip, player0.vip_end_time AS player0_vip_end,
+			`+models.ActiveVipUsedSQL("player1")+` AS player1_vip, player1.vip_end_time AS player1_vip_end`).
 		Joins("LEFT JOIN users AS player0 ON player0.id = game_matches.player0_id").
 		Joins("LEFT JOIN users AS player1 ON player1.id = game_matches.player1_id").
 		Where("game_matches.game_id = ? AND game_matches.status = ?", gameID, matchStatusFinished).
@@ -508,7 +508,7 @@ func (r *Repository) matchSeats(rows []matchHistoryRow, pairSeats bool) (map[uui
 	var seats []matchSeatRow
 	err := r.db.Table("game_match_players AS seats").
 		Select(`seats.game_match_id, seats.user_id, seats.place, seats.exit_reason,
-			users.username, users.vip_used AS vip_type, users.vip_end_time`).
+			users.username, `+models.ActiveVipUsedSQL("users")+` AS vip_type, users.vip_end_time`).
 		Joins("LEFT JOIN users ON users.id = seats.user_id").
 		Where("seats.game_match_id IN ?", ids).
 		Order("seats.game_match_id ASC, seats.seat ASC").

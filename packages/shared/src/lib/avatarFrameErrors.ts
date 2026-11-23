@@ -9,6 +9,7 @@ export type AvatarFrameErrorKey =
   | 'avatarFrame.errors.notOwned'
   | 'avatarFrame.errors.inUse'
   | 'avatarFrame.errors.notTransferable'
+  | 'avatarFrame.errors.expired'
   | 'avatarFrame.errors.vipRequired'
   | 'avatarFrame.errors.insufficientKen'
   | 'avatarFrame.errors.wrongPassword'
@@ -26,6 +27,7 @@ const AVATAR_FRAME_ERROR_KEYS: Record<string, AvatarFrameErrorKey> = {
   [AVATAR_FRAME_ERROR_CODE.notOwned]: 'avatarFrame.errors.notOwned',
   [AVATAR_FRAME_ERROR_CODE.inUse]: 'avatarFrame.errors.inUse',
   [AVATAR_FRAME_ERROR_CODE.notTransferable]: 'avatarFrame.errors.notTransferable',
+  [AVATAR_FRAME_ERROR_CODE.expired]: 'avatarFrame.errors.expired',
   [AVATAR_FRAME_ERROR_CODE.vipRequired]: 'avatarFrame.errors.vipRequired',
   [AVATAR_FRAME_ERROR_CODE.insufficientKen]: 'avatarFrame.errors.insufficientKen',
   [AVATAR_FRAME_ERROR_CODE.wrongPassword]: 'avatarFrame.errors.wrongPassword',

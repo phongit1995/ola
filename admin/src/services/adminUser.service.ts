@@ -5,11 +5,13 @@ import type {
   AddVipDaysResult,
   AdminUserDetail,
   AdminUserListItem,
+  AdminUserAvatarFrame,
   AdminUserAvatarFrameStore,
   AdminUserSession,
   AdminUserVipIcon,
   GrantUserAvatarFrameRequest,
   GrantVipRequest,
+  UpdateItemGrantRequest,
   ListParams,
   ListResult,
   MessageResult,
@@ -90,13 +92,29 @@ export const AdminUserService = {
     await http.post(`/admin/users/${id}/avatar-frames`, payload)
   },
 
-  async revokeAvatarFrame(id: string, frameId: string): Promise<void> {
-    await http.delete(`/admin/users/${id}/avatar-frames/${encodeURIComponent(frameId)}`)
+  async updateAvatarFrame(id: string, frameRef: string, payload: UpdateItemGrantRequest): Promise<AdminUserAvatarFrame> {
+    const { data } = await http.patch<ApiResponse<AdminUserAvatarFrame>>(
+      `/admin/users/${id}/avatar-frames/${encodeURIComponent(frameRef)}`,
+      payload,
+    )
+    return data.data
+  },
+
+  async revokeAvatarFrame(id: string, frameRef: string): Promise<void> {
+    await http.delete(`/admin/users/${id}/avatar-frames/${encodeURIComponent(frameRef)}`)
   },
 
   async grantVip(id: string, payload: GrantVipRequest): Promise<AdminUserVipIcon> {
     const { data } = await http.post<ApiResponse<AdminUserVipIcon>>(
       `/admin/users/${id}/vips`,
+      payload,
+    )
+    return data.data
+  },
+
+  async updateVip(id: string, instanceId: string, payload: UpdateItemGrantRequest): Promise<AdminUserVipIcon> {
+    const { data } = await http.patch<ApiResponse<AdminUserVipIcon>>(
+      `/admin/users/${id}/vips/${instanceId}`,
       payload,
     )
     return data.data

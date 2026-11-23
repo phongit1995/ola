@@ -30,6 +30,39 @@ export type MegaphoneStatus = 'active' | 'removed'
 
 export type MegaphoneType = 'message' | 'gift' | 'lucky'
 
+export type MegaphonePaidWith = 'ken' | 'ticket' | 'free'
+
+export type MegaphoneTicketSource = 'admin' | 'gift_code' | 'checkin'
+
+export type MegaphoneTicketStatus = 'usable' | 'used' | 'expired' | 'revoked'
+
+export interface AdminMegaphoneTicketBrief {
+  id: string
+  source: MegaphoneTicketSource
+  sourceRef?: string
+  sourceName?: string
+  createdAt: string
+  expiresAt?: string
+}
+
+export interface AdminUserMegaphoneTicket extends AdminMegaphoneTicketBrief {
+  status: MegaphoneTicketStatus
+  usedAt?: string
+  megaphoneId?: string
+  revokedAt?: string
+  revokedByName?: string
+}
+
+export interface AdminUserMegaphoneTicketList {
+  items: AdminUserMegaphoneTicket[]
+  usableCount: number
+}
+
+export interface GrantMegaphoneTicketsRequest {
+  count: number
+  expiresInDays: number
+}
+
 export interface AdminMegaphone {
   id: string
   type: MegaphoneType
@@ -43,12 +76,15 @@ export interface AdminMegaphone {
   removedReason?: string
   removedAt?: string
   createdAt: string
+  paidWith: MegaphonePaidWith
+  ticket?: AdminMegaphoneTicketBrief
 }
 
 export interface MegaphoneListParams {
   senderId?: string
   status?: MegaphoneStatus
   type?: MegaphoneType
+  paidWith?: Exclude<MegaphonePaidWith, 'free'>
   q?: string
   from?: string
   to?: string

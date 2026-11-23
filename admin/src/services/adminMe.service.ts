@@ -10,6 +10,7 @@ import type {
   MeListParams,
   MePenaltyRequest,
   MeStatusResult,
+  MeVisibility,
 } from '@/types'
 
 export const AdminMeService = {
@@ -30,6 +31,11 @@ export const AdminMeService = {
       enabled,
       penalty,
     })
+    return data.data
+  },
+
+  async setVisibility(id: string, visibility: MeVisibility): Promise<MeDetail> {
+    const { data } = await http.patch<ApiResponse<MeDetail>>(`/admin/me/${id}/visibility`, { visibility })
     return data.data
   },
 

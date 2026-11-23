@@ -714,7 +714,7 @@ func (s *Service) buildFriendBase(u *models.User, actionedAt *time.Time) FriendR
 		FullName: u.FullName,
 		Bio:      u.Bio,
 		BioImage: u.BioImage,
-		VipUsed:  u.VipUsed,
+		VipUsed:  u.ActiveVipUsed(time.Now()),
 	}
 	if u.DateOfBirth != nil {
 		friend.DateOfBirth = u.DateOfBirth.Format("2006-01-02")
@@ -780,7 +780,7 @@ func (s *Service) buildRelationshipResponse(rel *models.Relationship) *Relations
 			Email:         rel.Requester.Email,
 			Avatar:        rel.Requester.Avatar,
 			FullName:      rel.Requester.FullName,
-			VipUsed:       rel.Requester.VipUsed,
+			VipUsed:       rel.Requester.ActiveVipUsed(time.Now()),
 			VipEndTime:    formatVipEndTime(rel.Requester.VipEndTime),
 			AvatarFrameID: rel.Requester.ActiveAvatarFrameID(time.Now()),
 		}
@@ -793,7 +793,7 @@ func (s *Service) buildRelationshipResponse(rel *models.Relationship) *Relations
 			Email:         rel.Addressee.Email,
 			Avatar:        rel.Addressee.Avatar,
 			FullName:      rel.Addressee.FullName,
-			VipUsed:       rel.Addressee.VipUsed,
+			VipUsed:       rel.Addressee.ActiveVipUsed(time.Now()),
 			VipEndTime:    formatVipEndTime(rel.Addressee.VipEndTime),
 			AvatarFrameID: rel.Addressee.ActiveAvatarFrameID(time.Now()),
 		}

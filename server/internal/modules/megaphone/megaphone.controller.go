@@ -54,7 +54,7 @@ func (ctrl *Controller) History(c *gin.Context) (interface{}, error) {
 }
 
 // @Summary      Phát loa tới mọi người
-// @Description  Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.
+// @Description  Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày trước khi trừ KEN (MEGAPHONE). useTicket = true và giá > 0 thì dùng vé loa gần hết hạn nhất thay cho KEN (hết vé trả MEGAPHONE_NO_TICKET). Đang có quá nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.
 // @Tags         megaphones
 // @Accept       json
 // @Produce      json
@@ -76,6 +76,25 @@ func (ctrl *Controller) Send(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 	resp, err := ctrl.service.Send(setting.ClientFrom(c), userID, *req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// @Summary      Vé loa còn dùng được của người gọi
+// @Description  Theo đúng thứ tự sẽ dùng: vé gần hết hạn trước, vé không hạn sau cùng, cùng hạn thì vé nhận trước.
+// @Tags         megaphones
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  TicketListSuccessResponse
+// @Router       /megaphones/tickets [get]
+func (ctrl *Controller) Tickets(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Tickets(userID)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

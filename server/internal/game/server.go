@@ -301,6 +301,23 @@ func (s *Server) roomUnwatch(client *socket.Socket, data *SocketData) {
 	}
 }
 
+func (s *Server) chat(client *socket.Socket, data *SocketData, d protocol.ChatSendData) {
+	s.connMu.Lock()
+	watchingRoom := s.roomWatching[client.Id()]
+	spectating := s.spectating[client.Id()]
+	s.connMu.Unlock()
+	switch {
+	case d.RoomID != "" && d.RoomID == watchingRoom:
+		s.engine.WatcherRoomChat(data.GameID, socketPlayer(data), d.RoomID, d.Text)
+	case d.RoomID != "":
+		s.engine.RoomChat(data.GameID, data.UserID, d.RoomID, d.Text)
+	case d.MatchID != "" && d.MatchID == spectating:
+		s.engine.SpectatorChat(data.GameID, socketPlayer(data), d.MatchID, d.Text)
+	default:
+		s.engine.Chat(data.GameID, data.UserID, d.MatchID, d.Text)
+	}
+}
+
 func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any) {
 	payload, err := json.Marshal(raw)
 	if err != nil {
@@ -327,11 +344,7 @@ func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any)
 		if err := json.Unmarshal(env.Data, &d); err != nil {
 			return
 		}
-		if d.RoomID != "" {
-			s.engine.RoomChat(data.GameID, data.UserID, d.RoomID, d.Text)
-		} else {
-			s.engine.Chat(data.GameID, data.UserID, d.MatchID, d.Text)
-		}
+		s.chat(client, data, d)
 	case protocol.C2SReactionSend:
 		var d protocol.ReactionSendData
 		if err := json.Unmarshal(env.Data, &d); err != nil {
@@ -377,6 +390,12 @@ func (s *Server) handleMessage(client *socket.Socket, data *SocketData, raw any)
 			return
 		}
 		s.engine.KickRoomMember(data.GameID, data.UserID, d.RoomID, d.UserID)
+	case protocol.C2SRoomSeats:
+		var d protocol.RoomSeatsData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.SetRoomSeats(data.GameID, data.UserID, d.RoomID, d.MaxPlayers)
 	case protocol.C2SRoomReady:
 		var d protocol.RoomReadyData
 		if err := json.Unmarshal(env.Data, &d); err != nil {

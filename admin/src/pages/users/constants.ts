@@ -22,6 +22,8 @@ export const KEN_TX_TYPE: Record<string, string> = {
   TRANSFER_OUT: 'Chuyển đi',
   WORD_CHAIN_HINT: 'Gợi ý nối từ',
   WORD_CHAIN_GUESS: 'Mua lượt nối từ',
+  MEGAPHONE: 'Phát loa',
+  CHECKIN: 'Điểm danh',
 }
 
 export const GENDER: Record<string, { label: string; color: string }> = {
@@ -59,6 +61,7 @@ export const VIP_HISTORY_SOURCE_META: Record<string, { label: string; color: str
   gift: { label: 'Được tặng', color: 'green' },
   email_verify: { label: 'Xác thực email', color: 'cyan' },
   gift_code: { label: 'Mã quà tặng', color: 'magenta' },
+  checkin: { label: 'Điểm danh', color: 'lime' },
 }
 
 export const VIP_ICON_SOURCE_LABEL: Record<string, string> = {
@@ -68,6 +71,7 @@ export const VIP_ICON_SOURCE_LABEL: Record<string, string> = {
   gift: 'Tặng',
   admin: 'Admin',
   gift_code: 'Mã quà tặng',
+  checkin: 'Điểm danh',
 }
 
 export const USER_AVATAR_FRAME_SOURCE_LABEL: Record<UserAvatarFrameSource, string> = {
@@ -76,6 +80,7 @@ export const USER_AVATAR_FRAME_SOURCE_LABEL: Record<UserAvatarFrameSource, strin
   transfer: 'Nhận chuyển',
   gift_code: 'Mã quà tặng',
   admin: 'Admin',
+  checkin: 'Điểm danh',
 }
 
 export const USER_FRAMES_TAB_OPTIONS: { value: UserFramesTab; label: string }[] = [
@@ -125,3 +130,9 @@ export const DEFAULT_SOCIAL_LIMIT_SETTING: SocialLimitSetting = {
 }
 
 export const USER_SETTINGS_TAB_KEYS = ['social-limit', 'username-changes'] as const
+
+export const ITEM_GRANT_MAX_DAYS = 3650
+
+export const ITEM_GRANT_EXTEND_DAYS = [1, 7, 30] as const
+
+export const ITEM_GRANT_INITIAL_VALUES = { expiresInDays: null, locked: true }

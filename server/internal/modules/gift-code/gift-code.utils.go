@@ -72,6 +72,7 @@ func RewardsText(rewards models.GiftCodeRewards) string {
 	days := 0
 	icons := 0
 	frames := 0
+	tickets := 0
 	for _, r := range rewards {
 		switch r.Type {
 		case models.GiftCodeRewardVipDays:
@@ -80,9 +81,11 @@ func RewardsText(rewards models.GiftCodeRewards) string {
 			icons++
 		case models.GiftCodeRewardAvatarFrame:
 			frames++
+		case models.GiftCodeRewardMegaphoneTicket:
+			tickets += r.Count
 		}
 	}
-	parts := make([]string, 0, 3)
+	parts := make([]string, 0, 4)
 	if days > 0 {
 		parts = append(parts, fmt.Sprintf("%d ngày VIP", days))
 	}
@@ -97,6 +100,9 @@ func RewardsText(rewards models.GiftCodeRewards) string {
 		parts = append(parts, "khung avatar")
 	case frames > 1:
 		parts = append(parts, fmt.Sprintf("%d khung avatar", frames))
+	}
+	if tickets > 0 {
+		parts = append(parts, fmt.Sprintf("%d vé loa", tickets))
 	}
 	return strings.Join(parts, RewardTextJoiner)
 }

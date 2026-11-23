@@ -51,6 +51,12 @@ const AvatarFrameStorePage = lazy(() =>
   }))
 );
 
+const DailyCheckinPage = lazy(() =>
+  import('../daily-checkin/DailyCheckinPage').then((m) => ({
+    default: m.DailyCheckinPage,
+  }))
+);
+
 function renderEntry(entry: AppOverlayEntry, onClose: () => void) {
   switch (entry.kind) {
     case 'notifications':
@@ -79,6 +85,8 @@ function renderEntry(entry: AppOverlayEntry, onClose: () => void) {
       return <AvatarFrameShopPage onClose={onClose} />;
     case 'avatarFrameStore':
       return <AvatarFrameStorePage onClose={onClose} />;
+    case 'dailyCheckin':
+      return <DailyCheckinPage onClose={onClose} />;
     default:
       return null;
   }

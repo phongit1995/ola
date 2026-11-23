@@ -1,6 +1,7 @@
 import type { ParseKeys } from 'i18next';
 import { GIFT_ASSETS } from '@components/gift/giftAssets';
 import { MEGAPHONE_IMAGE } from '@components/megaphone/megaphoneAssets';
+import { DAILY_CHECKIN_IMAGES } from '@screens/daily-checkin/dailyCheckinAssets';
 
 export type AppItemAction =
   | 'notifications'
@@ -8,6 +9,7 @@ export type AppItemAction =
   | 'pen'
   | 'wheel'
   | 'profile'
+  | 'daily-checkin'
   | 'vip'
   | 'avatar-frame-store'
   | 'ken'
@@ -22,7 +24,7 @@ export type AppItemAction =
   | 'logout';
 
 export interface AppItem {
-  icon: number;
+  icon: number | string;
   titleKey: ParseKeys;
   action: AppItemAction;
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
@@ -56,6 +58,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
     icon: require('@assets/icons/apps/personal.png'),
     titleKey: 'home.apps.profile',
     action: 'profile',
+  },
+  {
+    icon: DAILY_CHECKIN_IMAGES.menu as number,
+    titleKey: 'dailyCheckin.menuTitle',
+    action: 'daily-checkin',
   },
   {
     icon: require('@assets/icons/apps/vip-crown.webp'),

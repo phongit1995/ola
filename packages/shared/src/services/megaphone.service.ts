@@ -4,6 +4,7 @@ import type {
   MegaphoneConfig,
   MegaphoneHistoryParams,
   MegaphoneHistoryResult,
+  MegaphoneTicketListResult,
   SendMegaphoneRequest,
   SendMegaphoneResult,
 } from '../types/api/megaphone.type';
@@ -19,5 +20,9 @@ export class MegaphoneService {
 
   static send(body: SendMegaphoneRequest): Promise<SendMegaphoneResult> {
     return http.post<SendMegaphoneResult>(API_PATH.megaphones.base, body);
+  }
+
+  static tickets(): Promise<MegaphoneTicketListResult> {
+    return http.get<MegaphoneTicketListResult>(API_PATH.megaphones.tickets);
   }
 }

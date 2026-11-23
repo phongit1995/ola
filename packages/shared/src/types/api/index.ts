@@ -28,3 +28,4 @@ export type * from './gift.type';
 export type * from './megaphone.type';
 export type * from './giftCode.type';
 export type * from './avatarFrame.type';
+export type * from './dailyCheckin.type';

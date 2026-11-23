@@ -14,6 +14,7 @@ import (
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -224,10 +225,69 @@ func (s *Service) Equip(userID uuid.UUID, frameID string) (*EquipResponse, error
 }
 
 func (s *Service) AdminStore(userID uuid.UUID, limit, offset int) (*StoreResponse, error) {
-	return s.GetStore(userID, userID, limit, offset)
+	return s.store(userID, userID, true, limit, offset, "")
 }
 
-func (s *Service) AdminGrant(userID uuid.UUID, frameID string) error {
+func (s *Service) ClearExpiredEquipped(u *models.User, now time.Time) {
+	if !u.AvatarFrameExpired(now) {
+		return
+	}
+	if err := s.repo.ClearExpiredEquipped(u.ID, now); err != nil {
+		s.logger.Warnw("Failed to clear expired avatar frame", "user_id", u.ID, "error", err.Error())
+		return
+	}
+	u.AvatarFrameID = nil
+	u.AvatarFrameExpiresAt = nil
+	s.invalidate(u.ID)
+}
+
+func isValidFrameRef(ref string) bool {
+	if IsValidFrameID(ref) {
+		return true
+	}
+	_, err := uuid.Parse(ref)
+	return err == nil
+}
+
+func (s *Service) AdminUpdate(userID uuid.UUID, ref string, locked bool, expiresAt *time.Time) (*OwnedFrame, error) {
+	if !isValidFrameRef(ref) {
+		return nil, ErrInvalidFrameID
+	}
+	now := time.Now()
+	if expiresAt != nil && !expiresAt.After(now) {
+		return nil, ErrExpiryInPast
+	}
+	row, err := s.repo.AdminUpdateFrame(userID, ref, locked, expiresAt, now)
+	if err != nil {
+		return nil, err
+	}
+	s.invalidate(userID)
+	s.logger.Infow("Admin updated avatar frame", "user_id", userID, "frame_id", row.FrameID, "row_id", row.ID, "locked", row.Locked, "expires_at", row.ExpiresAt)
+	item := toOwnedFrame(row, nil, false, now)
+	return &item, nil
+}
+
+func storeEquippedFrame(target *models.User, isSelf bool, at time.Time) *string {
+	if isSelf && target.AvatarFrameID != nil && *target.AvatarFrameID != "" && !target.AvatarFrameExpired(at) {
+		return target.AvatarFrameID
+	}
+	return target.ActiveAvatarFrameID(at)
+}
+
+func toOwnedFrame(row *models.UserAvatarFrame, equipped *string, equippedTimed bool, now time.Time) OwnedFrame {
+	return OwnedFrame{
+		ID:         row.ID.String(),
+		FrameID:    row.FrameID,
+		Source:     row.Source,
+		AcquiredAt: row.AcquiredAt.Format(time.RFC3339),
+		IsEquipped: equipped != nil && *equipped == row.FrameID && equippedTimed == (row.ExpiresAt != nil),
+		Locked:     row.Locked,
+		ExpiresAt:  utils.FormatOptionalRFC3339(row.ExpiresAt),
+		Expired:    row.Expired(now),
+	}
+}
+
+func (s *Service) AdminGrant(userID uuid.UUID, frameID string, grant models.ItemGrant) error {
 	if !IsValidFrameID(frameID) {
 		return ErrInvalidFrameID
 	}
@@ -237,7 +297,7 @@ func (s *Service) AdminGrant(userID uuid.UUID, frameID string) error {
 		}
 		return err
 	}
-	granted, err := s.repo.AdminGrant(userID, frameID, time.Now())
+	granted, err := s.repo.AdminGrant(userID, frameID, time.Now(), grant)
 	if err != nil {
 		return err
 	}
@@ -249,11 +309,11 @@ func (s *Service) AdminGrant(userID uuid.UUID, frameID string) error {
 	return nil
 }
 
-func (s *Service) AdminRevoke(userID uuid.UUID, frameID string) error {
-	if !IsValidFrameID(frameID) {
+func (s *Service) AdminRevoke(userID uuid.UUID, ref string) error {
+	if !isValidFrameRef(ref) {
 		return ErrInvalidFrameID
 	}
-	row, unequipped, err := s.repo.AdminRevoke(userID, frameID)
+	row, unequipped, err := s.repo.AdminRevoke(userID, ref)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return apperr.ErrUserNotFound
@@ -261,11 +321,15 @@ func (s *Service) AdminRevoke(userID uuid.UUID, frameID string) error {
 		return err
 	}
 	s.invalidate(userID)
-	s.logger.Infow("Admin revoked avatar frame", "user_id", userID, "frame_id", frameID, "source", row.Source, "unequipped", unequipped)
+	s.logger.Infow("Admin revoked avatar frame", "user_id", userID, "frame_id", row.FrameID, "row_id", row.ID, "source", row.Source, "unequipped", unequipped)
 	return nil
 }
 
-func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*StoreResponse, error) {
+func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int, asOf string) (*StoreResponse, error) {
+	return s.store(viewerID, targetID, false, limit, offset, asOf)
+}
+
+func (s *Service) store(viewerID, targetID uuid.UUID, includeExpired bool, limit, offset int, asOf string) (*StoreResponse, error) {
 	target, err := s.repo.GetUser(targetID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -294,31 +358,30 @@ func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*St
 	}
 
 	now := time.Now()
-	equipped := target.ActiveAvatarFrameID(now)
-	if isSelf && target.AvatarFrameID != nil && *target.AvatarFrameID != "" {
-		equipped = target.AvatarFrameID
+	listAt := utils.PageAsOf(asOf, now)
+	if offset == 0 {
+		listAt = now
 	}
 	sortKey := ""
-	if equipped != nil {
-		sortKey = *equipped
+	if sortFrame := storeEquippedFrame(target, isSelf, listAt); sortFrame != nil {
+		sortKey = *sortFrame
 	}
+	if isSelf && !includeExpired && offset == 0 {
+		s.ClearExpiredEquipped(target, now)
+	}
+	equipped := storeEquippedFrame(target, isSelf, now)
 
-	total, err := s.repo.CountOwned(targetID)
+	total, err := s.repo.CountOwned(targetID, includeExpired, listAt)
 	if err != nil {
 		return nil, err
 	}
-	rows, err := s.repo.ListOwned(targetID, sortKey, limit, offset)
+	rows, err := s.repo.ListOwned(targetID, sortKey, includeExpired, listAt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	items := make([]OwnedFrame, 0, len(rows))
 	for i := range rows {
-		items = append(items, OwnedFrame{
-			FrameID:    rows[i].FrameID,
-			Source:     rows[i].Source,
-			AcquiredAt: rows[i].AcquiredAt.Format(time.RFC3339),
-			IsEquipped: equipped != nil && *equipped == rows[i].FrameID,
-		})
+		items = append(items, toOwnedFrame(&rows[i], equipped, target.AvatarFrameExpiresAt != nil, now))
 	}
 	return &StoreResponse{
 		UserID:          targetID.String(),
@@ -328,6 +391,7 @@ func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*St
 		Total:           int(total),
 		Limit:           limit,
 		Offset:          offset,
+		AsOf:            listAt.UTC().Format(time.RFC3339Nano),
 		Items:           items,
 	}, nil
 }

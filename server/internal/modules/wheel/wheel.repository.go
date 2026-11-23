@@ -199,7 +199,7 @@ func (r *Repository) ApplySpin(userID uuid.UUID, wheel *models.Wheel, outcome Sp
 			}
 		case models.WheelSegmentVipItem:
 			if outcome.VipTypeID != nil {
-				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceWheel); err != nil {
+				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceWheel, models.PermanentGrant); err != nil {
 					return err
 				}
 			}
@@ -210,7 +210,7 @@ func (r *Repository) ApplySpin(userID uuid.UUID, wheel *models.Wheel, outcome Sp
 			}
 		case models.WheelSegmentVipRandom:
 			if outcome.VipTypeID != nil {
-				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceWheel); err != nil {
+				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceWheel, models.PermanentGrant); err != nil {
 					return err
 				}
 			}

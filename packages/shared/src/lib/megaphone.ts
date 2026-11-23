@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { MEGAPHONE_ERROR_KEYS, MEGAPHONE_LUCKY_GAME } from '../constants/megaphone';
+import { MEGAPHONE_ERROR_KEYS, MEGAPHONE_LUCKY_GAME, MEGAPHONE_TICKET_SOURCE } from '../constants/megaphone';
 import type { Megaphone, MegaphoneLucky } from '../types/api/megaphone.type';
 import { ApiError } from './apiError';
 import { formatKen } from './number';
@@ -38,6 +38,12 @@ export function activeSeenIds(seenIds: Record<string, number>, now: number): Rec
 
 export function megaphoneWaitMinutes(seconds: number): number {
   return Math.max(1, Math.ceil(seconds / 60));
+}
+
+export function megaphoneTicketSourceText(t: TFunction, source: string): string {
+  if (source === MEGAPHONE_TICKET_SOURCE.admin) return t('megaphone.ticket.sourceAdmin');
+  if (source === MEGAPHONE_TICKET_SOURCE.giftCode) return t('megaphone.ticket.sourceGiftCode');
+  return t('megaphone.ticket.sourceOther');
 }
 
 export function megaphoneErrorText(t: TFunction, error: unknown): string {

@@ -5,7 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { formatKen } from '@ola/shared/lib';
+import { dailyCheckinRowSubtitle, formatKen } from '@ola/shared/lib';
+import {
+  selectDailyCheckinAttention,
+  useDailyCheckinStore,
+} from '@ola/shared/stores/daily-checkin/dailyCheckinStore';
 import { useAppNotificationStore } from '@ola/shared/stores/app-notification/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/auth/authStore';
 import {
@@ -29,10 +33,11 @@ const kenIcon = require('@assets/icons/apps/ken.png');
 const APP_VERSION_LABEL = `v${DeviceInfo.getVersion()} (${DeviceInfo.getBuildNumber()})`;
 
 interface PanelRowProps {
-  icon: ImageSourcePropType;
+  icon: ImageSourcePropType | string;
   title: string;
   subtitle?: string;
   badge?: number;
+  dot?: boolean;
   trailing?: string;
   onPress: () => void;
 }
@@ -42,6 +47,7 @@ function PanelRow({
   title,
   subtitle,
   badge,
+  dot = false,
   trailing,
   onPress,
 }: PanelRowProps) {
@@ -55,11 +61,17 @@ function PanelRow({
         borderBottomColor: 'rgba(0,0,0,0.12)',
       }}
     >
-      <Image
-        source={icon}
-        style={{ width: 40, height: 40, borderRadius: 8 }}
-        resizeMode="contain"
-      />
+      {typeof icon === 'string' ? (
+        <View className="items-center justify-center" style={{ width: 40, height: 40 }}>
+          <Text style={{ fontSize: 30 }}>{icon}</Text>
+        </View>
+      ) : (
+        <Image
+          source={icon}
+          style={{ width: 40, height: 40, borderRadius: 8 }}
+          resizeMode="contain"
+        />
+      )}
       <View className="min-w-0 flex-1">
         <Text numberOfLines={1} className="text-base font-bold text-black/87">
           {title}
@@ -70,6 +82,9 @@ function PanelRow({
           </Text>
         )}
       </View>
+      {dot && (badge == null || badge <= 0) && (
+        <View className="rounded-full bg-ola-accent" style={{ width: 10, height: 10 }} />
+      )}
       {badge != null && badge > 0 && (
         <View className="h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1.5">
           <Text className="text-xs font-bold text-white">
@@ -100,9 +115,21 @@ export function PersonalScreen() {
   const [supportOpen, setSupportOpen] = useState(false);
   const [giftCodeOpen, setGiftCodeOpen] = useState(false);
   const giftCodeEnabled = useGiftCodeConfigStore(selectGiftCodeEnabled);
+  const checkinStatus = useDailyCheckinStore(s => s.status);
+  const checkinAttention = useDailyCheckinStore(selectDailyCheckinAttention);
+  const checkinVisible = checkinStatus?.enabled === true;
   const items = PERSONAL_ITEMS.filter(
-    item => item.action !== 'gift-code' || giftCodeEnabled,
+    item =>
+      (item.action !== 'gift-code' || giftCodeEnabled) &&
+      (item.action !== 'daily-checkin' || checkinVisible),
   );
+
+  function subtitleOf(item: AppItem): string | undefined {
+    if (item.action === 'daily-checkin' && checkinStatus != null) {
+      return dailyCheckinRowSubtitle(t, checkinStatus);
+    }
+    return item.subtitleKey != null ? t(item.subtitleKey) : undefined;
+  }
 
   useGiftCodeConfigSync();
 
@@ -121,6 +148,10 @@ export function PersonalScreen() {
     }
     if (item.action === 'profile') {
       navigation.navigate(ROOT_ROUTES.EditProfile);
+      return;
+    }
+    if (item.action === 'daily-checkin') {
+      navigation.navigate(ROOT_ROUTES.DailyCheckin);
       return;
     }
     if (item.action === 'vip') {
@@ -221,10 +252,9 @@ export function PersonalScreen() {
               key={item.titleKey}
               icon={item.icon}
               title={t(item.titleKey)}
-              subtitle={
-                item.subtitleKey != null ? t(item.subtitleKey) : undefined
-              }
+              subtitle={subtitleOf(item)}
               badge={item.action === 'notifications' ? notifUnread : undefined}
+              dot={item.action === 'daily-checkin' && checkinAttention}
               trailing={
                 item.action === 'logout' ? APP_VERSION_LABEL : undefined
               }

@@ -1,5 +1,13 @@
 package me
 
+import "ola-chat-server/internal/models"
+
+var (
+	ownerVisibilities    = []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityProfile, models.MeVisibilityFriend, models.MeVisibilityPrivate}
+	friendVisibilities   = []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityProfile, models.MeVisibilityFriend}
+	strangerVisibilities = []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityProfile}
+)
+
 const (
 	MeHiddenByOwner = "owner"
 	MeHiddenByAdmin = "admin"

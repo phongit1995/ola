@@ -159,7 +159,9 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 		return fmt.Errorf("failed to get user conversation: %w", err)
 	}
 	if userConv == nil {
-		return fmt.Errorf("conversation not found in user inbox")
+		s.logger.Infow("markRead skipped, conversation not in inbox",
+			"user_id", userID, "conversation_id", conversationID)
+		return nil
 	}
 
 	lastReadMessageID := userConv.LastMessageID

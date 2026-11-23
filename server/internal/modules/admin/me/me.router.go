@@ -20,6 +20,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		posts.GET("", r.controller.ListPosts)
 		posts.GET("/:id", r.controller.GetPost)
 		posts.PATCH("/:id/status", r.controller.UpdateStatus)
+		posts.PATCH("/:id/visibility", r.controller.UpdateVisibility)
 		posts.GET("/:id/comments", r.controller.ListComments)
 		posts.DELETE("/:id/comments/:commentId", r.controller.DeleteComment)
 	}

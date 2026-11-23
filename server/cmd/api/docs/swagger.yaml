@@ -329,9 +329,17 @@ definitions:
     type: object
   internal_modules_admin_avatar-frame.GrantUserFrameRequest:
     properties:
+      expiresInDays:
+        example: 7
+        maximum: 3650
+        minimum: 0
+        type: integer
       frameId:
         example: "001"
         type: string
+      locked:
+        example: true
+        type: boolean
     required:
     - frameId
     type: object
@@ -347,6 +355,271 @@ definitions:
         items:
           $ref: '#/definitions/ola-chat-server_internal_modules_avatar-frame.FrameSalesRow'
         type: array
+    type: object
+  internal_modules_admin_avatar-frame.UpdateUserFrameRequest:
+    properties:
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
+      locked:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_admin_checkin.CreateMonthRequest:
+    properties:
+      copyFrom:
+        example: 2026-11
+        type: string
+      month:
+        example: 2026-12
+        type: string
+      slotCount:
+        example: 28
+        type: integer
+      source:
+        enum:
+        - copy
+        - empty
+        example: copy
+        type: string
+    required:
+    - month
+    - slotCount
+    - source
+    type: object
+  internal_modules_admin_checkin.HistoryItem:
+    properties:
+      box:
+        example: big
+        type: string
+      claimedAt:
+        type: string
+      createdAt:
+        type: string
+      day:
+        example: "2026-11-19"
+        type: string
+      id:
+        type: string
+      missReason:
+        enum:
+        - task
+        - vip
+        - not_opened
+        example: task
+        type: string
+      requireVip:
+        type: boolean
+      rewards:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.CheckinReward'
+        type: array
+      slot:
+        example: 7
+        type: integer
+      status:
+        enum:
+        - claimed
+        - pending
+        - missed
+        - none
+        example: claimed
+        type: string
+      task:
+        example: me_post
+        type: string
+      taskDoneAt:
+        type: string
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief'
+      vipAtCheckin:
+        type: boolean
+    type: object
+  internal_modules_admin_checkin.MonthDTO:
+    properties:
+      createdAt:
+        type: string
+      month:
+        example: 2026-11
+        type: string
+      publishedAt:
+        type: string
+      slotCount:
+        example: 28
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_admin_checkin.MonthDetailDTO:
+    properties:
+      createdAt:
+        type: string
+      month:
+        example: 2026-11
+        type: string
+      publishedAt:
+        type: string
+      slotCount:
+        example: 28
+        type: integer
+      slots:
+        items:
+          $ref: '#/definitions/internal_modules_admin_checkin.SlotDTO'
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_admin_checkin.MonthListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_checkin.MonthDTO'
+        type: array
+    type: object
+  internal_modules_admin_checkin.SaveSlotsRequest:
+    properties:
+      slots:
+        items:
+          $ref: '#/definitions/internal_modules_admin_checkin.SlotDTO'
+        type: array
+    required:
+    - slots
+    type: object
+  internal_modules_admin_checkin.SlotDTO:
+    properties:
+      featured:
+        type: boolean
+      gifts:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.CheckinGift'
+        type: array
+      requireVip:
+        type: boolean
+      slot:
+        example: 7
+        type: integer
+      task:
+        example: random
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_admin_checkin.StatsDay:
+    properties:
+      day:
+        type: string
+      users:
+        type: integer
+    type: object
+  internal_modules_admin_checkin.StatsGift:
+    properties:
+      counts:
+        items:
+          type: integer
+        type: array
+    type: object
+  internal_modules_admin_checkin.StatsResponse:
+    properties:
+      boughtVipToOpen:
+        type: integer
+      boxesOpened:
+        type: integer
+      checkedInToday:
+        type: integer
+      checkedInUsers:
+        type: integer
+      completedUsers:
+        type: integer
+      daily:
+        items:
+          $ref: '#/definitions/internal_modules_admin_checkin.StatsDay'
+        type: array
+      lostNoVip:
+        type: integer
+      month:
+        type: string
+      openedByType:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      slots:
+        items:
+          $ref: '#/definitions/internal_modules_admin_checkin.StatsSlot'
+        type: array
+      tasks:
+        items:
+          $ref: '#/definitions/internal_modules_admin_checkin.StatsTask'
+        type: array
+      ticketsExpired:
+        type: integer
+      ticketsGranted:
+        type: integer
+      ticketsUsed:
+        type: integer
+    type: object
+  internal_modules_admin_checkin.StatsSlot:
+    properties:
+      box:
+        type: string
+      checkedIn:
+        type: integer
+      gifts:
+        items:
+          $ref: '#/definitions/internal_modules_admin_checkin.StatsGift'
+        type: array
+      lost:
+        type: integer
+      opened:
+        type: integer
+      slot:
+        type: integer
+    type: object
+  internal_modules_admin_checkin.StatsTask:
+    properties:
+      assigned:
+        type: integer
+      done:
+        type: integer
+      doneNotOpened:
+        type: integer
+      notDone:
+        type: integer
+      task:
+        type: string
+    type: object
+  internal_modules_admin_checkin.SwapSlotsRequest:
+    properties:
+      from:
+        example: 3
+        type: integer
+      to:
+        example: 7
+        type: integer
+    required:
+    - from
+    - to
+    type: object
+  internal_modules_admin_checkin.UpdateMonthRequest:
+    properties:
+      slotCount:
+        example: 30
+        type: integer
+    required:
+    - slotCount
+    type: object
+  internal_modules_admin_checkin.UserMonthResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/internal_modules_admin_checkin.HistoryItem'
+        type: array
+      month:
+        type: string
+      slotCount:
+        type: integer
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_admin_common.UserBrief'
     type: object
   internal_modules_admin_clan.ClanListResponse:
     properties:
@@ -1446,6 +1719,8 @@ definitions:
     type: object
   internal_modules_admin_gift-code.CampaignStats:
     properties:
+      megaphoneTicketsGiven:
+        type: integer
       redeemedToday:
         type: integer
       redeemedTotal:
@@ -1565,10 +1840,20 @@ definitions:
     type: object
   internal_modules_admin_gift-code.RewardInput:
     properties:
+      count:
+        example: 3
+        maximum: 100
+        minimum: 1
+        type: integer
       days:
         example: 7
         maximum: 3650
         minimum: 1
+        type: integer
+      expiresInDays:
+        example: 7
+        maximum: 3650
+        minimum: 0
         type: integer
       frameId:
         example: "001"
@@ -1578,6 +1863,7 @@ definitions:
         - vip_days
         - vip_icon
         - avatar_frame
+        - megaphone_ticket
         example: vip_days
         type: string
       vipIconId:
@@ -1590,7 +1876,11 @@ definitions:
     type: object
   internal_modules_admin_gift-code.RewardItem:
     properties:
+      count:
+        type: integer
       days:
+        type: integer
+      expiresInDays:
         type: integer
       frameId:
         type: string
@@ -2533,6 +2823,8 @@ definitions:
         $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
       checkIn:
         $ref: '#/definitions/internal_modules_admin_me.CheckInResponse'
+      clanId:
+        type: string
       commentCount:
         type: integer
       content:
@@ -2666,6 +2958,8 @@ definitions:
         $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
       checkIn:
         $ref: '#/definitions/internal_modules_admin_me.CheckInResponse'
+      clanId:
+        type: string
       commentCount:
         type: integer
       content:
@@ -2701,6 +2995,19 @@ definitions:
       visibility:
         type: string
     type: object
+  internal_modules_admin_me.UpdateVisibilityRequest:
+    properties:
+      visibility:
+        enum:
+        - public
+        - friend
+        - private
+        - profile
+        example: profile
+        type: string
+    required:
+    - visibility
+    type: object
   internal_modules_admin_megaphone.CheckContentRequest:
     properties:
       text:
@@ -2726,6 +3033,21 @@ definitions:
         type: string
       traceId:
         type: string
+    type: object
+  internal_modules_admin_megaphone.GrantTicketsRequest:
+    properties:
+      count:
+        example: 3
+        maximum: 100
+        minimum: 1
+        type: integer
+      expiresInDays:
+        example: 7
+        maximum: 365
+        minimum: 0
+        type: integer
+    required:
+    - count
     type: object
   internal_modules_admin_megaphone.ListResponse:
     properties:
@@ -2783,6 +3105,9 @@ definitions:
       kenPrice:
         example: 2000
         type: integer
+      paidWith:
+        example: ticket
+        type: string
       removedAt:
         example: "2026-11-06T10:05:00Z"
         type: string
@@ -2797,6 +3122,8 @@ definitions:
       status:
         example: active
         type: string
+      ticket:
+        $ref: '#/definitions/internal_modules_admin_megaphone.TicketBrief'
       type:
         example: message
         type: string
@@ -2848,6 +3175,107 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_admin_megaphone.RemoveResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_megaphone.TicketBrief:
+    properties:
+      createdAt:
+        example: "2026-11-18T10:00:00Z"
+        type: string
+      expiresAt:
+        example: "2026-11-25T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      source:
+        example: gift_code
+        type: string
+      sourceName:
+        example: Tết 2027
+        type: string
+      sourceRef:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  internal_modules_admin_megaphone.UserTicketItem:
+    properties:
+      createdAt:
+        example: "2026-11-18T10:00:00Z"
+        type: string
+      expiresAt:
+        example: "2026-11-25T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      megaphoneId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      revokedAt:
+        example: "2026-11-19T09:00:00Z"
+        type: string
+      revokedByName:
+        example: admin
+        type: string
+      source:
+        example: gift_code
+        type: string
+      sourceName:
+        example: Tết 2027
+        type: string
+      sourceRef:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      status:
+        example: usable
+        type: string
+      usedAt:
+        example: "2026-11-19T08:00:00Z"
+        type: string
+    type: object
+  internal_modules_admin_megaphone.UserTicketListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketItem'
+        type: array
+      usableCount:
+        example: 2
+        type: integer
+    type: object
+  internal_modules_admin_megaphone.UserTicketListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_megaphone.UserTicketSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketItem'
       error:
         type: string
       path:
@@ -3940,6 +4368,14 @@ definitions:
     type: object
   internal_modules_admin_user.GrantVipRequest:
     properties:
+      expiresInDays:
+        example: 7
+        maximum: 3650
+        minimum: 0
+        type: integer
+      locked:
+        example: true
+        type: boolean
       vipTypeId:
         example: 4
         maximum: 138
@@ -4021,9 +4457,22 @@ definitions:
     required:
     - username
     type: object
+  internal_modules_admin_user.UpdateVipRequest:
+    properties:
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
+      locked:
+        example: true
+        type: boolean
+    type: object
   internal_modules_admin_user.UserDetail:
     properties:
       avatar:
+        type: string
+      avatarFrameExpiresAt:
+        type: string
+      avatarFrameId:
         type: string
       bio:
         type: string
@@ -4072,6 +4521,8 @@ definitions:
       vipEndTime:
         type: string
       vipUsed:
+        type: string
+      vipUsedExpiresAt:
         type: string
     type: object
   internal_modules_admin_user.UserListItem:
@@ -4179,11 +4630,17 @@ definitions:
     properties:
       acquiredAt:
         type: string
+      expired:
+        type: boolean
+      expiresAt:
+        type: string
       instanceId:
         type: string
       isLocked:
         type: boolean
       isUsing:
+        type: boolean
+      locked:
         type: boolean
       source:
         type: string
@@ -4895,11 +5352,23 @@ definitions:
       acquiredAt:
         example: "2026-11-09T10:00:00Z"
         type: string
+      expired:
+        example: false
+        type: boolean
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
       frameId:
         example: "001"
         type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       isEquipped:
         example: true
+        type: boolean
+      locked:
+        example: false
         type: boolean
       source:
         example: purchase
@@ -4984,6 +5453,9 @@ definitions:
     type: object
   internal_modules_avatar-frame.StoreResponse:
     properties:
+      asOf:
+        example: "2026-11-18T08:00:00Z"
+        type: string
       equippedFrameId:
         example: "001"
         type: string
@@ -5174,6 +5646,124 @@ definitions:
     required:
     - content
     - role
+    type: object
+  internal_modules_checkin.ActionResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.CheckinReward'
+        type: array
+      reason:
+        enum:
+        - task_pending
+        - vip_required
+        example: task_pending
+        type: string
+      slot:
+        example: 6
+        type: integer
+      status:
+        $ref: '#/definitions/internal_modules_checkin.StatusResponse'
+    type: object
+  internal_modules_checkin.CheckInRequest:
+    properties:
+      clientRequestId:
+        example: 7d0f3a8e-2f6b-4c1e-9a55-3a3e1c2b9f10
+        maxLength: 64
+        type: string
+    required:
+    - clientRequestId
+    type: object
+  internal_modules_checkin.SlotState:
+    properties:
+      box:
+        enum:
+        - none
+        - normal
+        - big
+        example: big
+        type: string
+      checkedInOn:
+        example: "2026-11-07"
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.CheckinReward'
+        type: array
+      requireVip:
+        example: false
+        type: boolean
+      slot:
+        example: 7
+        type: integer
+      status:
+        enum:
+        - claimed
+        - none
+        - missed
+        - pending
+        - today
+        - upcoming
+        - out_of_reach
+        example: claimed
+        type: string
+    type: object
+  internal_modules_checkin.StatusResponse:
+    properties:
+      canOpen:
+        example: false
+        type: boolean
+      checkedInToday:
+        example: false
+        type: boolean
+      completed:
+        example: false
+        type: boolean
+      count:
+        example: 16
+        type: integer
+      enabled:
+        example: true
+        type: boolean
+      endsAt:
+        type: string
+      month:
+        example: 2026-11
+        type: string
+      needsEmailVerify:
+        example: false
+        type: boolean
+      popup:
+        example: true
+        type: boolean
+      reachable:
+        example: 29
+        type: integer
+      slot:
+        example: 17
+        type: integer
+      slotCount:
+        example: 28
+        type: integer
+      slots:
+        items:
+          $ref: '#/definitions/internal_modules_checkin.SlotState'
+        type: array
+      todayResult:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.CheckinReward'
+        type: array
+      todayTask:
+        $ref: '#/definitions/internal_modules_checkin.TaskState'
+    type: object
+  internal_modules_checkin.TaskState:
+    properties:
+      code:
+        example: me_post
+        type: string
+      done:
+        example: false
+        type: boolean
     type: object
   internal_modules_clan.AssignRoleRequest:
     properties:
@@ -5785,7 +6375,13 @@ definitions:
     type: object
   internal_modules_gift-code.RewardItem:
     properties:
+      count:
+        example: 3
+        type: integer
       days:
+        example: 7
+        type: integer
+      expiresInDays:
         example: 7
         type: integer
       frameId:
@@ -6731,6 +7327,7 @@ definitions:
         - public
         - friend
         - private
+        - profile
         example: public
         type: string
     type: object
@@ -6985,6 +7582,7 @@ definitions:
         - public
         - friend
         - private
+        - profile
         type: string
     type: object
   internal_modules_me.UploadAudioResponse:
@@ -7058,6 +7656,9 @@ definitions:
       queueWaitSeconds:
         example: 25
         type: integer
+      ticketCount:
+        example: 2
+        type: integer
       todayCount:
         example: 2
         type: integer
@@ -7115,6 +7716,9 @@ definitions:
         example: "Chúc cả nhà buổi tối vui vẻ \U0001F389"
         maxLength: 1000
         type: string
+      useTicket:
+        example: true
+        type: boolean
     required:
     - clientRequestId
     - content
@@ -7126,6 +7730,12 @@ definitions:
         type: integer
       megaphone:
         $ref: '#/definitions/ola-chat-server_internal_domain_megaphone.Megaphone'
+      ticketCount:
+        example: 1
+        type: integer
+      usedTicket:
+        example: true
+        type: boolean
       waitSeconds:
         example: 25
         type: integer
@@ -7134,6 +7744,45 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_megaphone.SendResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_megaphone.TicketItem:
+    properties:
+      createdAt:
+        example: "2026-11-18T10:00:00Z"
+        type: string
+      expiresAt:
+        example: "2026-11-25T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      source:
+        example: gift_code
+        type: string
+    type: object
+  internal_modules_megaphone.TicketListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_megaphone.TicketItem'
+        type: array
+    type: object
+  internal_modules_megaphone.TicketListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_megaphone.TicketListResponse'
       error:
         type: string
       path:
@@ -7183,6 +7832,9 @@ definitions:
         type: string
       senderAvatar:
         example: https://example.com/avatar.jpg
+        type: string
+      senderFullName:
+        example: John Doe
         type: string
       senderId:
         example: ca4c6d54-870c-4735-b9a6-cce05a04aedb
@@ -9084,6 +9736,24 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_social-limit.PostQuota:
+    properties:
+      limit:
+        type: integer
+      upgradable:
+        type: boolean
+      used:
+        type: integer
+    type: object
+  internal_modules_social-limit.PostQuotaResponse:
+    properties:
+      isVip:
+        type: boolean
+      me:
+        $ref: '#/definitions/internal_modules_social-limit.PostQuota'
+      moment:
+        $ref: '#/definitions/internal_modules_social-limit.PostQuota'
+    type: object
   internal_modules_story.ChapterListResponse:
     properties:
       items:
@@ -10313,6 +10983,9 @@ definitions:
       activeTypeId:
         example: 4
         type: integer
+      asOf:
+        example: "2026-11-18T08:00:00Z"
+        type: string
       days:
         example: 30
         type: integer
@@ -10435,6 +11108,9 @@ definitions:
       acquiredAt:
         example: "2026-06-19T10:00:00Z"
         type: string
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
       instanceId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -10443,6 +11119,9 @@ definitions:
         type: boolean
       isUsing:
         example: true
+        type: boolean
+      locked:
+        example: false
         type: boolean
       source:
         example: purchase
@@ -10733,6 +11412,57 @@ definitions:
       value:
         $ref: '#/definitions/ola-chat-server_internal_models.JSONB'
     type: object
+  ola-chat-server_internal_models.CheckinGift:
+    properties:
+      options:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.CheckinGiftOption'
+        type: array
+    type: object
+  ola-chat-server_internal_models.CheckinGiftOption:
+    properties:
+      amount:
+        type: integer
+      amountMax:
+        type: integer
+      amountMin:
+        type: integer
+      count:
+        type: integer
+      days:
+        type: integer
+      expiresInDays:
+        type: integer
+      frameId:
+        type: string
+      type:
+        type: string
+      vipIconId:
+        type: integer
+      weight:
+        type: integer
+    type: object
+  ola-chat-server_internal_models.CheckinReward:
+    properties:
+      amount:
+        type: integer
+      amountMax:
+        type: integer
+      amountMin:
+        type: integer
+      count:
+        type: integer
+      days:
+        type: integer
+      expiresInDays:
+        type: integer
+      frameId:
+        type: string
+      type:
+        type: string
+      vipIconId:
+        type: integer
+    type: object
   ola-chat-server_internal_models.EggCategoryType:
     enum:
     - nothing
@@ -10959,11 +11689,23 @@ definitions:
       acquiredAt:
         example: "2026-11-09T10:00:00Z"
         type: string
+      expired:
+        example: false
+        type: boolean
+      expiresAt:
+        example: "2026-11-25T13:00:00Z"
+        type: string
       frameId:
         example: "001"
         type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       isEquipped:
         example: true
+        type: boolean
+      locked:
+        example: false
         type: boolean
       source:
         example: purchase
@@ -11051,6 +11793,9 @@ definitions:
     type: object
   ola-chat-server_internal_modules_avatar-frame.StoreResponse:
     properties:
+      asOf:
+        example: "2026-11-18T08:00:00Z"
+        type: string
       equippedFrameId:
         example: "001"
         type: string
@@ -11785,6 +12530,7 @@ definitions:
         - public
         - friend
         - private
+        - profile
         example: public
         type: string
     type: object
@@ -13919,6 +14665,7 @@ definitions:
       code:
         example: MESSAGE_BLOCKED
         type: string
+      details: {}
       error:
         example: validation error
         type: string
@@ -13936,6 +14683,22 @@ definitions:
         type: string
       traceId:
         example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-any:
+    properties:
+      data: {}
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
         type: string
     type: object
   ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanResponse:
@@ -14031,6 +14794,74 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_admin_auth.RefreshTokenResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_checkin.MonthDetailDTO'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_checkin.MonthListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_StatsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_checkin.StatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_UserMonthResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_checkin.UserMonthResponse'
       error:
         type: string
       path:
@@ -14677,6 +15508,40 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_chat-bot.CompletionResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_ActionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_checkin.ActionResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_StatusResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_checkin.StatusResponse'
       error:
         type: string
       path:
@@ -15472,6 +16337,23 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_social-limit_PostQuotaResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_social-limit.PostQuotaResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_story_ChapterListResponse:
     properties:
       data:
@@ -16067,6 +16949,39 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_utils_Page-internal_modules_admin_checkin_HistoryItem:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_utils.Page-internal_modules_admin_checkin_HistoryItem'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.Page-internal_modules_admin_checkin_HistoryItem:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_checkin.HistoryItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
   ola-chat-server_internal_utils.ReorderRequest:
     properties:
       ids:
@@ -16596,6 +17511,285 @@ paths:
       summary: Lịch sử chuyển khung avatar toàn hệ thống (admin)
       tags:
       - admin-avatar-frame
+  /admin/checkin/history:
+    get:
+      description: 'status: claimed | pending | missed | none. Lý do mất hộp tính
+        lại lúc xem.'
+      parameters:
+      - description: YYYY-MM
+        in: query
+        name: month
+        required: true
+        type: string
+      - description: Tên đăng nhập, tên hoặc ID
+        in: query
+        name: q
+        type: string
+      - description: ID người dùng
+        in: query
+        name: userId
+        type: string
+      - description: claimed | pending | missed | none
+        in: query
+        name: status
+        type: string
+      - description: Ô
+        in: query
+        name: slot
+        type: integer
+      - description: Mặc định 20
+        in: query
+        name: limit
+        type: integer
+      - description: Bắt đầu từ
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_utils_Page-internal_modules_admin_checkin_HistoryItem'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử lượt điểm danh
+      tags:
+      - admin-checkin
+  /admin/checkin/months:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách lịch điểm danh các tháng
+      tags:
+      - admin-checkin
+    post:
+      consumes:
+      - application/json
+      description: source=copy chép ô k sang ô k từ tháng copyFrom, ô dư bỏ, ô thiếu
+        để trống. source=empty mọi ô chỉ điểm danh.
+      parameters:
+      - description: Tháng
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_checkin.CreateMonthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO'
+      security:
+      - BearerAuth: []
+      summary: Tạo lịch tháng (nháp)
+      tags:
+      - admin-checkin
+  /admin/checkin/months/{month}:
+    delete:
+      parameters:
+      - description: YYYY-MM
+        in: path
+        name: month
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-any'
+      security:
+      - BearerAuth: []
+      summary: Xoá lịch nháp hoặc lịch tháng chưa bắt đầu
+      tags:
+      - admin-checkin
+    get:
+      parameters:
+      - description: YYYY-MM
+        in: path
+        name: month
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO'
+      security:
+      - BearerAuth: []
+      summary: Lịch một tháng kèm cấu hình các ô
+      tags:
+      - admin-checkin
+    patch:
+      consumes:
+      - application/json
+      description: Tháng đang chạy chỉ được tăng.
+      parameters:
+      - description: YYYY-MM
+        in: path
+        name: month
+        required: true
+        type: string
+      - description: Số ô
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_checkin.UpdateMonthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO'
+      security:
+      - BearerAuth: []
+      summary: Đổi số ô của tháng
+      tags:
+      - admin-checkin
+  /admin/checkin/months/{month}/publish:
+    post:
+      description: Không quay lại nháp được. Tháng đang chạy thì chạy ngay, ô khoá
+        tính từ ngày phát hành.
+      parameters:
+      - description: YYYY-MM
+        in: path
+        name: month
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO'
+      security:
+      - BearerAuth: []
+      summary: Phát hành lịch nháp
+      tags:
+      - admin-checkin
+  /admin/checkin/months/{month}/slots:
+    put:
+      consumes:
+      - application/json
+      description: 'Ô đã khoá của tháng đang chạy bị từ chối. Mỗi ô tối đa 5 quà,
+        mỗi quà 1–10 món, tổng tỉ lệ 100. Gửi kèm updatedAt đã đọc của ô: ô đã bị
+        sửa ở nơi khác thì trả 409, không ghi.'
+      parameters:
+      - description: YYYY-MM
+        in: path
+        name: month
+        required: true
+        type: string
+      - description: Các ô
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_checkin.SaveSlotsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO'
+      security:
+      - BearerAuth: []
+      summary: Lưu một hoặc nhiều ô
+      tags:
+      - admin-checkin
+  /admin/checkin/months/{month}/slots/swap:
+    post:
+      consumes:
+      - application/json
+      description: Server đổi nội dung hai ô trên dữ liệu mới nhất trong cùng transaction.
+        Ô đã khoá của tháng đang chạy bị từ chối.
+      parameters:
+      - description: YYYY-MM
+        in: path
+        name: month
+        required: true
+        type: string
+      - description: Hai ô
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_checkin.SwapSlotsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_MonthDetailDTO'
+      security:
+      - BearerAuth: []
+      summary: Đổi chỗ hai ô
+      tags:
+      - admin-checkin
+  /admin/checkin/stats:
+    get:
+      parameters:
+      - description: YYYY-MM
+        in: query
+        name: month
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_StatsResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê điểm danh của tháng
+      tags:
+      - admin-checkin
+  /admin/checkin/users/{userId}:
+    get:
+      parameters:
+      - description: ID người dùng
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: YYYY-MM
+        in: query
+        name: month
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_checkin_UserMonthResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch điểm danh một tháng của một người
+      tags:
+      - admin-checkin
   /admin/clans:
     get:
       parameters:
@@ -18609,7 +19803,7 @@ paths:
         in: query
         name: enabled
         type: boolean
-      - description: Filter by visibility (public, friend, private)
+      - description: Filter by visibility (public, friend, private, profile)
         in: query
         name: visibility
         type: string
@@ -18752,6 +19946,35 @@ paths:
       summary: Enable/disable a post (admin)
       tags:
       - admin-me
+  /admin/me/{id}/visibility:
+    patch:
+      consumes:
+      - application/json
+      description: Clan posts are rejected; their visibility follows the clan rules.
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Visibility Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_me.UpdateVisibilityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail'
+      security:
+      - BearerAuth: []
+      summary: Change who can see a post (admin)
+      tags:
+      - admin-me
   /admin/megaphones:
     get:
       parameters:
@@ -18766,6 +19989,10 @@ paths:
       - description: 'Loại tin: message, gift, lucky'
         in: query
         name: type
+        type: string
+      - description: 'Trả bằng: ken, ticket'
+        in: query
+        name: paidWith
         type: string
       - description: Tìm trong nội dung
         in: query
@@ -20873,6 +22100,137 @@ paths:
       summary: Thu hồi một khung avatar khỏi kho của user, tự gỡ nếu đang đeo (admin)
       tags:
       - admin-avatar-frame
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Mã khung
+        in: path
+        name: frameId
+        required: true
+        type: string
+      - description: expiresAt null = vĩnh viễn
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_avatar-frame.UpdateUserFrameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_avatar-frame.OwnedFrame'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Sửa hạn và khoá của một khung avatar trong kho user (admin)
+      tags:
+      - admin-avatar-frame
+  /admin/users/{id}/megaphone-tickets:
+    get:
+      description: 'Tất cả vé kèm trạng thái: usable, used, expired, revoked.'
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketListSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Vé loa của một user (admin)
+      tags:
+      - admin-megaphones
+    post:
+      consumes:
+      - application/json
+      description: expiresInDays = 0 là vé không hạn. Tối đa 100 vé mỗi lần, hạn 1–365
+        ngày.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Số vé + hạn
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_megaphone.GrantTicketsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Tặng vé loa cho user (admin)
+      tags:
+      - admin-megaphones
+  /admin/users/{id}/megaphone-tickets/{ticketId}/revoke:
+    post:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Ticket ID
+        in: path
+        name: ticketId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_megaphone.UserTicketSuccessResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Thu hồi một vé loa còn dùng được (admin)
+      tags:
+      - admin-megaphones
   /admin/users/{id}/password:
     patch:
       consumes:
@@ -21304,6 +22662,38 @@ paths:
       summary: Xoá VIP icon khỏi kho của user
       tags:
       - admin-user
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Instance ID
+        in: path
+        name: instanceId
+        required: true
+        type: string
+      - description: expiresAt null = vĩnh viễn
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_user.UpdateVipRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_user.VipIconItem'
+      security:
+      - BearerAuth: []
+      summary: Sửa hạn và khoá của một VIP trong kho user
+      tags:
+      - admin-users
   /admin/vip/history:
     get:
       parameters:
@@ -22735,6 +24125,95 @@ paths:
       summary: Chat với bot
       tags:
       - chat-bot
+  /checkin:
+    get:
+      description: enabled=false khi công tắc tổng hoặc nền tảng tắt, hoặc tháng này
+        chưa có lịch đã phát hành. Không trả quà hay nhiệm vụ của ô chưa mở.
+      parameters:
+      - description: web | android | ios
+        in: header
+        name: X-Platform
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_StatusResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch điểm danh tháng này của người gọi
+      tags:
+      - checkin
+    post:
+      consumes:
+      - application/json
+      description: 'Đi tiếp 1 ô. Ô có quà mà nhiệm vụ đã làm từ 0h (và đủ VIP nếu
+        cần) thì mở hộp luôn, trả items. Còn lại trả reason task_pending / vip_required.
+        Bấm lại trong ngày trả trạng thái hiện tại. clientRequestId sinh mới mỗi lần
+        bấm, gửi lại thì dùng lại mã cũ: mã đã dùng thì trả kết quả của lượt đó (kể
+        cả lượt của hôm trước), không tính thêm lượt.'
+      parameters:
+      - description: web | android | ios
+        in: header
+        name: X-Platform
+        type: string
+      - description: Check-in
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_checkin.CheckInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_ActionResponse'
+        "403":
+          description: CHECKIN_DISABLED, CHECKIN_EMAIL_NOT_VERIFIED
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: CHECKIN_COMPLETED
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Điểm danh hôm nay
+      tags:
+      - checkin
+  /checkin/open:
+    post:
+      description: Bốc mỗi quà 1 món theo cấu hình chụp lúc điểm danh và phát. Hộp
+        đã mở thì trả lại đúng kết quả cũ.
+      parameters:
+      - description: web | android | ios
+        in: header
+        name: X-Platform
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_checkin_ActionResponse'
+        "403":
+          description: CHECKIN_DISABLED, CHECKIN_VIP_REQUIRED
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: CHECKIN_TASK_NOT_DONE, CHECKIN_NOTHING_TO_OPEN
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Mở hộp quà của hôm nay
+      tags:
+      - checkin
   /clans:
     post:
       consumes:
@@ -25011,9 +26490,10 @@ paths:
       consumes:
       - application/json
       description: Kiểm tra nội dung (link, từ cấm), thời gian chờ và giới hạn ngày
-        trước khi trừ KEN (MEGAPHONE). Đang có quá nhiều tin chờ phát thì từ chối,
-        không trừ KEN. Server tự phát loa theo lịch trong thời gian sống. clientRequestId
-        chống trừ hai lần khi gửi lại.
+        trước khi trừ KEN (MEGAPHONE). useTicket = true và giá > 0 thì dùng vé loa
+        gần hết hạn nhất thay cho KEN (hết vé trả MEGAPHONE_NO_TICKET). Đang có quá
+        nhiều tin chờ phát thì từ chối, không trừ KEN. Server tự phát loa theo lịch
+        trong thời gian sống. clientRequestId chống trừ hai lần khi gửi lại.
       parameters:
       - description: Megaphone
         in: body
@@ -25063,6 +26543,22 @@ paths:
       security:
       - BearerAuth: []
       summary: Cấu hình phát loa + trạng thái của người gọi
+      tags:
+      - megaphones
+  /megaphones/tickets:
+    get:
+      description: 'Theo đúng thứ tự sẽ dùng: vé gần hết hạn trước, vé không hạn sau
+        cùng, cùng hạn thì vé nhận trước.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_megaphone.TicketListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Vé loa còn dùng được của người gọi
       tags:
       - megaphones
   /messages:
@@ -27315,6 +28811,21 @@ paths:
         bằng KEN)
       tags:
       - settings
+  /social-limit/posts:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_social-limit_PostQuotaResponse'
+      security:
+      - BearerAuth: []
+      summary: Today's Me and moment posting usage of the current user (limit 0 =
+        unlimited)
+      tags:
+      - social-limit
   /stories:
     get:
       parameters:

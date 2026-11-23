@@ -94,7 +94,7 @@ func (ctrl *Controller) GetMyStore(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.GetStore(userID, userID, utils.ParseLimit(c, DefaultStoreLimit, MaxStoreLimit), utils.ParseOffset(c))
+	resp, err := ctrl.service.GetStore(userID, userID, utils.ParseLimit(c, DefaultStoreLimit, MaxStoreLimit), utils.ParseOffset(c), c.Query("asOf"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -117,7 +117,7 @@ func (ctrl *Controller) GetUserStore(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.GetStore(userID, targetID, utils.ParseLimit(c, DefaultStoreLimit, MaxStoreLimit), utils.ParseOffset(c))
+	resp, err := ctrl.service.GetStore(userID, targetID, utils.ParseLimit(c, DefaultStoreLimit, MaxStoreLimit), utils.ParseOffset(c), c.Query("asOf"))
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

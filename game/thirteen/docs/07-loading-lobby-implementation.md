@@ -41,7 +41,6 @@ Kết quả là mockup chỉ đóng vai trò tham chiếu. Production không ph�
 | `assets/icons/ic-lock.svg` | 16 × 16 | 16 px | phòng có mật khẩu |
 | `assets/icons/ic-eye.svg` | 24 × 24 | 18/20/22 px | nút “Xem”, tiêu đề và thanh của chế độ xem, tab số người xem |
 | `../../../web/src/assets/icons/apps/ken.png` | existing | 15/22/26 px | room bet / balance pill / bet input |
-| `assets/icons/ic-check.svg` | 24 × 24 | 19 px trong circle | capacity đang chọn |
 | `assets/icons/ic-cards-empty.svg` | 64 × 64 | 58 px | room list rỗng |
 
 ### 3.2 Brand suits
@@ -169,7 +168,7 @@ Create/password modal dùng cùng shell Style 02:
 - backdrop navy 38%, blur tối đa 3 px;
 - cream surface, navy border 2, radius 20;
 - coral handle 48 × 4;
-- capacity là button thật với `aria-pressed`;
+- không chọn số người: bàn luôn 4 ghế, chủ bàn đóng/mở ghế trong bàn chờ (02 § 5.3);
 - input “Cược mỗi người” dùng icon Ken hiện có, mặc định `0`, format `vi-VN` và numeric keyboard;
 - cược vượt số dư/`maxBet` hiện helper coral, gắn `aria-invalid` và disable submit;
 - input password là live input;
@@ -183,7 +182,7 @@ Create/password modal dùng cùng shell Style 02:
 
 Các breakpoint đã hiện thực:
 
-- `<380 px`: gutter 16, action row 80 px tối thiểu, logo subtitle và capacity text thu nhẹ;
+- `<380 px`: gutter 16, action row 80 px tối thiểu, logo subtitle thu nhẹ;
 - `430–520 px`: gutter ngoài 24, content/row tối đa 472 px;
 - height `≤760 px`: header curve, logo spacing và CTA stack rút gọn nhưng touch target vẫn tối thiểu 44 px;
 - safe area dùng `--safe-top`/`--safe-bottom` hiện có;

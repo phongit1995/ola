@@ -279,6 +279,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     joinRoom() {},
     leaveRoom() {},
     kickRoomMember() {},
+    setRoomSeats() {},
     setRoomReady() {},
     startRoom() {},
     listRooms() {},

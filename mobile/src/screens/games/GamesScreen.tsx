@@ -108,7 +108,7 @@ export function GamesScreen() {
           {GAME_ITEMS.map(item => (
             <GameTile
               key={item.titleKey}
-              icon={item.icon}
+              icon={typeof item.icon === 'number' ? item.icon : undefined}
               title={t(item.titleKey)}
               onPress={() => handleOpen(item)}
             />

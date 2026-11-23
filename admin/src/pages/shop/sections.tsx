@@ -1,6 +1,9 @@
 import {
   AppstoreOutlined,
+  BarChartOutlined,
+  CalendarOutlined,
   CrownOutlined,
+  HistoryOutlined,
   SettingOutlined,
   ShoppingCartOutlined,
   SmileOutlined,
@@ -42,4 +45,11 @@ export const AVATAR_FRAME_SECTION_LINKS: ShopSectionLink[] = [
   { path: '/avatar-frames', label: 'Khung đang bán', icon: <AppstoreOutlined /> },
   { path: '/avatar-frames/purchases', label: 'Lịch sử mua', icon: <ShoppingCartOutlined /> },
   { path: '/avatar-frames/transfers', label: 'Lịch sử chuyển', icon: <SwapOutlined /> },
+]
+
+export const CHECKIN_SECTION_LINKS: ShopSectionLink[] = [
+  { path: '/checkin', label: 'Lịch tháng', icon: <CalendarOutlined /> },
+  { path: '/checkin/history', label: 'Lịch sử', icon: <HistoryOutlined /> },
+  { path: '/checkin/stats', label: 'Thống kê', icon: <BarChartOutlined /> },
+  { path: '/checkin/settings', label: 'Cài đặt', icon: <SettingOutlined /> },
 ]

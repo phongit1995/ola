@@ -1,17 +1,36 @@
-import { ROOM_MESSAGE_CACHE_LIMIT, ROOM_MESSAGE_STATUS } from '../../constants/room';
-import { activeVipTypeId } from '../../lib/vip';
+import {
+  ROOM_MEMBER_SHORT_NAME_MAX_LENGTH,
+  ROOM_MEMBER_SHORT_NAME_MIN_LENGTH,
+  ROOM_MESSAGE_CACHE_LIMIT,
+  ROOM_MESSAGE_STATUS,
+} from '../../constants/room';
+import { activeVipTypeId, isVipActive } from '../../lib/vip';
 import type { RoomMember, RoomMessage, RoomReplySnapshot } from '../../types/api/room.type';
 import { useAuthStore } from '../auth/authStore';
 import { MESSAGE_TYPE } from '../../constants/chat';
 
-export function withVipTypeId(members: RoomMember[]): RoomMember[] {
-  const resolved = members.map((member) => ({
-    ...member,
-    vipTypeId: activeVipTypeId(member.vipUsed, member.vipEndTime),
-  }));
-  const vip = resolved.filter((member) => member.vipTypeId != null);
-  const rest = resolved.filter((member) => member.vipTypeId == null);
-  return [...vip, ...rest];
+function roomMemberNameRank(username: string): number {
+  const length = Array.from(username).length;
+  return length >= ROOM_MEMBER_SHORT_NAME_MIN_LENGTH && length <= ROOM_MEMBER_SHORT_NAME_MAX_LENGTH
+    ? length
+    : ROOM_MEMBER_SHORT_NAME_MAX_LENGTH + 1;
+}
+
+export function toRoomMemberList(members: RoomMember[]): RoomMember[] {
+  const selfId = useAuthStore.getState().user?.id;
+  return members
+    .map((member, joinOrder) => ({
+      member: { ...member, vipTypeId: activeVipTypeId(member.vipUsed, member.vipEndTime) },
+      self: member.userId === selfId ? 0 : 1,
+      vip: isVipActive(member.vipEndTime) ? 0 : 1,
+      nameRank: roomMemberNameRank(member.username),
+      joinOrder,
+    }))
+    .sort(
+      (a, b) =>
+        a.self - b.self || a.vip - b.vip || a.nameRank - b.nameRank || a.joinOrder - b.joinOrder
+    )
+    .map(({ member }) => member);
 }
 
 export function withSenderVip(message: RoomMessage): RoomMessage {

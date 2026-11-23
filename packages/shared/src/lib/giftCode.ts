@@ -10,6 +10,7 @@ import type { OwnedAvatarFrame } from '../types/api/avatarFrame.type';
 import type { GiftCodeReward } from '../types/api/giftCode.type';
 import type { VipIconInstance } from '../types/api/vip.type';
 import { ApiError } from './apiError';
+import { isItemLocked } from './itemExpiry';
 import { vipName } from './vip';
 import { HTTP_STATUS } from '../constants/http';
 
@@ -31,18 +32,28 @@ export function giftCodeRewardText(t: TFunction, reward: GiftCodeReward): string
     return t('giftCode.rewardVipDays', { count: reward.days });
   }
   if (reward.type === GIFT_CODE_REWARD_TYPE.vipIcon && reward.vipIconId != null) {
-    return t('giftCode.rewardVipIcon', { name: vipName(reward.vipIconId) });
+    return withRewardDays(t, t('giftCode.rewardVipIcon', { name: vipName(reward.vipIconId) }), reward);
   }
   if (reward.type === GIFT_CODE_REWARD_TYPE.avatarFrame && reward.frameId != null) {
-    return t('giftCode.rewardAvatarFrame');
+    return withRewardDays(t, t('giftCode.rewardAvatarFrame'), reward);
+  }
+  if (reward.type === GIFT_CODE_REWARD_TYPE.megaphoneTicket && reward.count != null) {
+    return withRewardDays(t, t('giftCode.rewardMegaphoneTicket', { count: reward.count }), reward);
   }
   return null;
 }
 
-export function isVipIconTransferable(icon: Pick<VipIconInstance, 'source'>): boolean {
+function withRewardDays(t: TFunction, text: string, reward: GiftCodeReward): string {
+  const days = reward.expiresInDays ?? 0;
+  return days > 0 ? `${text} ${t('giftCode.rewardForDays', { count: days })}` : text;
+}
+
+export function isVipIconTransferable(icon: Pick<VipIconInstance, 'source' | 'locked' | 'expiresAt'>): boolean {
+  if (icon.locked != null) return !isItemLocked(icon);
   return icon.source !== VIP_ICON_SOURCE_GIFT_CODE;
 }
 
-export function isAvatarFrameTransferable(frame: Pick<OwnedAvatarFrame, 'source'>): boolean {
+export function isAvatarFrameTransferable(frame: Pick<OwnedAvatarFrame, 'source' | 'locked' | 'expiresAt'>): boolean {
+  if (frame.locked != null) return !isItemLocked(frame);
   return frame.source !== AVATAR_FRAME_SOURCE_GIFT_CODE;
 }

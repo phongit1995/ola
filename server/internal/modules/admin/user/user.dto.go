@@ -1,6 +1,8 @@
 package adminuser
 
 import (
+	"time"
+
 	"ola-chat-server/internal/modules/moderation"
 
 	userModule "ola-chat-server/internal/modules/user"
@@ -47,6 +49,9 @@ type UserDetail struct {
 	IsVip           bool   `json:"isVip"`
 	VipUsed         string `json:"vipUsed,omitempty"`
 	VipEndTime      string `json:"vipEndTime,omitempty"`
+	VipUsedExpires  string `json:"vipUsedExpiresAt,omitempty"`
+	AvatarFrameID   string `json:"avatarFrameId,omitempty"`
+	FrameExpiresAt  string `json:"avatarFrameExpiresAt,omitempty"`
 	FollowerCount   int    `json:"followerCount"`
 	FollowingCount  int    `json:"followingCount"`
 	IsActive        bool   `json:"isActive"`
@@ -62,12 +67,15 @@ type UserDetail struct {
 }
 
 type VipIconItem struct {
-	InstanceID string `json:"instanceId"`
-	TypeID     int16  `json:"typeId"`
-	IsLocked   bool   `json:"isLocked"`
-	IsUsing    bool   `json:"isUsing"`
-	Source     string `json:"source,omitempty"`
-	AcquiredAt string `json:"acquiredAt,omitempty"`
+	InstanceID string  `json:"instanceId"`
+	TypeID     int16   `json:"typeId"`
+	IsLocked   bool    `json:"isLocked"`
+	IsUsing    bool    `json:"isUsing"`
+	Source     string  `json:"source,omitempty"`
+	AcquiredAt string  `json:"acquiredAt,omitempty"`
+	Locked     bool    `json:"locked"`
+	ExpiresAt  *string `json:"expiresAt,omitempty"`
+	Expired    bool    `json:"expired,omitempty"`
 }
 
 type VipIconListResponse struct {
@@ -124,7 +132,14 @@ type ResetPasswordRequest struct {
 }
 
 type GrantVipRequest struct {
-	VipTypeID int16 `json:"vipTypeId" binding:"required,min=1,max=138" example:"4"`
+	VipTypeID     int16 `json:"vipTypeId" binding:"required,min=1,max=138" example:"4"`
+	ExpiresInDays int   `json:"expiresInDays" binding:"omitempty,min=0,max=3650" example:"7"`
+	Locked        bool  `json:"locked" example:"true"`
+}
+
+type UpdateVipRequest struct {
+	ExpiresAt *time.Time `json:"expiresAt" example:"2026-11-25T13:00:00Z"`
+	Locked    bool       `json:"locked" example:"true"`
 }
 
 type AddVipDaysRequest struct {

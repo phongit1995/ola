@@ -9,5 +9,7 @@ export const TEXT_FAINT = 'rgba(0,0,0,0.38)';
 export const ERROR = '#e34545';
 
 export const WARNING = '#ff9800';
+export const WARNING_SOFT = '#fff3e0';
+export const WARNING_INK = '#e65100';
 
 export const TAB_BAR_BORDER = '#a0a0a0';

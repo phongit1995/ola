@@ -3,17 +3,21 @@ package vip
 import "ola-chat-server/internal/utils"
 
 type VipItem struct {
-	InstanceID string `json:"instanceId" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TypeID     int16  `json:"typeId" example:"4"`
-	IsLocked   bool   `json:"isLocked" example:"false"`
-	IsUsing    bool   `json:"isUsing" example:"true"`
-	Source     string `json:"source" example:"purchase"`
-	AcquiredAt string `json:"acquiredAt" example:"2026-06-19T10:00:00Z"`
+	InstanceID string  `json:"instanceId" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TypeID     int16   `json:"typeId" example:"4"`
+	IsLocked   bool    `json:"isLocked" example:"false"`
+	IsUsing    bool    `json:"isUsing" example:"true"`
+	Source     string  `json:"source" example:"purchase"`
+	AcquiredAt string  `json:"acquiredAt" example:"2026-06-19T10:00:00Z"`
+	Locked     bool    `json:"locked" example:"false"`
+	ExpiresAt  *string `json:"expiresAt,omitempty" example:"2026-11-25T13:00:00Z"`
 }
 
 type StoreQuery struct {
-	Limit  int `form:"limit" binding:"omitempty,min=1,max=100"`
-	Offset int `form:"offset" binding:"omitempty,min=0"`
+	Limit        int    `form:"limit" binding:"omitempty,min=1,max=100"`
+	Offset       int    `form:"offset" binding:"omitempty,min=0"`
+	AsOf         string `form:"asOf"`
+	Transferable bool   `form:"transferable"`
 }
 
 type StoreResponse struct {
@@ -25,6 +29,7 @@ type StoreResponse struct {
 	Total        int       `json:"total" example:"3"`
 	Limit        int       `json:"limit" example:"50"`
 	Offset       int       `json:"offset" example:"0"`
+	AsOf         string    `json:"asOf" example:"2026-11-18T08:00:00Z"`
 	Items        []VipItem `json:"items"`
 }
 

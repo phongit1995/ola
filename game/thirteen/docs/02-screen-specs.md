@@ -282,14 +282,7 @@ Field label:
 - 13/18, weight 800, navy;
 - margin-bottom 6 px;
 
-Capacity selector:
-
-- hàng 3 segment 2/3/4 người;
-- gap 8 px;
-- mỗi segment min 64 × 44;
-- inactive cream, navy border;
-- active aqua.100 fill + navy 3 px hoặc sun fill;
-- có check mini hoặc thay đổi border để không dựa riêng màu.
+Số người chơi: hộp tạo bàn không còn chọn 2/3/4 (bỏ từ 18/11/2026). Bàn luôn tạo với 4 ghế (`ROOM_CREATE` gửi `maxPlayers: 4`), chủ bàn đóng/mở ghế ngay trong bàn chờ (§ 5.3).
 
 Input cược Ken:
 
@@ -328,7 +321,7 @@ Actions:
 - giữ width nút;
 - spinner navy 16 px;
 - label vẫn còn hoặc dùng “Đang tạo...”;
-- disable capacity/input để tránh submit kép;
+- disable input để tránh submit kép;
 - không giảm opacity modal.
 
 ### 4.4 Modal “Chơi với máy”
@@ -381,8 +374,8 @@ Concept tham chiếu đã duyệt: [concept-room-style-02-ngay-vui.png](./screen
 - gap 12 px;
 - padding 16–20 px;
 - row min-height 126 px;
-- tối đa 4 seat;
-- ở phòng 2 người vẫn giữ grid 2 cột và không render hàng trống thứ hai.
+- luôn vẽ đủ 4 ô (`roomSeatSlots` trong `helpers/room.ts`): người ngồi lấp từ ô đầu, tiếp theo là ghế trống, các ô vượt `maxPlayers` là ghế đóng;
+- ghế không gắn vị trí, nên đóng ghế chỉ là giảm `maxPlayers` đi 1 và mở là tăng 1.
 
 Occupied seat:
 
@@ -402,8 +395,17 @@ Empty seat:
 - aqua.100 35% hoặc transparent;
 - navy border 2 px dashed, dash 7 gap 5;
 - plus circle 42 px, cream fill, navy outline;
-- text “Chỗ trống” 13 px navy 70%;
-- không illustration ghế.
+- text “Ghế trống” 13 px navy 70%;
+- không illustration ghế;
+- chủ bàn thấy nút ổ khoá 32 × 32 góc phải trên ở ghế trống **cuối cùng** (cùng chỗ nút mời ra), bấm là đóng ghế đó. Không hiện khi bàn còn 2 ghế hoặc không còn ghế trống.
+
+Closed seat (`.tl-seat-closed`):
+
+- nền navy 28%, viền navy 45% dashed, không shadow;
+- vòng tròn 42 px có icon `ic-lock.svg`, chữ “Ghế đóng” cream 82%;
+- với chủ bàn, ghế đóng **đầu tiên** là nút, có dòng phụ “Chạm để mở”; các ghế đóng khác và mọi ghế đóng ở góc nhìn khách/người xem chỉ để xem;
+- gửi `ROOM_SEATS { roomId, maxPlayers }`. Server chỉ nhận từ chủ bàn khi bàn đang chờ, `maxPlayers` trong 2–4 và không ít hơn số người đang ngồi; sai thì trả `ROOM_SEATS_INVALID`. Đổi xong server phát `ROOM_STATE` cho cả bàn và người xem, `ROOM_UPSERT` cho sảnh. Người vào ghế đã đóng nhận `ROOM_FULL`.
+- bàn đủ người thì muốn đóng ghế phải mời bớt người ra trước. Số ghế giữ qua các ván.
 
 ### 5.4 Chat phòng
 
@@ -737,7 +739,7 @@ Mỗi release chụp các state:
 - ván tập 2 và 4 người, kết quả ván tập;
 - create room default/error/loading;
 - password room default/error;
-- room 2/3/4 người, host và guest;
+- room 4 ghế với 0/1/2 ghế đóng, host (đóng/mở) và guest (chỉ xem);
 - ready/not-ready/start-disabled;
 - table đầu lượt, đang chọn, có thể đánh, không thể đánh;
 - pass, chop, finish, disconnect;

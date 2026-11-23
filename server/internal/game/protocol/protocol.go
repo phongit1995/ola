@@ -18,6 +18,7 @@ const (
 	C2SRoomKick      = "ROOM_KICK"
 	C2SRoomReady     = "ROOM_READY"
 	C2SRoomStart     = "ROOM_START"
+	C2SRoomSeats     = "ROOM_SEATS"
 	C2SLeaderboard   = "LEADERBOARD"
 	C2SHistory       = "HISTORY"
 	C2SSpectateList  = "SPECTATE_LIST"
@@ -89,6 +90,7 @@ const (
 	ErrorCodeRoomNotFound         = "ROOM_NOT_FOUND"
 	ErrorCodeRoomNotFull          = "ROOM_NOT_FULL"
 	ErrorCodeRoomNotReady         = "ROOM_NOT_READY"
+	ErrorCodeRoomSeatsInvalid     = "ROOM_SEATS_INVALID"
 	ErrorCodeRoomStartFailed      = "ROOM_START_FAILED"
 	ErrorCodeRoomUpdateFailed     = "ROOM_UPDATE_FAILED"
 	ErrorCodeReactionRateLimited  = "REACTION_RATE_LIMITED"
@@ -316,12 +318,13 @@ type ChatSendData struct {
 }
 
 type ChatMessageData struct {
-	MatchID string `json:"matchId,omitempty"`
-	RoomID  string `json:"roomId,omitempty"`
-	UserID  string `json:"userId"`
-	Name    string `json:"name"`
-	Text    string `json:"text"`
-	SentAt  int64  `json:"sentAt"`
+	MatchID   string `json:"matchId,omitempty"`
+	RoomID    string `json:"roomId,omitempty"`
+	UserID    string `json:"userId"`
+	Name      string `json:"name"`
+	Text      string `json:"text"`
+	SentAt    int64  `json:"sentAt"`
+	Spectator bool   `json:"spectator,omitempty"`
 }
 
 type ReactionSendData struct {
@@ -361,6 +364,11 @@ type RoomActionData struct {
 type RoomKickData struct {
 	RoomID string `json:"roomId"`
 	UserID string `json:"userId"`
+}
+
+type RoomSeatsData struct {
+	RoomID     string `json:"roomId"`
+	MaxPlayers int    `json:"maxPlayers"`
 }
 
 type RoomReadyData struct {

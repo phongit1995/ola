@@ -12,6 +12,7 @@ import (
 	avatarframe "ola-chat-server/internal/modules/avatar-frame"
 	"ola-chat-server/internal/modules/call"
 	chatbot "ola-chat-server/internal/modules/chat-bot"
+	"ola-chat-server/internal/modules/checkin"
 	"ola-chat-server/internal/modules/clan"
 	contentfilter "ola-chat-server/internal/modules/content-filter"
 	"ola-chat-server/internal/modules/conversation"
@@ -108,6 +109,7 @@ func NewContainer(opts ...dig.Option) (*dig.Container, error) {
 		contentfilter.Provider,
 		megaphone.Provider,
 		giftcode.Provider,
+		checkin.Provider,
 		marriage.Provider,
 		marriagediary.Provider,
 		pen.Provider,

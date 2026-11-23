@@ -1,9 +1,13 @@
 import { Badge, Space, Tag } from 'antd'
-import { CrownOutlined } from '@ant-design/icons'
+import { CrownOutlined, SoundOutlined } from '@ant-design/icons'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { avatarFrameName, avatarFrameUrl } from '@/pages/avatar-frames/utils'
 import type { GiftCodeKind, GiftCodeReward, GiftCodeStatus } from '@/types'
 import { GIFT_CODE_KIND_META, GIFT_CODE_STATUS_META } from './constants'
+
+function rewardDaysSuffix(reward: GiftCodeReward): string {
+  return (reward.expiresInDays ?? 0) > 0 ? ` (${reward.expiresInDays} ngày)` : ''
+}
 
 const ICON_STYLE = { width: 20, height: 20, objectFit: 'contain' as const, verticalAlign: 'middle', marginRight: 4 }
 
@@ -15,15 +19,22 @@ export function GiftCodeRewardTags({ rewards }: { rewards: GiftCodeReward[] }) {
           <Tag key={index} color="gold" icon={<CrownOutlined />} style={{ marginInlineEnd: 0 }}>
             {reward.days} ngày VIP
           </Tag>
+        ) : reward.type === 'megaphone_ticket' ? (
+          <Tag key={index} color="orange" icon={<SoundOutlined />} style={{ marginInlineEnd: 0 }}>
+            {reward.count} vé loa
+            {rewardDaysSuffix(reward)}
+          </Tag>
         ) : reward.type === 'avatar_frame' ? (
           <Tag key={index} color="cyan" style={{ marginInlineEnd: 0 }}>
             <img src={avatarFrameUrl(reward.frameId ?? '')} alt="" style={ICON_STYLE} />
             Khung {avatarFrameName(reward.frameId ?? '')}
+            {rewardDaysSuffix(reward)}
           </Tag>
         ) : (
           <Tag key={index} color="purple" style={{ marginInlineEnd: 0 }}>
             <img src={vipIconUrl(reward.vipIconId ?? 0)} alt="" style={ICON_STYLE} />
             {vipName(reward.vipIconId ?? 0)}
+            {rewardDaysSuffix(reward)}
           </Tag>
         ),
       )}

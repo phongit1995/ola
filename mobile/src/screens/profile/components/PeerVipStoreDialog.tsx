@@ -2,13 +2,14 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
 import { VipService } from '@ola/shared/services';
-import { ApiError, vipName } from '@ola/shared/lib';
+import { ApiError, vipName, withoutExpiredItems } from '@ola/shared/lib';
 import { Dialog } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { TEXT_SECONDARY } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
 import { PEER_VIP_PAGE_SIZE } from '../constants';
 import { HTTP_STATUS } from '@ola/shared/constants';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
 
 type LoadState = 'loading' | 'private' | 'error' | 'ready';
@@ -23,11 +24,14 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
   const colors = useThemeColors();
   const { t } = useTranslation();
   const fetchPage = useCallback(
-    (offset: number) => VipService.userStore(userId, { limit: PEER_VIP_PAGE_SIZE, offset }),
+    (offset: number, asOf?: string) =>
+      VipService.userStore(userId, { limit: PEER_VIP_PAGE_SIZE, offset, asOf }),
     [userId],
   );
-  const { items, total, loading, loadingMore, error, loadMore } =
+  const now = useMinuteNow();
+  const { items: loadedItems, total, loading, loadingMore, error, loadMore } =
     useOffsetPage(fetchPage);
+  const items = withoutExpiredItems(loadedItems, now);
   const state: LoadState = loading
     ? 'loading'
     : error == null

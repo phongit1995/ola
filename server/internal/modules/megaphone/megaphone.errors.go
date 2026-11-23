@@ -18,4 +18,8 @@ var (
 	ErrMegaphoneInsufficientKen = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "insufficient ken balance", ErrorCodeMegaphoneInsufficientKen)
 	ErrMegaphoneRequestConflict = utils.NewHTTPErrorWithCode(http.StatusConflict, "megaphone request id was used for another megaphone", ErrorCodeMegaphoneRequestConflict)
 	ErrMegaphoneNotFound        = utils.NewHTTPErrorWithCode(http.StatusNotFound, "megaphone not found", ErrorCodeMegaphoneNotFound)
+	ErrMegaphoneNoTicket        = utils.NewHTTPErrorWithCode(http.StatusConflict, "no usable megaphone ticket", ErrorCodeMegaphoneNoTicket)
+	ErrMegaphoneTicketCount     = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "ticket count must be between 1 and 100", ErrorCodeMegaphoneTicketCount)
+	ErrMegaphoneTicketDays      = utils.NewHTTPErrorWithCode(http.StatusBadRequest, "ticket days must be between 0 and 365", ErrorCodeMegaphoneTicketDays)
+	ErrMegaphoneTicketNotUsable = utils.NewHTTPErrorWithCode(http.StatusConflict, "megaphone ticket is not usable", ErrorCodeMegaphoneTicketNotUsable)
 )

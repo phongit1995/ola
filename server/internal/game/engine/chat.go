@@ -55,9 +55,18 @@ func (e *Engine) Chat(gameID, userID, matchID, text string) {
 }
 
 func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
+	e.roomChat(gameID, protocol.PlayerInfo{ID: userID}, roomID, text, false)
+}
+
+func (e *Engine) WatcherRoomChat(gameID string, viewer protocol.PlayerInfo, roomID, text string) {
+	e.roomChat(gameID, viewer, roomID, text, true)
+}
+
+func (e *Engine) roomChat(gameID string, sender protocol.PlayerInfo, roomID, text string, watching bool) {
 	e.roomMu.Lock()
 	defer e.roomMu.Unlock()
 
+	userID := sender.ID
 	if roomID == "" {
 		e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFound, "room id is required")
 		return
@@ -67,11 +76,12 @@ func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
 		e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFound, "room not found")
 		return
 	}
-	if !room.hasMember(userID) {
+	watcher := watching && !room.hasMember(userID)
+	switch {
+	case watcher && !spectatorsAllowed(&room), !watcher && !room.hasMember(userID):
 		e.sendError(gameID, userID, protocol.ErrorCodeNotRoomMember, "only room members can chat")
 		return
-	}
-	if len(room.guestList()) == 0 {
+	case !watcher && len(room.guestList()) == 0:
 		e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFull, "another player is required to chat")
 		return
 	}
@@ -82,23 +92,24 @@ func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
 	}
 
 	now := time.Now()
-	rateKey := userKey(gameID, userID)
-	if last := e.roomChatLast[rateKey]; !last.IsZero() && now.Sub(last) < chatCooldown {
+	if !allowChat(e.roomChatLast, userKey(gameID, userID), now) {
 		e.sendError(gameID, userID, protocol.ErrorCodeChatRateLimited, "chat messages are being sent too quickly")
 		return
 	}
-	e.roomChatLast[rateKey] = now
 
-	senderName := room.OwnerName
-	if idx := room.guestIndex(userID); idx >= 0 {
+	senderName := sender.Name
+	if room.OwnerID == userID {
+		senderName = room.OwnerName
+	} else if idx := room.guestIndex(userID); idx >= 0 {
 		senderName = room.guestList()[idx].Name
 	}
 	data := protocol.ChatMessageData{
-		RoomID: room.ID,
-		UserID: userID,
-		Name:   senderName,
-		Text:   text,
-		SentAt: now.UnixMilli(),
+		RoomID:    room.ID,
+		UserID:    userID,
+		Name:      senderName,
+		Text:      text,
+		SentAt:    now.UnixMilli(),
+		Spectator: watcher,
 	}
 	for _, recipientID := range room.memberIDs() {
 		e.toUser(room.GameID, recipientID, protocol.OutEnvelope{
@@ -109,6 +120,63 @@ func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
 	if spectatorsAllowed(&room) {
 		e.toRoomWatchers(room.GameID, room.ID, protocol.OutEnvelope{Type: protocol.S2CChatMessage, Data: data})
 	}
+}
+
+func (e *Engine) SpectatorChat(gameID string, viewer protocol.PlayerInfo, matchID, text string) {
+	players, playing := e.playingMatchPlayers(gameID, matchID)
+	if !playing {
+		e.sendError(gameID, viewer.ID, protocol.ErrorCodeNoMatch, "no active match")
+		return
+	}
+	if isPlayer(players, viewer.ID) {
+		e.Chat(gameID, viewer.ID, matchID, text)
+		return
+	}
+	text, code, message := validateChatText(text)
+	if code != "" {
+		e.sendError(gameID, viewer.ID, code, message)
+		return
+	}
+
+	now := time.Now()
+	e.viewerChatMu.Lock()
+	allowed := allowChat(e.viewerChatLast, userKey(gameID, viewer.ID), now)
+	e.viewerChatMu.Unlock()
+	if !allowed {
+		e.sendError(gameID, viewer.ID, protocol.ErrorCodeChatRateLimited, "chat messages are being sent too quickly")
+		return
+	}
+
+	envelope := protocol.OutEnvelope{
+		Type: protocol.S2CChatMessage,
+		Data: protocol.ChatMessageData{
+			MatchID:   matchID,
+			UserID:    viewer.ID,
+			Name:      viewer.Name,
+			Text:      text,
+			SentAt:    now.UnixMilli(),
+			Spectator: true,
+		},
+	}
+	for _, player := range players {
+		e.toUser(gameID, player.ID, envelope)
+	}
+	e.toMatch(gameID, matchID, envelope)
+}
+
+func allowChat(last map[string]time.Time, key string, now time.Time) bool {
+	if sent := last[key]; !sent.IsZero() && now.Sub(sent) < chatCooldown {
+		return false
+	}
+	if len(last) >= chatRatePruneSize {
+		for k, sent := range last {
+			if now.Sub(sent) >= chatCooldown {
+				delete(last, k)
+			}
+		}
+	}
+	last[key] = now
+	return true
 }
 
 func (e *Engine) MatchReaction(gameID, userID, matchID, reactionType string) {

@@ -58,6 +58,7 @@ export function useMyAvatarFrames(): MyAvatarFramesState {
       const next = await AvatarFrameService.myStore({
         limit: AVATAR_FRAME_STORE_PAGE_SIZE,
         offset: store.items.length,
+        asOf: store.asOf,
       });
       if (version !== dataVersion.current) return;
       setStore((prev) => (prev ? mergeAvatarFramePage(prev, next) : next));

@@ -48,6 +48,11 @@ import { StoryLatestCommentsScreen } from '@screens/story/StoryLatestCommentsScr
 import { StoryReaderScreen } from '@screens/story/StoryReaderScreen';
 import { GamesScreen } from '@screens/games/GamesScreen';
 import { PersonalScreen } from '@screens/personal/PersonalScreen';
+import { DailyCheckinScreen } from '@screens/daily-checkin/DailyCheckinScreen';
+import {
+  selectDailyCheckinAttention,
+  useDailyCheckinStore,
+} from '@ola/shared/stores/daily-checkin/dailyCheckinStore';
 import { ProfileViewScreen } from '@screens/profile/ProfileViewScreen';
 import { EditProfileScreen } from '@screens/profile/EditProfileScreen';
 import { VipStoreScreen } from '@screens/vip/VipStoreScreen';
@@ -189,6 +194,7 @@ function MainTabs() {
   const chatUnread = useChatStore((state) => totalUnreadOf(state.conversations));
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
   const notifUnread = useAppNotificationStore((state) => state.unreadCount);
+  const checkinAttention = useDailyCheckinStore(selectDailyCheckinAttention);
   const theme = useThemeStore((state) => state.theme);
   const storyEnabled = useStoryConfigStore((state) => state.enabled);
   const loadStoryConfig = useStoryConfigStore((state) => state.load);
@@ -287,13 +293,30 @@ function MainTabs() {
             title: t('home.tabPersonal'),
             tabBarIcon: tabIcon('personal'),
             tabBarBadge:
-              notifUnread > 0 ? (notifUnread > 99 ? '99+' : notifUnread) : undefined,
-            tabBarBadgeStyle: {
-              backgroundColor: '#ff4081',
-              color: '#ffffff',
-              fontSize: 10 * fontMultiplier,
-              fontWeight: 'bold',
-            },
+              notifUnread > 0
+                ? notifUnread > 99
+                  ? '99+'
+                  : notifUnread
+                : checkinAttention
+                  ? ''
+                  : undefined,
+            tabBarBadgeStyle:
+              notifUnread > 0
+                ? {
+                    backgroundColor: '#ff4081',
+                    color: '#ffffff',
+                    fontSize: 10 * fontMultiplier,
+                    fontWeight: 'bold',
+                  }
+                : {
+                    backgroundColor: '#ff4081',
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    minWidth: 12,
+                    maxWidth: 12,
+                    height: 12,
+                    borderRadius: 6,
+                  },
           }}
         />
       </Tabs.Navigator>
@@ -336,6 +359,7 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.GiftLeaderboard} component={GiftLeaderboardScreen} />
       <RootStack.Screen name={ROOT_ROUTES.GiftHistory} component={GiftHistoryScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Megaphone} component={MegaphoneScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.DailyCheckin} component={DailyCheckinScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Notifications} component={NotificationsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Settings} component={SettingsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.PenGame} component={PenGameScreen} />

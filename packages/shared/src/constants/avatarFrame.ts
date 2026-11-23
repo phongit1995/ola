@@ -31,6 +31,7 @@ export const AVATAR_FRAME_ERROR_CODE = {
   notOwned: 'AVATAR_FRAME_NOT_OWNED',
   inUse: 'AVATAR_FRAME_IN_USE',
   notTransferable: 'AVATAR_FRAME_NOT_TRANSFERABLE',
+  expired: 'AVATAR_FRAME_EXPIRED',
   vipRequired: 'AVATAR_FRAME_VIP_REQUIRED',
   insufficientKen: 'AVATAR_FRAME_INSUFFICIENT_KEN',
   wrongPassword: 'AVATAR_FRAME_WRONG_PASSWORD',

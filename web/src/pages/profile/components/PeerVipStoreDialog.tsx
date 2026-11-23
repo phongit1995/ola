@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, VipIcon } from '@components';
-import { ApiError, vipName } from '@lib';
+import { ApiError, vipName, withoutExpiredItems } from '@lib';
 import { VipService } from '@services';
 import { HTTP_STATUS } from '@constants';
+import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 import { useOffsetPage } from '@ola/shared/stores/useOffsetPage';
 
 interface PeerVipStoreDialogProps {
@@ -23,11 +24,14 @@ export function PeerVipStoreDialog({
 }: PeerVipStoreDialogProps) {
   const { t } = useTranslation();
   const fetchPage = useCallback(
-    (offset: number) => VipService.userStore(userId, { limit: PAGE_SIZE, offset }),
+    (offset: number, asOf?: string) =>
+      VipService.userStore(userId, { limit: PAGE_SIZE, offset, asOf }),
     [userId]
   );
-  const { items, total, loading, loadingMore, error, loadMore } =
+  const { items: loadedItems, total, loading, loadingMore, error, loadMore } =
     useOffsetPage(fetchPage);
+  const now = useMinuteNow();
+  const items = withoutExpiredItems(loadedItems, now);
   const state: LoadState = loading
     ? 'loading'
     : error == null
@@ -79,8 +83,8 @@ export function PeerVipStoreDialog({
                     <div
                       className={
                         icon.isUsing
-                          ? 'rounded-md p-0.5 ring-2 ring-ola-primary'
-                          : 'p-0.5'
+                          ? 'relative rounded-md p-0.5 ring-2 ring-ola-primary'
+                          : 'relative p-0.5'
                       }
                     >
                       <VipIcon

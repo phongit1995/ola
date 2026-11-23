@@ -122,6 +122,12 @@ export function initAppReview(): void {
   writeState({ ...state, firstSeenAt: Date.now() });
 }
 
+let suppressedThisSession = false;
+
+export function suppressAppReviewForSession(): void {
+  suppressedThisSession = true;
+}
+
 export function maybeAskForReview(trigger: AppReviewTrigger): void {
   const now = Date.now();
   const previous = readState();
@@ -130,7 +136,7 @@ export function maybeAskForReview(trigger: AppReviewTrigger): void {
     firstSeenAt: previous.firstSeenAt === 0 ? now : previous.firstSeenAt,
     moments: previous.moments + 1,
   };
-  if (!canPrompt(next, now)) {
+  if (suppressedThisSession || !canPrompt(next, now)) {
     writeState(next);
     return;
   }

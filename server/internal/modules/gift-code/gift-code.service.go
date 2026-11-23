@@ -9,6 +9,7 @@ import (
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
 	avatarframe "ola-chat-server/internal/modules/avatar-frame"
+	"ola-chat-server/internal/modules/megaphone"
 	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/user"
@@ -255,8 +256,8 @@ func claimableRewards(tx *gorm.DB, userID uuid.UUID, rewards models.GiftCodeRewa
 	}
 	claimable := make(models.GiftCodeRewards, 0, len(rewards))
 	for _, r := range rewards {
-		if r.Type == models.GiftCodeRewardAvatarFrame {
-			owned, err := avatarframe.OwnsFrameTx(tx, userID, r.FrameID)
+		if r.Type == models.GiftCodeRewardAvatarFrame && r.ExpiresInDays <= 0 {
+			owned, err := avatarframe.OwnsPermanentFrameTx(tx, userID, r.FrameID)
 			if err != nil {
 				return nil, err
 			}
@@ -283,19 +284,26 @@ func grantRewards(tx *gorm.DB, userID uuid.UUID, code string, campaign *models.G
 			if r.VipIconID <= 0 {
 				continue
 			}
-			if _, err := vip.GrantIconTx(tx, userID, r.VipIconID, vip.IconSourceGiftCode, vip.PurchaseSourceGiftCode); err != nil {
+			if _, err := vip.GrantIconTx(tx, userID, r.VipIconID, vip.IconSourceGiftCode, vip.PurchaseSourceGiftCode, models.LockedGrantForDays(r.ExpiresInDays)); err != nil {
 				return err
 			}
 		case models.GiftCodeRewardAvatarFrame:
 			if r.FrameID == "" {
 				continue
 			}
-			granted, err := avatarframe.GrantFrameTx(tx, userID, r.FrameID, models.AvatarFrameSourceGiftCode, now)
+			granted, err := avatarframe.GrantFrameTx(tx, userID, r.FrameID, models.AvatarFrameSourceGiftCode, now, models.LockedGrantForDays(r.ExpiresInDays))
 			if err != nil {
 				return err
 			}
 			if !granted {
 				return &rejection{reason: ReasonOwned, campaignID: &campaign.ID}
+			}
+		case models.GiftCodeRewardMegaphoneTicket:
+			if r.Count <= 0 {
+				continue
+			}
+			if _, err := megaphone.GrantTicketsTx(tx, userID, r.Count, models.MegaphoneTicketSourceGiftCode, &campaign.ID, r.ExpiresInDays, now); err != nil {
+				return err
 			}
 		}
 	}
@@ -389,7 +397,7 @@ func (s *Service) PurgeAttempts() (int64, error) {
 func toRewardItems(rewards models.GiftCodeRewards) []RewardItem {
 	items := make([]RewardItem, 0, len(rewards))
 	for _, r := range rewards {
-		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID})
+		items = append(items, RewardItem{Type: r.Type, Days: r.Days, VipIconID: r.VipIconID, FrameID: r.FrameID, Count: r.Count, ExpiresInDays: r.ExpiresInDays})
 	}
 	return items
 }

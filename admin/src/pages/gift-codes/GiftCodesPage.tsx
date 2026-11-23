@@ -164,24 +164,29 @@ export function GiftCodesPage() {
       }
     >
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={12} lg={6}>
+        <Col flex="1 1 180px">
           <Card size="small">
             <Statistic title="Đợt đang chạy" value={stats?.running ?? 0} />
           </Card>
         </Col>
-        <Col xs={12} lg={6}>
+        <Col flex="1 1 180px">
           <Card size="small">
             <Statistic title="Lượt nhận hôm nay" value={stats?.redeemedToday ?? 0} groupSeparator="." />
           </Card>
         </Col>
-        <Col xs={12} lg={6}>
+        <Col flex="1 1 180px">
           <Card size="small">
             <Statistic title="Tổng lượt đã nhận" value={stats?.redeemedTotal ?? 0} groupSeparator="." />
           </Card>
         </Col>
-        <Col xs={12} lg={6}>
+        <Col flex="1 1 180px">
           <Card size="small">
             <Statistic title="Ngày VIP đã tặng" value={stats?.vipDaysGiven ?? 0} groupSeparator="." suffix="ngày" />
+          </Card>
+        </Col>
+        <Col flex="1 1 180px">
+          <Card size="small">
+            <Statistic title="Vé loa đã tặng" value={stats?.megaphoneTicketsGiven ?? 0} groupSeparator="." suffix="vé" />
           </Card>
         </Col>
       </Row>

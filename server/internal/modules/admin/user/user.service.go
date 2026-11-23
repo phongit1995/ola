@@ -10,6 +10,7 @@ import (
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/utils"
 	"strconv"
 	"strings"
 	"time"
@@ -222,26 +223,28 @@ func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListRespons
 		return nil, err
 	}
 
-	total, err := s.vipRepo.CountByUser(id)
+	now := time.Now()
+	total, err := s.vipRepo.CountByUser(id, vip.IconListFilter{Now: now, IncludeExpired: true})
 	if err != nil {
 		return nil, err
 	}
 
 	activeSort := int16(-1)
-	if user.VipUsed != nil {
-		if n, convErr := strconv.Atoi(*user.VipUsed); convErr == nil {
+	if vipUsed := user.ActiveVipUsed(now); vipUsed != nil {
+		if n, convErr := strconv.Atoi(*vipUsed); convErr == nil {
 			activeSort = int16(n)
 		}
 	}
 
-	items, err := s.vipRepo.ListByUserPaged(id, activeSort, limit, offset)
+	items, err := s.vipRepo.ListByUserPaged(id, activeSort, user.ActiveVipUsedInstanceID(now), vip.IconListFilter{Now: now, IncludeExpired: true}, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
 	out := make([]VipIconItem, 0, len(items))
 	for i := range items {
-		using := user.VipUsedInstanceID != nil && *user.VipUsedInstanceID == items[i].ID
+		activeInstance := user.ActiveVipUsedInstanceID(now)
+		using := activeInstance != nil && *activeInstance == items[i].ID
 		out = append(out, toVipIconItem(items[i], using))
 	}
 
@@ -253,7 +256,7 @@ func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListRespons
 	}, nil
 }
 
-func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
+func (s *Service) GrantVip(id uuid.UUID, typeID int16, grant models.ItemGrant) (*VipIconItem, error) {
 	if _, err := s.userRepo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
@@ -261,11 +264,15 @@ func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
 		return nil, err
 	}
 
+	now := time.Now()
+	grant = grant.Normalized()
 	icon := &models.UserVipIcon{
 		UserID:     id,
 		VipIconID:  typeID,
 		Source:     "admin",
-		AcquiredAt: time.Now(),
+		AcquiredAt: now,
+		Locked:     grant.Locked,
+		ExpiresAt:  grant.ExpiresAt(now),
 	}
 	if err := s.vipRepo.Create(icon); err != nil {
 		return nil, err
@@ -275,9 +282,27 @@ func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
 		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
 	}
 
-	s.logger.Infow("Admin granted vip icon", "user_id", id, "vip_type_id", typeID)
+	s.logger.Infow("Admin granted vip icon", "user_id", id, "vip_type_id", typeID, "locked", icon.Locked, "expires_at", icon.ExpiresAt)
 
 	item := toVipIconItem(*icon, false)
+	return &item, nil
+}
+
+func (s *Service) UpdateVip(id, instanceID uuid.UUID, locked bool, expiresAt *time.Time) (*VipIconItem, error) {
+	u, err := s.userRepo.FindByID(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperr.ErrUserNotFound
+		}
+		return nil, err
+	}
+	icon, err := s.vipService.AdminUpdateIcon(id, instanceID, locked, expiresAt)
+	if err != nil {
+		return nil, err
+	}
+	s.logger.Infow("Admin updated vip icon", "user_id", id, "instance_id", instanceID, "locked", icon.Locked, "expires_at", icon.ExpiresAt)
+	using := u.VipUsedInstanceID != nil && *u.VipUsedInstanceID == icon.ID
+	item := toVipIconItem(*icon, using)
 	return &item, nil
 }
 
@@ -414,8 +439,14 @@ func toDetail(u *models.User) *UserDetail {
 		UpdatedAt:       u.UpdatedAt.UTC().Format(time.RFC3339),
 		DeletedAt:       formatDeletedAt(u.DeletedAt),
 	}
-	if u.VipUsed != nil {
-		d.VipUsed = *u.VipUsed
+	now := time.Now()
+	if vipUsed := u.ActiveVipUsed(now); vipUsed != nil {
+		d.VipUsed = *vipUsed
+		d.VipUsedExpires = formatTime(u.VipUsedExpiresAt)
+	}
+	if u.AvatarFrameID != nil && !u.AvatarFrameExpired(now) {
+		d.AvatarFrameID = *u.AvatarFrameID
+		d.FrameExpiresAt = formatTime(u.AvatarFrameExpiresAt)
 	}
 	return d
 }
@@ -428,6 +459,9 @@ func toVipIconItem(icon models.UserVipIcon, isUsing bool) VipIconItem {
 		IsUsing:    isUsing,
 		Source:     icon.Source,
 		AcquiredAt: icon.AcquiredAt.UTC().Format(time.RFC3339),
+		Locked:     icon.Locked,
+		ExpiresAt:  utils.FormatOptionalRFC3339(icon.ExpiresAt),
+		Expired:    icon.Expired(time.Now()),
 	}
 }
 

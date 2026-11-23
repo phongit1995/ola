@@ -170,7 +170,7 @@ func (r *Repository) ApplyDraw(userID uuid.UUID, pack *models.EggPack, outcome D
 			}
 		case models.EggCategoryVipIcon:
 			if outcome.VipTypeID != nil {
-				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceEgg); err != nil {
+				if _, err := vip.CreateIconTx(tx, userID, *outcome.VipTypeID, vip.IconSourceEgg, models.PermanentGrant); err != nil {
 					return err
 				}
 			}

@@ -228,9 +228,14 @@ export const API_PATH = {
   giftCodes: {
     redeem: '/gift-codes/redeem',
   },
+  dailyCheckin: {
+    base: '/checkin',
+    open: '/checkin/open',
+  },
   megaphones: {
     base: '/megaphones',
     config: '/megaphones/config',
+    tickets: '/megaphones/tickets',
   },
   gifts: {
     base: '/gifts',

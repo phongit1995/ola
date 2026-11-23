@@ -174,7 +174,8 @@ func (s *Service) ListMembers(ctx context.Context, roomID uuid.UUID) (*RoomMembe
 		memberIDs = append(memberIDs, uid.String())
 	}
 	presenceMap := s.wsServer.GetPresenceService().GetPresenceBatch(memberIDs)
-	items := make([]RoomMemberResponse, 0, len(uuids))
+	now := time.Now()
+	ranked := make([]rankedRoomMember, 0, len(uuids))
 	for _, uid := range uuids {
 		u, ok := usersMap[uid]
 		if !ok || u == nil {
@@ -188,15 +189,20 @@ func (s *Service) ListMembers(ctx context.Context, roomID uuid.UUID) (*RoomMembe
 			Gender:     u.Gender,
 			Bio:        u.Bio,
 			BioImage:   u.BioImage,
-			VipUsed:    u.VipUsed,
+			VipUsed:    u.ActiveVipUsed(now),
 			DeviceType: presenceMap[uid.String()].DeviceType,
 		}
 		if u.VipEndTime != nil {
 			vipEnd := u.VipEndTime.Format(time.RFC3339)
 			member.VipEndTime = &vipEnd
 		}
-		items = append(items, member)
+		ranked = append(ranked, rankedRoomMember{
+			member:   member,
+			vip:      u.HasActiveVip(now),
+			nameRank: roomMemberNameRank(u.Username),
+		})
 	}
+	items := orderRoomMembers(ranked)
 	return &RoomMembersResponse{Items: items, Total: len(items)}, nil
 }
 

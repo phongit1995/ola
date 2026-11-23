@@ -54,13 +54,18 @@ export class VipService {
     return http.post<TransferVipDaysResult>(API_PATH.vip.transferDays, body);
   }
 
-  static store(params?: { limit?: number; offset?: number }): Promise<VipStoreResult> {
+  static store(params?: {
+    limit?: number;
+    offset?: number;
+    asOf?: string;
+    transferable?: boolean;
+  }): Promise<VipStoreResult> {
     return http.get<VipStoreResult>(API_PATH.vip.store, { params });
   }
 
   static userStore(
     userId: string,
-    params?: { limit?: number; offset?: number },
+    params?: { limit?: number; offset?: number; asOf?: string },
   ): Promise<VipStoreResult> {
     return http.get<VipStoreResult>(API_PATH.vip.userStore(userId), { params });
   }

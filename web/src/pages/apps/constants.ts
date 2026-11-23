@@ -17,6 +17,7 @@ import iconMegaphone from '@/assets/images/member-megaphone.webp';
 import iconSocial from '@/assets/icons/social/social-menu-light.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
 import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
+import { DAILY_CHECKIN_ICONS } from '@constants';
 import type { Venue } from './NearbyPlacesPage';
 
 export interface AppItem {
@@ -41,6 +42,11 @@ export const PERSONAL_ITEMS: AppItem[] = [
     app: 'notifications',
   },
   { icon: iconPersonal, titleKey: 'home.apps.profile', app: 'profile' },
+  {
+    icon: DAILY_CHECKIN_ICONS.menu,
+    titleKey: 'dailyCheckin.menuTitle',
+    app: 'dailyCheckin',
+  },
   { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
   {
     icon: iconAvatarFrame,

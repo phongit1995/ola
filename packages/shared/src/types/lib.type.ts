@@ -73,6 +73,7 @@ export type MegaphoneErrorKey =
   | 'megaphone.errors.dailyLimit'
   | 'megaphone.errors.queueFull'
   | 'megaphone.errors.insufficientKen'
+  | 'megaphone.errors.noTicket'
   | 'megaphone.errors.rateLimited'
   | 'megaphone.errors.failed';
 

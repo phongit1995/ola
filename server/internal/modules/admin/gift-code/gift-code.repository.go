@@ -133,9 +133,14 @@ func (r *Repository) Stats(now, dayStart time.Time) (CampaignStats, error) {
 	if err := r.db.Model(&models.GiftCodeRedemption{}).Where("created_at >= ?", dayStart).Count(&s.RedeemedToday).Error; err != nil {
 		return s, err
 	}
-	err := r.db.Raw(`SELECT COALESCE(SUM((reward->>'days')::int), 0)
+	if err := r.db.Raw(`SELECT COALESCE(SUM((reward->>'days')::int), 0)
 		FROM gift_code_redemptions, jsonb_array_elements(rewards) AS reward
-		WHERE reward->>'type' = ?`, models.GiftCodeRewardVipDays).Scan(&s.VipDaysGiven).Error
+		WHERE reward->>'type' = ?`, models.GiftCodeRewardVipDays).Scan(&s.VipDaysGiven).Error; err != nil {
+		return s, err
+	}
+	err := r.db.Raw(`SELECT COALESCE(SUM((reward->>'count')::int), 0)
+		FROM gift_code_redemptions, jsonb_array_elements(rewards) AS reward
+		WHERE reward->>'type' = ?`, models.GiftCodeRewardMegaphoneTicket).Scan(&s.MegaphoneTicketsGiven).Error
 	return s, err
 }
 

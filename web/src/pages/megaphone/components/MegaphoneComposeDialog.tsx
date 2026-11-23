@@ -3,6 +3,7 @@ import { Dialog, DialogButton } from '@components';
 import { activeVipTypeId, cn, formatKen } from '@lib';
 import { useMegaphoneComposer } from '@ola/shared/stores/megaphone/useMegaphoneComposer';
 import type { SendMegaphoneResult } from '@app-types';
+import { MEGAPHONE_TICKET_ICON } from '@constants';
 import kenIcon from '@/assets/icons/apps/ken.png';
 import megaphoneImage from '@/assets/images/member-megaphone.webp';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
@@ -57,7 +58,9 @@ export function MegaphoneComposeDialog({ onClose, onSent }: MegaphoneComposeDial
             content={composer.normalizedContent}
           />
           <p className="text-center text-base text-black/87">
-            {t('megaphone.confirmMessage', { ken: formatKen(config.kenPrice) })}
+            {composer.payingWithTicket
+              ? t('megaphone.confirmPlain')
+              : t('megaphone.confirmMessage', { ken: formatKen(config.kenPrice) })}
           </p>
           {composer.waitMinutes > 0 && (
             <p className="text-center text-sm text-ola-megaphone-ink">
@@ -74,8 +77,10 @@ export function MegaphoneComposeDialog({ onClose, onSent }: MegaphoneComposeDial
     if (composer.dailyLeft === 0) return t('megaphone.dailyReached');
     if (composer.cooldownLeft > 0) return t('megaphone.cooldown', { seconds: composer.cooldownLeft });
     if (composer.waitMinutes > 0) return t('megaphone.queueWait', { minutes: composer.waitMinutes });
-    return t('megaphone.dailyLeft', { count: composer.dailyLeft });
+    return null;
   }
+
+  const status = statusLine();
 
   return (
     <Dialog
@@ -108,14 +113,38 @@ export function MegaphoneComposeDialog({ onClose, onSent }: MegaphoneComposeDial
             counter={t('megaphone.remaining', { count: composer.length, max: config.maxLength })}
             onChange={composer.changeContent}
           />
-          <p className="text-xs text-black/45">{t('megaphone.rules')}</p>
-          <p className="text-center text-sm font-medium text-ola-megaphone-ink">{statusLine()}</p>
+          <p className="text-xs text-black/45">{t(composer.payingWithTicket ? 'megaphone.rulesTicket' : 'megaphone.rules')}</p>
+          {status != null && <p className="text-center text-sm font-medium text-ola-megaphone-ink">{status}</p>}
+          {composer.canUseTicket && (
+            <label
+              className={cn(
+                'flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm',
+                composer.useTicket
+                  ? 'border-ola-megaphone-line bg-ola-megaphone-soft text-ola-megaphone-ink'
+                  : 'border-black/12 text-black/70'
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={composer.useTicket}
+                onChange={composer.toggleUseTicket}
+                className="h-4 w-4 accent-ola-warning"
+              />
+              <img src={MEGAPHONE_TICKET_ICON} alt="" className="h-5 w-5 object-contain" draggable={false} />
+              <span className="font-medium">{t('megaphone.ticket.useLabel', { count: composer.ticketCount })}</span>
+            </label>
+          )}
           <div className="flex items-center justify-between rounded-lg bg-ola-surface px-3 py-2 text-sm">
             <span className="inline-flex items-center gap-1 text-black/54">
               {t('megaphone.balance')}
               <KenValue ken={composer.balance} className="text-black/87" />
             </span>
-            {composer.affordable ? (
+            {composer.payingWithTicket ? (
+              <span className="inline-flex items-center gap-1 text-black/54">
+                {t('megaphone.price')}
+                <b className="text-ola-megaphone-ink">{t('megaphone.ticket.price')}</b>
+              </span>
+            ) : composer.affordable ? (
               <span className="inline-flex items-center gap-1 text-black/54">
                 {t('megaphone.price')}
                 {config.kenPrice > 0 ? (

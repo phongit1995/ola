@@ -26,6 +26,7 @@ import { useMomentTraySync } from '../moment/useMomentTraySync';
 import { useMeNotificationStore } from '@ola/shared/stores/me-notification/meNotificationStore';
 import { useMomentEnabled } from '@ola/shared/stores/moment/momentConfigStore';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
+import { useHomeNavIntent } from '@hooks';
 import bellIcon from '@/assets/icons/me/header/ic_header_notification.png';
 import searchIcon from '@/assets/icons/me/header/ic_header_search.png';
 
@@ -59,6 +60,7 @@ export function MePanel() {
 
   const [composerOpen, setComposerOpen] = useState(false);
   const openComposer = usePostQuotaGate('mePost', () => setComposerOpen(true));
+  useHomeNavIntent('meComposer', openComposer);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [marriageOpen, setMarriageOpen] = useState(false);

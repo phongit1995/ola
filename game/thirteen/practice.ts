@@ -341,6 +341,7 @@ export function createPracticeSession({ user, bots, random = Math.random }: Prac
     joinRoom() {},
     leaveRoom() {},
     kickRoomMember() {},
+    setRoomSeats() {},
     setRoomReady() {},
     startRoom() {},
     listRooms() {},

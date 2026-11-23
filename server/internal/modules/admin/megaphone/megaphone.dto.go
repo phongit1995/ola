@@ -20,6 +20,36 @@ type MegaphoneItem struct {
 	RemovedReason  string                `json:"removedReason,omitempty" example:"Quảng cáo"`
 	RemovedAt      string                `json:"removedAt,omitempty" example:"2026-11-06T10:05:00Z"`
 	CreatedAt      string                `json:"createdAt" example:"2026-11-06T09:59:50Z"`
+	PaidWith       string                `json:"paidWith" example:"ticket"`
+	Ticket         *TicketBrief          `json:"ticket,omitempty"`
+}
+
+type TicketBrief struct {
+	ID         string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Source     string `json:"source" example:"gift_code"`
+	SourceRef  string `json:"sourceRef,omitempty" example:"550e8400-e29b-41d4-a716-446655440001"`
+	SourceName string `json:"sourceName,omitempty" example:"Tết 2027"`
+	CreatedAt  string `json:"createdAt" example:"2026-11-18T10:00:00Z"`
+	ExpiresAt  string `json:"expiresAt,omitempty" example:"2026-11-25T10:00:00Z"`
+}
+
+type UserTicketItem struct {
+	TicketBrief
+	Status        string `json:"status" example:"usable"`
+	UsedAt        string `json:"usedAt,omitempty" example:"2026-11-19T08:00:00Z"`
+	MegaphoneID   string `json:"megaphoneId,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	RevokedAt     string `json:"revokedAt,omitempty" example:"2026-11-19T09:00:00Z"`
+	RevokedByName string `json:"revokedByName,omitempty" example:"admin"`
+}
+
+type UserTicketListResponse struct {
+	Items       []UserTicketItem `json:"items"`
+	UsableCount int              `json:"usableCount" example:"2"`
+}
+
+type GrantTicketsRequest struct {
+	Count         int `json:"count" binding:"required,min=1,max=100" example:"3"`
+	ExpiresInDays int `json:"expiresInDays" binding:"min=0,max=365" example:"7"`
 }
 
 type ListResponse struct {
@@ -51,5 +81,7 @@ type CheckContentRequest struct {
 }
 
 type ListSuccessResponse = utils.BaseResponse[ListResponse]
+type UserTicketListSuccessResponse = utils.BaseResponse[UserTicketListResponse]
+type UserTicketSuccessResponse = utils.BaseResponse[UserTicketItem]
 type RemoveSuccessResponse = utils.BaseResponse[RemoveResponse]
 type CheckContentSuccessResponse = utils.BaseResponse[contentfilter.Result]

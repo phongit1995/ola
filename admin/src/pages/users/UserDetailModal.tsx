@@ -1,3 +1,4 @@
+import { avatarFrameLabel } from '@ola/shared/lib/avatarFrame'
 import { useState, type ReactNode } from 'react'
 import { Avatar, Button, Modal, Skeleton, Tag, Typography } from 'antd'
 import {
@@ -9,6 +10,7 @@ import {
   LockOutlined,
   PlusOutlined,
   SkinOutlined,
+  SoundOutlined,
   UserOutlined,
   WalletOutlined,
   WarningOutlined,
@@ -22,6 +24,7 @@ import { KenHistoryModal } from './KenHistoryModal'
 import { UserMeModal } from './UserMeModal'
 import { UserVipIconsModal } from './UserVipIconsModal'
 import { UserAvatarFramesModal } from './UserAvatarFramesModal'
+import { UserMegaphoneTicketsModal } from './UserMegaphoneTicketsModal'
 import { UserVipHistoryModal } from './UserVipHistoryModal'
 import { UserSessionsModal } from './UserSessionsModal'
 import { UserViolationsModal } from './UserViolationsModal'
@@ -90,6 +93,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const [meOpen, setMeOpen] = useState(false)
   const [vipsOpen, setVipsOpen] = useState(false)
   const [framesOpen, setFramesOpen] = useState(false)
+  const [ticketsOpen, setTicketsOpen] = useState(false)
   const [vipHistoryOpen, setVipHistoryOpen] = useState(false)
   const [usernameOpen, setUsernameOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
@@ -117,6 +121,9 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
           </Button>
           <Button icon={<SkinOutlined />} disabled={!userId} onClick={() => setFramesOpen(true)}>
             Khung avatar
+          </Button>
+          <Button icon={<SoundOutlined />} disabled={!userId} onClick={() => setTicketsOpen(true)}>
+            Vé loa
           </Button>
           <Button icon={<CrownOutlined />} disabled={!userId} onClick={() => setVipHistoryOpen(true)}>
             Lịch sử VIP
@@ -281,10 +288,23 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
                       }}
                     />
                     <span>{vipName(Number(data.vipUsed))}</span>
+                    {data.vipUsedExpiresAt && (
+                      <span style={{ color: '#8c98a4' }}>{`· hết hạn ${formatDateTime(data.vipUsedExpiresAt)}`}</span>
+                    )}
                   </span>
                 ) : (
                   'Không dùng icon'
                 )
+              }
+            />
+            <Row
+              label="Khung đang đeo"
+              value={
+                data.avatarFrameId
+                  ? `${avatarFrameLabel(data.avatarFrameId)} (#${data.avatarFrameId})${
+                      data.avatarFrameExpiresAt ? ` · hết hạn ${formatDateTime(data.avatarFrameExpiresAt)}` : ''
+                    }`
+                  : 'Không đeo khung'
               }
             />
           </Section>
@@ -345,6 +365,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setFramesOpen(false)}
+    />
+    <UserMegaphoneTicketsModal
+      open={ticketsOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setTicketsOpen(false)}
     />
     <UserVipHistoryModal
       open={vipHistoryOpen}

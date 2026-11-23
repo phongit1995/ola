@@ -36,6 +36,7 @@ export const ROOT_ROUTES = {
   GiftLeaderboard: 'GiftLeaderboard',
   GiftHistory: 'GiftHistory',
   Megaphone: 'Megaphone',
+  DailyCheckin: 'DailyCheckin',
   Notifications: 'Notifications',
   Settings: 'Settings',
   PenGame: 'PenGame',

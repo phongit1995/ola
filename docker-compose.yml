@@ -149,6 +149,9 @@ services:
       - REDIS_DB=${REDIS_DB:-0}
       - GAME_WEBSOCKET_REDIS_PREFIX=${GAME_WEBSOCKET_REDIS_PREFIX:-ola-game}
       - GIN_MODE=${GIN_MODE:-release}
+      - LIVEKIT_URL=${LIVEKIT_URL:-}
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY:-}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET:-}
       - SERVICE_NAME=game
     networks:
       - chat-network

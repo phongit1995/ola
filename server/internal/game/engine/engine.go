@@ -39,6 +39,7 @@ const (
 	matchReasonAborted = "aborted"
 	maxChatRunes       = 120
 	chatCooldown       = 500 * time.Millisecond
+	chatRatePruneSize  = 512
 	reactionCooldown   = 800 * time.Millisecond
 )
 
@@ -76,6 +77,8 @@ type Engine struct {
 	restoreJobs      map[string]struct{}
 	abortJobs        map[string]struct{}
 	roomChatLast     map[string]time.Time
+	viewerChatMu     sync.Mutex
+	viewerChatLast   map[string]time.Time
 	turnSeconds      int
 	graceSeconds     int
 	restored         bool
@@ -143,6 +146,7 @@ func NewEngine(
 		restoreJobs:      make(map[string]struct{}),
 		abortJobs:        make(map[string]struct{}),
 		roomChatLast:     make(map[string]time.Time),
+		viewerChatLast:   make(map[string]time.Time),
 		turnSeconds:      turnSeconds,
 		graceSeconds:     graceSeconds,
 	}

@@ -36,6 +36,7 @@ type SendParams struct {
 	DayStart        time.Time
 	Cooldown        time.Duration
 	ClientRequestID string
+	UseTicket       bool
 	Now             time.Time
 }
 
@@ -186,7 +187,19 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 			}
 			return err
 		}
-		if sender.Ken < p.KenPrice {
+		price := p.KenPrice
+		var ticket *models.UserMegaphoneTicket
+		if p.UseTicket && price > 0 {
+			ticket, err = nextTicketTx(tx, p.SenderID, p.Now)
+			if err != nil {
+				return err
+			}
+			if ticket == nil {
+				return ErrMegaphoneNoTicket
+			}
+			price = 0
+		}
+		if sender.Ken < price {
 			return ErrMegaphoneInsufficientKen
 		}
 
@@ -195,7 +208,7 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 			SenderID:        p.SenderID,
 			Type:            models.MegaphoneTypeMessage,
 			Content:         p.Content,
-			KenPrice:        p.KenPrice,
+			KenPrice:        price,
 			Weight:          p.Weight,
 			ShowAt:          p.Now,
 			DisplaySeconds:  p.DisplaySeconds,
@@ -204,14 +217,22 @@ func (r *Repository) Send(p SendParams) (*SendResult, error) {
 			ClientRequestID: p.ClientRequestID,
 			CreatedAt:       p.Now,
 		}
+		if ticket != nil {
+			record.TicketID = &ticket.ID
+		}
 		if err := tx.Create(&record).Error; err != nil {
 			return err
 		}
+		if ticket != nil {
+			if err := useTicketTx(tx, ticket.ID, record.ID, p.Now); err != nil {
+				return err
+			}
+		}
 
-		if p.KenPrice > 0 {
+		if price > 0 {
 			refID := record.ID
 			actorID := p.SenderID
-			if _, err := ledger.Debit(tx, &sender, p.KenPrice, ledger.Entry{
+			if _, err := ledger.Debit(tx, &sender, price, ledger.Entry{
 				Type:        models.KenTxTypeMegaphone,
 				Description: "Phát loa",
 				RefType:     KenRefTypeMegaphone,

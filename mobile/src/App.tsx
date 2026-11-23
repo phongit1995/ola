@@ -29,6 +29,7 @@ import { useSocialLimitStore } from '@ola/shared/stores/socialLimit';
 import { useFriendContentRealtime, useFriendContentStore } from '@ola/shared/stores/friendContent';
 import { FriendContentBanner } from './components/friendContent/FriendContentBanner';
 import { AppLockGate } from './components/applock/AppLockGate';
+import { DailyCheckinHost } from './screens/daily-checkin/DailyCheckinHost';
 import { useMeNotificationRealtime } from '@ola/shared/stores/me-notification/useMeNotificationRealtime';
 import { useAppNotificationRealtime } from '@ola/shared/stores/app-notification/useAppNotificationRealtime';
 import { useKenRealtime } from '@ola/shared/stores/ken/useKenRealtime';
@@ -203,6 +204,7 @@ export default function App() {
             <FriendContentBanner />
             <SocialLimitOverlay />
             <MediaViewer />
+            <DailyCheckinHost navigationRef={navigationRef} />
             <AppUpdateGate />
             <AppLockGate />
           </SafeAreaProvider>

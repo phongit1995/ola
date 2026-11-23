@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { App, Avatar, Badge, Dropdown, Layout, Menu, Space, Typography } from 'antd'
 import {
   AimOutlined,
+  CalendarOutlined,
   RobotOutlined,
   BellOutlined,
   CloudDownloadOutlined,
@@ -79,6 +80,7 @@ const MENU_ITEMS = [
       { key: '/megaphones', icon: <SoundOutlined />, label: 'Loa' },
       { key: '/avatar-frames', icon: <SkinOutlined />, label: 'Khung avatar' },
       { key: '/gift-codes', icon: <TagsOutlined />, label: 'Mã quà tặng' },
+      { key: '/checkin', icon: <CalendarOutlined />, label: 'Điểm danh' },
     ],
   },
   {
@@ -125,7 +127,7 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
   return children ? children.map((child) => child.key) : [item.key]
 })
 
-const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones', '/avatar-frames', '/gift-codes']
+const SHOP_KEYS = ['/vip-packages', '/gifts', '/megaphones', '/avatar-frames', '/gift-codes', '/checkin']
 
 const MENU_PATH_ALIASES: Record<string, string> = {
   '/users/marriages': '/users/relationships',
@@ -165,6 +167,10 @@ const PAGE_TITLES: Record<string, string> = {
   '/gift-codes/new': 'Tạo đợt mã quà tặng',
   '/gift-codes/attempts': 'Nhập mã lỗi',
   '/gift-codes/settings': 'Cài đặt mã quà tặng',
+  '/checkin': 'Lịch điểm danh',
+  '/checkin/history': 'Lịch sử điểm danh',
+  '/checkin/stats': 'Thống kê điểm danh',
+  '/checkin/settings': 'Cài đặt điểm danh',
   '/games/egg': 'Đập trứng',
   '/games/egg/stats': 'Thống kê trứng',
   '/games/wheel': 'Vòng quay may mắn',

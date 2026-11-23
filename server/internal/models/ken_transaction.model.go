@@ -35,6 +35,7 @@ const (
 	KenTxTypeWordChainHint  KenTxType = "WORD_CHAIN_HINT"
 	KenTxTypeWordChainGuess KenTxType = "WORD_CHAIN_GUESS"
 	KenTxTypeMegaphone      KenTxType = "MEGAPHONE"
+	KenTxTypeCheckin        KenTxType = "CHECKIN"
 )
 
 type KenActorType string

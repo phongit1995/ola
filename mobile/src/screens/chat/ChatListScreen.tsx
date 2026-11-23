@@ -48,6 +48,7 @@ import { DIVIDER } from '@constants';
 import { SWIPE_MAX, SWIPE_TRIGGER } from './constants';
 import { useMinuteNow } from '@ola/shared/stores/useMinuteNow';
 import { CONVERSATION_KIND } from '@ola/shared/constants';
+import { DailyCheckinFab } from '@screens/daily-checkin/components/DailyCheckinFab';
 
 const sentIcon = require('@assets/icons/chat/ic_message_sent.png');
 const kulIcon = require('@assets/icons/chat/ic_kul.png');
@@ -542,6 +543,7 @@ export function ChatListScreen() {
             />
           )}
         />
+        <DailyCheckinFab style={{ right: 16, bottom: 88 }} />
         <Pressable
           onPress={() => {
             closeOpenSwipeable();

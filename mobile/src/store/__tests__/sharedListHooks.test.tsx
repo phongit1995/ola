@@ -19,7 +19,7 @@ function PageHarness({
   fetchPage,
   pageSize,
 }: {
-  fetchPage: (offset: number) => Promise<OffsetPage<number>>;
+  fetchPage: (offset: number, asOf?: string) => Promise<OffsetPage<number>>;
   pageSize?: number;
 }) {
   page = useOffsetPage(fetchPage, { pageSize });
@@ -68,9 +68,23 @@ describe('useOffsetPage', () => {
     await act(async () => {
       await page.loadMore();
     });
-    expect(fetchPage).toHaveBeenLastCalledWith(2);
+    expect(fetchPage).toHaveBeenLastCalledWith(2, undefined);
     expect(page.items).toEqual([0, 1, 2, 3]);
     expect(page.hasMore).toBe(false);
+  });
+
+  it('sends the first page asOf with the next pages', async () => {
+    const fetchPage = jest.fn((offset: number) =>
+      Promise.resolve({ items: [offset], total: 3, asOf: '2026-11-18T08:00:00Z' }),
+    );
+    act(() => {
+      renderer = create(<PageHarness fetchPage={fetchPage} />);
+    });
+    await flush();
+    await act(async () => {
+      await page.loadMore();
+    });
+    expect(fetchPage).toHaveBeenLastCalledWith(1, '2026-11-18T08:00:00Z');
   });
 
   it('stops when a page is shorter than pageSize', async () => {

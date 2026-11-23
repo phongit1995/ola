@@ -351,6 +351,7 @@ export function createPracticeSession({
     joinRoom: unsupported,
     leaveRoom: unsupported,
     kickRoomMember: unsupported,
+    setRoomSeats: unsupported,
     setRoomReady: unsupported,
     startRoom: unsupported,
     listRooms: unsupported,

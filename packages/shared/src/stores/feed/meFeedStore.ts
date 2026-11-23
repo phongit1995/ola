@@ -6,7 +6,7 @@ import type { Post, PostUploadRef } from '../../types/api/me.type';
 import type { MeFeedState } from '../../types/client/feed.type';
 import i18n from 'i18next';
 import { showSocialLimitNotice } from '../socialLimit';
-import { applyPostReaction, reconcileTopLikers } from './postHelpers';
+import { applyPostReaction, belongsToMeFeed, reconcileTopLikers } from './postHelpers';
 import { selfLiker } from './selfLiker';
 import {
   currentMeFeedRequestId,
@@ -27,7 +27,7 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   refreshing: false,
   loadFeed: async (filter) => {
     const requestId = nextMeFeedRequestId();
-    set({ loading: true, error: false });
+    set({ loading: true, error: false, feedFilter: filter });
     try {
       const result = await MeService.feed({ filter, limit: ME_FEED_PAGE_SIZE });
       if (requestId !== currentMeFeedRequestId()) return;
@@ -40,7 +40,7 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   },
   refreshFeed: async (filter) => {
     const requestId = nextMeFeedRequestId();
-    set({ refreshing: true, error: false });
+    set({ refreshing: true, error: false, feedFilter: filter });
     try {
       const result = await MeService.feed({ filter, limit: ME_FEED_PAGE_SIZE });
       if (requestId !== currentMeFeedRequestId()) return;
@@ -136,7 +136,9 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
     }
   },
   prependPost: (post) => {
-    set((state) => ({ posts: [post, ...state.posts] }));
+    set((state) =>
+      belongsToMeFeed(post, state.feedFilter) ? { posts: [post, ...state.posts] } : state
+    );
   },
   updatePost: async (id, payload, files, imageUrls, existing, audio) => {
     const uploaded: PostUploadRef[] = [];
@@ -162,7 +164,11 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
         images,
         ...(resolvedAudio == null ? {} : { audios: resolvedAudio.audios }),
       });
-      set((state) => ({ posts: replacePost(state.posts, updated) }));
+      set((state) => ({
+        posts: belongsToMeFeed(updated, state.feedFilter)
+          ? replacePost(state.posts, updated)
+          : state.posts.filter((post) => post.id !== updated.id),
+      }));
       toast.success(i18n.t('me.editSuccess'));
       return updated;
     } catch (error) {
@@ -195,7 +201,9 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   },
   syncPost: (post) => {
     set((state) => ({
-      posts: state.posts.map((item) => (item.id === post.id ? reconcileTopLikers(post, item) : item)),
+      posts: belongsToMeFeed(post, state.feedFilter)
+        ? state.posts.map((item) => (item.id === post.id ? reconcileTopLikers(post, item) : item))
+        : state.posts.filter((item) => item.id !== post.id),
     }));
   },
 }));

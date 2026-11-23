@@ -198,7 +198,7 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		EmailVerified:  user.EmailVerified,
 		Kisses:         user.Kisses,
 		Charm:          user.Charm,
-		VipUsed:        user.VipUsed,
+		VipUsed:        user.ActiveVipUsed(time.Now()),
 		VipEndTime:     formatOptionalTime(user.VipEndTime),
 		AvatarFrameID:  user.ActiveAvatarFrameID(time.Now()),
 		FollowerCount:  user.FollowerCount,

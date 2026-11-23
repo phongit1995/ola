@@ -3,8 +3,10 @@ import i18n from 'i18next';
 import { AVATAR_FRAME_ERROR_CODE, AVATAR_FRAME_PRIVACY } from '../../constants/avatarFrame';
 import { toApiError } from '../../lib/apiError';
 import { avatarFrameErrorKey } from '../../lib/avatarFrameErrors';
+import { isItemExpired, withoutExpiredItems } from '../../lib/itemExpiry';
 import { toast } from '../../lib/toast';
 import type { AvatarFramePrivacy, OwnedAvatarFrame } from '../../types/api/avatarFrame.type';
+import { useMinuteNow } from '../useMinuteNow';
 import { useMyAvatarFrames } from './useMyAvatarFrames';
 
 export function useAvatarFrameCollection() {
@@ -12,8 +14,14 @@ export function useAvatarFrameCollection() {
   const [transferFrameId, setTransferFrameId] = useState<string | null>(null);
   const [vipPromptOpen, setVipPromptOpen] = useState(false);
   const { store, busy, equip, setPrivacy } = frames;
-  const items = store?.items ?? [];
-  const equippedFrameId = store?.equippedFrameId ?? null;
+  const now = useMinuteNow();
+  const items = withoutExpiredItems(store?.items ?? [], now);
+  const storedEquippedId = store?.equippedFrameId ?? null;
+  const equippedExpired = (store?.items ?? []).some(
+    (frame) => frame.isEquipped && isItemExpired(frame.expiresAt, now),
+  );
+  const equippedFrameId = equippedExpired ? null : storedEquippedId;
+  const equippedFrame = equippedFrameId == null ? undefined : items.find((frame) => frame.isEquipped);
   const vipActive = store?.vipActive ?? false;
   const privacy: AvatarFramePrivacy = store?.privacy ?? AVATAR_FRAME_PRIVACY.public;
 
@@ -56,7 +64,9 @@ export function useAvatarFrameCollection() {
   return {
     ...frames,
     items,
+    now,
     equippedFrameId,
+    equippedFrame,
     vipActive,
     privacy,
     transferFrameId,

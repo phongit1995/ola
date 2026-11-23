@@ -17,6 +17,7 @@ import { ContactList } from './components/ContactList';
 import { BlockedListDialog } from './components/BlockedListDialog';
 import { AddContactDialog } from './components/AddContactDialog';
 import { ComposeButton } from './components/ComposeButton';
+import { DailyCheckinFab } from '../daily-checkin/components/DailyCheckinFab';
 import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
 import { ChangeCoverScreen } from './components/ChangeCoverScreen';
@@ -253,6 +254,7 @@ export function ChatPanel() {
                   onSelect={openConversation}
                   onDelete={hideConversation}
                 />
+                <DailyCheckinFab className="right-4 bottom-[88px]" />
                 <ComposeButton onClick={() => setComposeOpen(true)} />
               </>
             )}

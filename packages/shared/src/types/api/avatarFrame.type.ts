@@ -32,10 +32,13 @@ export interface GiftAvatarFrameResult {
 }
 
 export interface OwnedAvatarFrame {
+  id?: string;
   frameId: string;
   source: AvatarFrameSource;
   acquiredAt: string;
   isEquipped: boolean;
+  locked?: boolean;
+  expiresAt?: string | null;
 }
 
 export interface AvatarFrameStoreResult {
@@ -46,6 +49,7 @@ export interface AvatarFrameStoreResult {
   total: number;
   limit: number;
   offset: number;
+  asOf?: string;
   items: OwnedAvatarFrame[];
 }
 

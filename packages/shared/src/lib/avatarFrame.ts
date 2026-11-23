@@ -21,3 +21,7 @@ export function avatarFrameLabel(frameId: string): string {
   const name = avatarFrameById(frameId)?.name ?? '';
   return name !== '' ? name : `#${frameId}`;
 }
+
+export function ownedAvatarFrameKey(frame: { id?: string; frameId: string }): string {
+  return frame.id ?? frame.frameId;
+}

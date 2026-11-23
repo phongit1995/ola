@@ -1,6 +1,10 @@
 import { FEED_TOP_LIKERS_LIMIT } from '../../constants/feed';
-import type { Post, PostAuthor, PostReaction } from '../../types/api/me.type';
-import { POST_REACTION } from '../../constants/me';
+import type { MeFeedFilter, Post, PostAuthor, PostReaction } from '../../types/api/me.type';
+import { POST_REACTION, POST_VISIBILITY } from '../../constants/me';
+
+export function belongsToMeFeed(post: Pick<Post, 'visibility'>, filter?: MeFeedFilter): boolean {
+  return post.visibility !== POST_VISIBILITY.profile || filter === 'following';
+}
 
 function applyTopLikers(
   likers: PostAuthor[] | undefined,

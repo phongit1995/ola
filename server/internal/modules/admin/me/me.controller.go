@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"ola-chat-server/internal/middleware"
+	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Param        q          query string false "Search by content"
 // @Param        authorId   query string false "Filter by author id"
 // @Param        enabled    query bool   false "Filter by status (true=shown, false=hidden)"
-// @Param        visibility query string false "Filter by visibility (public, friend, private)"
+// @Param        visibility query string false "Filter by visibility (public, friend, private, profile)"
 // @Param        hasImages  query bool   false "Filter posts with/without images"
 // @Param        hasCheckin query bool   false "Filter posts with/without check-in"
 // @Param        sortBy     query string false "Sort field (createdAt, likeCount, commentCount, dislikeCount)"
@@ -66,7 +67,7 @@ func (ctrl *Controller) ListPosts(c *gin.Context) (interface{}, error) {
 
 func parseVisibilityQuery(v string) string {
 	switch v {
-	case "public", "friend", "private":
+	case string(models.MeVisibilityPublic), string(models.MeVisibilityFriend), string(models.MeVisibilityPrivate), string(models.MeVisibilityProfile):
 		return v
 	default:
 		return ""
@@ -115,6 +116,32 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 	resp, err := ctrl.service.SetEnabled(adminID, id, req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// @Summary      Change who can see a post (admin)
+// @Description  Clan posts are rejected; their visibility follows the clan rules.
+// @Tags         admin-me
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path string                  true "Post ID"
+// @Param        request body UpdateVisibilityRequest true "Visibility Request"
+// @Success      200  {object}  utils.BaseResponse[MeDetail]
+// @Router       /admin/me/{id}/visibility [patch]
+func (ctrl *Controller) UpdateVisibility(c *gin.Context) (interface{}, error) {
+	id, err := utils.ParseUUIDParam(c, "id", "invalid post id")
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[UpdateVisibilityRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.SetVisibility(id, req)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

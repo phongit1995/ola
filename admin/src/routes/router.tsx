@@ -28,6 +28,10 @@ import { GiftCodeFormPage } from '@/pages/gift-codes/GiftCodeFormPage'
 import { GiftCodeDetailPage } from '@/pages/gift-codes/GiftCodeDetailPage'
 import { GiftCodeAttemptsPage } from '@/pages/gift-codes/GiftCodeAttemptsPage'
 import { GiftCodeSettingsPage } from '@/pages/gift-codes/GiftCodeSettingsPage'
+import { CheckinCalendarPage } from '@/pages/checkin/CheckinCalendarPage'
+import { CheckinHistoryPage } from '@/pages/checkin/CheckinHistoryPage'
+import { CheckinStatsPage } from '@/pages/checkin/CheckinStatsPage'
+import { CheckinSettingsPage } from '@/pages/checkin/CheckinSettingsPage'
 import { EggRewardsPage } from '@/pages/games/egg/EggRewardsPage'
 import { EggStatsPage } from '@/pages/games/egg/EggStatsPage'
 import { WheelRewardsPage } from '@/pages/games/wheel/WheelRewardsPage'
@@ -99,6 +103,10 @@ export const router = createBrowserRouter([
       { path: 'gift-codes/settings', element: <GiftCodeSettingsPage /> },
       { path: 'gift-codes/:id', element: <GiftCodeDetailPage /> },
       { path: 'gift-codes/:id/edit', element: <GiftCodeFormPage /> },
+      { path: 'checkin', element: <CheckinCalendarPage /> },
+      { path: 'checkin/history', element: <CheckinHistoryPage /> },
+      { path: 'checkin/stats', element: <CheckinStatsPage /> },
+      { path: 'checkin/settings', element: <CheckinSettingsPage /> },
       { path: 'games/egg', element: <EggRewardsPage /> },
       { path: 'games/egg/stats', element: <EggStatsPage /> },
       { path: 'games/wheel', element: <WheelRewardsPage /> },
