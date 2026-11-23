@@ -21,7 +21,6 @@ interface DailyCheckinTodayCardProps {
   onCheckIn: () => void;
   onOpen: () => void;
   onGoTask: () => void;
-  onVerifyEmail: () => void;
   framed?: boolean;
 }
 
@@ -75,7 +74,6 @@ export function DailyCheckinTodayCard({
   onCheckIn,
   onOpen,
   onGoTask,
-  onVerifyEmail,
   framed = true,
 }: DailyCheckinTodayCardProps) {
   const { t } = useTranslation();
@@ -157,20 +155,6 @@ export function DailyCheckinTodayCard({
           )}
           <ActionButton tone="green" busy={busy} onClick={onCheckIn}>
             {t('dailyCheckin.actions.checkIn')}
-          </ActionButton>
-        </>
-      );
-      break;
-    case 'verifyEmail':
-      body = (
-        <>
-          {boxRow(
-            hasBox ? t('dailyCheckin.today.secretTitle') : t('dailyCheckin.today.noGiftTitle', { slot: status.slot }),
-            <p className="text-sm text-black/54">{t('dailyCheckin.today.emailTitle')}</p>
-          )}
-          <Notice tone="orange" title={t('dailyCheckin.today.emailTitle')} hint={t('dailyCheckin.today.emailGuide')} />
-          <ActionButton tone="orange" busy={false} onClick={onVerifyEmail}>
-            {t('dailyCheckin.actions.verifyEmail')}
           </ActionButton>
         </>
       );

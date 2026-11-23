@@ -2841,6 +2841,12 @@
       "completed": "Đã điểm danh đủ tháng {{month}}",
       "checkedIn": "Hôm nay đã điểm danh"
     },
+    "fab": {
+      "checkin": "Điểm danh",
+      "task": "Làm nhiệm vụ",
+      "open": "Mở quà",
+      "hide": "Ẩn hôm nay"
+    },
     "legend": {
       "plain": "Số trơn: không có quà",
       "done": "Đã điểm danh",
@@ -2870,7 +2876,6 @@
       "comeBack": "Mai quay lại điểm danh ô {{slot}}",
       "completedTitle": "Đã điểm danh đủ {{count}}/{{total}} ô tháng {{month}}",
       "completedHint": "Hẹn gặp lại ngày {{date}}",
-      "emailTitle": "Cần xác thực email để điểm danh",
       "emailGuide": "Cách xác thực: Cá nhân → Trang cá nhân → Email → Xác thực."
     },
     "actions": {

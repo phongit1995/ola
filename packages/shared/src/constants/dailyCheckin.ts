@@ -94,3 +94,4 @@ export const DAILY_CHECKIN_FRESH_MS = 30_000;
 export const DAILY_CHECKIN_TICK_MS = 1000;
 export const DAILY_CHECKIN_RELOAD_RETRY_MS = 10_000;
 export const DAILY_CHECKIN_POPUP_STORAGE_KEY = 'ola.dailyCheckin.popupDay';
+export const DAILY_CHECKIN_FAB_STORAGE_KEY = 'ola.dailyCheckin.fabHiddenDay';

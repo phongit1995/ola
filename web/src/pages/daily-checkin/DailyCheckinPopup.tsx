@@ -20,10 +20,9 @@ import { useDailyCheckinTask } from './useDailyCheckinTask';
 interface DailyCheckinPopupProps {
   status: DailyCheckinStatus;
   onClose: () => void;
-  onVerifyEmail: () => void;
 }
 
-export function DailyCheckinPopup({ status, onClose, onVerifyEmail }: DailyCheckinPopupProps) {
+export function DailyCheckinPopup({ status, onClose }: DailyCheckinPopupProps) {
   const { t } = useTranslation();
   const acting = useDailyCheckinStore((s) => s.acting);
   const remainingMs = useDailyCheckinCountdown(status);
@@ -85,7 +84,6 @@ export function DailyCheckinPopup({ status, onClose, onVerifyEmail }: DailyCheck
               onCheckIn={() => void useDailyCheckinStore.getState().checkIn()}
               onOpen={() => void useDailyCheckinStore.getState().open()}
               onGoTask={goToTask}
-              onVerifyEmail={onVerifyEmail}
             />
           </div>
         </div>

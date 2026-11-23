@@ -25,7 +25,6 @@ interface DailyCheckinTodayCardProps {
   onCheckIn: () => void;
   onOpen: () => void;
   onGoTask: () => void;
-  onVerifyEmail: () => void;
 }
 
 function ActionButton({ tone, busy, onPress, children }: { tone: 'green' | 'orange'; busy: boolean; onPress: () => void; children: string }) {
@@ -80,7 +79,7 @@ function Badge({ label, icon }: { label: string; icon?: boolean }) {
   );
 }
 
-export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTask, onVerifyEmail }: DailyCheckinTodayCardProps) {
+export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTask }: DailyCheckinTodayCardProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const kind = dailyCheckinTodayKind(status);
@@ -162,22 +161,6 @@ export function DailyCheckinTodayCard({ status, busy, onCheckIn, onOpen, onGoTas
           )}
           <ActionButton tone="green" busy={busy} onPress={onCheckIn}>
             {t('dailyCheckin.actions.checkIn')}
-          </ActionButton>
-        </>
-      );
-      break;
-    case 'verifyEmail':
-      body = (
-        <>
-          {boxRow(
-            secretTitle,
-            <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
-              {t('dailyCheckin.today.emailTitle')}
-            </Text>
-          )}
-          <Notice tone="orange" title={t('dailyCheckin.today.emailTitle')} hint={t('dailyCheckin.today.emailGuide')} />
-          <ActionButton tone="orange" busy={false} onPress={onVerifyEmail}>
-            {t('dailyCheckin.actions.verifyEmail')}
           </ActionButton>
         </>
       );

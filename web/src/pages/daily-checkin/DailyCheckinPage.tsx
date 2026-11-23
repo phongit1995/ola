@@ -4,7 +4,6 @@ import { FullScreenOverlay, ScreenHeader, Spinner } from '@components';
 import { formatDailyCheckinCountdown } from '@lib';
 import { useDailyCheckinStore } from '@ola/shared/stores/daily-checkin/dailyCheckinStore';
 import type { DailyCheckinSlot } from '@app-types';
-import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { DailyCheckinCalendar } from './components/DailyCheckinCalendar';
 import { DailyCheckinSlotDialog } from './components/DailyCheckinSlotDialog';
 import { DailyCheckinTodayCard } from './components/DailyCheckinTodayCard';
@@ -22,7 +21,6 @@ export function DailyCheckinPage({ onClose }: DailyCheckinPageProps) {
   const acting = useDailyCheckinStore((s) => s.acting);
   const remainingMs = useDailyCheckinCountdown(status);
   const goTask = useDailyCheckinTask();
-  const openApp = useAppOverlayStore((s) => s.push);
   const [selected, setSelected] = useState<DailyCheckinSlot | null>(null);
 
   useEffect(() => {
@@ -61,7 +59,6 @@ export function DailyCheckinPage({ onClose }: DailyCheckinPageProps) {
                 onCheckIn={() => void useDailyCheckinStore.getState().checkIn()}
                 onOpen={() => void useDailyCheckinStore.getState().open()}
                 onGoTask={() => goTask(status.todayTask?.code)}
-                onVerifyEmail={() => openApp('profile')}
               />
             </div>
           </div>

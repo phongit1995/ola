@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import i18n from 'i18next';
 import {
   DAILY_CHECKIN_ERROR,
+  DAILY_CHECKIN_FAB_STORAGE_KEY,
   DAILY_CHECKIN_FRESH_MS,
   DAILY_CHECKIN_POPUP_STORAGE_KEY,
   DAILY_CHECKIN_REWARD_TYPE,
@@ -25,6 +26,7 @@ const initialState = {
   acting: false,
   opened: null,
   notice: null,
+  popupRequest: 0,
 };
 
 let inflight: Promise<void> | null = null;
@@ -163,6 +165,8 @@ export const useDailyCheckinStore = create<DailyCheckinState>((set, get) => {
 
     dismissNotice: () => set({ notice: null }),
 
+    requestPopup: () => set({ popupRequest: get().popupRequest + 1 }),
+
     reset: () => {
       generation += 1;
       inflight = null;
@@ -180,9 +184,33 @@ export function selectDailyCheckinAttention(state: DailyCheckinState): boolean {
   return dailyCheckinNeedsAttention(state.status);
 }
 
-function popupStorageKey(): string | null {
+function userStorageKey(prefix: string): string | null {
   const userId = useAuthStore.getState().user?.id;
-  return userId != null ? `${DAILY_CHECKIN_POPUP_STORAGE_KEY}.${userId}` : null;
+  return userId != null ? `${prefix}.${userId}` : null;
+}
+
+function popupStorageKey(): string | null {
+  return userStorageKey(DAILY_CHECKIN_POPUP_STORAGE_KEY);
+}
+
+export function isDailyCheckinFabHidden(status: DailyCheckinStatus): boolean {
+  const key = userStorageKey(DAILY_CHECKIN_FAB_STORAGE_KEY);
+  if (key == null) return false;
+  try {
+    return getKeyValueStorage().getItem(key) === status.endsAt;
+  } catch {
+    return false;
+  }
+}
+
+export function hideDailyCheckinFabToday(status: DailyCheckinStatus): void {
+  const key = userStorageKey(DAILY_CHECKIN_FAB_STORAGE_KEY);
+  if (key == null) return;
+  try {
+    getKeyValueStorage().setItem(key, status.endsAt);
+  } catch {
+    return;
+  }
 }
 
 export function shouldShowDailyCheckinPopup(status: DailyCheckinStatus | null): boolean {

@@ -10,7 +10,6 @@ import { Dialog } from '@components/ui/Dialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { TEXT_SECONDARY } from '@constants';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
-import { ROOT_ROUTES } from '@navigation/routes';
 import { DailyCheckinCalendar } from './components/DailyCheckinCalendar';
 import { DailyCheckinSlotPanel } from './components/DailyCheckinPanels';
 import { DailyCheckinTodayCard } from './components/DailyCheckinTodayCard';
@@ -80,7 +79,6 @@ export function DailyCheckinScreen() {
               onCheckIn={() => void useDailyCheckinStore.getState().checkIn()}
               onOpen={() => void useDailyCheckinStore.getState().open()}
               onGoTask={() => goTask(status.todayTask?.code)}
-              onVerifyEmail={() => navigation.navigate(ROOT_ROUTES.EditProfile)}
             />
           </View>
         </ScrollView>

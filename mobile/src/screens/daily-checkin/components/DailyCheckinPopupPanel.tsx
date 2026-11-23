@@ -18,10 +18,9 @@ interface DailyCheckinPopupPanelProps {
   onClose: () => void;
   onSelect: (slot: DailyCheckinSlot) => void;
   onGoTask: () => void;
-  onVerifyEmail: () => void;
 }
 
-export function DailyCheckinPopupPanel({ status, onClose, onSelect, onGoTask, onVerifyEmail }: DailyCheckinPopupPanelProps) {
+export function DailyCheckinPopupPanel({ status, onClose, onSelect, onGoTask }: DailyCheckinPopupPanelProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const acting = useDailyCheckinStore((s) => s.acting);
@@ -72,7 +71,6 @@ export function DailyCheckinPopupPanel({ status, onClose, onSelect, onGoTask, on
             onCheckIn={() => void useDailyCheckinStore.getState().checkIn()}
             onOpen={() => void useDailyCheckinStore.getState().open()}
             onGoTask={onGoTask}
-            onVerifyEmail={onVerifyEmail}
           />
         </View>
       </ScrollView>

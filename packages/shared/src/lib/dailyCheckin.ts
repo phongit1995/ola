@@ -17,6 +17,7 @@ import type {
 } from '../types/api/dailyCheckin.type';
 import type { GiftCodeReward } from '../types/api/giftCode.type';
 import type {
+  DailyCheckinFabKind,
   DailyCheckinRestInfo,
   DailyCheckinTaskTarget,
   DailyCheckinTodayKind,
@@ -32,7 +33,7 @@ export function dailyCheckinTodaySlot(status: DailyCheckinStatus): DailyCheckinS
 export function dailyCheckinTodayKind(status: DailyCheckinStatus): DailyCheckinTodayKind {
   if (!status.checkedInToday) {
     if (status.completed) return 'completed';
-    return status.needsEmailVerify ? 'verifyEmail' : 'checkin';
+    return 'checkin';
   }
   const today = dailyCheckinTodaySlot(status);
   if (today?.status === DAILY_CHECKIN_SLOT_STATUS.pending) {
@@ -42,10 +43,16 @@ export function dailyCheckinTodayKind(status: DailyCheckinStatus): DailyCheckinT
   return today?.status === DAILY_CHECKIN_SLOT_STATUS.claimed ? 'opened' : 'noGift';
 }
 
+export function dailyCheckinFabKind(status: DailyCheckinStatus | null): DailyCheckinFabKind | null {
+  if (status == null || !status.enabled) return null;
+  const kind = dailyCheckinTodayKind(status);
+  return kind === 'checkin' || kind === 'task' || kind === 'open' ? kind : null;
+}
+
 export function dailyCheckinNeedsAttention(status: DailyCheckinStatus | null): boolean {
   if (status == null || !status.enabled) return false;
   const kind = dailyCheckinTodayKind(status);
-  return kind === 'checkin' || kind === 'verifyEmail' || kind === 'task' || kind === 'open';
+  return kind === 'checkin' || kind === 'task' || kind === 'open';
 }
 
 export function dailyCheckinRestInfo(status: DailyCheckinStatus): DailyCheckinRestInfo | null {
@@ -135,7 +142,7 @@ export function dailyCheckinTaskName(t: TFunction, code: string | undefined): st
 export function dailyCheckinRowSubtitle(t: TFunction, status: DailyCheckinStatus): string {
   const kind = dailyCheckinTodayKind(status);
   if (kind === 'task' || kind === 'open') return t('dailyCheckin.row.pendingBox');
-  if (kind === 'checkin' || kind === 'verifyEmail') return t('dailyCheckin.row.notCheckedIn');
+  if (kind === 'checkin') return t('dailyCheckin.row.notCheckedIn');
   if (kind === 'completed') return t('dailyCheckin.row.completed', { month: dailyCheckinMonthNumber(status) });
   return t('dailyCheckin.row.checkedIn');
 }

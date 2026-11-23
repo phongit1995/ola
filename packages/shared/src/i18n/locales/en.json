@@ -2841,6 +2841,12 @@
       "completed": "All check-ins done for month {{month}}",
       "checkedIn": "Checked in today"
     },
+    "fab": {
+      "checkin": "Check in",
+      "task": "Do task",
+      "open": "Open gift",
+      "hide": "Hide for today"
+    },
     "legend": {
       "plain": "Plain number: no gift",
       "done": "Checked in",
@@ -2870,7 +2876,6 @@
       "comeBack": "Come back tomorrow for slot {{slot}}",
       "completedTitle": "Checked in {{count}}/{{total}} slots for month {{month}}",
       "completedHint": "See you on {{date}}",
-      "emailTitle": "Verify your email to check in",
       "emailGuide": "How: Personal → Profile → Email → Verify."
     },
     "actions": {

@@ -1,3 +1,4 @@
+import { dailyCheckinFabKind } from '@ola/shared/lib';
 import { DailyCheckinService } from '@ola/shared/services/dailyCheckin.service';
 import { useDailyCheckinStore } from '@ola/shared/stores/daily-checkin/dailyCheckinStore';
 import type { DailyCheckinActionResult, DailyCheckinStatus } from '@ola/shared/types';
@@ -59,6 +60,19 @@ describe('daily check-in store', () => {
     stale.resolve(statusWith(false));
     await loading;
     expect(useDailyCheckinStore.getState().status?.checkedInToday).toBe(true);
+  });
+
+  it('shows the floating button only while today still needs action', () => {
+    expect(dailyCheckinFabKind(null)).toBeNull();
+    expect(dailyCheckinFabKind(statusWith(false))).toBe('checkin');
+    expect(dailyCheckinFabKind(statusWith(true))).toBeNull();
+    expect(dailyCheckinFabKind({ ...statusWith(false), enabled: false })).toBeNull();
+  });
+
+  it('counts popup requests from the floating button', () => {
+    const before = useDailyCheckinStore.getState().popupRequest;
+    useDailyCheckinStore.getState().requestPopup();
+    expect(useDailyCheckinStore.getState().popupRequest).toBe(before + 1);
   });
 
   it('applies a status load that started after the check-in', async () => {

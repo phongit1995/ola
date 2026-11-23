@@ -46,6 +46,10 @@ export function DailyCheckinHost({ navigationRef }: DailyCheckinHostProps) {
   useEffect(
     () =>
       useDailyCheckinStore.subscribe((state, prev) => {
+        if (state.popupRequest > prev.popupRequest) {
+          setPopupWanted(true);
+          return;
+        }
         if (state.status === prev.status || state.status == null) return;
         if (!shouldShowDailyCheckinPopup(state.status)) return;
         if (navigationRef.getCurrentRoute()?.name === ROOT_ROUTES.DailyCheckin) {
@@ -112,7 +116,7 @@ export function DailyCheckinHost({ navigationRef }: DailyCheckinHostProps) {
     if (selected != null) return <DailyCheckinSlotPanel slot={selected} onClose={() => setSelected(null)} />;
     if (status == null) return null;
     return (
-      <DailyCheckinPopupPanel status={status} onClose={closePopup} onSelect={setSelected} onGoTask={goTask} onVerifyEmail={verifyEmail} />
+      <DailyCheckinPopupPanel status={status} onClose={closePopup} onSelect={setSelected} onGoTask={goTask} />
     );
   }
 

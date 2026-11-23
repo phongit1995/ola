@@ -14,7 +14,9 @@ export type DailyCheckinTaskTarget =
   | 'megaphone'
   | 'gameTab';
 
-export type DailyCheckinTodayKind = 'checkin' | 'verifyEmail' | 'noGift' | 'task' | 'open' | 'opened' | 'completed';
+export type DailyCheckinTodayKind = 'checkin' | 'noGift' | 'task' | 'open' | 'opened' | 'completed';
+
+export type DailyCheckinFabKind = 'checkin' | 'task' | 'open';
 
 export type DailyCheckinRestInfo =
   | { kind: 'rest'; days: number }
@@ -42,10 +44,12 @@ export interface DailyCheckinState {
   acting: boolean;
   opened: DailyCheckinOpened | null;
   notice: DailyCheckinNotice | null;
+  popupRequest: number;
   load: (options?: DailyCheckinLoadOptions) => Promise<void>;
   checkIn: () => Promise<DailyCheckinActionOutcome>;
   open: () => Promise<DailyCheckinActionOutcome>;
   dismissOpened: () => void;
   dismissNotice: () => void;
+  requestPopup: () => void;
   reset: () => void;
 }

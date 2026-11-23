@@ -1,13 +1,12 @@
-import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Easing, Image, Pressable, Text, View, type ImageSourcePropType } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { DAILY_CHECKIN_BOX, DAILY_CHECKIN_SLOT_STATUS } from '@ola/shared/constants';
 import type { DailyCheckinSlot } from '@ola/shared/types';
 import { ItemGrantIcon } from '@components/ui/ItemGrantMarks';
 import { TEXT_FAINT, TEXT_SECONDARY, WARNING } from '@constants';
 import { useThemeColors } from '@hooks/useThemeColors';
-import { CHECKIN_WIGGLE_MS, CHECKIN_WIGGLE_REST_MS } from '../constants';
 import { boxImage, cellToneStyle, openedBoxImage } from '../utils';
+import { WigglingImage } from './WigglingImage';
 
 interface DailyCheckinCellProps {
   slot: DailyCheckinSlot;
@@ -51,31 +50,6 @@ function CellBadge({ slot }: { slot: DailyCheckinSlot }) {
   return null;
 }
 
-function WigglingBox({ source, size }: { source: ImageSourcePropType; size: number }) {
-  const progress = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(progress, { toValue: 1, duration: CHECKIN_WIGGLE_MS, easing: Easing.linear, useNativeDriver: true }),
-        Animated.delay(CHECKIN_WIGGLE_REST_MS),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [progress]);
-  const rotate = progress.interpolate({
-    inputRange: [0, 0.17, 0.33, 0.5, 0.67, 0.83, 1],
-    outputRange: ['0deg', '-10deg', '9deg', '-7deg', '5deg', '-2deg', '0deg'],
-  });
-  return (
-    <Animated.Image
-      source={source}
-      style={{ width: size, height: size, transformOrigin: 'bottom', transform: [{ rotate }] }}
-      resizeMode="contain"
-    />
-  );
-}
-
 export function DailyCheckinCell({ slot, size, onSelect }: DailyCheckinCellProps) {
   const { t } = useTranslation();
   const colors = useThemeColors();
@@ -100,7 +74,7 @@ export function DailyCheckinCell({ slot, size, onSelect }: DailyCheckinCellProps
         </Text>
       )}
       {hasBox && waiting ? (
-        <WigglingBox source={boxImage(slot.box)} size={boxSize} />
+        <WigglingImage source={boxImage(slot.box)} size={boxSize} />
       ) : hasBox ? (
         <Image
           source={opened ? openedBoxImage(slot.box) : boxImage(slot.box, missed)}

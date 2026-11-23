@@ -114,7 +114,7 @@ Công tắc **Xác thực email** ở tab Cài đặt của admin, **mặc đị
 
 | Công tắc | Luật |
 |---|---|
-| Bật | Chưa xác thực email thì **không điểm danh được**: popup và màn Điểm danh thay nút Điểm danh bằng **Xác thực email**, ô không tiến lên. Xác thực xong điểm danh bình thường |
+| Bật | Chưa xác thực email thì **không điểm danh được**: popup và màn Điểm danh vẫn hiện nút **Điểm danh** như thường, bấm vào thì server trả `CHECKIN_EMAIL_NOT_VERIFIED` và app mở hộp thoại xác thực email (câu hướng dẫn + nút Xác thực email), ô không tiến lên. Xác thực xong điểm danh bình thường |
 | Tắt | Ai cũng điểm danh được |
 
 - Chỉ xét lúc bấm Điểm danh. Đã điểm danh rồi thì mở hộp không xét email nữa (kể cả khi admin bật công tắc giữa ngày).
@@ -431,7 +431,7 @@ Trường của GET:
 - `todayTask = {code, done}` **chỉ có sau khi điểm danh** và ô hôm nay có quà. Không có trường nhiệm vụ nào ở `slots`.
 - `needsEmailVerify` = công tắc xác thực email đang bật, user chưa xác thực và hôm nay chưa điểm danh. Server tính lúc GET, không dựa vào user trong store client có thể cũ.
 - `canOpen` = hôm nay đang `pending` và nhiệm vụ đã làm, server tính. VIP không nằm trong `canOpen`: hộp cần VIP vẫn hiện nút Mở quà, bấm mới báo `CHECKIN_VIP_REQUIRED`.
-- Client chọn nút: chưa điểm danh → **Điểm danh**, hoặc **Xác thực email** nếu `needsEmailVerify`; `pending` mà `todayTask.done = false` → **Đi làm**; `canOpen` → **Mở quà**. Hộp `pending` của hôm nay **luôn đứng trước** `completed`: hôm điểm danh ô cuối mà hộp còn chờ thì vẫn hiện thẻ chờ, không hiện "Đã điểm danh đủ".
+- Client chọn nút: chưa điểm danh → **Điểm danh** (kể cả khi `needsEmailVerify`, bấm vào mới hiện hộp thoại xác thực email); `pending` mà `todayTask.done = false` → **Đi làm**; `canOpen` → **Mở quà**. Hộp `pending` của hôm nay **luôn đứng trước** `completed`: hôm điểm danh ô cuối mà hộp còn chờ thì vẫn hiện thẻ chờ, không hiện "Đã điểm danh đủ".
 - `todayResult` = các món đã nhận hôm nay. `endsAt` = 0h VN kế tiếp để client đếm ngược.
 - Nền tảng tắt, tháng chưa có lịch hoặc lịch còn nháp → `enabled: false`.
 
@@ -512,7 +512,7 @@ API và kiểm tra:
 
 - `types/api/dailyCheckin.type.ts`, `types/client/dailyCheckin.type.ts`, `services/dailyCheckin.service.ts`, `lib/dailyCheckin.ts` (hàm thuần: thẻ hôm nay, số ngày còn nghỉ, hộp kế tiếp, chữ quà, chữ dòng tab Cá nhân, đếm ngược, lỗi).
 - `constants/dailyCheckin.ts`: `DAILY_CHECKIN_SLOT_STATUS`, `DAILY_CHECKIN_BOX`, `DAILY_CHECKIN_REWARD_TYPE`, `DAILY_CHECKIN_TASK`, `DAILY_CHECKIN_TASK_TARGET`, `DAILY_CHECKIN_ERROR`.
-- `stores/daily-checkin/dailyCheckinStore.ts` (zustand), có thêm `opened` (hộp vừa mở, để hiện hiệu ứng) và `notice` (`needsEmail` / `vipRequired`, để hiện hộp thoại): `data`, `load()`, `checkIn()` (sinh `clientRequestId` mới mỗi lần bấm, gửi lại do lỗi mạng thì dùng lại mã đó), `open()`, `shouldShowPopup()` (đang bật + chưa đi hết lịch + chưa điểm danh + popup bật + chưa hiện hôm nay, nhớ theo ngày VN ở storage máy). Qua 0h VN khi đang mở màn thì tự `load()` lại (ngày 1 sẽ ra lịch tháng mới). Nhận vé loa xong thì tải lại số vé loa. Gọi `load()` mỗi lần mở popup hoặc màn, khi màn Điểm danh được focus lại (mobile `useFocusEffect`, web khi overlay mở lại) và khi app về foreground: đi đăng bài Me trong app rồi quay lại không phát sinh sự kiện foreground. Chọn nút theo `checkedInToday`, `needsEmailVerify`, `todayTask`, `canOpen` (mục 8.3). Xác thực email xong quay lại cũng `load()` lại.
+- `stores/daily-checkin/dailyCheckinStore.ts` (zustand), có thêm `opened` (hộp vừa mở, để hiện hiệu ứng) và `notice` (`needsEmail` / `vipRequired`, để hiện hộp thoại): `data`, `load()`, `checkIn()` (sinh `clientRequestId` mới mỗi lần bấm, gửi lại do lỗi mạng thì dùng lại mã đó), `open()`, `shouldShowPopup()` (đang bật + chưa đi hết lịch + chưa điểm danh + popup bật + chưa hiện hôm nay, nhớ theo ngày VN ở storage máy). Qua 0h VN khi đang mở màn thì tự `load()` lại (ngày 1 sẽ ra lịch tháng mới). Nhận vé loa xong thì tải lại số vé loa. Gọi `load()` mỗi lần mở popup hoặc màn, khi màn Điểm danh được focus lại (mobile `useFocusEffect`, web khi overlay mở lại) và khi app về foreground: đi đăng bài Me trong app rồi quay lại không phát sinh sự kiện foreground. Chọn nút theo `checkedInToday`, `todayTask`, `canOpen` (mục 8.3). Xác thực email xong quay lại cũng `load()` lại.
 - Đích nút **Đi làm** dạng trừu tượng (`meComposer`, `meTab`, `momentCreate`, `momentList`, `storyTab`, `gifts`, `megaphone`, `gameTab`). Mỗi nền tảng tự map: web `pages/daily-checkin/useDailyCheckinTask.ts` (đổi tab qua `store/homeNavStore.ts`, mở sẵn khung đăng bài / khoảnh khắc bằng `useHomeNavIntent`, Quà tặng và Loa mở đè lên màn Điểm danh), mobile `screens/daily-checkin/useDailyCheckinTask.ts` (`navigate` + `store/navIntentStore.ts` / `useNavIntent`).
 - i18n vi/en: `dailyCheckin.*`.
 
@@ -530,6 +530,8 @@ API và kiểm tra:
 - Thẻ VIP / khung trong kết quả hiện ảnh món + "3 ngày" và dấu khoá, dùng lại `ItemGrantMarks`.
 - Mobile: `Dialog` chuẩn, `ScreenHeader`, token màu `ola-*`, `useThemeColors`.
 - Đã code: web `pages/daily-checkin/` (màn overlay `dailyCheckin`, `DailyCheckinHost` gắn ở `HomePage` lo popup + hộp thoại), mobile `screens/daily-checkin/` (màn `DailyCheckin`, `DailyCheckinHost` gắn ở `App.tsx` sau `AppLockGate`/`AppUpdateGate`, chờ 0,9 giây sau khi mở app, phiên đã hiện popup thì `suppressAppReviewForSession`). Trên iOS không mở được Modal thứ hai khi popup đang mở, nên trong popup kết quả mở hộp, hộp thoại VIP/email và chi tiết ô hiện thay nội dung popup.
+
+- **Nút nổi ở màn Chat** (web `DailyCheckinFab` trong `ChatPanel`, mobile `DailyCheckinFab` trong `ChatListScreen`), đặt ngay trên nút soạn tin: icon Điểm danh (`menu.webp`) lắc nhẹ, nhãn dưới nút đỏ **Điểm danh** khi chưa điểm danh, cam **Làm nhiệm vụ** / **Mở quà** khi hộp đang chờ; bấm mở popup Điểm danh (store `requestPopup()` → host mở popup). Đã nhận quà, ô không có quà đã điểm danh, đi hết lịch hoặc tắt điểm danh thì không hiện. Góc trên phải có nút **X**: bấm thì ẩn tới 0h VN hôm sau, nhớ theo tài khoản trên máy (`ola.dailyCheckin.fabHiddenDay.<userId>` = `endsAt` của ngày đó), vẫn vào được qua tab Cá nhân.
 
 ### 10.3 Ảnh cần vẽ
 

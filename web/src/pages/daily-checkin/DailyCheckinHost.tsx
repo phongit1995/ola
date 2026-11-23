@@ -23,6 +23,10 @@ export function DailyCheckinHost() {
   useEffect(
     () =>
       useDailyCheckinStore.subscribe((state, prev) => {
+        if (state.popupRequest > prev.popupRequest) {
+          setPopupOpen(true);
+          return;
+        }
         if (state.status === prev.status || state.status == null) return;
         if (!shouldShowDailyCheckinPopup(state.status)) return;
         markDailyCheckinPopupShown(state.status);
@@ -52,7 +56,7 @@ export function DailyCheckinHost() {
   return (
     <>
       {popupOpen && status?.enabled === true && (
-        <DailyCheckinPopup status={status} onClose={() => setPopupOpen(false)} onVerifyEmail={verifyEmail} />
+        <DailyCheckinPopup status={status} onClose={() => setPopupOpen(false)} />
       )}
       {opened != null && (
         <DailyCheckinOpenedDialog key={`${status?.month ?? ''}-${opened.slot}`} opened={opened} onClose={dismissOpened} />
