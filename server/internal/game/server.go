@@ -3,6 +3,7 @@ package game
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -185,7 +186,11 @@ func (s *Server) handleConnection(client *socket.Socket) {
 		if last {
 			s.engine.OnDisconnect(data.GameID, data.UserID)
 		}
-		s.logger.Infow("Game socket disconnected", "user_id", data.UserID)
+		reason := ""
+		if len(args) > 0 {
+			reason = fmt.Sprint(args[0])
+		}
+		s.logger.Infow("Game socket disconnected", "user_id", data.UserID, "reason", reason)
 	})
 }
 

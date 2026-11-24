@@ -8,7 +8,13 @@ import (
 	"ola-chat-server/internal/utils"
 )
 
+type roomGraceEntry struct {
+	gen   uint64
+	timer *time.Timer
+}
+
 func (e *Engine) OnConnect(gameID, userID string) {
+	e.cancelRoomGrace(gameID, userID)
 	key := userKey(gameID, userID)
 	afterMatchID := ""
 	if e.reconnectActiveMatch(gameID, userID) {
@@ -116,8 +122,49 @@ func (e *Engine) OnDisconnect(gameID, userID string) {
 		return
 	}
 
+	if _, ok := e.store.RoomByUser(gameID, userID); !ok {
+		return
+	}
+	e.armRoomGrace(gameID, userID)
+}
+
+func (e *Engine) armRoomGrace(gameID, userID string) {
+	key := userKey(gameID, userID)
+	wait := time.Duration(e.graceSeconds) * time.Second
+	e.roomGraceMu.Lock()
+	defer e.roomGraceMu.Unlock()
+	if old, ok := e.roomGrace[key]; ok {
+		old.timer.Stop()
+	}
+	e.roomGraceGen++
+	gen := e.roomGraceGen
+	e.roomGrace[key] = roomGraceEntry{gen: gen, timer: time.AfterFunc(wait, func() {
+		utils.SafeCall(e.logger, func() { e.onRoomGraceExpire(gameID, userID, gen) })
+	})}
+}
+
+func (e *Engine) cancelRoomGrace(gameID, userID string) {
+	key := userKey(gameID, userID)
+	e.roomGraceMu.Lock()
+	defer e.roomGraceMu.Unlock()
+	if entry, ok := e.roomGrace[key]; ok {
+		entry.timer.Stop()
+		delete(e.roomGrace, key)
+	}
+}
+
+func (e *Engine) onRoomGraceExpire(gameID, userID string, gen uint64) {
+	key := userKey(gameID, userID)
 	e.roomMu.Lock()
 	defer e.roomMu.Unlock()
+	e.roomGraceMu.Lock()
+	entry, ok := e.roomGrace[key]
+	if !ok || entry.gen != gen {
+		e.roomGraceMu.Unlock()
+		return
+	}
+	delete(e.roomGrace, key)
+	e.roomGraceMu.Unlock()
 	if e.disconnectActiveMatch(gameID, userID) {
 		return
 	}

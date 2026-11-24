@@ -18,6 +18,8 @@ const sessionCalls = vi.hoisted(() => [] as Array<[string, unknown[]]>);
 
 vi.mock('../../src/sdk', async () => {
   const voice = await vi.importActual<typeof import('../../src/sdk/voice')>('../../src/sdk/voice');
+  class GameAuthenticationExpiredError extends Error {}
+  class GameAuthenticationRequiredError extends Error {}
   const session = new Proxy(
     {},
     {
@@ -40,12 +42,15 @@ vi.mock('../../src/sdk', async () => {
   const bridge = new Proxy({}, { get: () => () => undefined });
   return {
     bridge,
+    GameAuthenticationExpiredError,
+    GameAuthenticationRequiredError,
     joinGame: vi.fn(() => Promise.resolve(session)),
     VOICE_IDLE: voice.VOICE_IDLE,
     createVoiceClient: voice.createVoiceClient,
   };
 });
 
+import { GameAuthenticationExpiredError } from '../../src/sdk';
 import { RECORD_REQUEST_TIMEOUT_MS, useThirteen } from './useThirteen';
 
 const emit = (event: string, data: unknown): void => {
@@ -544,13 +549,48 @@ describe('Thirteen online events during practice', () => {
     expect(useThirteen.getState().notice).toBeNull();
   });
 
-  it('still reports the connection error outside practice', async () => {
+  it('stays quiet on a transient connection error while socket.io retries', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'room' });
+
+    emit('onConnectionChange', false);
+    emit('onConnectionError', new Error('offline'));
+
+    expect(useThirteen.getState()).toMatchObject({ notice: null, offline: true });
+
+    emit('onConnectionChange', true);
+    expect(useThirteen.getState().offline).toBe(false);
+  });
+
+  it('reports the connection error after repeated failures outside practice', async () => {
     await connect();
     useThirteen.setState({ phase: 'lobby' });
 
+    for (let i = 0; i < 4; i += 1) emit('onConnectionError', new Error('offline'));
+    expect(useThirteen.getState().notice).toBeNull();
+
+    emit('onConnectionError', new Error('offline'));
+    expect(useThirteen.getState().notice).toBe('Không thể kết nối máy chủ trò chơi. Hãy thử lại sau.');
+  });
+
+  it('restarts the failure count after a successful reconnect', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby' });
+
+    for (let i = 0; i < 4; i += 1) emit('onConnectionError', new Error('offline'));
+    emit('onConnectionChange', true);
     emit('onConnectionError', new Error('offline'));
 
-    expect(useThirteen.getState().notice).toBe('Không thể kết nối máy chủ trò chơi. Hãy thử lại sau.');
+    expect(useThirteen.getState().notice).toBeNull();
+  });
+
+  it('reports an expired session at once', async () => {
+    await connect();
+    useThirteen.setState({ phase: 'lobby' });
+
+    emit('onConnectionError', new GameAuthenticationExpiredError());
+
+    expect(useThirteen.getState().notice).toBe('Phiên đăng nhập đã hết hạn. Hãy thoát ra rồi mở lại trò chơi.');
   });
 
   it('only leaves the waiting room for a kick from that room', async () => {

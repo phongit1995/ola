@@ -319,6 +319,10 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 
 			if test.disconnect {
 				gameEngine.OnDisconnect(room.GameID, test.userID)
+				if _, exists := rooms.Get(room.GameID, room.ID); !exists {
+					t.Fatal("waiting room closed before the reconnect grace ended")
+				}
+				expireRoomGrace(t, gameEngine, room.GameID, test.userID)
 			} else {
 				gameEngine.LeaveRoom(room.GameID, test.userID, room.ID)
 			}
@@ -887,6 +891,7 @@ func TestWaitingRoomDisconnectReconnectSyncsClearedMembership(t *testing.T) {
 			}
 
 			gameEngine.OnDisconnect(room.GameID, userID)
+			expireRoomGrace(t, gameEngine, room.GameID, userID)
 			emitter.clear()
 			gameEngine.OnConnect(room.GameID, userID)
 
@@ -896,6 +901,62 @@ func TestWaitingRoomDisconnectReconnectSyncsClearedMembership(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestWaitingRoomReconnectWithinGraceKeepsSeat(t *testing.T) {
+	for _, userID := range []string{"owner", "guest"} {
+		t.Run(userID, func(t *testing.T) {
+			gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
+			room := lifecycleRoom("room-grace-" + userID)
+			room.GuestID = "guest"
+			room.GuestName = "Guest"
+			if err := rooms.Save(room); err != nil {
+				t.Fatal(err)
+			}
+
+			gameEngine.OnDisconnect(room.GameID, userID)
+			gameEngine.roomGraceMu.Lock()
+			entry, armed := gameEngine.roomGrace[userKey(room.GameID, userID)]
+			gameEngine.roomGraceMu.Unlock()
+			if !armed {
+				t.Fatal("disconnect did not arm the waiting-room grace")
+			}
+			emitter.clear()
+			gameEngine.OnConnect(room.GameID, userID)
+			gameEngine.onRoomGraceExpire(room.GameID, userID, entry.gen)
+
+			envelope, ok := emitter.last(userID, protocol.S2CRoomSync)
+			if !ok || envelope.Data.(protocol.RoomSyncData).RoomID != room.ID {
+				t.Fatalf("reconnected %s lost the room: %+v", userID, envelope)
+			}
+			stored, exists := rooms.Get(room.GameID, room.ID)
+			if !exists || !stored.hasMember(userID) {
+				t.Fatalf("reconnected %s was removed after the stale grace fired: %+v", userID, stored)
+			}
+		})
+	}
+}
+
+func TestDisconnectOutsideRoomArmsNoGrace(t *testing.T) {
+	gameEngine, _, _ := newLifecycleTestEngine(newMemoryActiveMatchStore())
+	gameEngine.OnDisconnect(persistenceTestGameID, "lonely")
+	gameEngine.roomGraceMu.Lock()
+	defer gameEngine.roomGraceMu.Unlock()
+	if len(gameEngine.roomGrace) != 0 {
+		t.Fatal("grace armed for a user without a room")
+	}
+}
+
+func expireRoomGrace(t *testing.T, gameEngine *Engine, gameID, userID string) {
+	t.Helper()
+	gameEngine.roomGraceMu.Lock()
+	entry, ok := gameEngine.roomGrace[userKey(gameID, userID)]
+	gameEngine.roomGraceMu.Unlock()
+	if !ok {
+		t.Fatal("waiting-room grace was not armed")
+	}
+	entry.timer.Stop()
+	gameEngine.onRoomGraceExpire(gameID, userID, entry.gen)
 }
 
 func TestLeaveMissingRoomReturnsRecoverableError(t *testing.T) {

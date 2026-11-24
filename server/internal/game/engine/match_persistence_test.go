@@ -505,6 +505,11 @@ func stopEngineTimers(gameEngine *Engine) {
 		}
 		match.mu.Unlock()
 	}
+	gameEngine.roomGraceMu.Lock()
+	for _, entry := range gameEngine.roomGrace {
+		entry.timer.Stop()
+	}
+	gameEngine.roomGraceMu.Unlock()
 }
 
 func TestStartMatchPersistsInitialSnapshot(t *testing.T) {
