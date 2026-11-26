@@ -5,16 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
 	"ola-chat-server/internal/services"
 	"sync"
 
 	"github.com/redis/go-redis/v9"
 )
-
-var ErrDictionaryUnavailable = errors.New("dictionary api unavailable")
 
 type DictMeaning struct {
 	Definition string  `json:"definition"`
@@ -47,24 +42,13 @@ type DictLookup struct {
 	Results []DictResult `json:"results"`
 }
 
-type dictSuggest struct {
-	Suggestions []string `json:"suggestions"`
-}
-
 type Verifier struct {
-	client     *http.Client
-	redis      *redis.Client
-	lookupURL  string
-	suggestURL string
+	lexicon *Lexicon
+	redis   *redis.Client
 }
 
-func NewVerifier(cache *services.CacheService) *Verifier {
-	return &Verifier{
-		client:     &http.Client{Timeout: WordChainLookupTimeout},
-		redis:      cache.GetClient(),
-		lookupURL:  WordChainLookupURL,
-		suggestURL: WordChainSuggestURL,
-	}
+func NewVerifier(lexicon *Lexicon, cache *services.CacheService) *Verifier {
+	return &Verifier{lexicon: lexicon, redis: cache.GetClient()}
 }
 
 func (v *Verifier) Lookup(ctx context.Context, word string) (*DictLookup, error) {
@@ -74,10 +58,7 @@ func (v *Verifier) Lookup(ctx context.Context, word string) (*DictLookup, error)
 	}
 	var out *DictLookup
 	for _, spelling := range spellingVariants(word) {
-		result, err := v.fetchLookup(ctx, spelling)
-		if err != nil {
-			return nil, err
-		}
+		result := v.lexicon.Lookup(spelling)
 		if out == nil {
 			out = result
 		}
@@ -88,24 +69,6 @@ func (v *Verifier) Lookup(ctx context.Context, word string) (*DictLookup, error)
 	}
 	v.cacheLookup(ctx, word, out)
 	return out, nil
-}
-
-func (v *Verifier) fetchLookup(ctx context.Context, word string) (*DictLookup, error) {
-	body, status, err := v.get(ctx, v.lookupURL, url.Values{"word": {word}})
-	if err != nil {
-		return nil, err
-	}
-	if status == http.StatusNotFound {
-		return &DictLookup{Exists: false, Word: word}, nil
-	}
-	if status != http.StatusOK {
-		return nil, fmt.Errorf("%w: status %d", ErrDictionaryUnavailable, status)
-	}
-	var out DictLookup
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
-	}
-	return &out, nil
 }
 
 func hasVietnamese(result *DictLookup) bool {
@@ -262,11 +225,7 @@ func (v *Verifier) Continuations(ctx context.Context, syllable string) ([]string
 	key := syllableKey(syllable)
 	words := make([]string, 0)
 	for _, spelling := range spellingVariants(syllable) {
-		suggestions, err := v.suggest(ctx, spelling)
-		if err != nil {
-			return nil, err
-		}
-		for _, suggestion := range suggestions {
+		for _, suggestion := range v.lexicon.Suggest(spelling+" ", WordChainSuggestLimit) {
 			normalized := normalizeVietnamese(suggestion)
 			parts := splitSyllables(normalized)
 			if len(parts) == WordChainWordLength && syllableKey(parts[0]) == key {
@@ -275,42 +234,4 @@ func (v *Verifier) Continuations(ctx context.Context, syllable string) ([]string
 		}
 	}
 	return words, nil
-}
-
-func (v *Verifier) suggest(ctx context.Context, syllable string) ([]string, error) {
-	body, status, err := v.get(ctx, v.suggestURL, url.Values{"q": {syllable + " "}, "limit": {WordChainSuggestLimit}})
-	if err != nil {
-		return nil, err
-	}
-	if status == http.StatusNotFound {
-		return nil, nil
-	}
-	if status != http.StatusOK {
-		return nil, fmt.Errorf("%w: status %d", ErrDictionaryUnavailable, status)
-	}
-	var out dictSuggest
-	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
-	}
-	return out.Suggestions, nil
-}
-
-func (v *Verifier) get(ctx context.Context, endpoint string, query url.Values) ([]byte, int, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"?"+query.Encode(), nil)
-	if err != nil {
-		return nil, 0, err
-	}
-	resp, err := v.client.Do(req)
-	if err != nil {
-		return nil, 0, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, WordChainLookupMaxBytes+1))
-	if err != nil {
-		return nil, 0, fmt.Errorf("%w: %v", ErrDictionaryUnavailable, err)
-	}
-	if len(body) > WordChainLookupMaxBytes {
-		return nil, 0, fmt.Errorf("%w: response too large", ErrDictionaryUnavailable)
-	}
-	return body, resp.StatusCode, nil
 }

@@ -21,7 +21,7 @@ Một từ hợp lệ khi thỏa lần lượt các điều kiện dưới đây
 | 1 | Đúng **2 âm tiết** (khoảng trắng thừa đã được gộp, xem phần chuẩn hoá) | `invalid_format` | ⚠️ |
 | 2 | Âm tiết đầu trùng âm tiết cuối của từ hiện tại (các cách viết tương đương coi là một, xem phần chuẩn hoá) | `mismatch` | ❌ |
 | 3 | Chưa dùng trong ván hiện tại (`bánh mì` và `bánh mỳ` tính là cùng một từ) | `repeated` | ❌ |
-| 4 | Có trong từ điển tiếng Việt (gọi API dict.minhqnd.com). Âm tiết `y` sau phụ âm ghép (`chý`, `thỵ`, `nghỷ`) là sai chính tả, bị chấm luôn mà không gọi API | `not_in_dict` | ❌ |
+| 4 | Có trong từ điển tiếng Việt (`viDictionary`, xem mục 4). Âm tiết `y` sau phụ âm ghép (`chý`, `thỵ`, `nghỷ`) là sai chính tả, bị chấm luôn mà không cần tra | `not_in_dict` | ❌ |
 
 Kết quả của từ hợp lệ:
 
@@ -99,35 +99,36 @@ Phiên (session)                         tạo 1 lần, không hết hạn, tin 
 
 | Việc | Nguồn |
 |---|---|
-| Kiểm tra từ có tồn tại | Luôn gọi API `dict.minhqnd.com/api/v1/lookup`, chỉ nhận kết quả có `lang_code = vi` |
-| Kiểm tra ngõ cụt (còn từ nối tiếp không) | Còn ít nhất 1 từ chưa dùng **được API `lookup` chấp nhận**, cùng tiêu chí với lúc chấm từ (xem bên dưới) |
-| Chọn từ mở đầu phiên và ván | Bốc ngẫu nhiên từ từ điển local. Bản thân từ đó phải được API `lookup` chấp nhận (từ điển local có từ sai chính tả, ví dụ "quến dỗ") và không còn là ngõ cụt theo cách kiểm tra ở trên. Thử tối đa 20 từ, không từ nào đạt thì báo lỗi |
-| Tra từ cho người chơi | API `lookup` |
+| Kiểm tra từ có tồn tại | Tra `viDictionary` (`lookup`), chỉ gồm từ tiếng Việt |
+| Kiểm tra ngõ cụt (còn từ nối tiếp không) | Còn ít nhất 1 từ chưa dùng **được `lookup` chấp nhận**, cùng tiêu chí với lúc chấm từ (xem bên dưới) |
+| Chọn từ mở đầu phiên và ván | Bốc ngẫu nhiên từ từ điển local. Bản thân từ đó phải được `lookup` chấp nhận (từ điển local có từ sai chính tả, ví dụ "quến dỗ") và không còn là ngõ cụt theo cách kiểm tra ở trên. Thử tối đa 20 từ, không từ nào đạt thì báo lỗi |
+| Tra từ cho người chơi | `lookup` của `viDictionary` |
 
 Từ điển local nằm ở `wordchain/assets/` (`wordPairs.json`, `customWords.json`, copy từ repo gốc) và được `go:embed` vào binary. **Hai file này phải có trong git**, thiếu thì server không build được.
 
-Lý do vẫn cần từ điển local dù đã kiểm tra từ bằng API:
+`viDictionary` (`wordchain/assets/viDictionary.json.br`, JSON nén brotli, khoảng 4 MB) là phần tiếng Việt (70.511 từ, kèm nghĩa, bản dịch, từ liên quan) trích từ `dictionary.db` bản [v2.0.0](https://github.com/minhqnd/dictionary/releases/tag/v2.0.0) của [minhqnd/dictionary](https://github.com/minhqnd/dictionary), giấy phép dữ liệu [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (bản trích chỉ giữ từ tiếng Việt, đổi mã từ loại/quan hệ/ngôn ngữ sang nhãn tiếng Việt, bỏ phát âm, audio, link, nguồn; phân phối lại theo cùng giấy phép). File cũng được `go:embed`, nạp vào RAM lúc khởi động service API (khoảng 0,6 giây, khoảng 50 MB heap). Trước đây server gọi API dict.minhqnd.com, nhưng trang đó bị Vercel tắt (`402 DEPLOYMENT_DISABLED`) từ 26/11/2026 nên đã chuyển sang dữ liệu nhúng. Nhãn từ loại, quan hệ, tên ngôn ngữ của bản dịch đã được đổi sẵn sang tiếng Việt lúc trích, giống API cũ. `suggest` tìm theo tiền tố trên danh sách từ đã sắp xếp, trả tối đa 20 từ, ngắn trước.
 
-- API `lookup` chỉ trả lời "từ này có tồn tại không", không liệt kê được các từ bắt đầu bằng một âm tiết.
-- API không có endpoint lấy từ ngẫu nhiên để mở ván.
+Lý do vẫn cần từ điển local (`wordPairs.json`, `customWords.json`) dù đã có `viDictionary`:
+
+- Từ điển local đã lọc sẵn từ 2 âm tiết theo cặp âm tiết, dùng để bốc từ mở ván.
 - Từ điển local cho thêm ứng viên ngoài `suggest`, vì `suggest` chỉ trả tối đa khoảng 20 kết quả.
 
 Cách kiểm tra "còn từ để nối" sau một từ đúng, ví dụ sau "đẹp đẽ" thì xét âm tiết "đẽ":
 
 1. Lấy các từ chưa dùng bắt đầu bằng "đẽ" trong từ điển local. Nếu có từ nào đã được cache là hợp lệ thì kết luận còn từ.
-2. Gọi API `suggest` để lấy thêm ứng viên.
+2. Gọi `suggest` để lấy thêm ứng viên.
 3. Gọi `lookup` cho **mọi** ứng viên chưa biết kết quả, mỗi đợt 10 từ song song, ưu tiên ứng viên từ `suggest`. Gặp 1 từ hợp lệ là dừng ngay và kết luận còn từ.
-4. Chỉ kết luận ngõ cụt (người vừa nối thắng) khi **đã kiểm tra hết** ứng viên và không từ nào hợp lệ. Nếu API lỗi ở ứng viên nào đó thì không kết luận thắng, nước đi trả `503` và không lưu gì.
+4. Chỉ kết luận ngõ cụt (người vừa nối thắng) khi **đã kiểm tra hết** ứng viên và không từ nào hợp lệ. Nếu việc kiểm tra bị huỷ giữa chừng (hết thời gian chờ) thì không kết luận thắng, nước đi trả `503` và không lưu gì.
 
-Ví dụ: từ điển local có "đẽ mị" nhưng API `lookup` trả 404, còn `suggest("đẽ")` chỉ ra "đẽo…". Vậy "đẹp đẽ" là ngõ cụt và người nối nó thắng. Nếu chỉ tin từ điển local, phòng sẽ kẹt mãi ở từ "đẽ", vì từ người chơi nối không hết hạn.
+Ví dụ: từ điển local có "đẽ mị" nhưng `lookup` không có, còn `suggest("đẽ")` chỉ ra "đẽo…". Vậy "đẹp đẽ" là ngõ cụt và người nối nó thắng. Nếu chỉ tin từ điển local, phòng sẽ kẹt mãi ở từ "đẽ", vì từ người chơi nối không hết hạn.
 
 Chi phí: trung vị mỗi âm tiết có 5 ứng viên, nhiều nhất là 225 (âm "ăn"). Âm tiết nhiều ứng viên hầu như luôn gặp từ hợp lệ ngay đợt đầu, nên chỉ trường hợp gần như mọi ứng viên đều không hợp lệ mới phải gọi nhiều đợt. Việc này chạy ngoài lock.
 
 Khác bot gốc: bot gốc chỉ tính một ứng viên khi bản thân nó cũng còn nối tiếp được. Ola chỉ cần còn 1 từ hợp lệ để nối, đúng với câu "không còn từ nào để nối tiếp".
 
-Kết quả `lookup` (có hoặc không) được cache 24 giờ trong Redis, nên các lần sau thường không phải gọi API.
+Kết quả `lookup` (có hoặc không) được cache 24 giờ trong Redis.
 
-Nếu API lỗi, hoặc không chọn được từ mở ván còn nối được, thì:
+Nếu kiểm tra từ lỗi, hoặc không chọn được từ mở ván còn nối được, thì:
 
 - nước đi (kể cả nước đi thắng) trả `503 WORD_CHAIN_VERIFY_FAILED` và **không lưu gì**;
 - mở phiên lúc có người vào (chưa có state) trả `503`, lần gọi sau sẽ thử lại;
@@ -137,8 +138,8 @@ Nếu API lỗi, hoặc không chọn được từ mở ván còn nối đượ
 
 | Hạng mục | Bot gốc (Discord) | Ola |
 |---|---|---|
-| Kiểm tra từ tồn tại | Từ điển local (`listWordSet`) | Gọi API dict.minhqnd.com |
-| Kiểm tra ngõ cụt | Chỉ từ điển local | Còn từ chưa dùng được API chấp nhận. Ứng viên lấy từ local + `suggest` |
+| Kiểm tra từ tồn tại | Từ điển local (`listWordSet`) | `viDictionary` (trích từ minhqnd/dictionary) |
+| Kiểm tra ngõ cụt | Chỉ từ điển local | Còn từ chưa dùng được `viDictionary` chấp nhận. Ứng viên lấy từ local + `suggest` |
 | Lịch sử ván mới sau khi thắng | Rỗng (từ mở ván chơi lại được) | Có sẵn từ mở ván |
 | Kênh chơi | Kênh Discord do admin thêm | 1 phòng cố định |
 | Kết thúc | Thắng thì mở ván mới | Giống bot gốc, thêm: từ của bot sau 12 giờ không ai nối thì bot thay từ khác (ghi đè tin bot cũ, giữ tin người chơi) |
@@ -233,7 +234,8 @@ API service ──Kafka CHAT.WORD_CHAIN.EVENT──▶ Chat service ──Socket
 |---|---|
 | `wordchain.normalize.go` | Chuẩn hoá tiếng Việt, tách âm tiết |
 | `wordchain.dictionary.go` | Từ điển local: ứng viên để nối, bốc từ mở đầu |
-| `wordchain.verifier.go` | Client gọi dict.minhqnd.com (`lookup`, `suggest`) và cache kết quả `lookup` |
+| `wordchain.lexicon.go` | Nạp `viDictionary`, `lookup` và `suggest` (chuẩn hoá giống API cũ) |
+| `wordchain.verifier.go` | Kiểm tra từ qua lexicon, cache kết quả `lookup` |
 | `wordchain.oracle.go` | Tiêu chí chung: từ có tồn tại, còn từ để nối không, chọn từ mở ván |
 | `wordchain.engine.go` | Luật chấm một nước đi, không có I/O |
 | `wordchain.service.go` | Xử lý nước đi, tạo phiên, dựng mutation khi ghi nước đi |
@@ -241,7 +243,7 @@ API service ──Kafka CHAT.WORD_CHAIN.EVENT──▶ Chat service ──Socket
 | `wordchain.timer.go` | Timer thay từ bot hết hạn |
 | `wordchain.store.go` | Đọc và ghi Redis, transaction `Apply` |
 | `wordchain.messages.go` | Nội dung tin bot |
-| `wordchain.lookup.go` | Tra từ, cooldown chỉ áp dụng khi phải gọi API ngoài |
+| `wordchain.lookup.go` | Tra từ, cooldown chỉ áp dụng khi từ chưa có trong cache |
 | `wordchain.hint.go` | Gợi ý: chọn từ, kiểm tra điều kiện, kiểm tra lại dưới lock, nhớ gợi ý đã mua |
 | `wordchain.guess.go` | Mua thêm lượt: đọc lượt đã mua từ Postgres, kiểm tra giá và điều kiện dưới lock, trừ KEN, báo số lượt mới cho các thiết bị của người mua |
 | `wordchain.wallet.go` | Sau khi trừ KEN: xoá user cache, bắn `KEN_UPDATED` |

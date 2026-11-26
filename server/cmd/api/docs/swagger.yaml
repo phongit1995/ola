@@ -28472,7 +28472,7 @@ paths:
             $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_wordchain_LookupResponse'
       security:
       - BearerAuth: []
-      summary: Look up a Vietnamese word (dict.minhqnd.com)
+      summary: Look up a Vietnamese word (embedded dictionary)
       tags:
       - word-chain
   /rooms/word-chain/messages:

@@ -17741,7 +17741,7 @@ const docTemplate = `{
                 "tags": [
                     "word-chain"
                 ],
-                "summary": "Look up a Vietnamese word (dict.minhqnd.com)",
+                "summary": "Look up a Vietnamese word (embedded dictionary)",
                 "parameters": [
                     {
                         "type": "string",
