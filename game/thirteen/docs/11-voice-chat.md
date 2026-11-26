@@ -2,7 +2,7 @@
 
 Trạng thái: **đã triển khai** (server game, SDK game, tiến lên, app chủ). Tài liệu này chốt phạm vi, đánh giá khả thi, việc cần làm theo từng phần và thiết kế giao diện. Các điểm triển khai khác với plan ban đầu ghi ở mục 10.
 
-Xem giao diện bằng dữ liệu giả: `/thirteen/mock-ui.html?screen=<tên>`, với các màn `voice-lobby`, `voice-create-room`, `voice-create-room-novip`, `voice-room`, `voice-table`, `voice-table-me`, `voice-menu`, `voice-primer`, `voice-watch`.
+Xem giao diện bằng dữ liệu giả: `/thirteen/mock-ui.html?screen=<tên>`, với các màn `voice-lobby`, `voice-create-room`, `voice-create-room-novip`, `voice-room`, `voice-table`, `voice-table-me`, `voice-watch`.
 
 ## 1. Phạm vi đã chốt
 
@@ -191,7 +191,7 @@ Voice dùng được ngay từ phòng chờ. Vào bàn là tự kết nối, nê
 
 - **Nút mic** chính là chấm voice ở góc avatar trong ô ghế của mình: chạm vào để bật/tắt, không có nút mic riêng. Bốn trạng thái như ở bàn chơi (mục 7.4). Chỉ người ngồi ghế mới có nút mic.
 - **Nút loa** ở thanh trên cùng (`tl-topbar`, vị trí `tl-topbar-spacer`).
-- **Ô ghế** (`tl-seat-grid`): chấm voice ở góc avatar, đang nói thì chấm chuyển vàng và có sóng lan ra, theo bảng trạng thái ở mục 7.4. Bấm vào ô ghế của người khác mở menu "Tắt tiếng / Bật tiếng" phía mình. Ô "Trống" không có gì.
+- **Ô ghế** (`tl-seat-grid`): chấm voice ở góc avatar, đang nói thì chấm chuyển vàng và có sóng lan ra, theo bảng trạng thái ở mục 7.4. Chạm vào chấm voice của người khác là tắt/bật tiếng người đó ngay, chỉ trên máy mình. Ô "Trống" không có gì.
 - **Tiêu đề bàn:** có icon mic nhỏ để biết bàn này có voice.
 - **Màn xem bàn đang chờ** (người xem, `WatchedRoomScreen`): chỉ có nút loa, nghe được cả bàn, không có nút mic.
 - **Ở sảnh** (chưa vào bàn nào): không có voice; chỉ thấy icon mic trên thẻ bàn có voice (mục 7.2).
@@ -236,13 +236,13 @@ Voice dùng được ngay từ phòng chờ. Vào bàn là tự kết nối, nê
 
 - Hiệu ứng "đang nói" chỉ nằm ở chấm mic nên không đè lên viền lượt đánh (`TurnRing`). Máy bật giảm chuyển động thì chỉ đổi màu, không có sóng.
 - Tắt mic dùng `stopMicTrackOnMute`: micro được giải phóng nhưng kênh mic vẫn còn ở trạng thái `muted`, nên người khác vẫn thấy đúng là "tắt mic".
-- **Bấm vào avatar** (hiện chưa có hành động nào) mở popover nhỏ cạnh ghế gồm tên người chơi và 1 nút "Tắt tiếng" hoặc "Bật tiếng" (chỉ trên máy bạn).
+- **Chạm vào chấm voice** của người khác là tắt tiếng (chấm đổi sang loa gạch chéo), chạm lần nữa là bật lại. Không có menu; toast "Đã tắt tiếng … trên máy bạn" báo rõ chỉ có tác dụng trên máy mình. Vùng chạm nới rộng quanh chấm, avatar không bấm được.
 
 **Người xem:** thanh dưới (`tl-spectator-bar`) chỉ có nút loa, không có nút mic. Danh sách người xem không cần hiện trạng thái voice.
 
 ### 7.5 Xin quyền mic và thông báo
 
-- **Lần đầu bấm mic:** hiện sheet ngắn "Cho phép micro để nói chuyện với cả bàn" và nút "Tiếp tục". Bấm Tiếp tục thì hộp xin quyền của trình duyệt hoặc điện thoại mới hiện ra, để người dùng không bị bất ngờ.
+- **Bấm mic:** bật mic ngay, không có hộp giải thích riêng. Lần đầu thì trình duyệt hoặc điện thoại tự hiện hộp xin quyền micro của hệ thống.
 - **Toast ngắn theo style chat hiện có:**
   - "Đã bật mic" / "Đã tắt mic"
   - "Chưa có quyền micro, mở Cài đặt để cho phép"
@@ -260,7 +260,7 @@ Voice dùng được ngay từ phòng chờ. Vào bàn là tự kết nối, nê
 
 1. **Backend:** cờ voice khi tạo bàn và `VOICE_TOKEN`, kèm test engine.
 2. **SDK voice và store `useThirteen`:** vòng đời join/leave.
-3. **UI:** modal Tạo bàn, phòng chờ, bàn chơi, popover tắt tiếng, xin quyền.
+3. **UI:** modal Tạo bàn, phòng chờ, bàn chơi, chạm chấm voice để tắt tiếng, xin quyền.
 4. **App chủ:** sửa 2 dòng ở mục 6, phát hành bản mobile.
 5. **Test:**
    - **Trên máy:** chạy `livekit-server --dev` với 3–4 trình duyệt; dùng thêm `game/scripts/thirteen-e2e-browser.mjs` để kiểm tra:

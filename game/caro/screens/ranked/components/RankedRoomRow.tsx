@@ -1,5 +1,6 @@
 import type { RoomInfo } from '../../../../src/sdk';
 import { assetSrc } from '../../../assets';
+import { RoomVoiceIcon } from '../../../components/VoiceControls';
 import { formatKen } from '../../../helpers/format';
 import { avatarIconSrc } from '../../../helpers/player';
 
@@ -17,12 +18,13 @@ export function RankedRoomRow({ room, top, height, onJoin }: RankedRoomRowProps)
       className={'ranked-row' + (room.full ? ' full' : '')}
       style={{ top: `${top}%`, height: `${height}%` }}
       disabled={room.full}
-      aria-label={`Bàn của ${room.owner}, cược ${formatKen(room.bet)} Ken, ${room.players} trên 2 người${room.locked ? ', có mật khẩu' : ''}`}
+      aria-label={`Bàn của ${room.owner}, cược ${formatKen(room.bet)} Ken, ${room.players} trên 2 người${room.locked ? ', có mật khẩu' : ''}${room.voice ? ', có voice' : ''}`}
       onClick={() => onJoin(room)}
     >
       <span className="rr-owner">
         <img src={avatarIconSrc(room.ownerVipType)} alt="" className="rr-vip" />
         <span className="rr-owner-name">@{room.owner}</span>
+        {room.voice && <RoomVoiceIcon />}
       </span>
       <span className="rr-bet">{formatKen(room.bet)}</span>
       <span className="rr-join">

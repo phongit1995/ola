@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { assetBg } from '../../../assets';
+import { PeerVoice, SelfVoice } from '../../../components/VoiceControls';
 import { formatKen } from '../../../helpers/format';
 import { useCaro } from '../../../store/useCaro';
 
@@ -68,6 +69,7 @@ export function BoardHeader() {
           </div>
           {op.level != null && op.level > 0 && <span className="player-level">Lv.{op.level}</span>}
           {op.owner && <RoomOwnerIcon />}
+          <PeerVoice userId={op.id} name={op.name} />
           {showBetDeduction && (
             <span key={`op-bet-${matchSeq}`} className="player-ken-change debit">
               -{betText} KEN
@@ -111,6 +113,7 @@ export function BoardHeader() {
           </div>
           {me.level != null && me.level > 0 && <span className="player-level">Lv.{me.level}</span>}
           {me.owner && <RoomOwnerIcon />}
+          <SelfVoice userId={me.id} />
           {showBetDeduction && (
             <span key={`me-bet-${matchSeq}`} className="player-ken-change debit">
               -{betText} KEN

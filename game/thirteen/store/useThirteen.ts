@@ -39,7 +39,7 @@ import { errorText, roomClosedText } from '../helpers/errorText';
 import type { BotSetupItem } from '../helpers/practice';
 import { MIN_ROOM_SEATS, ROOM_SEATS } from '../helpers/room';
 import { createPracticeSession } from '../practice';
-import { VOICE_ISSUE_TEXT, VOICE_MIC_PRIMED_KEY, readVoiceFlag, writeVoiceFlag } from '../helpers/voice';
+import { newVoiceIssueText, VOICE_RETRY_TEXT } from '../../src/ui/voice';
 import { CHAT_BUBBLE_MS, receiveMatchChat, type SeatChatBubble } from './matchChat';
 
 export type Phase = 'connecting' | 'lobby' | 'room' | 'table';
@@ -131,7 +131,6 @@ interface ThirteenStore {
   history: RecordList<MatchHistoryEntry>;
   leaderboard: LeaderboardView;
   voice: VoiceState;
-  micPrimerOpen: boolean;
   init(): void;
   dispose(): void;
   startPractice(bots: BotSetupItem[]): void;
@@ -167,11 +166,8 @@ interface ThirteenStore {
   setLeaderboardPeriod(period: LeaderboardPeriod): void;
   closeOverlay(): void;
   toggleMic(): void;
-  confirmMicPrimer(): void;
-  dismissMicPrimer(): void;
   toggleSpeaker(): void;
   togglePeerMuted(userId: string): void;
-  resumeVoiceAudio(): void;
   selectedCombo(): Combo | null;
   canPlaySelected(): boolean;
 }
@@ -262,7 +258,6 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     matchRoomId: '',
     matchRoomVoice: false,
     voice: null as VoiceClient | null,
-    voiceKey: '',
     watchRequest: '',
     toastTimer: 0,
     historyTimer: 0 as ReturnType<typeof setTimeout> | 0,
@@ -345,26 +340,16 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     return { roomId: refs.matchRoomId, matchId: s.matchId, speak: true };
   };
 
-  const syncVoice = (): void => {
-    const voice = refs.voice;
-    if (!voice) return;
-    const target = voiceTarget(get());
-    const key = target ? [target.roomId ?? '', target.matchId ?? '', String(target.speak)].join('|') : '';
-    if (key === refs.voiceKey) return;
-    refs.voiceKey = key;
-    if (target) voice.join(target);
-    else voice.leave();
-  };
+  const syncVoice = (): void => refs.voice?.follow(voiceTarget(get()));
 
   const attachVoice = (session: GameSession<ServerState, ServerMove>): void => {
     const voice = createVoiceClient(session);
     refs.voice = voice;
-    refs.voiceKey = '';
     refs.unsubs.push(
       voice.subscribe((state) => {
-        const previousIssue = get().voice.issue;
+        const issueText = newVoiceIssueText(get().voice, state);
         set({ voice: state });
-        if (state.issue && state.issue !== previousIssue) get().showToast(VOICE_ISSUE_TEXT[state.issue]);
+        if (issueText) get().showToast(issueText);
       }),
       api.subscribe(syncVoice),
     );
@@ -1017,7 +1002,6 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     history: { items: [], loading: false, error: null },
     leaderboard: { period: 'day', from: 0, items: [], loading: false, error: null },
     voice: VOICE_IDLE,
-    micPrimerOpen: false,
 
     init() {
       refs.disposed = false;
@@ -1043,7 +1027,6 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
       refs.unsubs = [];
       refs.voice?.destroy();
       refs.voice = null;
-      refs.voiceKey = '';
       refs.practice?.disconnect();
       refs.practice = null;
       refs.session?.disconnect();
@@ -1130,32 +1113,18 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     toggleMic() {
       const voice = get().voice;
       if (refs.voice && voice.status === 'failed') {
+        get().showToast(VOICE_RETRY_TEXT);
         refs.voice.retry();
         return;
       }
       if (!refs.voice || !voice.canSpeak || voice.micBusy || voice.status !== 'connected') return;
-      if (!voice.micOn && !readVoiceFlag(VOICE_MIC_PRIMED_KEY)) {
-        set({ micPrimerOpen: true });
-        return;
-      }
       void refs.voice.setMic(!voice.micOn);
-    },
-    confirmMicPrimer() {
-      writeVoiceFlag(VOICE_MIC_PRIMED_KEY, true);
-      set({ micPrimerOpen: false });
-      void refs.voice?.setMic(true);
-    },
-    dismissMicPrimer() {
-      set({ micPrimerOpen: false });
     },
     toggleSpeaker() {
       refs.voice?.setSpeaker(!get().voice.speakerOn);
     },
     togglePeerMuted(userId) {
       refs.voice?.setPeerMuted(userId, !get().voice.mutedIds.includes(userId));
-    },
-    resumeVoiceAudio() {
-      refs.voice?.resumeAudio();
     },
     selectedCombo() {
       const selected = get().selected;

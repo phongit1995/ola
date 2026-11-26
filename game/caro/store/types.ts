@@ -6,6 +6,7 @@ import type {
   RoomInfo,
   RoomStateData,
   UserInfoData,
+  VoiceState,
 } from '../../src/sdk';
 import type { BotLevel, WinLine } from '../types';
 
@@ -42,6 +43,7 @@ export interface MatchResultState {
 }
 
 export interface PlayerDisplay {
+  id: string;
   name: string;
   vip: string;
   mark: PlayerMark;
@@ -118,6 +120,7 @@ export interface CaroState {
   winLine: WinLine | null;
   messages: ChatMsg[];
   reactionNotice: ReactionNotice | null;
+  voice: VoiceState;
 }
 
 export interface CaroActions {
@@ -127,7 +130,7 @@ export interface CaroActions {
   playBot(level: BotLevel): void;
   playRanked(): void;
   refreshRooms(): void;
-  createRoom(bet: number, password?: string): void;
+  createRoom(bet: number, password?: string, voice?: boolean): void;
   joinRoom(roomId: string, password?: string): void;
   cancelRoom(): void;
   toggleRoomReady(): void;
@@ -153,6 +156,8 @@ export interface CaroActions {
   dismissNotice(): void;
   sendChat(text: string): void;
   sendReaction(type: GameReactionType): void;
+  toggleMic(): void;
+  togglePeerMuted(userId: string): void;
 }
 
 export type CaroStore = CaroState & CaroActions;

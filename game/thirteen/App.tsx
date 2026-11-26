@@ -5,7 +5,6 @@ import { bridge } from '../src/sdk';
 import { preloadCardAssets } from './assets';
 import { BrandMark } from './components/BrandMark';
 import { ConfirmModal } from './components/ConfirmModal';
-import { MicPrimer, VoiceAudioUnlock } from './components/VoiceControls';
 import { LobbyScreen } from './screens/lobby/LobbyScreen';
 import { HistoryScreen } from './screens/records/HistoryScreen';
 import { LeaderboardScreen } from './screens/records/LeaderboardScreen';
@@ -73,8 +72,6 @@ export function App() {
       {phase === 'table' && <TableScreen />}
       {result && <ResultScreen />}
       {toast && <div className="tl-toast">{toast}</div>}
-      <VoiceAudioUnlock />
-      <MicPrimer />
       {confirmExit && (
         <ConfirmModal
           title={phase === 'table' && practice ? 'Rời ván tập?' : 'Rời ván đấu?'}

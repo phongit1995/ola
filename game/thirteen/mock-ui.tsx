@@ -389,8 +389,6 @@ const SCENES: Record<string, () => Partial<ReturnType<typeof useThirteen.getStat
   }),
   'voice-table': () => ({ ...table(PLAYERS_4), voice: VOICE_TABLE }),
   'voice-table-me': () => ({ ...table(PLAYERS_4), voice: { ...VOICE_TABLE, speakingIds: [ME.id] } }),
-  'voice-menu': () => ({ ...table(PLAYERS_4), voice: VOICE_TABLE }),
-  'voice-primer': () => ({ ...table(PLAYERS_4), voice: { ...VOICE_TABLE, micOn: false, micOnIds: ['u-2'] }, micPrimerOpen: true }),
   'voice-watch': () => ({
     ...watchTable(WATCH_PLAYERS),
     voice: {
@@ -507,10 +505,6 @@ function MockApp() {
     }
     if (screen.endsWith('viewers-open')) {
       const timer = window.setTimeout(() => document.querySelector<HTMLButtonElement>('.tl-viewers-tab')?.click(), 300);
-      return () => window.clearTimeout(timer);
-    }
-    if (screen === 'voice-menu') {
-      const timer = window.setTimeout(() => document.querySelectorAll<HTMLButtonElement>('.tl-voice-hit')[0]?.click(), 300);
       return () => window.clearTimeout(timer);
     }
     const opensCreate = screen === 'create-room' || screen.startsWith('voice-create-room');

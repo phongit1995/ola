@@ -1,8 +1,10 @@
+import { VOICE_IDLE } from '../../src/sdk';
 import { VIP_DEFAULT_ICON } from '../assets';
 import { emptyState } from '../types';
 import type { CaroState, PlayerDisplay } from './types';
 
 export const EMPTY_PLAYER: PlayerDisplay = {
+  id: '',
   name: '---',
   vip: VIP_DEFAULT_ICON,
   mark: 'x',
@@ -56,5 +58,6 @@ export function createInitialCaroState(): CaroState {
     winLine: null,
     messages: [],
     reactionNotice: null,
+    voice: VOICE_IDLE,
   };
 }

@@ -13,8 +13,9 @@ import { BrandMark } from '../../components/BrandMark';
 import { handleModalKeyDown } from '../../components/modalKeyboard';
 import { PlayerAvatar } from '../../components/PlayerAvatar';
 import { PlayerName } from '../../components/PlayerName';
-import { MicIcon } from '../../components/VoiceControls';
-import { VOICE_CREATE_ROOM_KEY, readVoiceFlag, writeVoiceFlag } from '../../helpers/voice';
+import { MicIcon } from '../../../src/ui/VoiceIcons';
+import { VOICE_CREATE_ROOM_KEY } from '../../helpers/voice';
+import { readVoiceFlag, writeVoiceFlag } from '../../../src/ui/voice';
 import {
   formatBetInput,
   formatKen,
@@ -54,7 +55,6 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
   const [password, setPassword] = useState('');
   const canVoice = user?.vipType != null;
   const [voice, setVoice] = useState(() => readVoiceFlag(VOICE_CREATE_ROOM_KEY));
-  const [voiceHint, setVoiceHint] = useState(false);
   const bet = parseBetInput(betInput);
   const createError = roomCreationError(bet, password, user?.ken ?? null, user?.maxBet ?? null);
   const betHint =
@@ -137,9 +137,7 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
             <small>
               {canVoice
                 ? 'Mọi người trong bàn nói chuyện bằng giọng nói. Người xem chỉ nghe.'
-                : voiceHint
-                  ? 'Nâng cấp VIP trong ứng dụng Ola để mở voice cho bàn của bạn.'
-                  : 'Cần VIP để mở voice cho bàn.'}
+                : 'Cần VIP để mở voice cho bàn.'}
             </small>
           </span>
           <button
@@ -147,9 +145,9 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
             role="switch"
             className={'tl-switch' + (canVoice && voice ? ' on' : '')}
             aria-checked={canVoice && voice}
-            aria-disabled={!canVoice}
             aria-labelledby="tl-create-room-voice"
-            onClick={() => (canVoice ? setVoice((on) => !on) : setVoiceHint(true))}
+            disabled={!canVoice}
+            onClick={() => setVoice((on) => !on)}
           >
             <span className="tl-switch-knob" />
           </button>

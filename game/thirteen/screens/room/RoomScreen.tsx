@@ -10,7 +10,8 @@ import userMinusIcon from '../../assets/icons/ic-user-minus.svg';
 import type { RoomStateData } from '../../../src/sdk';
 import { PlayerAvatar } from '../../components/PlayerAvatar';
 import { PlayerName } from '../../components/PlayerName';
-import { MicIcon, SeatVoice, SpeakerButton } from '../../components/VoiceControls';
+import { MicIcon } from '../../../src/ui/VoiceIcons';
+import { SeatVoice, SpeakerButton } from '../../components/VoiceControls';
 import { ROOM_SEATS, canCloseSeat, formatKen, roomSeatSlots } from '../../helpers/room';
 import { useThirteen } from '../../store/useThirteen';
 

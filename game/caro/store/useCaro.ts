@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import {
   bridge,
+  createVoiceClient,
   GAME_ERROR_CODE,
+  VOICE_IDLE,
   GameAuthenticationExpiredError,
   GameAuthenticationRequiredError,
   joinGame,
@@ -11,6 +13,8 @@ import {
   type MatchFoundData,
   type RoomStateData,
   type UserInfoData,
+  type VoiceClient,
+  type VoiceTarget,
 } from '../../src/sdk';
 import { vipIconUrl } from '@ola/shared/lib/vip';
 import {
@@ -30,6 +34,7 @@ import { formatClock } from '../helpers/format';
 import { mergeMatchHistory, readBotHistory, saveBotHistory } from '../helpers/history';
 import { avatarIconSrc, opponentOf } from '../helpers/player';
 import { roomCreationError } from '../helpers/room';
+import { newVoiceIssueText, VOICE_RETRY_TEXT } from '../../src/ui/voice';
 import type { CaroStore, RoomActionPending } from './types';
 import { createInitialCaroState, EMPTY_PLAYER } from './initialState';
 import {
@@ -54,7 +59,7 @@ function authenticationErrorText(error: unknown): string | null {
   return null;
 }
 
-export const useCaro = create<CaroStore>()((set, get) => {
+export const useCaro = create<CaroStore>()((set, get, api) => {
   const refs = {
     online: null as GameSession<CaroState, CaroMove> | null,
     bot: null as GameSession<CaroState, CaroMove> | null,
@@ -80,6 +85,10 @@ export const useCaro = create<CaroStore>()((set, get) => {
     handledMatchIds: new Set<string>(),
     leaderboardTimers: { day: undefined, week: undefined } as Record<LeaderboardPeriod, number | undefined>,
     historyTimer: undefined as number | undefined,
+    voice: null as VoiceClient | null,
+    voiceUnsubs: [] as Array<() => void>,
+    matchRoomId: '',
+    matchRoomVoice: false,
   };
 
   const showToast = (message: string): void => {
@@ -158,6 +167,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       messages: [],
       matchSeq: s.matchSeq + 1,
       me: {
+        id: user?.id ?? '',
         name: user ? `@${user.username}` : '@Bạn',
         vip: user ? avatarIconSrc(user.vipType) : VIP_DEFAULT_ICON,
         mark: 'x',
@@ -246,6 +256,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       me: preserveOutcome
         ? s.me
         : {
+            id: meMember?.id ?? room.youId,
             name: meMember ? `@${meMember.name}` : user ? `@${user.username}` : '@Bạn',
             vip: avatarIconSrc(meMember?.vipType ?? user?.vipType),
             mark: 'x',
@@ -257,6 +268,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
         ? s.op
         : opponent
           ? {
+              id: opponent.id,
               name: `@${opponent.name}`,
               vip: avatarIconSrc(opponent.vipType),
               mark: 'o',
@@ -574,6 +586,14 @@ export const useCaro = create<CaroStore>()((set, get) => {
         : avatarIconSrc(opponent.vipType);
       const user = refs.user;
       const meMark: 'x' | 'o' = data.you === 0 ? 'x' : 'o';
+      const matchRoom = get().roomWaiting;
+      if (matchRoom) {
+        refs.matchRoomId = matchRoom.roomId;
+        refs.matchRoomVoice = matchRoom.voice === true;
+      } else if (!data.resumed) {
+        refs.matchRoomId = '';
+        refs.matchRoomVoice = false;
+      }
       refs.pendingRoomId = null;
       set((s) => ({
         boardMode: 'playing',
@@ -593,6 +613,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
         messages: preserveChat ? s.messages : [],
         movePending: false,
         me: {
+          id: mePlayer.id,
           name: user ? `@${user.username}` : mePlayer.name,
           vip: avatarIconSrc(mePlayer.vipType ?? user?.vipType),
           mark: meMark,
@@ -601,6 +622,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
           level: mePlayer.level ?? user?.level,
         },
         op: {
+          id: opponent.id,
           name: opponent.name,
           vip: opponentVip,
           mark: meMark === 'x' ? 'o' : 'x',
@@ -798,6 +820,38 @@ export const useCaro = create<CaroStore>()((set, get) => {
     });
   };
 
+  const voiceTarget = (s: CaroStore): VoiceTarget | null => {
+    if (!refs.online || refs.session !== refs.online || s.boardMode === 'idle') return null;
+    const room = s.roomWaiting;
+    if (room) return room.voice ? { roomId: room.roomId, speak: true } : null;
+    if (!refs.matchRoomId || !refs.matchRoomVoice) return null;
+    return { roomId: refs.matchRoomId, ...(refs.match ? { matchId: refs.match.matchId } : {}), speak: true };
+  };
+
+  const syncVoice = (): void => refs.voice?.follow(voiceTarget(get()));
+
+  const attachVoice = (session: GameSession<CaroState, CaroMove>): void => {
+    const voice = createVoiceClient(session);
+    refs.voice = voice;
+    refs.voiceUnsubs.push(
+      voice.subscribe((state) => {
+        const issueText = newVoiceIssueText(get().voice, state);
+        set({ voice: state });
+        if (issueText) showToast(issueText);
+      }),
+      api.subscribe(syncVoice),
+    );
+    syncVoice();
+  };
+
+  const detachVoice = (): void => {
+    refs.voiceUnsubs.forEach((off) => off());
+    refs.voiceUnsubs = [];
+    refs.voice?.destroy();
+    refs.voice = null;
+    set({ voice: VOICE_IDLE });
+  };
+
   const connectToServer = (): Promise<void> => {
     if (refs.connectPromise) return refs.connectPromise;
     refs.connectPromise = (async () => {
@@ -807,6 +861,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
         if (!refs.online) {
           refs.online = await joinGame<CaroState, CaroMove>('caro');
           wireSession(refs.online);
+          attachVoice(refs.online);
           if (!refs.session) refs.session = refs.online;
         }
         await new Promise<void>((resolve, reject) => {
@@ -836,6 +891,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       } catch (error) {
         const authenticationMessage = authenticationErrorText(error);
         const online = refs.online;
+        detachVoice();
         online?.disconnect();
         if (refs.session === online) refs.session = null;
         refs.online = null;
@@ -896,6 +952,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       stopTimer();
       window.clearTimeout(refs.toastTimer);
       if (refs.kenRaf) cancelAnimationFrame(refs.kenRaf);
+      detachVoice();
       refs.bot?.disconnect();
       refs.online?.disconnect();
       window.clearTimeout(refs.leaderboardTimers.day);
@@ -965,7 +1022,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       refs.online?.listRooms();
     },
 
-    createRoom(bet, password) {
+    createRoom(bet, password, voice) {
       if (!refs.online) return;
       preloadBoardAssets();
       const normalizedPassword = password?.trim() ?? '';
@@ -982,7 +1039,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       refs.session = refs.online;
       refs.matchBet = bet;
       enterPendingRoom('creating', 'Đang tạo bàn...');
-      refs.online.createRoom(bet, normalizedPassword || undefined);
+      refs.online.createRoom(bet, normalizedPassword || undefined, undefined, undefined, voice === true);
     },
 
     joinRoom(roomId, password) {
@@ -1190,6 +1247,22 @@ export const useCaro = create<CaroStore>()((set, get) => {
       if (!refs.match || get().boardMode !== 'playing' || get().result != null) return;
       refs.session?.sendReaction(refs.match.matchId, type);
     },
+
+    toggleMic() {
+      const voice = get().voice;
+      if (refs.voice && voice.status === 'failed') {
+        showToast(VOICE_RETRY_TEXT);
+        refs.voice.retry();
+        return;
+      }
+      if (!refs.voice || !voice.canSpeak || voice.micBusy || voice.status !== 'connected') return;
+      void refs.voice.setMic(!voice.micOn);
+    },
+
+    togglePeerMuted(userId) {
+      refs.voice?.setPeerMuted(userId, !get().voice.mutedIds.includes(userId));
+    },
+
   };
 });
 

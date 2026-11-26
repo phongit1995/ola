@@ -1,25 +1,31 @@
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { MicIcon } from '../../../../src/ui/VoiceIcons';
 import { assetBg, assetSrc } from '../../../assets';
 import { formatKen } from '../../../helpers/format';
 import { ROOM_PASSWORD_MAX_LENGTH, roomCreationError } from '../../../helpers/room';
 import { handleDialogKeyDown, useDialogFocus } from '../../../helpers/dialog';
+import { VOICE_CREATE_ROOM_KEY } from '../../../helpers/voice';
+import { readVoiceFlag, writeVoiceFlag } from '../../../../src/ui/voice';
 import { useRanked } from '../useRanked';
 
 interface CreateRoomModalProps {
   open: boolean;
   availableKen: number;
   maxBet: number | null;
+  canVoice: boolean;
   onClose: () => void;
-  onSubmit: (bet: number, password?: string) => void;
+  onSubmit: (bet: number, password: string | undefined, voice: boolean) => void;
 }
 
-export function CreateRoomModal({ open, availableKen, maxBet, onClose, onSubmit }: CreateRoomModalProps) {
+export function CreateRoomModal({ open, availableKen, maxBet, canVoice, onClose, onSubmit }: CreateRoomModalProps) {
   const betInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [passwordEnabled, setPasswordEnabled] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [voiceWanted, setVoiceWanted] = useState(() => readVoiceFlag(VOICE_CREATE_ROOM_KEY));
+  const voiceOn = canVoice && voiceWanted;
   const { bet, createPassword, createError, setBet, setCreatePassword, setCreateError } = useRanked(
     useShallow((state) => ({
       bet: state.bet,
@@ -72,7 +78,8 @@ export function CreateRoomModal({ open, availableKen, maxBet, onClose, onSubmit 
     }
     setCreateError(null);
     resetPasswordControls();
-    onSubmit(amount, password || undefined);
+    if (canVoice) writeVoiceFlag(VOICE_CREATE_ROOM_KEY, voiceWanted);
+    onSubmit(amount, password || undefined, voiceOn);
   };
 
   return (
@@ -93,7 +100,7 @@ export function CreateRoomModal({ open, availableKen, maxBet, onClose, onSubmit 
         <button type="button" id="create-close" style={assetBg('createBtnClose')} aria-label="Đóng" onClick={close}>
           <img src={assetSrc('createIcX')} alt="" />
         </button>
-        <div className="create-body">
+        <div className={'create-body' + (passwordEnabled ? ' is-compact' : '')}>
           <div className="create-label" style={assetBg('createLabelFrame')}>
             <span>Số Ken</span>
           </div>
@@ -112,6 +119,26 @@ export function CreateRoomModal({ open, availableKen, maxBet, onClose, onSubmit 
               onKeyDown={(event) => event.key === 'Enter' && submit()}
             />
           </div>
+          <button
+            type="button"
+            className={`create-password-toggle create-voice-toggle${voiceOn ? ' is-on' : ''}${canVoice ? '' : ' is-locked'}`}
+            role="switch"
+            aria-checked={voiceOn}
+            disabled={!canVoice}
+            onClick={() => setVoiceWanted((on) => !on)}
+          >
+            <span className="create-voice-icon" aria-hidden="true">
+              <MicIcon />
+            </span>
+            <span className="create-password-copy">
+              <strong>Voice</strong>
+              <small>{canVoice ? '(Nói chuyện)' : '(Cần VIP)'}</small>
+            </span>
+            <span className="create-password-switch" aria-hidden="true">
+              <span className="create-password-switch-text">{voiceOn ? 'Bật' : 'Tắt'}</span>
+              <span className="create-password-switch-knob" />
+            </span>
+          </button>
           <button
             type="button"
             className={`create-password-toggle${passwordEnabled ? ' is-on' : ''}`}

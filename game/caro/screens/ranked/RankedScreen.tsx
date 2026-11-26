@@ -19,6 +19,7 @@ export function RankedScreen() {
   const rooms = useCaro((s) => s.rooms);
   const availableKen = useCaro((s) => s.userInfo?.ken ?? 0);
   const maxBet = useCaro((s) => s.userInfo?.maxBet ?? null);
+  const canVoice = useCaro((s) => s.userInfo?.vipType != null);
   const toast = useCaro((s) => s.toast);
   const onExit = useCaro((s) => s.toLobby);
   const createRoom = useCaro((s) => s.createRoom);
@@ -73,9 +74,9 @@ export function RankedScreen() {
     closePass();
   };
 
-  const onCreateOk = (amount: number, password?: string): void => {
+  const onCreateOk = (amount: number, password: string | undefined, voice: boolean): void => {
     closeCreate();
-    createRoom(amount, password);
+    createRoom(amount, password, voice);
   };
 
   const openCreateModal = (): void => {
@@ -153,6 +154,7 @@ export function RankedScreen() {
         open={createOpen}
         availableKen={availableKen}
         maxBet={maxBet}
+        canVoice={canVoice}
         onClose={closeCreate}
         onSubmit={onCreateOk}
       />

@@ -31,6 +31,7 @@ export interface VoiceClient {
   subscribe(listener: (state: VoiceState) => void): () => void;
   join(target: VoiceTarget): void;
   leave(): void;
+  follow(target: VoiceTarget | null): void;
   setMic(on: boolean): Promise<void>;
   setSpeaker(on: boolean): void;
   setPeerMuted(userId: string, muted: boolean): void;
@@ -319,10 +320,49 @@ export function createVoiceClient(
   const wake = (): void => {
     if (typeof document === 'undefined' || document.visibilityState !== 'hidden') retry();
   };
+  const resumeAudio = (): void => {
+    void room?.startAudio().then(() => set({ audioBlocked: false })).catch(() => undefined);
+  };
+  const unlockAudioOnGesture = (): void => {
+    if (state.audioBlocked) resumeAudio();
+  };
+
   const onlineTarget = typeof window !== 'undefined' ? window : null;
   const visibilityTarget = typeof document !== 'undefined' ? document : null;
   onlineTarget?.addEventListener?.('online', wake);
   visibilityTarget?.addEventListener?.('visibilitychange', wake);
+  visibilityTarget?.addEventListener?.('pointerdown', unlockAudioOnGesture, true);
+  visibilityTarget?.addEventListener?.('keydown', unlockAudioOnGesture, true);
+
+  const join = (next: VoiceTarget): void => {
+    if (!voiceSupported()) {
+      leave();
+      return;
+    }
+    const sameRoom = next.roomId != null && next.roomId === (target?.roomId ?? state.roomId);
+    if (sameRoom && state.status !== 'off' && state.status !== 'failed' && target?.speak === next.speak) {
+      target = { ...target, ...next };
+      return;
+    }
+    generation += 1;
+    if (!sameRoom) {
+      micWanted = false;
+      muted.clear();
+    }
+    target = next;
+    reconnectAttempt = 0;
+    set({ status: 'connecting', issue: null, mutedIds: [...muted] });
+    requestToken();
+  };
+
+  let followKey = '';
+  const follow = (next: VoiceTarget | null): void => {
+    const key = next ? [next.roomId ?? '', next.matchId ?? '', String(next.speak)].join('|') : '';
+    if (key === followKey) return;
+    followKey = key;
+    if (next) join(next);
+    else leave();
+  };
 
   return {
     getState: () => state,
@@ -330,27 +370,9 @@ export function createVoiceClient(
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    join(next) {
-      if (!voiceSupported()) {
-        leave();
-        return;
-      }
-      const sameRoom = next.roomId != null && next.roomId === (target?.roomId ?? state.roomId);
-      if (sameRoom && state.status !== 'off' && state.status !== 'failed' && target?.speak === next.speak) {
-        target = { ...target, ...next };
-        return;
-      }
-      generation += 1;
-      if (!sameRoom) {
-        micWanted = false;
-        muted.clear();
-      }
-      target = next;
-      reconnectAttempt = 0;
-      set({ status: 'connecting', issue: null, mutedIds: [...muted] });
-      requestToken();
-    },
+    join,
     leave,
+    follow,
     async setMic(on) {
       micWanted = on;
       const current = room;
@@ -369,9 +391,7 @@ export function createVoiceClient(
       syncSubscriptions();
       refreshPeers();
     },
-    resumeAudio() {
-      void room?.startAudio().then(() => set({ audioBlocked: false })).catch(() => undefined);
-    },
+    resumeAudio,
     retry,
     destroy() {
       leave();
@@ -379,6 +399,8 @@ export function createVoiceClient(
       unsubscribeConnection?.();
       onlineTarget?.removeEventListener?.('online', wake);
       visibilityTarget?.removeEventListener?.('visibilitychange', wake);
+      visibilityTarget?.removeEventListener?.('pointerdown', unlockAudioOnGesture, true);
+      visibilityTarget?.removeEventListener?.('keydown', unlockAudioOnGesture, true);
       listeners.clear();
     },
   };
