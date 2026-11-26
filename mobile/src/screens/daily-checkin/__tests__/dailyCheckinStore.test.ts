@@ -1,10 +1,16 @@
-import { dailyCheckinFabKind } from '@ola/shared/lib';
+import { DAILY_CHECKIN_ERROR } from '@ola/shared/constants';
+import { ApiError, dailyCheckinFabKind } from '@ola/shared/lib';
 import { DailyCheckinService } from '@ola/shared/services/dailyCheckin.service';
+import { SocketService } from '@ola/shared/services/socket.service';
 import { useDailyCheckinStore } from '@ola/shared/stores/daily-checkin/dailyCheckinStore';
 import type { DailyCheckinActionResult, DailyCheckinStatus } from '@ola/shared/types';
 
 jest.mock('@ola/shared/services/dailyCheckin.service', () => ({
   DailyCheckinService: { status: jest.fn(), checkIn: jest.fn(), open: jest.fn() },
+}));
+
+jest.mock('@ola/shared/services/socket.service', () => ({
+  SocketService: { ensureAlive: jest.fn() },
 }));
 
 jest.mock('@ola/shared/stores/appConfigStore', () => ({
@@ -81,5 +87,17 @@ describe('daily check-in store', () => {
     status.mockResolvedValueOnce(statusWith(true));
     await useDailyCheckinStore.getState().load({ force: true });
     expect(useDailyCheckinStore.getState().status?.checkedInToday).toBe(true);
+  });
+
+  it('wakes the socket after a generic check-in failure without telling why', async () => {
+    const ensureAlive = SocketService.ensureAlive as jest.Mock;
+    checkIn.mockRejectedValueOnce(new ApiError(400, 'check-in failed'));
+    await expect(useDailyCheckinStore.getState().checkIn()).resolves.toBe('failed');
+    expect(ensureAlive).toHaveBeenCalledTimes(1);
+    expect(status).not.toHaveBeenCalled();
+
+    checkIn.mockRejectedValueOnce(new ApiError(409, 'done', { code: DAILY_CHECKIN_ERROR.completed }));
+    await useDailyCheckinStore.getState().checkIn();
+    expect(ensureAlive).toHaveBeenCalledTimes(1);
   });
 });

@@ -33,6 +33,7 @@ type Service struct {
 	logger    *zap.SugaredLogger
 	now       func() time.Time
 	pick      func(weights []float64) int
+	online    func(userID uuid.UUID) bool
 }
 
 func NewService(repo *Repository, settings *setting.Service, cache *services.CacheService, userCache *user.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
@@ -45,6 +46,13 @@ func NewService(repo *Repository, settings *setting.Service, cache *services.Cac
 		logger:    logger.Named("[checkin_service]"),
 		now:       time.Now,
 		pick:      utils.WeightedPick,
+		online:    socketOnline(wsServer.GetPresenceService()),
+	}
+}
+
+func socketOnline(presence *websocket.PresenceService) func(uuid.UUID) bool {
+	return func(userID uuid.UUID) bool {
+		return presence.GetConnectionCount(userID.String()) > 0
 	}
 }
 
@@ -394,6 +402,10 @@ func (s *Service) CheckIn(userID uuid.UUID, client setting.Client, clientRequest
 		if cfg.RequireEmailVerified && !u.EmailVerified {
 			return ErrCheckinEmailNotVerified
 		}
+		if !s.online(userID) {
+			s.logger.Infow("Checkin rejected without socket", "user_id", userID.String(), "action", "checkin")
+			return ErrCheckinRejected
+		}
 		maxSlot, err := maxSlotTx(tx, userID, cal.Month.Month)
 		if err != nil {
 			return err
@@ -496,6 +508,10 @@ func (s *Service) Open(userID uuid.UUID, client setting.Client) (*ActionResponse
 			outcome.items = ResultRewards(row)
 			outcome.replayed = true
 			return nil
+		}
+		if !s.online(userID) {
+			s.logger.Infow("Checkin rejected without socket", "user_id", userID.String(), "action", "open")
+			return ErrCheckinRejected
 		}
 		if row.TaskDoneAt == nil && row.Task != nil {
 			start, end := DayRange(today)
