@@ -24,11 +24,14 @@ const localGameMocks = vi.hoisted(() => ({
   applyLocalMove: vi.fn(),
 }));
 
-vi.mock('../../src/sdk', () => {
+vi.mock('../../src/sdk', async () => {
+  const voice = await vi.importActual<typeof import('../../src/sdk/voice')>('../../src/sdk/voice');
   class GameAuthenticationRequiredError extends Error {}
   class GameAuthenticationExpiredError extends Error {}
   return {
     ...sdkMocks,
+    VOICE_IDLE: voice.VOICE_IDLE,
+    createVoiceClient: voice.createVoiceClient,
     GameAuthenticationRequiredError,
     GameAuthenticationExpiredError,
     GAME_ERROR_CODE: {
@@ -94,6 +97,7 @@ class FakeSession {
   readonly sendRoomChat = vi.fn();
   readonly sendReaction = vi.fn();
   readonly forfeit = vi.fn();
+  readonly requestVoiceToken = vi.fn();
 
   emit(type: string, data?: any): void {
     this.listeners.get(type)?.forEach((handler) => handler(data));
@@ -118,6 +122,7 @@ class FakeSession {
   onRoomClosed = (handler: Handler) => this.on('roomClosed', handler);
   onRoomKicked = (handler: Handler) => this.on('roomKicked', handler);
   onMatchFound = (handler: Handler) => this.on('matchFound', handler);
+  onVoiceToken = (handler: Handler) => this.on('voiceToken', handler);
   onState = (handler: Handler) => this.on('state', handler);
   onMatchOver = (handler: Handler) => this.on('matchOver', handler);
   onChat = (handler: Handler) => this.on('chat', handler);

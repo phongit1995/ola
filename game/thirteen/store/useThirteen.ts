@@ -39,7 +39,7 @@ import { errorText, roomClosedText } from '../helpers/errorText';
 import type { BotSetupItem } from '../helpers/practice';
 import { MIN_ROOM_SEATS, ROOM_SEATS } from '../helpers/room';
 import { createPracticeSession } from '../practice';
-import { newVoiceIssueText, VOICE_RETRY_TEXT } from '../../src/ui/voice';
+import { bindVoiceClient, toggleVoiceMic } from '../../src/ui/voice';
 import { CHAT_BUBBLE_MS, receiveMatchChat, type SeatChatBubble } from './matchChat';
 
 export type Phase = 'connecting' | 'lobby' | 'room' | 'table';
@@ -340,20 +340,18 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     return { roomId: refs.matchRoomId, matchId: s.matchId, speak: true };
   };
 
-  const syncVoice = (): void => refs.voice?.follow(voiceTarget(get()));
-
   const attachVoice = (session: GameSession<ServerState, ServerMove>): void => {
     const voice = createVoiceClient(session);
     refs.voice = voice;
     refs.unsubs.push(
-      voice.subscribe((state) => {
-        const issueText = newVoiceIssueText(get().voice, state);
-        set({ voice: state });
-        if (issueText) get().showToast(issueText);
+      bindVoiceClient(voice, {
+        target: () => voiceTarget(get()),
+        current: () => get().voice,
+        apply: (state) => set({ voice: state }),
+        notify: (text) => get().showToast(text),
+        watch: api.subscribe,
       }),
-      api.subscribe(syncVoice),
     );
-    syncVoice();
   };
 
   const stopPractice = (): void => {
@@ -1111,14 +1109,7 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
       set({ selected: hints[(current + 1) % hints.length] });
     },
     toggleMic() {
-      const voice = get().voice;
-      if (refs.voice && voice.status === 'failed') {
-        get().showToast(VOICE_RETRY_TEXT);
-        refs.voice.retry();
-        return;
-      }
-      if (!refs.voice || !voice.canSpeak || voice.micBusy || voice.status !== 'connected') return;
-      void refs.voice.setMic(!voice.micOn);
+      toggleVoiceMic(refs.voice, get().voice, get().showToast);
     },
     toggleSpeaker() {
       refs.voice?.setSpeaker(!get().voice.speakerOn);

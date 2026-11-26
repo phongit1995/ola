@@ -1,16 +1,49 @@
-import type { VoiceIssue, VoiceState } from '../sdk';
+import type { VoiceClient, VoiceIssue, VoiceState, VoiceTarget } from '../sdk';
 
-export const VOICE_ISSUE_TEXT: Record<VoiceIssue, string> = {
+const VOICE_ISSUE_TEXT: Record<VoiceIssue, string> = {
   permission: 'Chưa dùng được micro. Hãy cho phép micro trong cài đặt hoặc cập nhật app Ola.',
   device: 'Không mở được micro trên máy này.',
   unsupported: 'Máy hoặc bản app này chưa hỗ trợ nói chuyện trong bàn.',
   interrupted: 'Micro vừa bị ngắt, có thể do đang có cuộc gọi khác.',
 };
 
-export const VOICE_RETRY_TEXT = 'Đang kết nối lại voice…';
+const VOICE_RETRY_TEXT = 'Đang kết nối lại voice…';
 
-export function newVoiceIssueText(previous: VoiceState, next: VoiceState): string | null {
+function newVoiceIssueText(previous: VoiceState, next: VoiceState): string | null {
   return next.issue && next.issue !== previous.issue ? VOICE_ISSUE_TEXT[next.issue] : null;
+}
+
+export interface VoiceBinding {
+  target: () => VoiceTarget | null;
+  current: () => VoiceState;
+  apply: (state: VoiceState) => void;
+  notify: (text: string) => void;
+  watch: (listener: () => void) => () => void;
+}
+
+export function bindVoiceClient(client: VoiceClient, binding: VoiceBinding): () => void {
+  const sync = (): void => client.follow(binding.target());
+  const offs = [
+    client.subscribe((state) => {
+      const issueText = newVoiceIssueText(binding.current(), state);
+      binding.apply(state);
+      if (issueText) binding.notify(issueText);
+    }),
+    binding.watch(sync),
+  ];
+  sync();
+  return () => offs.forEach((off) => off());
+}
+
+export function toggleVoiceMic(client: VoiceClient | null, voice: VoiceState, notify: (text: string) => void): void {
+  if (!client) return;
+  if (voice.status === 'failed') {
+    notify(VOICE_RETRY_TEXT);
+    client.retry();
+    return;
+  }
+  if (!voice.canSpeak || voice.micBusy || voice.status !== 'connected') return;
+  void client.setMic(!voice.micOn);
 }
 
 export function peerMuteToastText(name: string, nowMuted: boolean): string {

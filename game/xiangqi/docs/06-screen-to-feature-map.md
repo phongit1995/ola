@@ -17,6 +17,16 @@ Bảng tra nhanh khi implement: mỗi màn cần state gì, bắn/nghe event nà
 | O2 Confirm | `notice{title,body,onOk}` | tùy hành động | — | ConfirmModal |
 | O3 Toast | `toast`, `turnAnnounce` | — | `ERROR` | Toast, TurnAnnounce |
 | O4 Chơi với máy | `gameMode='bot'`, `botDifficulty`, `botPlayerSide`, `botThinking` | — | — | BotSetupModal, BoardScreen, ResultScreen |
+| O5 Voice | `voice` (VoiceState từ `createVoiceClient`), `roomWaiting.voice` | `ROOM_CREATE{voice}`, `VOICE_TOKEN{roomId,matchId}` | `VOICE_TOKEN` | VoiceOption (S4), RoomVoiceIcon (S3), SeatVoice trên PodAvatar (S5, S6) |
+
+## Voice chat
+
+- Chủ bàn có VIP bật công tắc Voice khi tạo bàn (nằm trên ô Mật khẩu); bàn có voice hiện icon mic ở danh sách bàn.
+- Voice chạy từ phòng chờ tới hết ván, chỉ với bàn online; chơi với máy không có voice.
+- Chấm voice ở góc avatar: navy = tắt mic, ngọc = mở mic, đỏ = mình đã tắt tiếng người đó, vàng có sóng = đang nói.
+- Chạm chấm của mình để bật/tắt mic, không có hộp xin phép riêng. Chạm chấm đối thủ để tắt/bật tiếng người đó trên máy mình, có toast báo.
+- Logic dùng chung với Caro và Tiến Lên ở `game/src/ui/voice.ts` (trạng thái chấm, nối voice client vào store, bật/tắt mic).
+- Xem giao diện bằng mock: `voice-rooms`, `voice-create`, `voice-create-novip`, `voice-pregame`, `voice-board`, `voice-board-me`.
 
 ## Logic thuần client (game/xiangqi/logic/)
 

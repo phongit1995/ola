@@ -2,9 +2,11 @@ import { create } from 'zustand';
 import { ARCADE_ATTENTION_REASON, ARCADE_BRIDGE_EVENT } from '@ola/shared/constants';
 import {
   bridge,
+  createVoiceClient,
   GameAuthenticationExpiredError,
   GameAuthenticationRequiredError,
   joinGame,
+  VOICE_IDLE,
 } from '../../src/sdk';
 import type {
   ChatMessageData,
@@ -19,7 +21,11 @@ import type {
   RoomStateData,
   StateData,
   UserInfoData,
+  VoiceClient,
+  VoiceState,
+  VoiceTarget,
 } from '../../src/sdk';
+import { bindVoiceClient, toggleVoiceMic } from '../../src/ui/voice';
 import { GAME_ID, START_BOARD } from '../logic/constants.gen';
 import { decodeServerState, type ServerMove, type ServerState } from '../logic/server-types';
 import { EMPTY, SIDE_RED, pieceSide } from '../logic/board';
@@ -118,6 +124,7 @@ interface XiangqiState {
   result: MatchResultState | null;
   toast: string | null;
   notice: NoticeState | null;
+  voice: VoiceState;
 
   historyVisible: boolean;
   historyItems: MatchHistoryEntry[];
@@ -142,7 +149,7 @@ interface XiangqiState {
   playRanked(): void;
   closeRanked(): void;
   refreshRooms(): void;
-  createRoom(bet: number, password: string): void;
+  createRoom(bet: number, password: string, voice?: boolean): void;
   joinRoom(roomId: string, password: string): void;
   setReady(ready: boolean): void;
   startMatch(): void;
@@ -158,6 +165,8 @@ interface XiangqiState {
   sendChatText(text: string): void;
   consumeChatRestore(): void;
   sendReactionType(type: GameReactionType): void;
+  toggleMic(): void;
+  togglePeerMuted(userId: string): void;
 
   closeResult(): void;
   playAgain(): void;
@@ -229,7 +238,7 @@ function winReasonText(state: ServerState | null, won: boolean): string {
   }
 }
 
-export const useXiangqi = create<XiangqiState>((set, get) => {
+export const useXiangqi = create<XiangqiState>((set, get, api) => {
   const refs = {
     session: null as Session | null,
     connectPromise: null as Promise<void> | null,
@@ -259,6 +268,11 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     botRun: 0,
     reactionSeq: 0,
     lastChatText: '',
+    voice: null as VoiceClient | null,
+    voiceSession: null as Session | null,
+    voiceUnbind: (() => {}) as () => void,
+    matchRoomId: '',
+    matchRoomVoice: false,
   };
 
   const rememberMatchId = (matchId: string): boolean => {
@@ -707,6 +721,14 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         cancelBotTurn();
         refs.botRun++;
         refs.botGame = null;
+        const matchRoom = get().roomWaiting;
+        if (matchRoom) {
+          refs.matchRoomId = matchRoom.roomId;
+          refs.matchRoomVoice = matchRoom.voice === true;
+        } else if (!data.resumed) {
+          refs.matchRoomId = '';
+          refs.matchRoomVoice = false;
+        }
         refs.match = data;
         refs.matchBet = data.bet ?? get().roomWaiting?.bet ?? 0;
         refs.serverState = serverState;
@@ -1045,6 +1067,38 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     );
   };
 
+  const voiceTarget = (s: XiangqiState): VoiceTarget | null => {
+    if (s.gameMode !== 'online' || s.boardMode === 'idle') return null;
+    const roomId = s.roomWaiting?.roomId ?? refs.matchRoomId;
+    const enabled = s.roomWaiting ? s.roomWaiting.voice === true : refs.matchRoomVoice;
+    if (!roomId || !enabled) return null;
+    const matchId = s.boardMode === 'playing' ? refs.match?.matchId : undefined;
+    return { roomId, ...(matchId ? { matchId } : {}), speak: true };
+  };
+
+  const attachVoice = (session: Session): void => {
+    const voice = createVoiceClient(session);
+    refs.voice = voice;
+    refs.voiceSession = session;
+    refs.voiceUnbind = bindVoiceClient(voice, {
+      target: () => voiceTarget(get()),
+      current: () => get().voice,
+      apply: (state) => set({ voice: state }),
+      notify: (text) => get().showToast(text),
+      watch: api.subscribe,
+    });
+  };
+
+  const detachVoice = (session: Session | null = refs.voiceSession): void => {
+    if (!session || session !== refs.voiceSession) return;
+    refs.voiceUnbind();
+    refs.voiceUnbind = () => {};
+    refs.voice?.destroy();
+    refs.voice = null;
+    refs.voiceSession = null;
+    set({ voice: VOICE_IDLE });
+  };
+
   const connectToServer = (): Promise<void> => {
     if (refs.connectPromise) return refs.connectPromise;
     if (refs.session && get().lobbyPhase === 'ready') return Promise.resolve();
@@ -1062,6 +1116,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
         const connectedSession = session;
         refs.session = connectedSession;
         wireSession(connectedSession);
+        attachVoice(connectedSession);
         await new Promise<void>((resolve, reject) => {
           let timeout: ReturnType<typeof setTimeout> | 0 = 0;
           let offInfo: () => void = () => {};
@@ -1099,6 +1154,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
           }, REQUEST_TIMEOUT_MS);
         });
       } catch (error) {
+        detachVoice(session);
         session?.disconnect();
         if (refs.session === session) refs.session = null;
         if (run !== refs.connectRun) return;
@@ -1203,6 +1259,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
     result: null,
     toast: null,
     notice: null,
+    voice: VOICE_IDLE,
 
     historyVisible: false,
     historyItems: [],
@@ -1236,6 +1293,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       refs.connectPromise = null;
       const session = refs.session;
       refs.session = null;
+      detachVoice();
       session?.disconnect();
       refs.hostKenOff?.();
       refs.hostKenOff = null;
@@ -1303,6 +1361,7 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
 
     retryConnect() {
       if (refs.connectPromise) return;
+      detachVoice();
       refs.session?.disconnect();
       refs.session = null;
       refs.user = null;
@@ -1361,10 +1420,10 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       refs.session?.listRooms();
     },
 
-    createRoom(bet: number, password: string) {
+    createRoom(bet: number, password: string, voice?: boolean) {
       if (get().roomActionPending || resultInteractionBlocked()) return;
       set({ roomActionPending: 'creating' });
-      refs.session?.createRoom(bet, password);
+      refs.session?.createRoom(bet, password, undefined, undefined, voice === true);
     },
 
     joinRoom(roomId: string, password: string) {
@@ -1523,6 +1582,14 @@ export const useXiangqi = create<XiangqiState>((set, get) => {
       const match = refs.match;
       if (!match) return;
       refs.session?.sendReaction(match.matchId, type);
+    },
+
+    toggleMic() {
+      toggleVoiceMic(refs.voice, get().voice, get().showToast);
+    },
+
+    togglePeerMuted(userId: string) {
+      refs.voice?.setPeerMuted(userId, !get().voice.mutedIds.includes(userId));
     },
 
     closeResult() {

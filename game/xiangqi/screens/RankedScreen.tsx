@@ -6,6 +6,9 @@ import { XqIcon } from '../components/XqIcon';
 import { formatKen } from '../helpers/format';
 import { PodAvatar } from '../components/PodAvatar';
 import { useDialogFocus } from '../components/useDialogFocus';
+import { RoomVoiceIcon, VoiceOption } from '../components/VoiceControls';
+import { VOICE_CREATE_ROOM_KEY } from '../helpers/voice';
+import { readVoiceFlag, writeVoiceFlag } from '../../src/ui/voice';
 import { useXiangqi } from '../store/useXiangqi';
 
 const PAGE_SIZE = 9;
@@ -23,6 +26,8 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
   );
   const [bet, setBet] = useState('0');
   const [password, setPassword] = useState('');
+  const canVoice = userInfo?.vipType != null;
+  const [voiceWanted, setVoiceWanted] = useState(() => readVoiceFlag(VOICE_CREATE_ROOM_KEY));
   const titleId = useId();
   const close = () => {
     if (!roomActionPending) onClose();
@@ -43,7 +48,8 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
       showToast('Mật khẩu tối đa 64 ký tự');
       return;
     }
-    createRoom(value, password);
+    if (canVoice) writeVoiceFlag(VOICE_CREATE_ROOM_KEY, voiceWanted);
+    createRoom(value, password, canVoice && voiceWanted);
   };
 
   return (
@@ -81,6 +87,7 @@ function CreateRoomModal({ onClose }: { onClose: () => void }) {
             </button>
           ))}
         </div>
+        <VoiceOption canVoice={canVoice} on={canVoice && voiceWanted} onToggle={() => setVoiceWanted((on) => !on)} />
         <label className="xq-field">
           <span>Mật khẩu (tùy chọn)</span>
           <input
@@ -219,6 +226,7 @@ export function RankedScreen() {
                     <XqIcon name="lock" size={16} />
                   </span>
                 ) : null}
+                {room.voice ? <RoomVoiceIcon /> : null}
               </div>
               <div className="xq-room-bet">
                 {room.bet > 0 ? (

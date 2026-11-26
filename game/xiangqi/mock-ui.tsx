@@ -6,8 +6,8 @@
 // Xem SCENES bên dưới để biết đủ tên màn.
 import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { GAME_REACTION_TYPE } from '../src/sdk';
-import type { ChatMessageData, LeaderboardEntry, MatchHistoryEntry, RoomInfo, RoomStateData } from '../src/sdk';
+import { GAME_REACTION_TYPE, VOICE_IDLE } from '../src/sdk';
+import type { ChatMessageData, LeaderboardEntry, MatchHistoryEntry, RoomInfo, RoomStateData, VoiceState } from '../src/sdk';
 import { App } from './App';
 import { EMPTY, parseBoardRows } from './logic/board';
 import { legalMovesFrom } from './logic/moves';
@@ -93,6 +93,14 @@ function rooms(count: number): RoomInfo[] {
       full,
     };
   });
+}
+
+function voiceRooms(): RoomInfo[] {
+  return rooms(7).map((item, i) => ({ ...item, voice: i % 2 === 0 }));
+}
+
+function voiceState(over: Partial<VoiceState>): VoiceState {
+  return { ...VOICE_IDLE, roomId: 'room-mock', status: 'connected', canSpeak: true, ...over };
 }
 
 function history(count: number): MatchHistoryEntry[] {
@@ -237,6 +245,33 @@ const SCENES: Record<string, () => Scene> = {
       ],
     }),
   'board-toast': () => match({ toast: 'Nước đi không hợp lệ' }),
+
+  'voice-rooms': () => ({ lobbyPhase: 'ready', rankedVisible: true, rooms: voiceRooms() }),
+  'voice-create': () => ({ lobbyPhase: 'ready', rankedVisible: true, rooms: voiceRooms() }),
+  'voice-create-novip': () => ({
+    lobbyPhase: 'ready',
+    rankedVisible: true,
+    rooms: voiceRooms(),
+    userInfo: { ...ME, vipType: null },
+  }),
+  'voice-pregame': () => ({
+    boardMode: 'pregame',
+    lobbyVisible: false,
+    roomWaiting: { ...room({ guestReady: true }), voice: true },
+    voice: voiceState({ presentIds: ['u-owner', 'u-guest'], micOnIds: ['u-guest'], speakingIds: ['u-guest'] }),
+  }),
+  'voice-board': () =>
+    match({ voice: voiceState({ presentIds: [ME.id, 'u-op'], micOnIds: ['u-op'], speakingIds: ['u-op'] }) }),
+  'voice-board-me': () =>
+    match({
+      voice: voiceState({
+        micOn: true,
+        presentIds: [ME.id, 'u-op'],
+        micOnIds: [ME.id, 'u-op'],
+        speakingIds: [ME.id],
+        mutedIds: ['u-op'],
+      }),
+    }),
   'bot-board': () => botMatch(),
   'bot-thinking': () => botMatch({ myTurn: false, botThinking: true }),
   'bot-live-turn': () => ({ lobbyPhase: 'ready' }),
@@ -316,11 +351,15 @@ const MOCK_SCREENS = Object.keys(SCENES);
 
 // Các state chỉ sống trong component (modal tạo/vào bàn, reaction picker) nên
 // harness bấm hộ đúng nút thay vì nhân bản lại markup.
+const openCreateRoom = (): void => {
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('.xq-ranked-footer .xq-btn')];
+  buttons.find((button) => button.textContent?.trim() === 'Tạo bàn')?.click();
+};
+
 const CLICK_AFTER_MOUNT: Record<string, () => void> = {
-  'rooms-create': () => {
-    const buttons = [...document.querySelectorAll<HTMLButtonElement>('.xq-ranked-footer .xq-btn')];
-    buttons.find((button) => button.textContent?.trim() === 'Tạo bàn')?.click();
-  },
+  'rooms-create': openCreateRoom,
+  'voice-create': openCreateRoom,
+  'voice-create-novip': openCreateRoom,
   'rooms-password': () => {
     const rows = [...document.querySelectorAll<HTMLDivElement>('.xq-room-row')];
     const locked = rows.find((row) => row.querySelector('[aria-label="Có mật khẩu"]'));

@@ -34,7 +34,7 @@ import { formatClock } from '../helpers/format';
 import { mergeMatchHistory, readBotHistory, saveBotHistory } from '../helpers/history';
 import { avatarIconSrc, opponentOf } from '../helpers/player';
 import { roomCreationError } from '../helpers/room';
-import { newVoiceIssueText, VOICE_RETRY_TEXT } from '../../src/ui/voice';
+import { bindVoiceClient, toggleVoiceMic } from '../../src/ui/voice';
 import type { CaroStore, RoomActionPending } from './types';
 import { createInitialCaroState, EMPTY_PLAYER } from './initialState';
 import {
@@ -828,20 +828,18 @@ export const useCaro = create<CaroStore>()((set, get, api) => {
     return { roomId: refs.matchRoomId, ...(refs.match ? { matchId: refs.match.matchId } : {}), speak: true };
   };
 
-  const syncVoice = (): void => refs.voice?.follow(voiceTarget(get()));
-
   const attachVoice = (session: GameSession<CaroState, CaroMove>): void => {
     const voice = createVoiceClient(session);
     refs.voice = voice;
     refs.voiceUnsubs.push(
-      voice.subscribe((state) => {
-        const issueText = newVoiceIssueText(get().voice, state);
-        set({ voice: state });
-        if (issueText) showToast(issueText);
+      bindVoiceClient(voice, {
+        target: () => voiceTarget(get()),
+        current: () => get().voice,
+        apply: (state) => set({ voice: state }),
+        notify: showToast,
+        watch: api.subscribe,
       }),
-      api.subscribe(syncVoice),
     );
-    syncVoice();
   };
 
   const detachVoice = (): void => {
@@ -1249,14 +1247,7 @@ export const useCaro = create<CaroStore>()((set, get, api) => {
     },
 
     toggleMic() {
-      const voice = get().voice;
-      if (refs.voice && voice.status === 'failed') {
-        showToast(VOICE_RETRY_TEXT);
-        refs.voice.retry();
-        return;
-      }
-      if (!refs.voice || !voice.canSpeak || voice.micBusy || voice.status !== 'connected') return;
-      void refs.voice.setMic(!voice.micOn);
+      toggleVoiceMic(refs.voice, get().voice, showToast);
     },
 
     togglePeerMuted(userId) {

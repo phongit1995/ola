@@ -16,6 +16,7 @@ import { inCheck } from '../logic/moves';
 import { pieceGlyph, pieceLabel, sideLabel } from '../logic/pieces';
 import { formatKen } from '../helpers/format';
 import { PodAvatar } from '../components/PodAvatar';
+import { SeatVoice } from '../components/VoiceControls';
 import { useXiangqi, type SeatInfo } from '../store/useXiangqi';
 
 const REACTION_ASSET: Record<GameReactionType, string> = {
@@ -115,7 +116,9 @@ function PlayerPod({
   const red = seat.side === SIDE_RED;
   return (
     <div className={`xq-pod ${clockActive ? 'xq-pod-active' : ''} ${mine ? 'xq-pod-mine' : ''}`}>
-      <PodAvatar src={seat.avatar} tone={red ? 'red' : 'black'} />
+      <PodAvatar src={seat.avatar} tone={red ? 'red' : 'black'}>
+        <SeatVoice userId={seat.id} name={`@${seat.name}`} self={mine} />
+      </PodAvatar>
       <div className="xq-pod-info">
         <div className="xq-pod-name">
           <span className="xq-pod-name-text">@{seat.name}</span>
@@ -171,7 +174,9 @@ function PregamePanel() {
           {[meMember, opMember].map((member, index) =>
             member ? (
               <div key={member.id} className="xq-seat">
-                <PodAvatar vipType={member.vipType} tone="black" />
+                <PodAvatar vipType={member.vipType} tone="black">
+                  <SeatVoice userId={member.id} name={`@${member.name}`} self={member.id === roomWaiting.youId} />
+                </PodAvatar>
                 <div className="xq-seat-name">
                   <span className="xq-seat-name-text">
                     {member.id === roomWaiting.youId ? 'Bạn' : `@${member.name}`}
