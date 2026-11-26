@@ -168,7 +168,7 @@ func (ctrl *Controller) Wins(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// @Summary      Look up a Vietnamese word (dict.minhqnd.com)
+// @Summary      Look up a Vietnamese word (embedded dictionary)
 // @Tags         word-chain
 // @Produce      json
 // @Security     BearerAuth

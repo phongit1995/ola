@@ -13,6 +13,7 @@ func provideEventPublisher(producer *kafka.Producer) EventPublisher {
 func Provider(c *dig.Container) error {
 	providers := []interface{}{
 		NewDictionary,
+		NewLexicon,
 		NewVerifier,
 		NewStore,
 		NewRepository,

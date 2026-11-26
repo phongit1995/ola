@@ -40,14 +40,11 @@ const (
 	WordChainMessagePageMax            = 100
 	WordChainMaxStoredMessages         = 5000
 	WordChainLookupSource              = "Ola Me"
-	WordChainLookupURL                 = "https://dict.minhqnd.com/api/v1/lookup"
-	WordChainSuggestURL                = "https://dict.minhqnd.com/api/v1/suggest"
-	WordChainSuggestLimit              = "50"
-	WordChainLookupTimeout             = 5 * time.Second
-	WordChainLookupMaxBytes            = 128 * 1024
+	WordChainSuggestLimit              = 20
 	WordChainLookupMaxWordRunes        = 80
 	WordChainLookupCooldownSeconds     = 5
 	WordChainLookupLangVietnamese      = "vi"
+	WordChainLookupLangVietnameseName  = "Tiếng Việt"
 	WordChainSpellingVariantsMax       = 4
 	WordChainCodeOK                    = "ok"
 	WordChainCodeWin                   = "win"
