@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ARCADE_BRIDGE_EVENT } from '@ola/shared/constants';
 import type { ArcadeKenUpdatedData } from '@ola/shared/types';
 import { bridge } from '../src/sdk';
+import wifiOffIcon from './assets/icons/ic-wifi-off.svg';
 import { preloadCardAssets } from './assets';
 import { BrandMark } from './components/BrandMark';
 import { ConfirmModal } from './components/ConfirmModal';
@@ -23,6 +24,7 @@ export function App() {
   const confirmExit = useThirteen((s) => s.confirmExit);
   const overlay = useThirteen((s) => (s.phase === 'lobby' ? s.overlay : null));
   const practice = useThirteen((s) => s.practice != null);
+  const reconnecting = useThirteen((s) => s.offline && s.practice == null && (s.phase === 'lobby' || s.phase === 'room'));
   const dismissNotice = useThirteen((s) => s.dismissNotice);
   const cancelExit = useThirteen((s) => s.cancelExit);
   const confirmExitNow = useThirteen((s) => s.confirmExitNow);
@@ -72,6 +74,12 @@ export function App() {
       {phase === 'table' && <TableScreen />}
       {result && <ResultScreen />}
       {toast && <div className="tl-toast">{toast}</div>}
+      {reconnecting && (
+        <div className="tl-reconnecting" role="status" aria-live="polite">
+          <img src={wifiOffIcon} alt="" />
+          <span>Mất kết nối, đang kết nối lại...</span>
+        </div>
+      )}
       {confirmExit && (
         <ConfirmModal
           title={phase === 'table' && practice ? 'Rời ván tập?' : 'Rời ván đấu?'}

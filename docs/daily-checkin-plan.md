@@ -121,6 +121,15 @@ Công tắc **Xác thực email** ở tab Cài đặt của admin, **mặc đị
 - Dùng cột `users.email_verified` có sẵn, giống mã quà tặng (`requireEmailVerified`, cũng mặc định bật).
 - Nút **Xác thực email** mở thẳng chỗ xác thực email ở Trang cá nhân, kèm câu hướng dẫn đang dùng cho mã quà tặng ("Cá nhân → Trang cá nhân → Email → Xác thực").
 
+### 2.6b Phải đang kết nối socket
+
+Điểm danh và mở quà chỉ chạy khi user đang có kết nối socket chat, để chặn bot chỉ gọi API.
+
+- Server đọc bộ đếm kết nối `PRESENCE:<user>:ONLINE` trong Redis (`PresenceService.GetConnectionCount` > 0). Bộ đếm tăng khi socket nối, giảm khi rớt, sống 300 giây và được gia hạn mỗi lần client gửi `ping`. Không áp grace "vừa online" như chấm xanh.
+- Không có kết nối → **lỗi chung** 400 `check-in failed`, **không có mã lỗi**, cố ý không nói lý do để bot không biết bị chặn vì đâu. App hiện câu chung "Không thực hiện được, thử lại sau" và gọi `SocketService.ensureAlive()` (lỗi không có mã nào cũng gọi, vô hại).
+- Xét sau email, trước khi tạo dòng; mở quà xét sau bước "đã mở rồi", nên gửi lại `clientRequestId` cũ hoặc xem lại hộp đã mở không bị chặn.
+- Tính theo user, không theo máy: một máy khác của cùng tài khoản đang nối thì cũng qua. Không có công tắc admin.
+
 ### 2.7 Loại quà
 
 | Quà | Ghi chú |
@@ -224,6 +233,7 @@ Không cần bộ đếm. Lúc điểm danh, lúc GET và lúc bấm Mở quà, 
 
 1. Tháng hiện tại chưa có lịch, lịch còn nháp, hoặc nền tảng tắt → `CHECKIN_DISABLED`.
 2. Công tắc xác thực email đang bật mà user chưa xác thực → `CHECKIN_EMAIL_NOT_VERIFIED`.
+2b. User không có kết nối socket nào → lỗi chung 400 không mã (mục 2.6b). Bước 2 và 2b chạy sau bước 3–4, nên lần gửi lại hoặc đã điểm danh hôm nay không bị chặn.
 3. Mỗi lần bấm client sinh một `clientRequestId` mới, gửi lại (mất phản hồi, mạng chập chờn) thì dùng lại mã cũ. Mã đã có dòng → trả kết quả của dòng đó, không tính thêm lượt, kể cả khi lượt đó là của hôm trước (bấm 23:59:50, gửi lại 00:00:10 vẫn chỉ 1 lượt, hôm sau user bấm lại bằng mã mới mới điểm danh ngày mới).
 4. Đã có dòng của hôm nay → trả trạng thái hiện tại, không làm gì thêm (bấm 2 lần hay 2 máy cũng không cộng 2 ô).
 5. Tính ô: dòng mới nhất của user **trong tháng này** có `slot = k` → ô `k + 1`; chưa có dòng nào trong tháng → ô 1. Ô vượt số ô của tháng → `CHECKIN_COMPLETED` (đã đi hết lịch).
@@ -238,6 +248,7 @@ Chạy trong transaction có `ledger.LockUser`, nên 2 máy cùng bấm sẽ ch�
 
 | Dòng hôm nay | Kết quả |
 |---|---|
+| `pending`, user không có kết nối socket nào | lỗi chung 400 không mã (xét trước nhiệm vụ, mục 2.6b) |
 | `pending`, nhiệm vụ chưa làm | lỗi `CHECKIN_TASK_NOT_DONE` |
 | `pending`, hộp cần VIP mà chưa có VIP (xét `vip_end_time > now` lúc bấm) | lỗi `CHECKIN_VIP_REQUIRED`, app hiện hộp thoại "Hộp này dành cho VIP", không có nút Mua VIP |
 | `pending`, đủ điều kiện | bốc mỗi quà 1 món theo `reward_snapshot` và phát → `claimed`, trả quà vừa nhận |
@@ -446,7 +457,7 @@ Tối ưu (GET `/checkin` gọi mỗi lần mở app để vẽ popup và chấm
 
 Khác:
 
-- Mã lỗi: `CHECKIN_DISABLED`, `CHECKIN_COMPLETED`, `CHECKIN_EMAIL_NOT_VERIFIED`, `CHECKIN_TASK_NOT_DONE`, `CHECKIN_VIP_REQUIRED`, `CHECKIN_NOTHING_TO_OPEN`.
+- Mã lỗi: `CHECKIN_DISABLED`, `CHECKIN_COMPLETED`, `CHECKIN_EMAIL_NOT_VERIFIED`, `CHECKIN_TASK_NOT_DONE`, `CHECKIN_VIP_REQUIRED`, `CHECKIN_NOTHING_TO_OPEN`. Thiếu kết nối socket trả lỗi chung không mã (mục 2.6b).
 - Cả 2 POST đều kiểm tra nền tảng (theo `X-Platform`) đang bật và tháng hiện tại đã phát hành lịch, không thì trả `CHECKIN_DISABLED`.
 - Rate limit cho 2 POST (ví dụ 20/phút).
 - Ngày và tháng luôn tính phía server theo giờ VN (`utils.VietnamPeriodStart`), không tin giờ máy client.

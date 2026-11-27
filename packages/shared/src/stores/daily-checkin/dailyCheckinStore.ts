@@ -13,6 +13,7 @@ import { randomUuid } from '../../lib/randomUuid';
 import { toast } from '../../lib/toast';
 import { getKeyValueStorage } from '../../platform/keyValueStorage';
 import { DailyCheckinService } from '../../services/dailyCheckin.service';
+import { SocketService } from '../../services/socket.service';
 import type { DailyCheckinActionResult, DailyCheckinStatus } from '../../types/api/dailyCheckin.type';
 import type { DailyCheckinState } from '../../types/client/dailyCheckin.type';
 import { loadAppConfig } from '../appConfigStore';
@@ -126,6 +127,7 @@ export const useDailyCheckinStore = create<DailyCheckinState>((set, get) => {
         const apiError = toApiError(err);
         if (apiError.status !== 0) pendingRequestId = null;
         refreshAfterReject(apiError.code);
+        if (apiError.code == null) SocketService.ensureAlive();
         if (apiError.code === DAILY_CHECKIN_ERROR.emailNotVerified) {
           set({ notice: 'needsEmail' });
           return 'needsEmail';
@@ -154,6 +156,7 @@ export const useDailyCheckinStore = create<DailyCheckinState>((set, get) => {
           return 'vipRequired';
         }
         refreshAfterReject(apiError.code);
+        if (apiError.code == null) SocketService.ensureAlive();
         toast.error(dailyCheckinErrorText(i18n.t, err));
         return 'failed';
       } finally {

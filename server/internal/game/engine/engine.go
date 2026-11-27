@@ -79,6 +79,9 @@ type Engine struct {
 	roomChatLast     map[string]time.Time
 	viewerChatMu     sync.Mutex
 	viewerChatLast   map[string]time.Time
+	roomGraceMu      sync.Mutex
+	roomGrace        map[string]roomGraceEntry
+	roomGraceGen     uint64
 	turnSeconds      int
 	graceSeconds     int
 	restored         bool
@@ -147,6 +150,7 @@ func NewEngine(
 		abortJobs:        make(map[string]struct{}),
 		roomChatLast:     make(map[string]time.Time),
 		viewerChatLast:   make(map[string]time.Time),
+		roomGrace:        make(map[string]roomGraceEntry),
 		turnSeconds:      turnSeconds,
 		graceSeconds:     graceSeconds,
 	}

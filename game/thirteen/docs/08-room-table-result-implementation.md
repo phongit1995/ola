@@ -39,6 +39,8 @@ Không có raster UI mới và không có text nằm trong asset.
 - chat panel cream tự cuộn xuống tin mới;
 - action bar giữ touch target tối thiểu 48 px;
 - phòng hai người không render hàng ghế rỗng thứ hai.
+- mất kết nối ở sảnh hoặc phòng chờ (thu nhỏ game, rớt mạng): hiện viên coral "Mất kết nối, đang kết nối lại..." (`.tl-reconnecting`), socket.io tự nối lại. Server giữ chỗ trong bàn chờ `GAME_RECONNECT_GRACE_SECONDS` (mặc định 30 giây, giống lúc đang đánh), nối lại kịp thì vẫn còn bàn, quá hạn mới rời bàn (chủ bàn rời thì đóng bàn, lý do `owner_disconnected`);
+- hộp "Không thể kết nối máy chủ trò chơi" chỉ hiện sau 5 lần thử nối thất bại liên tiếp (nối được thì đếm lại từ đầu); lỗi phiên đăng nhập hiện ngay "Phiên đăng nhập đã hết hạn…". Log server ghi lý do ngắt (`reason` trong "Game socket disconnected").
 
 ## 4. Bàn chơi
 

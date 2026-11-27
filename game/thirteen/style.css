@@ -3191,6 +3191,34 @@ button {
   flex: 0 0 18px;
 }
 
+.tl-reconnecting {
+  position: absolute;
+  top: calc(var(--safe-top) + 86px);
+  left: 50%;
+  z-index: 90;
+  display: inline-flex;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  transform: translateX(-50%);
+  border: 2px solid var(--s2-navy-800);
+  border-radius: 999px;
+  background: var(--s2-coral-500);
+  color: var(--s2-cream-50);
+  font: 800 12px/1.25 var(--body);
+  box-shadow: var(--s2-shadow-control);
+  pointer-events: none;
+}
+
+.tl-reconnecting img {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
 /* Table chat sheet */
 .tl-chat-overlay {
   z-index: 60;

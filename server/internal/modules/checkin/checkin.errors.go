@@ -13,5 +13,6 @@ var (
 	ErrCheckinTaskNotDone      = utils.NewHTTPErrorWithCode(http.StatusConflict, "finish today's task to open the box", ErrorCodeCheckinTaskNotDone)
 	ErrCheckinVipRequired      = utils.NewHTTPErrorWithCode(http.StatusForbidden, "this box is for VIP members", ErrorCodeCheckinVipRequired)
 	ErrCheckinNothingToOpen    = utils.NewHTTPErrorWithCode(http.StatusConflict, "there is no box to open today", ErrorCodeCheckinNothingToOpen)
+	ErrCheckinRejected         = utils.NewHTTPError(http.StatusBadRequest, "check-in failed")
 	ErrCheckinRequestID        = utils.NewHTTPError(http.StatusBadRequest, "clientRequestId is required")
 )

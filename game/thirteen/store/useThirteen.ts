@@ -3,6 +3,8 @@ import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import {
   bridge,
   createVoiceClient,
+  GameAuthenticationExpiredError,
+  GameAuthenticationRequiredError,
   joinGame,
   VOICE_IDLE,
   type GameSession,
@@ -123,6 +125,7 @@ interface ThirteenStore {
   reactions: SeatReaction[];
   awaySeats: Record<number, number>;
   selfDisconnected: boolean;
+  offline: boolean;
   result: MatchResult | null;
   notice: string | null;
   toast: string | null;
@@ -182,6 +185,7 @@ const STEP_MS: Record<string, number> = {
 };
 
 const MATCH_OVER_SETTLE_MS = 600;
+const CONNECT_ERROR_NOTICE_AFTER = 5;
 const REVEAL_HANDS_MS = 2800;
 
 interface FinalSnapshot {
@@ -258,6 +262,7 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     matchRoomId: '',
     matchRoomVoice: false,
     voice: null as VoiceClient | null,
+    connectErrors: 0,
     watchRequest: '',
     toastTimer: 0,
     historyTimer: 0 as ReturnType<typeof setTimeout> | 0,
@@ -927,7 +932,8 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
       }),
       ...bindMatch(session),
       session.onConnectionChange((connected) => {
-        set({ selfDisconnected: !connected && get().phase === 'table' && !get().practice });
+        set({ selfDisconnected: !connected && get().phase === 'table' && !get().practice, offline: !connected });
+        if (connected) refs.connectErrors = 0;
         if (!connected && get().watchPendingId) set({ watchPendingId: '' });
         if (connected && get().phase === 'connecting') session.listRooms();
         const s = get();
@@ -940,9 +946,16 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
           session.spectateJoin(s.matchId);
         }
       }),
-      session.onConnectionError(() => {
+      session.onConnectionError((error) => {
         if (get().practice) return;
-        set({ notice: 'Không thể kết nối máy chủ trò chơi. Hãy thử lại sau.' });
+        if (error instanceof GameAuthenticationExpiredError || error instanceof GameAuthenticationRequiredError) {
+          set({ notice: 'Phiên đăng nhập đã hết hạn. Hãy thoát ra rồi mở lại trò chơi.' });
+          return;
+        }
+        refs.connectErrors += 1;
+        if (refs.connectErrors === CONNECT_ERROR_NOTICE_AFTER) {
+          set({ notice: 'Không thể kết nối máy chủ trò chơi. Hãy thử lại sau.' });
+        }
       }),
     );
   };
@@ -992,6 +1005,7 @@ export const useThirteen = create<ThirteenStore>()((set, get, api) => {
     reactions: [],
     awaySeats: {},
     selfDisconnected: false,
+    offline: false,
     result: null,
     notice: null,
     toast: null,
