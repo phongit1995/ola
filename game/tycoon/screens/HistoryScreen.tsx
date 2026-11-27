@@ -26,6 +26,7 @@ import {
   type HistoryEntry,
 } from '../helpers/history';
 import { avatarIconUrl } from '../helpers/player';
+import { GUEST_PROFILE } from '../helpers/profile';
 import { useHistory } from '../store/useHistory';
 import { useTycoon } from '../store/useTycoon';
 
@@ -125,7 +126,7 @@ function SkeletonRow() {
 
 export function HistoryScreen() {
   const { myId, setHistoryOpen, setSetupOpen } = useTycoon(
-    useShallow((s) => ({ myId: s.profile?.id, setHistoryOpen: s.setHistoryOpen, setSetupOpen: s.setSetupOpen })),
+    useShallow((s) => ({ myId: s.profile?.id ?? GUEST_PROFILE.id, setHistoryOpen: s.setHistoryOpen, setSetupOpen: s.setSetupOpen })),
   );
   const { status, online, bot, expandedId, open, load, toggle } = useHistory(
     useShallow((s) => ({ status: s.status, online: s.online, bot: s.bot, expandedId: s.expandedId, open: s.open, load: s.load, toggle: s.toggle })),

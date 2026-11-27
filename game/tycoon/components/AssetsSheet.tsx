@@ -14,7 +14,7 @@ import { UiAvatar, UiButton } from './Ui';
 import { useTycoon } from '../store/useTycoon';
 
 export function AssetsSheet({ seat }: { seat: number }) {
-  const { view, players, you, myTurn, movePending, replaying, cash, sendMove, closeSheet, openSheet } = useTycoon(
+  const { view, players, you, myTurn, movePending, replaying, turnExpired, cash, sendMove, closeSheet, openSheet } = useTycoon(
     useShallow((s) => ({
       view: s.view,
       players: s.players,
@@ -22,6 +22,7 @@ export function AssetsSheet({ seat }: { seat: number }) {
       myTurn: s.myTurn,
       movePending: s.movePending,
       replaying: s.replaying,
+      turnExpired: s.turnExpired,
       cash: s.cash,
       sendMove: s.sendMove,
       closeSheet: s.closeSheet,
@@ -31,7 +32,7 @@ export function AssetsSheet({ seat }: { seat: number }) {
   if (!view) return null;
   const player = view.players[seat];
   const mine = seat === you;
-  const busy = movePending || replaying;
+  const busy = movePending || replaying || turnExpired;
   const manageAllowed = mine && myTurn && (view.phase === 'manage' || (view.phase === 'debt' && view.debt?.by === you));
   const title = mine ? 'Tài sản của bạn' : `Tài sản của ${players[seat]?.name ?? '?'}`;
   const groups = GROUPS.filter((group) => tilesOfGroup(group).some((idx) => view.tiles[idx].owner === seat));
@@ -81,6 +82,7 @@ export function AssetsSheet({ seat }: { seat: number }) {
               const art = houseArt(level);
               const buildHint = street && manageAllowed && view.phase === 'manage' ? canBuild(view, seat, idx) : null;
               const sellHint = street && manageAllowed ? canSell(view, seat, idx) : null;
+              const here = view.players[seat]?.pos === idx;
               return (
                 <div key={idx} className="ty-holding-row">
                   <button type="button" className="ty-holding-name" onClick={() => openSheet({ kind: 'tile', idx })}>
@@ -93,7 +95,7 @@ export function AssetsSheet({ seat }: { seat: number }) {
                     </span>
                     {art ? <img className="ty-holding-house" src={art} alt="" draggable={false} /> : null}
                   </button>
-                  {street && manageAllowed && (full || level > 0) ? (
+                  {street && manageAllowed && (here || level > 0) ? (
                     <span className="ty-holding-controls">
                       {level > 0 ? (
                         <UiButton
@@ -108,7 +110,7 @@ export function AssetsSheet({ seat }: { seat: number }) {
                           +{Math.floor(levelCost(idx, level) / 2)}
                         </UiButton>
                       ) : null}
-                      {full && level < MAX_HOUSES ? (
+                      {here && level < MAX_HOUSES ? (
                         <UiButton
                           tone="gold"
                           size="sm"

@@ -18,9 +18,10 @@ import { useTycoon } from '../store/useTycoon';
 import { LobbyTopbar } from './LobbyTopbar';
 
 export function LobbyScreen() {
-  const { profile, lobbyFocus, setRoomsOpen, setSetupOpen, setRulesOpen, setLeaderboardOpen, setHistoryOpen, clearLobbyFocus, exitGame } = useTycoon(
+  const { profile, online, lobbyFocus, setRoomsOpen, setSetupOpen, setRulesOpen, setLeaderboardOpen, setHistoryOpen, clearLobbyFocus, exitGame } = useTycoon(
     useShallow((s) => ({
       profile: s.profile,
+      online: s.online,
       lobbyFocus: s.lobbyFocus,
       setRoomsOpen: s.setRoomsOpen,
       setSetupOpen: s.setSetupOpen,
@@ -33,7 +34,7 @@ export function LobbyScreen() {
   );
   const historyRef = useRef<HTMLButtonElement>(null);
   const leaderboardRef = useRef<HTMLButtonElement>(null);
-  const loading = profile === null;
+  const loading = profile === null && online === 'connecting';
 
   useEffect(() => {
     if (!lobbyFocus) return;

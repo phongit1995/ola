@@ -13,7 +13,6 @@ import { useTycoon } from '../store/useTycoon';
 import { BottomSheet } from './BottomSheet';
 import { ChatInput, ChatLog } from './ChatLog';
 
-const REACTION_COOLDOWN_MS = 1500;
 const BUBBLE_MS = 2200;
 
 export const REACTIONS: ReadonlyArray<{ type: GameReactionType; label: string; src: string }> = [
@@ -28,22 +27,22 @@ export const REACTIONS: ReadonlyArray<{ type: GameReactionType; label: string; s
 const REACTION_SRC = new Map(REACTIONS.map((item) => [item.type, item.src]));
 
 export function ChatSheet() {
-  const { matchChat, players, you, closeSheet, sendMatchChat, sendReaction } = useTycoon(
-    useShallow((s) => ({ matchChat: s.matchChat, players: s.players, you: s.you, closeSheet: s.closeSheet, sendMatchChat: s.sendMatchChat, sendReaction: s.sendReaction })),
+  const { matchChat, players, you, readyAt, closeSheet, sendMatchChat, sendReaction } = useTycoon(
+    useShallow((s) => ({ matchChat: s.matchChat, players: s.players, you: s.you, readyAt: s.reactionReadyAt, closeSheet: s.closeSheet, sendMatchChat: s.sendMatchChat, sendReaction: s.sendReaction })),
   );
-  const [cooling, setCooling] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const cooling = now < readyAt;
   const meId = players[you]?.id;
 
   useEffect(() => {
     if (!cooling) return;
-    const timer = setTimeout(() => setCooling(false), REACTION_COOLDOWN_MS);
+    const timer = setTimeout(() => setNow(Date.now()), readyAt - now);
     return () => clearTimeout(timer);
-  }, [cooling]);
+  }, [cooling, readyAt, now]);
 
   const react = (type: GameReactionType) => {
     if (cooling) return;
     sendReaction(type);
-    setCooling(true);
     closeSheet();
   };
 

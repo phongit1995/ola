@@ -33,7 +33,7 @@ export function ResultScreen() {
 
   if (!result) return null;
   const winner = result.rows[0];
-  const title = result.spectator ? `@${winner?.name ?? '?'} thắng` : placeLabel(result.myPlace, result.rows.length);
+  const title = result.aborted ? 'Ván bị huỷ' : result.spectator ? `@${winner?.name ?? '?'} thắng` : placeLabel(result.myPlace, result.rows.length);
   const nameOf = (row: RankRow) => (row.seat === you ? 'Bạn' : row.name);
   const podium = PODIUM_ORDER.map((i) => result.rows[i]).filter(Boolean);
   const rest = result.rows.slice(3);

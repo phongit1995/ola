@@ -2,6 +2,19 @@
 
 Bản này **thay thế** bảng motion rút gọn ở `01-art-direction.md` §8: game đi theo hướng nhiều hiệu ứng ("juicy") nhưng vẫn trên nền DOM/SVG, với một lớp canvas riêng cho hạt. Mọi hiệu ứng là **phản hồi cho sự kiện đã xảy ra** (server đã quyết), không bao giờ là điều kiện để chơi tiếp — người tắt animation vẫn chơi đủ.
 
+## 0. Hiện trạng code (27/11/2026)
+
+Phần dưới là thiết kế gốc. Code đang chạy khác ở những điểm sau, khi sửa hiệu ứng thì theo code:
+
+- Hạt vẽ bằng Canvas2D trong `fx/particles.ts` (không dùng Pixi), tối đa 220 hạt. Hiệu ứng DOM nằm cả trong `fx/boardFx.ts`, nhịp và `sleep/hold/animate` ở `fx/runtime.ts`; không có `FxLayer.ts`, `tween.ts`, `effects/`.
+- Không có bậc Lite/Off và menu Hiệu ứng. Chỉ có tốc độ ×1/×2 trong menu và `prefers-reduced-motion`. Khi giảm chuyển động: quân nhảy thẳng về ô, không hạt; banner lượt, TRỌN NHÓM, PHÁ SẢN, VÒNG CUỐI vẫn hiện tĩnh đủ lâu để đọc; tiền nổi và bong bóng cảm xúc chỉ hiện rồi mờ đi.
+- Mọi teleport (thẻ chuyển ô, vào tù, Du lịch) đều đi bộ từng ô như M1, không bay cung (M5). Vào tù đi lùi nếu đường lùi ngắn hơn.
+- Bước đi: 140 ms mỗi ô khi đi ≤ 4 ô, 124 ms khi 5–7 ô, 112 ms khi trên 7 ô; bước đầu và hai bước cuối chậm hơn một chút.
+- Xu bay: 5 + amount/60, tối đa 12. Số tiền ở pod đếm 520 ms. Thời lượng trong `boardFx.ts`, đếm tiền và xu bay đều chia theo tempo (×1, ×2, đuổi kịp ×4, tua ×8).
+- Chạm bàn trong lúc replay thì tua ×8 phần còn lại của replay đó; không tua lúc đang hiện người thắng. Tempo về lại tốc độ đã chọn khi có state mới, khi hết ván và khi vào ván mới.
+- Đến lượt mình: banner ĐẾN LƯỢT BẠN + viền pod sáng. Đến lượt người khác hoặc máy: chip lượt đổi và pod người đó loé màu ghế, không chặn nhịp.
+- Chưa làm: R1 lắc trước khi lăn, R5 đôi lần 3 màu coral, T1 quân bounce + Bác Tỷ, T8 quân thở.
+
 ## 1. Kiến trúc 4 lớp
 
 | Lớp | Công nghệ | Nội dung | Ai điều khiển |

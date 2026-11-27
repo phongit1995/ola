@@ -11,7 +11,7 @@ Thư mục này là đặc tả triển khai chi tiết cho hướng mỹ thuậ
 
 - **Ảnh mẫu thắng** về mỹ thuật: nền màn, cách vẽ tranh ô, hình glyph, hình quân, xúc xắc, nút, chồng thẻ, ô góc, bố cục S6.
 - **S2 dùng ảnh lobby riêng:** hero Bác Tỷ + ba thẻ/hai quân, menu trên nền trời mở, minh họa màu trong nút. Kích thước/font riêng màn, responsive và trạng thái theo [screens/s2-lobby](../screens/s2-lobby/README.md); không áp kích thước nút lobby sang bàn chơi.
-- **Docs thắng** về dữ liệu và con số: tên/thứ tự/giá ô lấy từ `logic/board.json`; hex màu nhóm đất và màu ghế giữ token `01-foundations.md` (ảnh AI vẽ đậm hơn, không lấy mã màu từ ảnh); kích thước theo px tại 390.
+- **Docs thắng** về dữ liệu và con số: tên/thứ tự/giá ô lấy từ `BOARD_DATA` trong `logic/constants.gen.ts` (sinh từ Go); hex màu nhóm đất và màu ghế giữ token `01-foundations.md` (ảnh AI vẽ đậm hơn, không lấy mã màu từ ảnh); kích thước theo px tại 390.
 - **Ba chỗ ảnh tự mâu thuẫn, docs giữ:** bàn vuông 1:1 (ảnh hơi cao); dải nhóm hàng trên nằm ở mép **trong** (đáy ô) như 3 cạnh còn lại, không có chữ trên dải; chỉ **một** vùng log (ảnh vẽ cả thẻ log lẫn dòng sự kiện ở footer).
 
 ## Thứ tự đọc

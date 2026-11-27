@@ -117,8 +117,12 @@ func (Logic) OnPlayerQuit(state any, playerIdx int) {
 	if !ok {
 		return
 	}
+	prev := cloneState(s)
 	s.Steps = []Step{}
 	quitPlayer(s, playerIdx)
+	if !s.Finished && isNewTurn(prev, s) && timeUp(s) {
+		s.finish(EndTime)
+	}
 }
 
 func (Logic) OnEveryoneLeft(state any) {

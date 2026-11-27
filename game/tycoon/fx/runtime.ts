@@ -19,6 +19,18 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, reducedMotion() ? Math.min(ms, 30) : scaled(ms)));
 }
 
+export function hold(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, scaled(ms)));
+}
+
+let fxToken = 0;
+
+export function claim(el: HTMLElement): () => boolean {
+  const token = String(++fxToken);
+  el.dataset.fx = token;
+  return () => el.dataset.fx === token;
+}
+
 export function animate(el: Element | null | undefined, keyframes: Keyframe[], options: KeyframeAnimationOptions): Promise<void> {
   if (!el || reducedMotion()) return Promise.resolve();
   const timing = { ...options, duration: typeof options.duration === 'number' ? scaled(options.duration) : options.duration, delay: options.delay ? scaled(options.delay) : options.delay };

@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { RoomStateData } from '../../src/sdk';
 import bgUrl from '../assets/lobby/bg-board-pixel.webp';
@@ -10,6 +10,8 @@ import { MIN_PLAYERS } from '../logic/constants';
 import { chatAuthor } from '../helpers/chat';
 import { avatarIconUrl, seatColor } from '../helpers/player';
 import { useTycoon } from '../store/useTycoon';
+
+const PENDING_RESET_MS = 4000;
 
 function RoomSeats({ room, selfId, onKick }: { room: RoomStateData; selfId: string; onKick?: (userId: string) => void }) {
   return (
@@ -80,6 +82,13 @@ export function RoomScreen() {
   const { room, profile, leaveRoom, setReady, startRoom, kickMember } = useTycoon(
     useShallow((s) => ({ room: s.room, profile: s.profile, leaveRoom: s.leaveRoom, setReady: s.setReady, startRoom: s.startRoom, kickMember: s.kickMember })),
   );
+  const [pending, setPending] = useState(false);
+  useEffect(() => setPending(false), [room]);
+  useEffect(() => {
+    if (!pending) return;
+    const timer = setTimeout(() => setPending(false), PENDING_RESET_MS);
+    return () => clearTimeout(timer);
+  }, [pending]);
   if (!room) return null;
   const selfId = room.youId || profile?.id || '';
   const isOwner = room.ownerId === selfId;
@@ -123,11 +132,28 @@ export function RoomScreen() {
       <footer className="ty-wait-actions">
         <UiButton onClick={leaveRoom}>Rời bàn</UiButton>
         {isOwner ? (
-          <UiButton tone="gold" disabled={!canStart} onClick={startRoom}>
+          <UiButton
+            tone="gold"
+            disabled={!canStart || pending}
+            aria-busy={pending}
+            onClick={() => {
+              setPending(true);
+              startRoom();
+            }}
+          >
             {canStart ? 'Bắt đầu' : room.members.length < MIN_PLAYERS ? 'Chờ thêm người' : `Bắt đầu (${readyGuests}/${guests.length} sẵn sàng)`}
           </UiButton>
         ) : (
-          <UiButton tone={me?.ready ? 'paper' : 'gold'} icon={me?.ready ? 'check' : undefined} onClick={() => setReady(!me?.ready)}>
+          <UiButton
+            tone={me?.ready ? 'paper' : 'gold'}
+            icon={me?.ready ? 'check' : undefined}
+            disabled={pending}
+            aria-busy={pending}
+            onClick={() => {
+              setPending(true);
+              setReady(!me?.ready);
+            }}
+          >
             {me?.ready ? 'Bỏ sẵn sàng' : 'Sẵn sàng'}
           </UiButton>
         )}

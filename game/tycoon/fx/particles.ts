@@ -1,4 +1,4 @@
-import { reducedMotion, type Point } from './runtime';
+import { reducedMotion, scaled, type Point } from './runtime';
 
 const MAX_PARTICLES = 220;
 const TAU = Math.PI * 2;
@@ -173,8 +173,8 @@ export function coinFlight(from: Point, to: Point, count: number, delay = 0): vo
       kind: 'coin',
       x: from.x,
       y: from.y,
-      life: 460,
-      delay: delay + i * 34,
+      life: scaled(460),
+      delay: scaled(delay + i * 34),
       size: 6.5,
       spin: 0.32,
       from: { x: from.x + (Math.random() - 0.5) * 18, y: from.y + (Math.random() - 0.5) * 12 },

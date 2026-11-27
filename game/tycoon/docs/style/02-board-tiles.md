@@ -11,7 +11,7 @@ Mỗi ô là `<g class="ty-tile" data-idx data-kind data-group>`. Màu lấy t�
 | Dải màu | 7–9 px ở mép phía trong bàn, màu nhóm, viền navy 1 px cạnh giáp thân ô | không | không | không |
 | Tên (trên) | tên ngắn 800, `board × 0.0182`, ≤ 2 dòng | `Sân bay` | `Cơ hội`, `Khí vận`, `Thuế` | chữ góc in hoa 1 dòng 800 (`XUẤT PHÁT`, `NHÀ TÙ`, `LỄ HỘI`, `DU LỊCH`) |
 | Tranh / glyph (giữa) | tranh pixel 16-bit địa danh, phủ hết chiều rộng thân ô, có trời | tranh pixel máy bay + tháp chỉ huy (chung 4 ô) | glyph vector 18 px: Cơ hội `?` cam, Khí vận gió xanh, Thuế túi tiền vàng có `%` | Xuất phát: mũi tên jade chỉ lên; Nhà tù: tranh pixel phòng giam có Anh Tèo; Lễ hội: tranh pixel đèn lồng + ngôi sao vàng; Du lịch: vali cam + máy bay nhỏ |
-| Giá (dưới) | `220 tr` tabular; có chủ → tiền thuê hiện tại | `200 tr` | Thuế: `−10%` coral; thẻ: không có | Xuất phát `+160 tr` jade; Nhà tù `Thăm tù`; Lễ hội `Thuê x2` cream; Du lịch `Bay lượt sau` |
+| Giá (dưới) | `220 tr` tabular; có chủ → tiền thuê hiện tại | `200 tr` | Thuế: `−10%` coral; thẻ: không có | Xuất phát `+160 tr` jade; Nhà tù `Thăm tù`; Lễ hội `Thuê x2` cream; Du lịch `Bay` |
 | Cấp nhà | **trên dải**: cấp 1 = 1 nhà jade `#1F8A5B`, cấp 2 = 2 nhà, cấp 3 = 1 khách sạn coral; viền cream 1 px (§6) | — | — | — |
 | Có chủ | nền seat-soft + vạch 3 px màu ghế ở mép **ngoài** | như trái | — | — |
 | Quân | con tốt 16 × 24, đế đứng trên mép trong ô, thân nhô vào vùng trong | như trái | như trái | ô 8: vùng theo trạng thái tù |
@@ -73,7 +73,7 @@ Bốn ô góc theo ảnh mẫu: chữ in hoa 1 dòng ở trên, hình ở giữa
 | 0 Xuất phát (dưới-trái) | nền paper; `XUẤT PHÁT` navy; mũi tên `tg-go` jade **chỉ lên** (hướng đi lên cột trái); `+160 tr` jade 800 | khi ai qua: nền nháy `--ty-landing` 300 ms, mũi tên nảy 1 lần |
 | 8 Nhà tù (trên-trái) | nền paper; `NHÀ TÙ` navy; giữa là tranh pixel phòng giam có song sắt và Anh Tèo; dải `Thăm tù` ở đáy ô | quân trong tù đứng trong tranh, sau song (z thấp hơn song); quân thăm tù đứng ở dải `Thăm tù` |
 | 16 Lễ hội (trên-phải) | nền `festival-bg`; `LỄ HỘI` cream; tranh pixel đèn lồng đỏ + ngôi sao vàng; `Thuê x2` cream | Ô thành phố đang có Lễ hội: viền trong 2 px gold + huy hiệu tròn gold-deep có ngôi sao cream ở góc trên-phải |
-| 24 Du lịch (dưới-phải) | nền paper; `DU LỊCH` navy; `tg-travel` vali cam có máy bay nhỏ; `Bay lượt sau` navy 12.5 | lượt sau của người đáp: chạm ô bất kỳ → sheet có nút `Bay tới đây`; quân bay cung (`teleport`) |
+| 24 Du lịch (dưới-phải) | nền paper; `DU LỊCH` navy; `tg-travel` vali cam có máy bay nhỏ; `Bay` navy 12.5 | ngay trong lượt của người đáp (pha `travel`): chạm ô bất kỳ trừ ô đang đứng là bay luôn, không mở sheet; quân đi từng ô theo chiều kim đồng hồ (`teleport` có `how = travel`); `Không bay, ở lại` ở cụm lượt |
 
 Fallback khi tranh lỗi hoặc máy yếu (`data-art="off"`): Nhà tù dùng `tg-jail`, Lễ hội dùng `tg-festival` gold 26 px; Xuất phát và Du lịch vốn là glyph nên không đổi.
 

@@ -123,19 +123,23 @@ func (s *State) liquidationValue(seat int) int {
 }
 
 func (s *State) computeRent(idx, owner int) int {
+	rent := s.baseRent(idx, owner)
+	if Board[idx].Kind == KindStreet && s.Festival == idx {
+		return rent * FestivalMultiplier
+	}
+	return rent
+}
+
+func (s *State) baseRent(idx, owner int) int {
 	tile := Board[idx]
 	switch tile.Kind {
 	case KindStreet:
 		houses := s.Tiles[idx].Houses
 		rent := tile.Rent[houses]
-		base := rent
 		if houses == 0 && tile.Group != "" && s.ownsGroup(owner, tile.Group) {
-			base = rent * 2
+			return rent * 2
 		}
-		if s.Festival == idx {
-			return base * FestivalMultiplier
-		}
-		return base
+		return rent
 	case KindStation:
 		return StationRent[s.ownedCount(owner, GroupStation)]
 	default:
@@ -192,7 +196,7 @@ func (s *State) festivalPick(seat int) int {
 		if t.Owner != seat || Board[idx].Kind != KindStreet {
 			continue
 		}
-		if best < 0 || s.computeRent(idx, seat) > s.computeRent(best, seat) {
+		if best < 0 || s.baseRent(idx, seat) > s.baseRent(best, seat) {
 			best = idx
 		}
 	}

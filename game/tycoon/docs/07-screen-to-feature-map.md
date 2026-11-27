@@ -28,8 +28,8 @@ Bảng tra nhanh khi implement. Store chính `useTycoon` (pattern `useThirteen` 
 | Module | Nội dung | Dùng ở |
 |---|---|---|
 | `constants.gen.ts` | GAME_ID, START_CASH, GO_SALARY, JAIL_FINE, MAX_ROUNDS, TURN_SECONDS, enum phase/move/step — DO NOT EDIT | khắp nơi |
-| `board.gen.json` | 32 ô: name, kind, group, price, rent[4] (đất trống + 3 cấp), houseCost (giá mỗi cấp) | Tile aria-label, S7, S8 |
-| `cards.gen.json` | 24 thẻ: deck, id, text | O2 |
+| `BOARD_DATA` (trong `constants.gen.ts`) | 32 ô: name, kind, group, price, rent[4] (đất trống + 3 cấp), houseCost (giá nâng gốc; giá thật từng cấp = 75% / 100% / 125%, `levelCost`) | Tile aria-label, S7, S8 |
+| `CARD_DATA` (trong `constants.gen.ts`) | 24 thẻ: deck, id, text | O2 |
 | `server-types.ts` | `decodeView` (RangeError nếu sai shape) | wireSession |
 | `money.ts` | `formatMoney`, `worthOf(view, seat)` (chỉ để hiện tổng tài sản live trong S8; S9 dùng số server) | pod, sheet |
 | `replay.ts` | tuần tự steps → hành động UI theo 01 §8, `replayEpoch` | S6 |

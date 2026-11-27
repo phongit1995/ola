@@ -1,12 +1,11 @@
 # 05 — Gameplay: luật v1, bàn 32 ô, thẻ bài, state, protocol
 
-> **Hiện trạng (01/11/2026):** bản chơi với máy vẫn chạy toàn bộ luật ở client (`game/tycoon/logic/engine.ts`, bot ở `logic/bot.ts`). **Server đã có** package `server/internal/game/games/tycoon/` (port 1:1 từ `engine.ts`, đã đăng ký engine, phí `TYCOON_COMMISSION_PERCENT`, BXH dùng nhánh thắng của Tiến Lên) nhưng **client chưa nối**: chưa có màn online nào gửi `joinGame('tycoon')`. Parity Go ↔ TS:
-- `go generate ./internal/game/games/tycoon` **chỉ** sinh `testdata/parity.json` (dữ liệu tĩnh + 3 ván chơi theo seed, mỗi ván tối đa 120 nước + 7 tình huống hiếm: Sinh nhật nhiều con nợ, con nợ/người rút thẻ bỏ cuộc, phạt tù bắt buộc khi thiếu tiền, phá sản chuyển đất thành thắng ngay, chủ ô bỏ cuộc lúc đang được mời mua lại, Sinh nhật thành thắng ngay) — tổng **10 ván / 479 nước**. Chưa sinh `constants.gen.ts` / `board.gen.json` / `cards.gen.json` cho client (§11).
-- Kiểm fixture đã commit: `node game/scripts/tycoon-parity.mjs` (bundle `logic/engine.ts` bằng esbuild, chơi lại từng nước, so steps + mã lỗi + state cuối; exit 1 nếu lệch).
+> **Hiện trạng (15/11/2026):** server `server/internal/game/games/tycoon/` là luật chuẩn (đã đăng ký engine, phí `TYCOON_COMMISSION_PERCENT`, BXH dùng nhánh thắng của Tiến Lên). Client **đã nối online**: `store/useTycoon.ts` gọi `joinGame('tycoon')`; bản chơi với máy chạy `logic/engine.ts` (bản port 1:1 của Go) + bot `logic/bot.ts` trong session giả `practice.ts`. Parity Go ↔ TS:
+- `go generate ./internal/game/games/tycoon` sinh `game/tycoon/logic/constants.gen.ts` (hằng số + `BOARD_DATA` + `CARD_DATA`) và `testdata/parity.json` (3 ván chơi theo seed, mỗi ván tối đa 120 nước + 7 tình huống hiếm: Sinh nhật nhiều con nợ, con nợ/người rút thẻ bỏ cuộc, phạt tù bắt buộc khi thiếu tiền, phá sản chuyển đất thành thắng ngay, chủ ô bỏ cuộc lúc đang được mời mua lại, Sinh nhật thành thắng ngay) — tổng **10 ván / 496 nước** (15/11/2026). Sửa luật/giá chỉ sửa Go rồi sinh lại, không sửa tay `constants.gen.ts`.
+- Kiểm fixture đã commit: `logic/parity.test.ts` (vitest, chơi lại từng nước bằng `engine.ts`, so steps + mã lỗi + state) hoặc `node game/scripts/tycoon-parity.mjs` (bundle `logic/engine.ts` bằng esbuild; exit 1 nếu lệch).
 - Kiểm lớn, không commit file: `cd server && go run ./cmd/tycoongen -stress /tmp/tycoon-stress.json -games 300` rồi `node game/scripts/tycoon-parity.mjs /tmp/tycoon-stress.json` — 305 ván / 75.099 nước (có state sau mỗi nước, ~130 MB). Kết quả 01/11/2026: 0 lệch.
-- Client chưa có `parity.test.ts`; khi nối client thì chuyển phần kiểm này vào vitest (như thirteen).
 
-Server (`server/internal/game/games/tycoon/`) là nguồn chân lý. Client **không mirror luật diễn tiến** (khác cờ tướng): không tự tính ô đích, tiền thuê, thẻ hay kết quả — mọi số đều từ `STATE`. Client chỉ có hai thứ: (1) bảng dữ liệu tĩnh (giá, tiền thuê, tên ô, nội dung thẻ) sinh từ Go bằng codegen `constants.gen.ts` + `board.gen.json` (pattern `thirteengen`); (2) `rules-hint.ts` — hàm `canBuild/canSell(view, seat, tile)` trả `{ok, reason}` chỉ để **enable/disable nút và hiện lý do** trong S7/S8; server validate lại y hệt, parity test so khớp cả dữ liệu tĩnh lẫn `canBuild/canSell` trên fixture.
+Server (`server/internal/game/games/tycoon/`) là nguồn chân lý. Client **không mirror luật diễn tiến** (khác cờ tướng): không tự tính ô đích, tiền thuê, thẻ hay kết quả — mọi số đều từ `STATE`. Ván online, client chỉ dùng hai thứ: (1) bảng dữ liệu tĩnh (giá, tiền thuê, tên ô, nội dung thẻ) sinh từ Go vào `constants.gen.ts` (`BOARD_DATA`, `CARD_DATA`, pattern `thirteengen`); (2) `rules-hint.ts` — hàm `canBuild/canSell(view, seat, tile)` trả `{ok, reason}` chỉ để **enable/disable nút và hiện lý do** trong S7/S8; server validate lại y hệt. `engine.ts` chỉ chạy luật trong bản chơi với máy; parity test bảo đảm nó khớp Go.
 
 ---
 
@@ -18,7 +17,7 @@ Loại ô (`kind`): `go`, `street`, `station`, `chance`, `chest`, `tax`, `jail`,
 
 Đơn vị tiền: triệu (`tr`). 16 ô đất là **16 thành phố Việt Nam**, chia 8 nhóm × 2 thành phố, giá tăng dần theo chiều đi. Mỗi ô đất có **3 cấp nâng**: Cấp 1 Nhà → Cấp 2 Biệt thự → Cấp 3 Khách sạn. Cách tính giá và kết quả mô phỏng ở [09-economy.md](./09-economy.md).
 
-| Idx | Vị trí | Tên | kind | Nhóm | Giá | Thuê đất trống / C1 / C2 / C3 | Giá mỗi cấp |
+| Idx | Vị trí | Tên | kind | Nhóm | Giá | Thuê đất trống / C1 / C2 / C3 | Giá nâng gốc (`houseCost`) |
 |---|---|---|---|---|---|---|---|
 | 0 | góc dưới-trái | Xuất phát | go | — | — | nhận 160 khi đi qua/đáp | — |
 | 1 | cột trái ↑ | Thanh Hóa | street | Nâu | 60 | 6 / 40 / 145 / 320 | 50 |
@@ -53,7 +52,9 @@ Loại ô (`kind`): `go`, `street`, `station`, `chance`, `chest`, `tax`, `jail`,
 | 30 | hàng dưới ← | Hà Nội | street | Xanh đậm | 350 | 35 / 190 / 680 / 1.420 | 200 |
 | 31 | hàng dưới ← | TP. Hồ Chí Minh | street | Xanh đậm | 400 | 40 / 210 / 720 / 1.500 | 200 |
 
-Hằng số: `BOARD_SIZE 32`, `START_CASH 1500`, `GO_SALARY 160`, `JAIL_FINE 50`, `JAIL_TILE 8`, `MAX_HOUSES 3` (cấp tối đa), `HOUSE_SELL_RATIO 0.5`, `MAX_ROUNDS 30`, `TIME_LIMIT_MS 25 phút`, `TAKEOVER_PERCENT 150`, `LEVEL_COST_PERCENT [75, 100, 125]`, `WIN_GROUPS 3`, `FESTIVAL_MULTIPLIER 2`, `TAX_RATE 0.1`, `TURN_SECONDS 30`, `MAX_DOUBLES 3`, `JAIL_MAX_TURNS 3`.
+Cột cuối là `houseCost` của nhóm, **không** phải giá trả mỗi lần nâng: giá cấp 1 / 2 / 3 = 75% / 100% / 125% của nó, làm tròn tới 10 (§4.4; bảng từng ô ở [10 §2b](./10-board-tiles.md#2b-giá-phát-sinh-theo-luật-thành-phố)).
+
+Hằng số (`constants.go`, sinh sang `constants.gen.ts`): `BOARD_SIZE 32`, `START_CASH 1500`, `GO_SALARY 160`, `JAIL_FINE 50`, `JAIL_TILE 8`, `MAX_HOUSES 3` (cấp tối đa), `BIRTHDAY_GIFT 10`, `STATION_RENT [0, 25, 50, 100, 200]`, `MAX_ROUNDS 30`, `TIME_LIMIT_MS 25 phút`, `TAKEOVER_PERCENT 150`, `LEVEL_COST_PERCENT [75, 100, 125]`, `WIN_GROUPS 3`, `FESTIVAL_MULTIPLIER 2`, `TAX_RATE 0.1`, `TURN_SECONDS 30`, `MAX_DOUBLES 3`, `JAIL_MAX_TURNS 3`. Hạ cấp hoàn `levelCost / 2` (không có hằng số tỷ lệ riêng).
 
 Tiền thuê đất **chưa nâng cấp** khi sở hữu **trọn nhóm** (cả 2 thành phố) = ×2. Sân bay: tiền thuê theo số sân bay người chủ sở hữu (1→25, 2→50, 3→100, 4→200). Thành phố đang có Lễ hội: thuê (sau khi đã tính ×2 trọn nhóm hoặc theo cấp) ×2 nữa.
 
@@ -113,7 +114,7 @@ landed:
   tax                              → trả 10% tổng tài sản → manage (hoặc debt)
   chance/chest                     → card (hiện thẻ, áp hiệu ứng; nếu moveTo → quay lại landed ở ô mới)
 manage: BUILD (chỉ ô đang đứng) / SELL_HOUSE bất kỳ số lần → END_TURN
-END_TURN: nếu lượt vừa rồi gieo đôi và chưa vào tù → quay lại roll (lần 2, 3); đôi lần 3 → vào tù, hết lượt.
+END_TURN: nếu lượt vừa rồi gieo đôi, chưa vào tù và chưa đáp Du lịch → quay lại roll (lần 2, 3); đôi lần 3 → vào tù, hết lượt.
 ```
 
 Trong tù (`inJail`): pha `jail` thay cho `roll`: `JAIL_PAY` (trả 50 → roll bình thường), `JAIL_CARD` (dùng thẻ → roll), `JAIL_ROLL` (gieo: đôi → ra tù và đi theo số đó, không gieo lại; không đôi → ở lại, `jailTurns++`, sang manage). Đến lượt thứ 3 trong tù mà vẫn không đôi → bắt buộc trả 50 (tự động, có thể vào `debt`) rồi đi theo số vừa gieo.
@@ -123,7 +124,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 ## 4. Luật chi tiết
 
 ### 4.1 Gieo và di chuyển
-- Hai xúc xắc 1–6 từ rng server. Đôi → sau END_TURN được gieo lần nữa; đôi lần 3 liên tiếp trong cùng lượt → vào tù ngay (không đi).
+- Hai xúc xắc 1–6 từ rng server. Đôi → sau END_TURN được gieo lần nữa; đôi lần 3 liên tiếp trong cùng lượt → vào tù ngay (không đi). Chuỗi đôi bị xoá (`doubles = 0`, không gieo thêm) khi đáp ô Du lịch (dù sau đó bay đi hay ở lại), khi vào tù, và khi ra tù bằng gieo đôi.
 - Đi `sum` ô theo chiều tăng index (thuận kim đồng hồ), mod 32. Đi qua hoặc đáp ô 0 → +160 (không cộng khi bị đưa vào tù bằng thẻ). Vào tù chỉ còn qua thẻ Vào tù (ch09, cm06) và gieo đôi 3 lần.
 
 ### 4.2 Mua đất
@@ -144,7 +145,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 - Sau mỗi lần đổi chủ đất (`BUY`, `TAKEOVER`, nhận đất từ người phá sản) engine kiểm người vừa nhận đất: sở hữu **trọn 3 nhóm màu** (`endReason = groups`) hoặc **toàn bộ thành phố trên một cạnh bàn** (`line`; mỗi cạnh có 4 thành phố = 2 nhóm) hoặc **cả 4 sân bay** (`airports`) → thắng ngay, ván kết thúc. Bot mua ô để chặn (không cần giữ tiền dự phòng) nếu đối thủ có ô đó là thắng ngay, và mua lại ô nếu việc đó giúp chính nó thắng ngay.
 
 ### 4.3d Ô đặc biệt: Lễ hội, Du lịch, Thuế
-- **Lễ hội (ô 16):** đáp vào mà có ít nhất 1 thành phố → pha `festival`. `FESTIVAL {tile}` chọn một thành phố của mình (`not_street` / `not_owner` nếu sai) → `state.festival = tile`, step `festival`. Cả bàn chỉ có **một** Lễ hội: người sau tổ chức thì Lễ hội chuyển sang ô mới. Thuê ô đang có Lễ hội ×`FESTIVAL_MULTIPLIER` (×2). Lễ hội đi theo ô khi ô đổi chủ (mua lại, nhận từ người phá sản); ô về ngân hàng thì Lễ hội mất. `DECLINE` bỏ qua; hết giờ = tự chọn thành phố có tiền thuê cao nhất (`festivalPick`). Bot chọn như hết giờ, bỏ qua nếu Lễ hội đã ở đúng ô đó.
+- **Lễ hội (ô 16):** đáp vào mà có ít nhất 1 thành phố → pha `festival`. `FESTIVAL {tile}` chọn một thành phố của mình (`not_street` / `not_owner` nếu sai) → `state.festival = tile`, step `festival`. Cả bàn chỉ có **một** Lễ hội: người sau tổ chức thì Lễ hội chuyển sang ô mới. Thuê ô đang có Lễ hội ×`FESTIVAL_MULTIPLIER` (×2). Lễ hội đi theo ô khi ô đổi chủ (mua lại, nhận từ người phá sản); ô về ngân hàng thì Lễ hội mất. `DECLINE` bỏ qua; hết giờ = tự chọn thành phố có tiền thuê gốc cao nhất, chưa tính ×2 của Lễ hội (`festivalPick`). Bot chọn như hết giờ, bỏ qua nếu Lễ hội đã ở đúng ô đó.
 - **Du lịch (ô 24):** đáp vào → xoá đôi (không được gieo thêm), step `travel`, chuyển ngay sang pha `travel` trong **cùng lượt** (đổi 14/11/2026, trước đó phải chờ lượt sau): `TRAVEL {tile}` bay tới ô bất kỳ trừ ô đang đứng (`invalid_tile`), đi qua Xuất phát vẫn nhận 160, rồi xử lý ô đáp như thường (mua, trả thuê, mua lại, thẻ, Lễ hội…). `DECLINE` = không bay, ở lại ô Du lịch → pha `manage`. Hết giờ = `DECLINE`. Trường `player.travel` giữ trong state cho tương thích nhưng không còn dùng. Bot chấm điểm từng ô: ô giúp nó thắng ngay > ô chặn đối thủ thắng ngay > ô gom trọn nhóm > ô trống mua được > Lễ hội > ô an toàn; tránh ô có chủ (điểm = −tiền thuê) và ô Thuế.
 - **Thuế (ô 12):** trả ngân hàng `round(10% × tổng tài sản)` (tiền mặt + giá đất + tiền nâng cấp, §4.7). Thiếu tiền → `debt` với chủ nợ ngân hàng.
 
@@ -155,9 +156,10 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 
 ### 4.5 Nợ và phá sản
 - Khi phải trả `amount` mà `cash < amount`: state vào `phase: debt {creditor: seat|-1, amount}`. Người nợ có 30 s để `SELL_HOUSE` nhiều lần rồi `PAY_DEBT`, hoặc `DECLARE_BANKRUPT`.
-- Hết giờ: server tự bán nhà theo thứ tự giá trị giảm dần đến khi đủ; vẫn không đủ → phá sản.
+- Hết giờ (`SETTLE_DEBT`): server tự hạ cấp, ô cấp cao nhất trước (bằng cấp thì ô `houseCost` cao hơn), đến khi đủ rồi trả; vẫn không đủ → phá sản.
 - Nếu `cash + 0.5 × tổng nhà < amount` ngay từ đầu → phá sản ngay (không chờ).
-- Phá sản: `bankrupt[seat] = true`, `bankruptOrder` nối thêm seat. Tiền mặt còn lại + toàn bộ đất (nhà bị bán hết trước, tiền bán gộp vào) chuyển cho **chủ nợ** nếu là người chơi; nếu chủ nợ là ngân hàng (Thuế, thẻ, sửa chữa) thì đất về **vô chủ** (không đấu giá). Quân rời bàn.
+- Phá sản: `bankrupt[seat] = true`, `bankruptOrder` nối thêm seat. Tiền mặt còn lại + toàn bộ đất (nhà bị bán hết trước, tiền bán gộp vào) chuyển cho **chủ nợ** nếu là người chơi còn trong ván; nếu chủ nợ là ngân hàng (Thuế, thẻ, sửa chữa) hoặc đã phá sản/bỏ cuộc thì đất về **vô chủ** (không đấu giá), tiền mất vào ngân hàng. Quân rời bàn.
+- Chủ nợ bỏ cuộc/phá sản trong lúc con nợ đang ở pha `debt` (vd. người rút thẻ Sinh nhật thoát): khoản nợ **vẫn còn**, con nợ vẫn phải `PAY_DEBT`/`SETTLE_DEBT` hoặc phá sản như thường, nhưng tiền trả mất vào ngân hàng (`settleDebt` chỉ cộng cho chủ nợ còn hoạt động).
 - Người phá sản không còn lượt; nếu đang là lượt của họ, chuyển lượt luôn.
 
 ### 4.6 Người chơi rời ván / hết giờ liên tiếp
@@ -169,7 +171,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 |---|---|---|---|
 | Thắng ngay (§4.3c) | người đó thắng (`winner`, `endReason = groups \| line \| airports`) | `win` | người thắng, rồi người còn lại theo tài sản, rồi `bankruptOrder` đảo ngược |
 | Chỉ còn 1 người chưa phá sản (`last`) | người đó thắng | `win` | người thắng, rồi `bankruptOrder` đảo ngược |
-| Hết `MAX_ROUNDS` = 30 vòng (`rounds`, kiểm tra ở END_TURN của người cuối cùng trong vòng) | xếp theo **tổng tài sản** giảm dần | `win` | tài sản giảm dần, hòa tài sản → ít phá sản hơn, rồi seat thấp hơn; người phá sản xếp cuối theo thứ tự phá sản đảo |
+| Hết `MAX_ROUNDS` = 30 vòng (`rounds`, kiểm tra ở END_TURN của người cuối cùng trong vòng) | xếp theo **tổng tài sản** giảm dần | `win` | người còn trong ván xếp theo tài sản giảm dần, hòa tài sản thì seat thấp hơn đứng trên; sau đó người đã phá sản/bỏ cuộc theo `bankruptOrder` đảo ngược (phá sản sau xếp trên) |
 | Hết 25 phút tính từ đầu ván (`time`) | như hết vòng | `win` | như hết vòng. Kết thúc ở **đầu lượt kế tiếp** sau khi hết giờ (không cắt giữa lượt): chỉ tính khi lượt đã chuyển sang seat khác (`isNewTurn`); nộp phạt / dùng thẻ ra tù rồi gieo, hay gieo lại khi ra đôi vẫn là lượt cũ. Bản chơi với máy đếm giờ ở client (`endByTime`); bản online server đếm |
 | 2 người, 1 người quit/forfeit | người còn lại thắng | `forfeit`/`timeout`/`disconnect` | engine quyết |
 | Mọi người còn lại cùng mất kết nối quá hạn (`time`, qua `OnEveryoneLeft`) | như hết vòng, không ai bị tính phá sản | `disconnect` | như hết vòng |
@@ -187,7 +189,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 {
   "players": [
     { "cash": 1500, "pos": 0, "inJail": false, "jailTurns": 0, "jailCards": [],   // [{deck, id}] thẻ ra tù đang giữ
-      "bankrupt": false, "doubles": 0, "quit": false, "travel": false }
+      "bankrupt": false, "doubles": 0, "quit": false, "travel": false }   // travel: giữ cho tương thích, luôn false
   ],                                   // dài = playerCount (2..4)
   "tiles": [ { "owner": -1, "houses": 0 } ],   // 32 phần tử; owner = seat | -1; houses = cấp 0–3
   "turn": 0,                           // seat tới lượt
@@ -216,7 +218,7 @@ Pha `debt` (§4.5) chèn vào bất cứ chỗ nào phải trả tiền mà `cas
 
 ### 5.1 View gửi client (`ViewFor`)
 
-Giống state nhưng **bỏ** `rng`, `chanceDeck`, `chestDeck`; thêm `you`, `chanceLeft`, `chestLeft` (số thẻ còn trong bộ, để UI hiện chồng thẻ). `card` chỉ có khi đang hiện thẻ. Mọi người chơi nhận cùng view trừ `you` — game không có thông tin riêng ngoài rng/bộ thẻ. `ViewFor` với seat ngoài khoảng trả view `you = -1` (dành cho người xem sau này); engine hiện vẫn chặn xem trận Tycoon vì game có `StateViewer` (§9).
+Giống state nhưng **bỏ** `rng`, `chanceDeck`, `chestDeck`; thêm `you`, `chanceLeft`, `chestLeft` (số thẻ còn trong bộ, để UI hiện chồng thẻ). `card` chỉ có khi đang hiện thẻ. Mọi người chơi nhận cùng view trừ `you` — game không có thông tin riêng ngoài rng/bộ thẻ. Người xem nhận `SpectatorView` = view với `you = -1` (`viewFor(s, -1)` trong `view.go`); game có `SpectatorViewer` nên engine cho xem trận Tycoon dù có `StateViewer` (§9).
 
 ## 6. Lệnh MOVE
 
@@ -254,7 +256,7 @@ Thẻ "Sinh nhật" có thể khiến người **không tới lượt** thiếu 
 | `TurnKeeper` | `KeepTurn` = `turn` chưa đổi sau Apply | giữ lượt cả chuỗi pha; đôi → giữ tiếp |
 | `TurnOrder` | `NextTurn` = `state.turn` (game tự tính seat kế tiếp, bỏ qua phá sản/quit; dùng cho §6.1) | như thirteen |
 | `TurnTimer` | 30 s | mỗi MOVE hợp lệ cấp lại 30 s vì engine reset deadline sau Apply |
-| `TimeoutMover` | `MoveOnTimeout`: roll→`ROLL`, jail→`JAIL_ROLL` (lượt 3 tự nộp phạt bên trong luật), decide→`DECLINE`, takeover→`DECLINE`, festival→`FESTIVAL` ô thuê cao nhất, travel→`DECLINE`, card→`CARD_ACK`, manage→`END_TURN`, debt→`SETTLE_DEBT` | engine đếm hết giờ theo **từng pha**, 3 lần liên tiếp không tự bấm → loại. Engine đã sửa (01/11): game có `QuitHandler` và còn ≥ 2 người sau khi loại thì gọi `eliminatePlayer` (ván tiếp tục), không kết thúc cả ván như trước. Một lượt treo máy (gieo → mua/bỏ → kết thúc) là đủ 3 lần |
+| `TimeoutMover` | `MoveOnTimeout`: roll→`ROLL`, jail→`JAIL_ROLL` (lượt 3 tự nộp phạt bên trong luật), decide→`DECLINE`, takeover→`DECLINE`, festival→`FESTIVAL` ô thuê gốc cao nhất (chưa tính ×2 Lễ hội), travel→`DECLINE`, card→`CARD_ACK`, manage→`END_TURN`, debt→`SETTLE_DEBT` | engine đếm hết giờ theo **từng pha**, 3 lần liên tiếp không tự bấm → loại. Engine đã sửa (01/11): game có `QuitHandler` và còn ≥ 2 người sau khi loại thì gọi `eliminatePlayer` (ván tiếp tục), không kết thúc cả ván như trước. Một lượt treo máy (gieo → mua/bỏ → kết thúc) là đủ 3 lần |
 | `TimeoutSkipper` | **không implement** (skip lượt làm hỏng chuỗi pha) | |
 | `TurnSkipHandler` | không cần | |
 | `StateViewer` | `ViewFor` §5.1 | kéo theo chặn spectate (§9) |
@@ -273,7 +275,7 @@ Server nối `steps` cho mỗi Apply (kể cả `MoveOnTimeout`); client replay 
 |---|---|---|
 | `roll` | by, dice[2], double | O1 lăn xúc xắc, badge Đôi |
 | `move` | by, from, to, passedGo | quân nhảy từng ô; passedGo → nháy ô 0 + float +160 |
-| `teleport` | by, from, to | quân bay cung (thẻ moveTo, vào tù) |
+| `teleport` | by, from, to, passedGo, how? (`travel` khi bay Du lịch) | quân đi từng ô (thẻ di chuyển và Du lịch theo chiều kim đồng hồ, vào tù theo chiều gần hơn); không còn bay cung |
 | `land` | by, tile | fill `--ty-landing`, mở sheet nếu decide |
 | `pay` | from (seat\|-1), to (seat\|-1), amount, reason: rent\|tax\|card\|fine\|repair\|birthday\|buy\|build\|sell\|salary\|takeover | đếm số pod, chip bay giữa pod; −1 = ngân hàng (bay từ/đến giữa bàn) |
 | `buy` | by, tile | chấm chủ sở hữu pop |
@@ -297,7 +299,7 @@ Kết nối `joinGame('tycoon')`. Flow phòng/trận giống xiangqi (ROOM_* →
 - `STATE.turn` = seat tới lượt; `deadline` cấp lại sau mỗi MOVE hợp lệ (vì KeepTurn vẫn qua `applyTurn`). Client khóa thao tác khi hết giờ local.
 - `OPPONENT_DISCONNECTED.userId` xác định ai rớt (nhiều người) → O4 ghi tên; `OPPONENT_RECONNECTED {turn, deadline}` đồng bộ lại đồng hồ.
 - `MATCH_OVER.rankings[]` + `expGains[]` dùng cho S9; `kenDelta` theo 11 §1.4 (bàn giao lưu = 0); `winnerId` = hạng 1.
-- **Spectate**: chỉ bàn bật `allowSpectators` ([11 §2](./11-room-settings.md#2-cho-người-khác-xem)). Hiện engine trả `SPECTATE_NOT_SUPPORTED` cho game có `StateViewer` (`spectatable()` trong `engine.go`); cần cho `ViewFor` nhận `playerIdx = -1` là người xem rồi bỏ guard.
+- **Spectate**: chỉ bàn bật `allowSpectators` ([11 §2](./11-room-settings.md#2-cho-người-khác-xem)). Engine chỉ trả `SPECTATE_NOT_SUPPORTED` cho game có `StateViewer` mà không có `SpectatorViewer` (`spectatable()` trong `engine/move.go`); Tycoon có `SpectatorView` (view `you = -1`) nên xem được. Bàn không đặt cờ thì mặc định cho xem khi không có mật khẩu (`spectatorsAllowed` trong `engine/spectate.go`).
 - **BXH S11**: `LEADERBOARD`, xem §9.1. **Lịch sử S10**: `HISTORY`, xem §9.2.
 
 ### 9.1 Bảng xếp hạng và cấp độ
@@ -364,14 +366,14 @@ Bất biến:
 - Không optimistic: bàn/tiền render duy nhất từ view server; `movePending` chặn double-send.
 - `handledMatchIds` dedupe MATCH_FOUND/OVER (cap 64 — pattern caro).
 - `refs.session` guard mọi handler; `exitingMatch` nuốt MATCH_OVER khi chủ động thoát.
-- Dữ liệu tĩnh (tên ô, giá, thuê, thẻ) đọc từ `constants.gen.ts`/`board.gen.json` — không hardcode trong component.
+- Dữ liệu tĩnh (tên ô, giá, thuê, thẻ) đọc từ `constants.gen.ts` (`BOARD_DATA`, `CARD_DATA`, qua `logic/board.ts`) — không hardcode trong component.
 - Text lý do/lỗi từ `helpers/errorText.ts`.
 
 ## 11. Kiểm thử
 
-- Go table-driven: gieo đôi ×3 vào tù, qua Xuất phát (kể cả đáp đúng ô 0; thẻ di chuyển và Du lịch bay qua ô 0 cũng cộng, bị đưa vào tù thì không), tiền thuê từng loại (nhóm trọn ×2, sân bay 1–4, Lễ hội ×2), Thuế 10% tài sản, Du lịch (bay ngay trong lượt, qua Xuất phát nhận lương, DECLINE ở lại, hết giờ = DECLINE), xây chỉ ô đang đứng và không phải ô vừa mua, nợ → bán tự động → phá sản, chuyển đất cho chủ nợ/ngân hàng, `collectEach` với con nợ ngoài lượt (NextTurn tạm), MAX_ROUNDS xếp hạng tài sản + tie-break, DecodeState reject, `MoveOnTimeout` mọi pha, `OnPlayerQuit` giữa pha debt.
-- Codegen: đích là `go generate ./internal/game/games/tycoon` → `game/tycoon/logic/constants.gen.ts` + `board.gen.json` + `cards.gen.json` + `testdata/parity.json`. **Hiện mới sinh `testdata/parity.json`** (đầu file); phần TS làm khi nối client, lúc đó bỏ `board.json` / `cards.json` / hằng số viết tay ở client.
-- E2E: `game/scripts/tycoon-e2e-bots.mjs` — 4 bot (mua nếu đủ tiền, xây khi trọn nhóm, END_TURN) chạy tới khi ván kết thúc (thắng ngay / phá sản / 30 vòng), assert MATCH_OVER có 4 rankings, tổng tiền hệ thống hợp lý; cần `JWT_SECRET` + `TL_USERS` như thirteen.
+- Go table-driven: gieo đôi ×3 vào tù, qua Xuất phát (kể cả đáp đúng ô 0; thẻ di chuyển và Du lịch bay qua ô 0 cũng cộng, bị đưa vào tù thì không), tiền thuê từng loại (nhóm trọn ×2, sân bay 1–4, Lễ hội ×2), Thuế 10% tài sản, Du lịch (bay ngay trong lượt, qua Xuất phát nhận lương, DECLINE ở lại, hết giờ = DECLINE), xây chỉ ô đang đứng, ô vừa mua chỉ tới Nhà (`just_bought`), giá nâng 75/100/125%, mua lại ×1,5, nợ → bán tự động → phá sản, chuyển đất cho chủ nợ/ngân hàng, `collectEach` với con nợ ngoài lượt (NextTurn tạm), MAX_ROUNDS xếp hạng tài sản + tie-break, DecodeState reject, `MoveOnTimeout` mọi pha, `OnPlayerQuit` giữa pha debt.
+- Codegen: `go generate ./internal/game/games/tycoon` → `game/tycoon/logic/constants.gen.ts` (hằng số + bàn + thẻ trong một file) + `testdata/parity.json`. `board.json` / `cards.json` / hằng số viết tay đã xoá; `logic/constants.ts` chỉ còn `LEVEL_NAMES` và re-export bản sinh. `logic/parity.test.ts` chạy fixture trong vitest.
+- E2E: `game/scripts/tycoon-e2e-bots.mjs` — 4 bot (mua khi tiền mặt > 350, không xây, bỏ qua mua lại / Lễ hội / Du lịch, END_TURN) chạy tới khi ván kết thúc (thắng ngay / phá sản / 30 vòng), assert MATCH_OVER có 4 rankings, tổng tiền hệ thống hợp lý; cần `JWT_SECRET` + `TL_USERS` như thirteen.
 - UI: harness `tycoon/mock-ui.html?screen=<tên>&state=<fixture>` + `scripts/tycoon-shots.mjs` (pattern xiangqi).
 
 ## 12. Máy chơi và mức độ (bản chơi với máy)
@@ -382,7 +384,7 @@ Chỗ code khác bảng 12.2:
 - **Dễ** vẫn mua đất hoặc mua lại khi ô đó cho chính nó thắng ngay (bỏ qua thắng ngay là hành động vô lý); không có điều này thì máy Dễ không thắng ván 4 người nào.
 - **Khó, luật:** không mua ô giá trên 280 (nhóm xanh lá, xanh đậm) trừ khi ô đó trọn nhóm, thắng ngay hoặc chặn thắng ngay — mô phỏng cho thấy mua ô đắt làm Khó yếu đi. Mua lại: thắng ngay; trọn nhóm giá ≤ 240 còn ≥ 300; ô giá ≤ 160 còn ≥ 500. Công thức "lợi > 0" ở bảng làm Khó thua Thường nên đã bỏ.
 - **Khó, mô phỏng** (đoạn dưới bảng): chỉ chạy ở Mua lại, Du lịch, Ở tù, Lễ hội (Mua đất và Nâng cấp mô phỏng không lợi hơn luật). Tối đa 100 ván giả mỗi lựa chọn, tổng 200 ván giả mỗi quyết định, mỗi ván 20 lượt; ghế mình đi theo luật Khó, ghế khác theo Thường; RNG xúc xắc và thứ tự bộ thẻ của ván giả rút từ RNG riêng của máy. Chấm điểm = tiền + 0,7 × giá trị đất/nhà, trừ người giàu nhất còn lại, ±10.000 nếu ván giả kết thúc. Du lịch xét 5 ô điểm cao nhất cộng 2 ô đối thủ rẻ nhất còn đủ tiền mua lại.
-- Thời gian trên Mac M-series: Khó mất trung bình ~0,5 ms mỗi nước, p95 ~10 ms, chậm nhất ~32 ms (Du lịch). Máy tầm trung có thể quá 50 ms ở các nước hiếm này; muốn chắc thì chuyển mô phỏng sang Web Worker.
+- Thời gian trên Mac M-series: Khó mất trung bình ~0,5 ms mỗi nước, p95 ~10 ms, chậm nhất ~32 ms (Du lịch). Máy tầm trung có thể quá 50 ms ở các nước hiếm này, nên `practice.ts` chạy `botMove` trong Web Worker (`logic/bot.worker.ts`).
 
 Kết quả đo (1v1, 1.000 ván mỗi cặp, luân phiên đi trước): Khó – Thường **55,9%** (các bộ seed khác 2.000 ván: 57,9–58,5%), Thường – Dễ 76,4%, Khó – Dễ 81,9%. 200 ván 4 người (Dễ, Thường, Khó, Khó) chạy hết, Khó thắng 150, Thường 48, Dễ 2. Vitest mặc định chạy 100 ván Khó – Thường (ngưỡng 55%), 400 ván Thường – Dễ, 100 ván Khó – Dễ, 40 ván 4 người; `TYCOON_BOT_GAMES=1000 npx vitest run tycoon/logic/bot.test.ts` chạy bản đầy đủ với ngưỡng 12.3 (Khó – Thường 55%). Ván 4 người mặc định chỉ chạy 12 ván, kiểm chạy hết và Khó có thắng; bản đầy đủ mới đòi mỗi mức có ván thắng.
 

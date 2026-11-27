@@ -219,7 +219,7 @@ Render trong BoardScreen với `boardMode = 'pregame'`: bàn cờ hiện mờ 40
 
 ## S6. Bàn chơi (BoardScreen, `boardMode='playing'`)
 
-> **UI v3 (concept 20/10/2026).** Ảnh chuẩn duy nhất: [`concept-s6-board-pixel-16bit.png`](./screens/s6-board/concept-s6-board-pixel-16bit.png) (pixel 16-bit, bàn 32 ô). Cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh chỉ để lấy bố cục và phong cách: tên ô, giá, màu nhóm luôn lấy từ `logic/board.json`; bàn khóa tỷ lệ 1:1, dải nhóm chỉ ở mép trong, chỉ một vùng log (xem [README ảnh mẫu](./screens/s6-board/README.md)).
+> **UI v3 (concept 20/10/2026).** Ảnh chuẩn duy nhất: [`concept-s6-board-pixel-16bit.png`](./screens/s6-board/concept-s6-board-pixel-16bit.png) (pixel 16-bit, bàn 32 ô). Cả 4 thẻ người chơi nằm **một hàng dưới bàn**, cụm lượt (đồng hồ, xúc xắc, nút) nằm **giữa bàn**, footer là thanh tiện ích. Ảnh chỉ để lấy bố cục và phong cách: tên ô, giá, màu nhóm luôn lấy từ dữ liệu bàn (`BOARD_DATA` trong `logic/constants.gen.ts`, sinh từ Go); bàn khóa tỷ lệ 1:1, dải nhóm chỉ ở mép trong, chỉ một vùng log (xem [README ảnh mẫu](./screens/s6-board/README.md)).
 >
 > Thay thế UI v2 (17/10): `TurnPanel` và `GameLog` dưới hàng pod được bỏ; nội dung `TurnPanel` chuyển vào giữa bàn (6.3), `GameLog` thu thành dòng sự kiện ở footer (6.5).
 
@@ -268,7 +268,7 @@ Width 360: bàn 336, pod 4 × 79. Width ≥ 480: bàn 456–480, pod đủ rộn
 
 ### 6.2 Bàn — vị trí ô và thông tin trên ô
 
-- Góc cố định (không xoay bàn, mọi người thấy cùng hướng): **dưới-trái** `XUẤT PHÁT` (mũi tên jade chỉ lên + `+160 tr` jade), **trên-trái** `NHÀ TÙ` (tranh pixel phòng giam có Anh Tèo, dải `Thăm tù` ở đáy ô), **trên-phải** `LỄ HỘI` (nền navy đậm, tranh pixel đèn lồng + ngôi sao vàng, `Thuê x2`), **dưới-phải** `DU LỊCH` (vali cam có máy bay, `Bay lượt sau`). Chi tiết ở `style/02-board-tiles.md` §3. Đi **thuận kim đồng hồ** từ Xuất phát: cột trái dưới → trên, hàng trên trái → phải, cột phải trên → dưới, hàng dưới phải → trái. Thứ tự 32 ô ở 05 §1.
+- Góc cố định (không xoay bàn, mọi người thấy cùng hướng): **dưới-trái** `XUẤT PHÁT` (mũi tên jade chỉ lên + `+160 tr` jade), **trên-trái** `NHÀ TÙ` (tranh pixel phòng giam có Anh Tèo, dải `Thăm tù` ở đáy ô), **trên-phải** `LỄ HỘI` (nền navy đậm, tranh pixel đèn lồng + ngôi sao vàng, `Thuê x2`), **dưới-phải** `DU LỊCH` (vali cam có máy bay, `Bay` — đáp vào là bay ngay trong lượt). Chi tiết ở `style/02-board-tiles.md` §3. Đi **thuận kim đồng hồ** từ Xuất phát: cột trái dưới → trên, hàng trên trái → phải, cột phải trên → dưới, hàng dưới phải → trái. Thứ tự 32 ô ở 05 §1.
 - Mỗi ô cạnh, mọi phía, chữ luôn đứng thẳng, đọc từ trên xuống:
   1. **tên ô** (ngắn, `shortName`) sát mép trên ô;
   2. **tranh/glyph** ở giữa: tranh pixel 16-bit địa danh cho ô đất, tranh pixel máy bay cho sân bay, glyph cho Cơ hội/Khí vận/Thuế;
@@ -299,16 +299,16 @@ Cụm lượt (`TurnCluster`, 03 §6), từ trên xuống:
 
 Khoảng cách giữa các hàng 10. Ảnh mẫu đặt chip ở 31–40%, xúc xắc 43–60%, CTA 63–74%, gợi ý 77–81% chiều cao vùng trong.
 
-**Nút theo pha.** Luật có 9 pha (`PHASES` trong `logic/constants.ts`). Hàng 1 luôn giữ nguyên; hàng 2–3 đổi theo pha. Cột cuối là dòng phụ dưới chip lượt khi **người khác** đang ở pha đó.
+**Nút theo pha.** Luật có 9 pha (`PHASES` trong `logic/constants.gen.ts`). Hàng 1 luôn giữ nguyên; hàng 2–3 đổi theo pha. Cột cuối là dòng phụ dưới chip lượt khi **người khác** đang ở pha đó.
 
 | phase | Hàng 2 (của mình) | Hàng 3 (của mình, trái → phải) | Hết giờ (server làm thay) | Dòng phụ khi chờ người khác |
 |---|---|---|---|---|
 | `roll` | 2 xúc xắc (mặt lần gieo trước, hoặc 1–1 lúc đầu ván) | `Gieo xúc xắc` CTA vàng 196 (ic-dice); đang có đôi: `Gieo thêm lượt (đôi!)`. Dòng gợi ý `Thắng ngay` bên dưới | gieo | `đang gieo xúc xắc…` |
 | `jail` | 2 xúc xắc | 3 nút đứng đều 74 × 56: `Gieo đôi` gold (dòng phụ `lần n/3`) · `Nộp phạt` paper (`50 tr`) · `Dùng thẻ` paper (`còn n`, disabled khi 0) | gieo; lượt 3 thì nộp phạt | `đang ở tù, chọn cách ra…` |
 | `decide` | thẻ sổ đỏ thu gọn 246 × 52 thay xúc xắc: dải nhóm trái, tên + tranh nhỏ, `Giá`, `Thuê`, `x/y của bạn`; chạm mở S7 | `Bỏ qua` paper 40% · `Mua {giá} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (không đủ tiền → disabled, `cần …`) | bỏ qua | `đang cân nhắc mua {ô}…` |
-| `takeover` | thẻ sổ đỏ thu gọn 246 × 52: dải nhóm, tên ô, chip chủ cũ (avatar VIP + `@username` + màu ghế), `Cấp n`, `Giá mua lại {x} tr` (= 2 × (giá đất + chi phí các cấp)); chạm mở S7 | `Bỏ qua` paper 40% · `Mua lại {x} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (pha chỉ mở khi đủ tiền, nên không có trạng thái thiếu tiền) | bỏ qua | `đang cân nhắc mua lại {ô} của @username…` |
-| `festival` | dòng `Chọn thành phố của bạn để tổ chức Lễ hội · thuê ×2` + hàng chip thành phố của mình cuộn ngang (tên ngắn + `thuê …` sau ×2; ô đang có Lễ hội viền gold). Trên bàn: thành phố của mình sáng, ô khác mờ 45% | `Bỏ qua` paper 196. **Không có nút vàng ở cụm lượt:** chạm chip hoặc ô → S7 với nút vàng `Tổ chức Lễ hội ở đây` (7.4) | chọn thành phố có tiền thuê cao nhất | `đang chọn nơi tổ chức Lễ hội…` |
-| `travel` | `tg-travel` + dòng `Du lịch — chạm ô bất kỳ để bay tới`. Trên bàn: ô đang đứng mờ 45% | `Không bay, gieo xúc xắc` paper 196. **Không có nút vàng ở cụm lượt:** chạm ô → S7 với nút vàng `Bay tới đây` (7.4) | gieo bình thường | `đang chọn nơi bay tới…` |
+| `takeover` | thẻ sổ đỏ thu gọn 246 × 52: dải nhóm, tên ô, chip chủ cũ (avatar VIP + `@username` + màu ghế), `Cấp n`, `Giá mua lại {x} tr` (= (giá đất + tổng giá các cấp đang có) × 1,5, làm tròn xuống); chạm mở S7 | `Bỏ qua` paper 40% · `Mua lại {x} tr` CTA vàng 60% kèm dòng phụ `còn lại …` (pha chỉ mở khi đủ tiền, nên không có trạng thái thiếu tiền) | bỏ qua | `đang cân nhắc mua lại {ô} của @username…` |
+| `festival` | dòng `Chọn thành phố của bạn để tổ chức Lễ hội · thuê ×2` + hàng chip thành phố của mình cuộn ngang (tên ngắn + `thuê …` sau ×2; ô đang có Lễ hội viền gold). Trên bàn: thành phố của mình sáng, ô khác mờ 45% | `Bỏ qua` paper 196. **Không có nút vàng ở cụm lượt:** chạm chip hoặc ô → S7 với nút vàng `Tổ chức Lễ hội ở đây` (7.4) | chọn thành phố có tiền thuê gốc cao nhất (chưa tính ×2 của Lễ hội) | `đang chọn nơi tổ chức Lễ hội…` |
+| `travel` | `tg-travel` + dòng `Du lịch — chạm ô bất kỳ để bay tới`. Trên bàn: ô đang đứng mờ 45% | `Không bay, ở lại` paper 196 (`DECLINE` → ở lại ô Du lịch, sang `manage`; đáp Du lịch đã xoá lượt gieo đôi nên không gieo thêm). **Không có nút vàng ở cụm lượt:** chạm ô (trừ ô đang đứng) là gửi `TRAVEL` và quân đi luôn, không mở S7 (7.4) | ở lại (`DECLINE`), sang `manage` rồi hết lượt | `đang chọn nơi bay tới…` |
 | `card` | O2 thay **cả** hàng 2 và 3 (xem O2) | `Làm theo thẻ` nằm trong thẻ | làm theo thẻ | thẻ O2 hiện cho mọi người, không có nút; dòng phụ `đang đọc thẻ…` |
 | `manage` | 2 xúc xắc (mặt vừa gieo) | **Không có nút** (đổi 14/11/2026): dòng chờ `Hết lượt, sang người tiếp theo` / `Được đôi, chuẩn bị gieo tiếp`. Client tự gửi `END_TURN` sau 700 ms khi không có hộp nào mở; đáp lại đất mình thì modal nâng cấp tự mở, đóng hoặc nâng xong mới hết lượt. Bỏ công tắc "Tự kết thúc lượt" trong menu | kết thúc lượt | `đang xây nhà…` |
 | `debt` | dòng cảnh báo coral `Bạn đang nợ {x} tr` | không nút; O3 mở giữa màn (nút vàng `Trả {x} tr` nằm trong O3) | tự hạ cấp nhà rồi trả, không đủ thì phá sản | `đang xoay tiền trả nợ…` |
@@ -317,7 +317,7 @@ Hết giờ local (deadline qua): hàng 3 thay bằng dòng `Hết giờ, hệ t
 
 **Không tới lượt mình:** hàng 1 là chip paper `(avatar VIP) Lượt của @username` viền màu ghế người đó, đồng hồ thay bằng 3 chấm "đang nghĩ". Dưới chip là dòng phụ 12.5 navy 70% theo cột cuối bảng trên (lúc replay: `đang di chuyển…`). Hàng 2 chỉ hiện xúc xắc khi người đó gieo (O1). Hàng 3 trống, không có dòng gợi ý. Cụm co lại nhưng vẫn giữ tâm ở 53%.
 
-**Nút vàng:** mỗi lúc chỉ có **một** nút gold trên màn (style/05 §1). Mặc định nó ở hàng 3 cụm lượt. Ngoại lệ: pha `festival`/`travel` nút gold nằm trong S7 (cụm lượt chỉ có nút paper); pha `debt` nút gold nằm trong O3. Sheet mở ở pha có gold trong cụm lượt (ví dụ S7 lúc `decide`) không có nút gold thứ hai.
+**Nút vàng:** mỗi lúc chỉ có **một** nút gold trên màn (style/05 §1). Mặc định nó ở hàng 3 cụm lượt. Ngoại lệ: pha `festival` nút gold nằm trong S7, pha `travel` không có nút gold (chạm ô là bay; cụm lượt chỉ có nút paper); pha `debt` nút gold nằm trong O3. Sheet mở ở pha có gold trong cụm lượt (ví dụ S7 lúc `decide`) không có nút gold thứ hai.
 
 ### 6.4 Header
 
@@ -376,18 +376,18 @@ Bottom sheet 100% × auto (max 66% chiều cao), nền `#fcfdf0`, viền navy 2,
 - Đầu sheet: tranh pixel của ô 108×80 viền navy, bên phải nhãn nhóm (ô màu + tên nhóm in hoa), tên ô 22/800, chip chủ (avatar VIP + tên, viền màu ghế) hoặc `Chưa có chủ · giá 220 tr`.
 - Ô của người khác: khung coral `Đáp vào lúc này phải trả 320 tr`. Ô có Lễ hội: khung vàng `★ Đang có Lễ hội thuê ×2`.
 - Thang tiền thuê 4 thẻ ngang: `Đất trống` (ghi `×2 khi trọn nhóm` / `đã ×2 trọn nhóm`), `Nhà`, `Biệt thự`, `Khách sạn`, mỗi thẻ có icon cấp và số thuê; thẻ đang áp dụng nền vàng nhạt, nổi lên, nhãn `Hiện tại`.
-- Lưới thông tin 2 cột: `Giá đất`, `Nâng mỗi cấp`, `Hạ cấp thu về`, `Mua lại ×2` (ô có chủ, chưa lên Khách sạn).
-- Nút theo ngữ cảnh: `Mua 220 tr` (khi `decide` và là ô đang đứng), `Nâng cấp (150 tr)` / `Hạ cấp (+75 tr)` (khi của mình + pha manage/debt + hợp lệ), disabled kèm lý do 12.5 coral (`Cần sở hữu trọn nhóm — thiếu Huế`, `Nâng đều: Huế mới ở cấp 1`, `Đã đạt cấp tối đa (cấp 3)`).
+- Dòng thông tin dưới thang thuê: `Nâng 40 · 50 · 60 tr` (giá từng cấp, 75% / 100% / 125% giá nâng gốc của nhóm) và `Bán lại nửa giá nâng` (ô chưa chủ hoặc của mình); `Mua lại {x} tr` (ô có chủ, chưa lên Khách sạn; x = (giá đất + tiền đã nâng) × 1,5) hoặc `Khách sạn không mua lại được`; ô chưa chủ thêm `Trọn nhóm thuê ×2`.
+- Nút theo ngữ cảnh: `Mua 220 tr` (khi `decide` và là ô đang đứng), `Nâng cấp (150 tr)` / `Hạ cấp (+75 tr)` (khi của mình + hợp lệ: nâng chỉ ở pha `manage` và ô đang đứng, hạ ở `manage`/`debt`), disabled kèm lý do 12.5 coral theo `rules-hint.ts` (`Đứng vào ô này mới nâng cấp được`, `Vừa mua chỉ xây được Nhà, lần sau đáp lại mới nâng tiếp`, `Đã lên Khách sạn, cấp cao nhất`, `Không đủ tiền nâng cấp`). Không cần trọn nhóm, không có luật nâng/hạ đều (bỏ 14/11/2026).
 
 ### 7.2 Sân bay
 - Bảng 4 hàng số sân bay ↔ tiền thuê; highlight hàng hiện tại.
 
 ### 7.3 Ô đặc biệt
-- Mô tả 1–2 dòng (`Nhận 160 tr mỗi lần đi qua`, `Lượt sau được bay tới bất kỳ ô nào…`, `Đóng 10% tổng tài sản…`), không nút.
+- Mô tả 1–2 dòng (`Nhận 160 tr mỗi lần đi qua`, `Đáp vào là bay ngay tới bất kỳ ô nào trừ ô đang đứng, hoặc ở lại…`, `Đóng 10% tổng tài sản…`), không nút.
 
 ### 7.4 Nút theo pha Mua lại / Lễ hội / Du lịch
 - Pha `festival` của mình: S7 của thành phố mình có nút gold `Tổ chức Lễ hội ở đây` (dòng phụ `thuê … → …`). S7 của ô khác chỉ xem, không nút. Cụm lượt hiện hàng chip thành phố + `Bỏ qua` (6.3).
-- Pha `travel` của mình: chạm ô bất kỳ trên bàn (trừ ô đang đứng) → S7 có nút gold `Bay tới đây` (dòng phụ `+160 tr` nếu bay qua Xuất phát). Cụm lượt hiện hướng dẫn + `Không bay, gieo xúc xắc` (6.3).
+- Pha `travel` của mình: chạm ô bất kỳ trên bàn (trừ ô đang đứng) là bay luôn (`TRAVEL`), không mở S7; quân đi từng ô theo chiều kim đồng hồ, bay qua Xuất phát vẫn nhận 160 tr, ô đáp xử lý như thường. Cụm lượt hiện hướng dẫn + `Không bay, ở lại` (6.3).
 - Pha `takeover` của mình: S7 của ô đó chỉ xem (bảng thuê, chủ cũ, cấp nhà, giá mua lại); nút `Mua lại` ở cụm lượt. Ô Khách sạn và sân bay không vào pha này.
 - Ô đang có Lễ hội: sheet thêm hàng `Đang có Lễ hội · Thuê ×2`; số thuê trên bàn đã gồm ×2.
 
@@ -397,7 +397,7 @@ Bottom sheet 100% × auto (max 66% chiều cao), nền `#fcfdf0`, viền navy 2,
 
 Bottom sheet max 70%.
 - Header: thẻ màu ghế, avatar 48, `Tài sản của bạn` + tổng `2.340 tr` 26/800, dưới là 3 phần `Tiền mặt` · `Đất` · `Nhà`.
-- Danh sách theo nhóm: mỗi nhóm một thẻ trắng có viền trái màu nhóm; đầu thẻ = tên nhóm + chấm sở hữu (tô màu nhóm) + `Trọn nhóm · thuê ×2` hoặc `Thiếu Đà Nẵng`; hàng ô: tranh nhỏ 52×40, tên + tên cấp, 3 ô cấp (2 nhà + khách sạn), nút `−` trắng / `+ 50` vàng 38×38; disabled kèm tooltip lý do.
+- Danh sách theo nhóm: mỗi nhóm một thẻ trắng có viền trái màu nhóm; đầu thẻ = tên nhóm + chấm sở hữu (tô màu nhóm) + `Trọn nhóm · thuê ×2` hoặc `Thiếu Đà Nẵng`; hàng ô: tranh nhỏ 52×40, tên + tên cấp, 3 ô cấp (2 nhà + khách sạn), nút `−` trắng ghi tiền hoàn của cấp đang có (`+20`, nửa giá cấp đó) / `+` vàng ghi giá cấp kế tiếp (`40`, `50`, `60` với nhóm giá nâng gốc 50) 38×38; nâng chỉ bật khi đứng ở ô đó trong pha `manage`; disabled kèm tooltip lý do.
 - Nhóm chưa trọn: viền nhạt, chữ thiếu ô màu xám.
 - Sân bay liệt kê cuối, không nút.
 - Mọi `BUILD/SELL_HOUSE` gửi ngay, sheet không đóng; số cập nhật khi STATE về (có `movePending` theo ô).

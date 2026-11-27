@@ -1,6 +1,6 @@
 # 09 — Kinh tế bàn 32 ô: giá thành phố, 3 cấp nhà, dòng tiền
 
-Chốt ngày 19/10/2026. Dữ liệu nằm ở `logic/board.json`, `logic/cards.json`, `logic/constants.ts`. Luật chi tiết ở [05 §1, §4.4](./05-gameplay-rules-and-protocol.md).
+Chốt ngày 19/10/2026, giá nâng / mua lại cập nhật theo luật 14–15/11/2026. Dữ liệu gốc nằm ở server Go: `board.go` (bàn, thẻ) và `constants.go` (hằng số) trong `server/internal/game/games/tycoon/`; client dùng bản sinh tự động `logic/constants.gen.ts` (`go generate`), không sửa tay. Luật chi tiết ở [05 §1, §4.4](./05-gameplay-rules-and-protocol.md).
 
 ## 1. Quyết định
 
@@ -14,7 +14,7 @@ Chốt ngày 19/10/2026. Dữ liệu nằm ở `logic/board.json`, `logic/cards.
 | Cấp nhà | 3 cấp: Cấp 1 Nhà → Cấp 2 Biệt thự → Cấp 3 Khách sạn |
 | Vốn đầu | 1.500 tr |
 | Qua Xuất phát | **+160 tr** (200 × 32/40 vì bàn ngắn hơn, qua Xuất phát thường hơn) |
-| Mua lại đất | trả thuê xong được mua lại thành phố chưa lên Khách sạn, giá ×2 (đất + nâng cấp), trả cho chủ cũ — chốt 20/10/2026 |
+| Mua lại đất | trả thuê xong được mua lại thành phố chưa lên Khách sạn, giá ×1,5 (đất + tiền đã nâng, làm tròn xuống), trả cho chủ cũ — có từ 20/10/2026 với ×2, hạ xuống ×1,5 ngày 14/11/2026 |
 | Thắng ngay | trọn 3 nhóm màu, trọn 4 thành phố một cạnh bàn, hoặc cả 4 sân bay |
 | Giới hạn ván | 30 vòng hoặc 25 phút (kiểu ZingPlay), sau đó xếp theo tổng tài sản |
 | Ô đặc biệt kiểu ZingPlay | Lễ hội: thuê 1 thành phố ×2 · Du lịch: bay ngay tới ô bất kỳ (từ 14/11/2026; số mô phỏng dưới đây đo với luật cũ bay ở lượt sau) · Thuế 10% tài sản — chốt 20/10/2026, danh sách ô ở [10-board-tiles.md](./10-board-tiles.md) |
@@ -35,18 +35,18 @@ Nguyên nhân gốc: v1 không có trao đổi đất và đấu giá, nên nhó
 
 ## 3. Bảng giá 16 thành phố
 
-Giá tăng dần theo chiều đi. Thuê đất trống ×2 khi sở hữu trọn nhóm.
+Giá tăng dần theo chiều đi. Thuê đất trống ×2 khi sở hữu trọn nhóm. Cột "Giá nâng gốc" là `houseCost` của nhóm; giá trả thật mỗi lần nâng là 75% / 100% / 125% của nó, làm tròn tới 10 (gốc 50 → 40 / 50 / 60, 100 → 80 / 100 / 130, 150 → 110 / 150 / 190, 200 → 150 / 200 / 250). "Vốn tới cấp 3" = giá đất + tổng ba giá nâng thật.
 
-| Ô | Nhóm (màu) | Thành phố | Giá | Giá mỗi cấp | Đất trống | Cấp 1 · Nhà | Cấp 2 · Biệt thự | Cấp 3 · Khách sạn | Vốn tới cấp 3 |
+| Ô | Nhóm (màu) | Thành phố | Giá | Giá nâng gốc | Đất trống | Cấp 1 · Nhà | Cấp 2 · Biệt thự | Cấp 3 · Khách sạn | Vốn tới cấp 3 |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | Bắc Trung Bộ (nâu) | Thanh Hóa | 60 | 50 | 6 | 40 | 145 | 320 | 210 |
 | 3 | Bắc Trung Bộ (nâu) | Vinh | 80 | 50 | 8 | 45 | 160 | 340 | 230 |
 | 5 | Tây Nguyên (xanh trời) | Buôn Ma Thuột | 100 | 50 | 10 | 50 | 180 | 380 | 250 |
 | 7 | Tây Nguyên (xanh trời) | Đà Lạt | 120 | 50 | 12 | 60 | 200 | 400 | 270 |
-| 9 | Miền Tây (hồng) | Cần Thơ | 140 | 100 | 14 | 85 | 310 | 660 | 440 |
-| 11 | Miền Tây (hồng) | Phú Quốc | 160 | 100 | 16 | 90 | 320 | 690 | 460 |
-| 13 | Nam Trung Bộ (cam) | Quy Nhơn | 180 | 100 | 18 | 100 | 340 | 720 | 480 |
-| 15 | Nam Trung Bộ (cam) | Nha Trang | 200 | 100 | 20 | 105 | 360 | 750 | 500 |
+| 9 | Miền Tây (hồng) | Cần Thơ | 140 | 100 | 14 | 85 | 310 | 660 | 450 |
+| 11 | Miền Tây (hồng) | Phú Quốc | 160 | 100 | 16 | 90 | 320 | 690 | 470 |
+| 13 | Nam Trung Bộ (cam) | Quy Nhơn | 180 | 100 | 18 | 100 | 340 | 720 | 490 |
+| 15 | Nam Trung Bộ (cam) | Nha Trang | 200 | 100 | 20 | 105 | 360 | 750 | 510 |
 | 17 | Di sản miền Trung (đỏ) | Hội An | 220 | 150 | 22 | 130 | 470 | 1.000 | 670 |
 | 19 | Di sản miền Trung (đỏ) | Huế | 240 | 150 | 24 | 135 | 490 | 1.040 | 690 |
 | 21 | Duyên hải Bắc Bộ (vàng) | Hạ Long | 260 | 150 | 26 | 145 | 500 | 1.060 | 710 |
@@ -65,13 +65,14 @@ Tổng giá 16 thành phố 3.410 tr; cả bàn (thêm 4 sân bay × 200) 4.210 
 Giá trị trong bảng §3 sinh từ công thức. Thuê các cấp làm tròn (dưới 200 → bội 5, từ 200 → bội 10), số đúng nửa bước thì làm tròn về **bội chẵn** (vd. Vinh cấp 3: 1,5 × 230 = 345 → 340):
 
 - **Giá đất**: 2 thành phố mỗi nhóm, bước 20 tr (nhóm cuối 350/400).
-- **Giá mỗi cấp** theo cạnh bàn: cột trái 50 · hàng trên 100 · cột phải 150 · hàng dưới 200.
+- **Giá nâng gốc** (`houseCost`) theo cạnh bàn: cột trái 50 · hàng trên 100 · cột phải 150 · hàng dưới 200.
 - **Đất trống** = đúng 10% giá, không làm tròn.
-- **Cấp n** = kₙ × (giá đất + n × giá mỗi cấp), với k₁ = 0,35 · k₂ = 0,90 · k₃ = 1,50.
+- **Cấp n** = kₙ × (giá đất + n × giá nâng gốc), với k₁ = 0,35 · k₂ = 0,90 · k₃ = 1,50. Bảng thuê lập theo công thức này khi mỗi cấp còn cùng một giá (19/10/2026) và giữ nguyên số khi đổi sang giá nâng tăng dần.
+- **Giá nâng thật** cấp n = `(houseCost × LEVEL_COST_PERCENT[n−1] + 500) / 1000 × 10` (chia nguyên), `LEVEL_COST_PERCENT = [75, 100, 125]` — từ 14/11/2026.
 
-Vì tính trên tổng vốn đã bỏ ra, mọi nhóm có cùng "tỷ suất": một lần khách đáp vào ô Khách sạn trả khoảng 1,5 lần số vốn chủ đã đổ vào ô đó; ô Nhà trả ~35%, Biệt thự ~90%. Nhóm đắt chỉ khác ở số tuyệt đối — thuê lớn hơn nhưng cũng tốn nhiều vốn hơn và khó gom đủ hơn vì nằm cuối bàn.
+Vì tính trên tổng vốn đã bỏ ra, mọi nhóm có cùng "tỷ suất": một lần khách đáp vào ô Khách sạn trả khoảng 1,5 lần số vốn chủ đã đổ vào ô đó; ô Nhà trả ~35%, Biệt thự ~90%. Với giá nâng tăng dần, Nhà rẻ hơn công thức nên tỷ suất ô Nhà cao hơn chút (vd. Thanh Hóa 40 / 100), Khách sạn gần như không đổi. Nhóm đắt chỉ khác ở số tuyệt đối — thuê lớn hơn nhưng cũng tốn nhiều vốn hơn và khó gom đủ hơn vì nằm cuối bàn.
 
-Hạ cấp hoàn 50% giá mỗi cấp. Thẻ sửa nhà tính theo **tổng số cấp** người rút đang có: ch10 25 tr/cấp, cm12 40 tr/cấp.
+Hạ cấp hoàn 50% giá của đúng cấp bị hạ (Khách sạn hoàn nhiều hơn Nhà). Mua lại = (giá đất + tổng giá các cấp đang có) × `TAKEOVER_PERCENT` 150 / 100, làm tròn xuống; bảng từng ô ở [10 §2b](./10-board-tiles.md#2b-giá-phát-sinh-theo-luật-thành-phố). Thẻ sửa nhà tính theo **tổng số cấp** người rút đang có: ch10 25 tr/cấp, cm12 40 tr/cấp.
 
 Hiển thị cấp trên ô: cấp 1 = 1 nhà xanh ngọc, cấp 2 = 2 nhà, cấp 3 = 1 khách sạn san hô (`MAX_HOUSES = 3`).
 
@@ -118,7 +119,9 @@ Máy Khó thắng Thường ~59%, Thường thắng Dễ ~79%, Khó thắng Dễ
 
 So với 20/10 (online bấm nhanh 6,6 / 8,8 / 11,1 phút), ván dài hơn khoảng 20–35%: thêm 1–2 vòng, quân đi từng ô thay vì bay, hộp Xây Nhà sau mỗi lần mua. Ván 3–4 người chơi chậm có thể chạm giới hạn 25 phút.
 
-## 5. Kết quả mô phỏng — luật hiện tại (mua lại ×2, thắng ngay, Lễ hội / Du lịch / Thuế, 30 vòng / 25 phút)
+## 5. Kết quả mô phỏng — luật 20/10/2026 (mua lại ×2, thắng ngay, Lễ hội / Du lịch / Thuế, 30 vòng / 25 phút)
+
+Số đo ở mục này dùng luật trước 14/11/2026 (mua lại ×2, nâng khi trọn nhóm, Du lịch bay ở lượt sau). Số đo theo luật hiện tại ở mục "Luật nâng nhà tại chỗ" phía trên.
 
 1.000 ván bot mỗi cấu hình, chốt 20/10/2026 sau khi đổi 4 ô (Lễ hội, Du lịch, Thuế, thêm Cơ hội). Thời gian theo giả định ở cuối §5b. Cột "trước" là bàn ngay trước đó (Bãi đỗ xe, Vào tù, 2 tiện ích) cùng luật mua lại / thắng ngay / 4 sân bay. Sau khi dời 4 sân bay khỏi giữa cạnh (6, 10, 22, 26) chạy lại 1.000 ván: số vòng 18 / 16 / 15, online nhanh 6,6 / 8,9 / 10,9 phút, tỉ lệ các cách kết thúc lệch ≤ 2 điểm % — coi như không đổi.
 
@@ -197,11 +200,11 @@ Người treo máy: mỗi thao tác hết 30 giây, một lượt treo ≈ gieo 
 **Đề xuất (chưa làm):**
 
 1. Đổi đồng hồ theo thao tác sang theo pha: gieo 10 s (hết thì tự gieo), mua / mua lại / Lễ hội / Du lịch 15 s, pha `manage` 20 s cho tất cả lần nâng cấp.
-2. Nút "Nâng cấp tối đa" một chạm trong pha `manage`: nâng đều các nhóm trọn tới khi hết tiền hoặc chạm cấp 3 — gom 3 lần bấm thành 1.
+2. Nút "Nâng cấp tối đa" một chạm trong pha `manage`: nâng ô đang đứng tới khi hết tiền hoặc chạm cấp 3 — gom 3 lần bấm thành 1 (đề xuất gốc là nâng đều các nhóm trọn; từ 14/11/2026 chỉ nâng được ô đang đứng).
 3. Tuỳ chọn tự gieo khi tới lượt.
 4. Bản online ghi log thời gian từng thao tác của người thật để thay các giả định ở §5b.
 
-## 5d. Rà soát giá với luật hiện tại (20/10/2026)
+## 5d. Rà soát giá với luật 20/10/2026
 
 1.000 ván bot mỗi cấu hình, luật đầy đủ (mua lại ×2, Lễ hội, Du lịch, Thuế, thắng ngay). Kết luận: **giữ nguyên bảng giá §3**.
 
@@ -225,7 +228,7 @@ Nhận xét:
 - **Lần trả lớn nhất** = Khách sạn TP. HCM 1.500 tr (bằng vốn đầu). Có Lễ hội thì tới 3.000 tr — một lần đáp là phá sản, nhưng Lễ hội hiếm khi trúng (≤ 0,9 lần thu / ván) nên chấp nhận như một khoảnh khắc kịch tính kiểu ZingPlay. Nếu thấy quá gắt: giới hạn Lễ hội chỉ cho ô dưới cấp 3, hoặc Lễ hội ×1,5.
 - **Thuế 10%** ~190 tr / lần, hiếm khi làm phá sản — vừa phải.
 - **Sân bay 200 tr** là khoản đầu tư kém (thu 0,28 vốn) nhưng giữ vai trò chặn / dọa thắng 4 sân bay; không cần đổi.
-- **Mua lại ×2** chuyển ~1.100 tr / ván 4 người — động lực chính phá thế kẹt, giữ nguyên.
+- **Mua lại ×2** chuyển ~1.100 tr / ván 4 người — động lực chính phá thế kẹt. Ngày 14/11/2026 hạ xuống ×1,5 (số đo ở mục "Luật nâng nhà tại chỗ").
 
 ## 6. Các phương án đã thử
 
@@ -257,12 +260,12 @@ Cùng bàn 32 ô, 4 người, 20 vòng; chỉ đổi hệ số tiền thuê (k�
 | Lần thuê lớn nhất (trung vị) | — | ≥ 300 tr |
 | Hạng 1 hơn hạng 2 (trung vị) | — | > 25% |
 
-Sửa giá trong `board.json` mà test đỏ nghĩa là cân bằng đã lệch khỏi bảng §5 — chạy lại mô phỏng trước khi nới dải.
+Sửa giá trong `board.go` (rồi `go generate` sinh lại `logic/constants.gen.ts`) mà test đỏ nghĩa là cân bằng đã lệch khỏi bảng §5 — chạy lại mô phỏng trước khi nới dải.
 
 ## 8. Giới hạn
 
 - Bot mua đất khi mua xong vẫn còn ≥ 120 tr và nâng cấp khi còn ≥ 240 tr; người thật có thể giữ tiền hoặc mạo hiểm hơn.
 - Bot mua lại đất chỉ khi gom trọn nhóm (còn ≥ 120 tr) hoặc phá nhóm trọn của đối thủ (còn ≥ 360 tr); người thật mua lại nhiều hơn thì ván còn ngắn hơn.
-- Bot tổ chức Lễ hội ở thành phố đang có tiền thuê cao nhất; khi Du lịch, bot bay tới ô giúp nó thắng ngay, rồi ô chặn đối thủ thắng ngay, ô gom trọn nhóm, ô trống mua được, tránh ô có chủ và ô Thuế. Người thật chọn kém hơn thì Du lịch ít tác dụng hơn mô phỏng.
+- Bot tổ chức Lễ hội ở thành phố có tiền thuê gốc cao nhất (chưa tính ×2 của Lễ hội, `festivalPick`); khi Du lịch, bot bay tới ô giúp nó thắng ngay, rồi ô chặn đối thủ thắng ngay, ô gom trọn nhóm, ô trống mua được, tránh ô có chủ và ô Thuế. Người thật chọn kém hơn thì Du lịch ít tác dụng hơn mô phỏng.
 - v1 không có trao đổi đất, đấu giá, thế chấp — nếu thêm ở v2 phải mô phỏng lại (trao đổi làm gom nhóm dễ hơn nhiều).
 - Thời gian online là ước lượng theo giả định §5b, chưa đo người thật; thời gian chờ và đề xuất rút ngắn ở §5c.

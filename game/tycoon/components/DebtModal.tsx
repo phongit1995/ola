@@ -13,13 +13,15 @@ import { useDialogFocus } from './useDialogFocus';
 import { useTycoon, type NoticeState } from '../store/useTycoon';
 
 export function DebtModal() {
-  const { view, you, cash, movePending, replaying, timerLeftMs, sendMove, showNotice, closeNotice } = useTycoon(
+  const { view, you, cash, movePending, replaying, turnExpired, deadline, timerLeftMs, sendMove, showNotice, closeNotice } = useTycoon(
     useShallow((s) => ({
       view: s.view,
       you: s.you,
       cash: s.cash,
       movePending: s.movePending,
       replaying: s.replaying,
+      turnExpired: s.turnExpired,
+      deadline: s.deadline,
       timerLeftMs: s.timerLeftMs,
       sendMove: s.sendMove,
       showNotice: s.showNotice,
@@ -40,7 +42,7 @@ export function DebtModal() {
   );
   if (!view || !debt) return null;
   const myCash = cash[you] ?? view.players[you].cash;
-  const busy = movePending || replaying;
+  const busy = movePending || replaying || turnExpired;
   const houses = view.tiles.map((t, idx) => ({ idx, ...t })).filter((t) => t.owner === you && t.houses > 0);
   const liquidation = houses.reduce((sum, t) => sum + housesRefund(t.idx, t.houses), 0);
   const canPay = myCash >= debt.amount;
@@ -56,7 +58,7 @@ export function DebtModal() {
       kind: 'confirm',
       tone: 'danger',
       title: 'Tuyên bố phá sản',
-      body: 'Toàn bộ tài sản sẽ chuyển cho chủ nợ và bạn rời cuộc chơi. Chắc chứ?',
+      body: debt.creditor >= 0 ? 'Toàn bộ đất sẽ chuyển cho chủ nợ và bạn rời cuộc chơi. Chắc chứ?' : 'Toàn bộ đất sẽ trả về ngân hàng và bạn rời cuộc chơi. Chắc chứ?',
       okLabel: 'Phá sản',
       onOk: () => sendMove({ type: 'DECLARE_BANKRUPT' }),
     };
@@ -73,10 +75,12 @@ export function DebtModal() {
             <span className="ui-kicker">Thiếu tiền · trả</span>
             <SeatTag seat={debt.creditor} />
           </span>
-          <span className={`ty-debt-clock ${seconds <= URGENT_SECONDS ? 'ty-debt-clock-late' : ''}`} role="timer" aria-label={`Còn ${seconds} giây`}>
-            <TurnRing leftMs={timerLeftMs} />
-            <b>{seconds}</b>
-          </span>
+          {deadline > 0 ? (
+            <span className={`ty-debt-clock ${seconds <= URGENT_SECONDS ? 'ty-debt-clock-late' : ''}`} role="timer" aria-label={`Còn ${seconds} giây`}>
+              <TurnRing leftMs={timerLeftMs} />
+              <b>{seconds}</b>
+            </span>
+          ) : null}
         </header>
         <h2 id={titleId} className="ty-debt-amount">
           <MoneyBadge amount={debt.amount} />

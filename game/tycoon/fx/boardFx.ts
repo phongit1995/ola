@@ -5,7 +5,7 @@ import { tileCenter } from '../helpers/boardGeometry';
 import { cubeTransform } from '../helpers/dice';
 import { playSound } from '../audio';
 import { coinFlight, coinFountain, confettiBurst, confettiRain, dust, ring, shards, sparks } from './particles';
-import { animate, boardCenter, boardUnit, byId, centerOf, pawnEl, pawnFoot, podEl, reducedMotion, scaled, seatPoint, sleep, tileEl, tilePoint, type Point } from './runtime';
+import { animate, boardCenter, boardUnit, byId, centerOf, claim, hold, pawnEl, pawnFoot, podEl, reducedMotion, scaled, seatPoint, sleep, tileEl, tilePoint, type Point } from './runtime';
 import charUrls from './charArt';
 import { levelArt } from '../components/art';
 import { MAX_HOUSES } from '../logic/constants';
@@ -37,10 +37,16 @@ function vignette(tint: string, opacity: number, duration: number): void {
 
 async function sweepBanner(text: string, tone: 'gold' | 'danger', duration: number): Promise<void> {
   const el = byId('ty-s6-banner');
-  if (!el || reducedMotion()) return;
+  if (!el) return;
+  const owns = claim(el);
   el.className = `ty-s6-banner ty-s6-banner-${tone}`;
   el.textContent = text;
   el.hidden = false;
+  if (reducedMotion()) {
+    await hold(duration * 0.7);
+    if (owns()) el.hidden = true;
+    return;
+  }
   await animate(
     el,
     [
@@ -52,12 +58,13 @@ async function sweepBanner(text: string, tone: 'gold' | 'danger', duration: numb
     ],
     { duration, easing: 'cubic-bezier(.3,.8,.3,1)' },
   );
-  el.hidden = true;
+  if (owns()) el.hidden = true;
 }
 
 function popBust(pose: keyof typeof charUrls, seat: number, duration = 900): void {
   const el = byId('ty-s6-bust') as HTMLImageElement | null;
   if (!el || reducedMotion()) return;
+  const owns = claim(el);
   const at = seatPoint(seat);
   el.src = charUrls[pose];
   el.style.setProperty('--seat', seat >= 0 ? seatColor(seat) : 'var(--ty-navy)');
@@ -75,7 +82,7 @@ function popBust(pose: keyof typeof charUrls, seat: number, duration = 900): voi
     ],
     { duration, easing: 'ease-out' },
   ).then(() => {
-    el.hidden = true;
+    if (owns()) el.hidden = true;
   });
 }
 
@@ -265,7 +272,11 @@ export async function walkPawn({ seat, from, count, positions, bankrupt, turn, c
   };
   requestAnimationFrame(watch);
   await Promise.all([moving, hopping, shadowing].map((item) => item.finished.catch(() => undefined)));
-  if (!alive()) return;
+  if (!alive()) {
+    moving.cancel();
+    setMoving(pawn, false);
+    return;
+  }
   commit();
   moving.cancel();
   dust(pawnFoot(seat), 4);
@@ -281,7 +292,7 @@ export function landOnTile(tile: number, by: number, owner: number): void {
   const el = tileEl(tile);
   playSound('land');
   ring(tilePoint(tile), boardUnit() * 12);
-  animate(el, [{ transform: 'scale(1)' }, { transform: 'scale(1.2)', offset: 0.4 }, { transform: 'scale(.97)', offset: 0.75 }, { transform: 'scale(1)' }], { duration: 300, easing: 'ease-out' });
+  animate(el, [{ scale: '1', zIndex: 8 }, { scale: '1.2', zIndex: 8, offset: 0.4 }, { scale: '.97', zIndex: 8, offset: 0.75 }, { scale: '1', zIndex: 8 }], { duration: 300, easing: 'ease-out' });
   setMoving(pawnEl(by), false);
   if (owner >= 0 && owner !== by) pulseSeat(owner, seatColor(owner));
 }
@@ -296,11 +307,12 @@ export interface PayFx {
   tile?: number;
   debit: () => void;
   credit: () => void;
+  alive: () => boolean;
 }
 
 const POSE_FOR_REASON = new Set(['tax', 'fine', 'repair']);
 
-export async function payMoney({ from, to, amount, reason, tile, debit, credit }: PayFx): Promise<void> {
+export async function payMoney({ from, to, amount, reason, tile, debit, credit, alive }: PayFx): Promise<void> {
   const big = amount >= 500;
   const start = from >= 0 ? seatPoint(from) : reason === 'salary' ? tilePoint(0) : tile != null ? tilePoint(tile) : boardCenter();
   const end = to >= 0 ? seatPoint(to) : tile != null ? tilePoint(tile) : boardCenter();
@@ -309,6 +321,7 @@ export async function payMoney({ from, to, amount, reason, tile, debit, credit }
     ring(start, boardUnit() * 13);
     animate(tileEl(0), [{ filter: 'brightness(1)' }, { filter: 'brightness(1.3) saturate(1.4)', offset: 0.3 }, { filter: 'brightness(1)' }], { duration: 520 });
     await sleep(140);
+    if (!alive()) return;
   }
   coinFlight(start, end, Math.min(12, 5 + Math.floor(amount / 60)));
   playSound('coin');
@@ -316,14 +329,15 @@ export async function payMoney({ from, to, amount, reason, tile, debit, credit }
   setTimeout(() => clearInterval(clink), 480);
   if (from >= 0) {
     debit();
-    animate(podEl(from), [-3, 3, -3, 2, -1, 0].map((px) => ({ transform: `translateX(${px}px)` })), { duration: 260, easing: 'linear' });
+    animate(podEl(from), [-3, 3, -3, 2, -1, 0].map((px) => ({ translate: `${px}px 0` })), { duration: 260, easing: 'linear' });
     if (big) sparks(seatPoint(from), 8, '#E4573D');
   }
   if (reason && POSE_FOR_REASON.has(reason)) popBust('ngan-point', from >= 0 ? from : to, 800);
   await sleep(330);
+  if (!alive()) return;
   if (to >= 0) {
     credit();
-    animate(podEl(to), [{ transform: 'translateY(0)' }, { transform: 'translateY(-5px) scale(1.04)', offset: 0.4 }, { transform: 'translateY(0)' }], { duration: 300, easing: 'ease-out' });
+    animate(podEl(to), [{ translate: '0 0', scale: '1' }, { translate: '0 -5px', scale: '1.04', offset: 0.4 }, { translate: '0 0', scale: '1' }], { duration: 300, easing: 'ease-out' });
   } else if (from < 0) {
     credit();
   }
@@ -537,7 +551,7 @@ export async function celebrateFestival(tile: number): Promise<void> {
     }, delay);
   });
   confettiBurst(at, 16, ['#FFD34D', '#E4573D', '#FFFFFF']);
-  animate(tileEl(tile), [{ transform: 'scale(1)' }, { transform: 'scale(1.3)', offset: 0.35 }, { transform: 'scale(1)' }], { duration: 480, easing: 'cubic-bezier(.3,1.5,.5,1)' });
+  animate(tileEl(tile), [{ scale: '1', zIndex: 8 }, { scale: '1.3', zIndex: 8, offset: 0.35 }, { scale: '1', zIndex: 8 }], { duration: 480, easing: 'cubic-bezier(.3,1.5,.5,1)' });
   await sleep(520);
 }
 
@@ -554,7 +568,7 @@ function deckEl(deck: 'chance' | 'chest'): HTMLElement | null {
 
 export async function shakeDeck(deck: 'chance' | 'chest'): Promise<void> {
   playSound('card');
-  await animate(deckEl(deck), [-2, 2, -2, 2, 0].map((deg) => ({ transform: `rotate(${deg}deg)` })), { duration: 200, easing: 'linear' });
+  await animate(deckEl(deck), [-2, 2, -2, 2, 0].map((deg) => ({ rotate: `${deg}deg` })), { duration: 200, easing: 'linear' });
 }
 
 export async function flyCardIn(deck: 'chance' | 'chest'): Promise<void> {
@@ -594,18 +608,24 @@ export async function flyCardBack(deck: 'chance' | 'chest'): Promise<void> {
 
 // --- Tù, phá sản ---
 
-export async function jailDoorClose(seat: number): Promise<void> {
+function rattleBars(): Promise<void> {
+  return animate(byId('ty-s6-bars'), [0, 1, 2, 3, 4].map((i) => ({ translate: i === 4 ? '0 0' : `${i % 2 ? -1.5 : 1.5}px 0` })), { duration: 220, easing: 'linear' });
+}
+
+export async function jailDoorClose(seat: number, alreadyClosed: boolean): Promise<void> {
   playSound('bars');
-  await animate(byId('ty-s6-bars'), [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1.06)', offset: 0.7 }, { transform: 'scaleY(1)' }], { duration: 260, easing: 'cubic-bezier(.6,0,.9,.6)' });
+  if (alreadyClosed) await rattleBars();
+  else await animate(byId('ty-s6-bars'), [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1.06)', offset: 0.7 }, { transform: 'scaleY(1)' }], { duration: 260, easing: 'cubic-bezier(.6,0,.9,.6)' });
   shakeBoard(boardUnit() * 0.7);
   dust(tilePoint(JAIL_TILE), 8);
   popBust('teo-sad', seat, 900);
   await sleep(320);
 }
 
-export async function jailDoorOpen(): Promise<void> {
+export async function jailDoorOpen(othersInside: boolean): Promise<void> {
   playSound('pop');
-  await animate(byId('ty-s6-bars'), [{ transform: 'scaleY(1)' }, { transform: 'scaleY(0)' }], { duration: 240, easing: 'ease-in' });
+  if (othersInside) await rattleBars();
+  else await animate(byId('ty-s6-bars'), [{ transform: 'scaleY(1)' }, { transform: 'scaleY(0)' }], { duration: 240, easing: 'ease-in' });
 }
 
 export async function bankruptSeat(seat: number, name: string, tiles: number[]): Promise<void> {
@@ -616,7 +636,7 @@ export async function bankruptSeat(seat: number, name: string, tiles: number[]):
   vignette('#1F2A44', 0.34, 1100);
   shakeBoard(unit * 0.9);
   shards(seatPoint(seat), 12, seatColor(seat));
-  animate(pod, [-5, 5, -4, 4, -2, 0].map((px) => ({ transform: `translateX(${px}px)` })), { duration: 340, easing: 'linear' });
+  animate(pod, [-5, 5, -4, 4, -2, 0].map((px) => ({ translate: `${px}px 0` })), { duration: 340, easing: 'linear' });
   animate(pod?.querySelector('[data-crack]'), [{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards' });
   void sweepBanner(`${name.toUpperCase()} PHÁ SẢN`, 'danger', 1200);
   popBust('loc-sad', seat, 1100);
@@ -653,6 +673,11 @@ export function flipRound(final: boolean): void {
   animate(byId('ty-s6-board'), [0, 1, 2, 3, 4, 5, 6].map((i) => ({ boxShadow: i % 2 ? '0 0 0 5px #FFD34D' : '0 0 0 0 #FFD34D' })), { duration: 1000 });
 }
 
+export function markTurn(seat: number): void {
+  if (seat < 0) return;
+  pulseSeat(seat, seatColor(seat), 620);
+}
+
 export interface TurnBanner {
   seat: number;
   mine: boolean;
@@ -686,14 +711,16 @@ export async function showTurnBanner({ seat, mine, name, avatar, tip }: TurnBann
   }
   el.append(copy);
   el.hidden = false;
+  const owns = claim(el);
   if (reducedMotion()) {
-    await sleep(mine ? 900 : 500);
-    el.hidden = true;
+    if (mine) playSound('turn');
+    await hold(mine ? 1100 : 700);
+    if (owns()) el.hidden = true;
     return;
   }
   if (mine) {
     playSound('turn');
-    animate(podEl(seat), [{ boxShadow: '0 0 0 0 #FFD34D' }, { boxShadow: '0 0 0 8px #FFD34D', offset: 0.35 }, { boxShadow: '0 0 0 2px #1F2A44' }], { duration: 760, easing: 'ease-out' });
+    animate(podEl(seat), [{ boxShadow: '0 0 0 0 #FFD34D' }, { boxShadow: '0 0 0 8px #FFD34D', offset: 0.35 }], { duration: 760, easing: 'ease-out' });
   }
   animate(img, [{ transform: 'scale(.4) rotate(-20deg)' }, { transform: 'scale(1.12) rotate(4deg)', offset: 0.6 }, { transform: 'scale(1) rotate(0)' }], { duration: 360, delay: 110, easing: 'ease-out', fill: 'backwards' });
   await animate(
@@ -706,7 +733,7 @@ export async function showTurnBanner({ seat, mine, name, avatar, tip }: TurnBann
     ],
     { duration: mine ? 1250 : 800 },
   );
-  el.hidden = true;
+  if (owns()) el.hidden = true;
 }
 
 export function celebrateResult(won: boolean, winnerSeat: number): void {

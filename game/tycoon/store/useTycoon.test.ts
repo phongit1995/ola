@@ -43,7 +43,7 @@ vi.mock('../fx/boardFx', () =>
         walk.commit();
         return Promise.resolve();
       }],
-      ...['clearMovingPawns', 'rollDice', 'revealDiceTotal', 'policeWhistle', 'landOnTile', 'payMoney', 'stampDeed', 'tileCallout', 'buildHouse', 'sellHouse', 'celebrateFestival', 'travelWiggle', 'shakeDeck', 'flyCardIn', 'flyCardBack', 'jailDoorClose', 'jailDoorOpen', 'bankruptSeat', 'debtAlarm', 'flipRound', 'showTurnBanner', 'celebrateResult', 'winBanner'].map((name) => [name, () => Promise.resolve()]),
+      ...['clearMovingPawns', 'rollDice', 'revealDiceTotal', 'policeWhistle', 'landOnTile', 'payMoney', 'stampDeed', 'tileCallout', 'buildHouse', 'sellHouse', 'celebrateFestival', 'travelWiggle', 'shakeDeck', 'flyCardIn', 'flyCardBack', 'jailDoorClose', 'jailDoorOpen', 'bankruptSeat', 'debtAlarm', 'flipRound', 'showTurnBanner', 'markTurn', 'celebrateResult', 'winBanner'].map((name) => [name, () => Promise.resolve()]),
     ],
   ),
 );
@@ -247,6 +247,34 @@ describe('useTycoon online session', () => {
     const result = useTycoon.getState().result!;
     expect(result.kenDelta).toBe(-1000);
     expect(result.rows.map((row) => row.kenDelta)).toEqual([1850, -1000, -1000]);
+  });
+
+  it('shows an aborted match as cancelled instead of a winner', async () => {
+    await connect();
+    const state = startOn(1);
+    await startMatch(state, Date.now() + 30_000, 500);
+    emit('onMatchOver', { matchId: currentMatch, reason: 'aborted', state: view(state, 0), bet: 500 } satisfies MatchOverData<TycoonView>);
+    await vi.waitFor(() => expect(useTycoon.getState().result).not.toBeNull());
+    const result = useTycoon.getState().result!;
+    expect(result.aborted).toBe(true);
+    expect(result.myPlace).toBe(0);
+    expect(result.reasonText).toContain('hoàn');
+    expect(bridgeCalls.find(([name]) => name === 'gameOver')?.[1][0]).toMatchObject({ won: false });
+  });
+
+  it('ignores forfeit once the match is over and leaves the room when exiting', async () => {
+    await connect();
+    emit('onRoomState', { roomId: 'r1', ownerId: 'p2', youId: 'me', bet: 0, members: [] });
+    const state = startOn(1);
+    await startMatch(state);
+    const over = { ...state, finished: true, winner: 1, endReason: 'rounds' as const };
+    emit('onMatchOver', { matchId: currentMatch, reason: 'win', state: view(over, 0), rankings: [{ userId: 'p2', place: 1 }, { userId: 'me', place: 2 }, { userId: 'p3', place: 3 }] } satisfies MatchOverData<TycoonView>);
+    useTycoon.getState().forfeitMatch();
+    expect(useTycoon.getState().notice).toBeNull();
+    useTycoon.getState().exitMatch();
+    expect(calls('forfeit')).toHaveLength(0);
+    expect(calls('leaveRoom')).toEqual([['r1']]);
+    expect(useTycoon.getState().boardMode).toBe('idle');
   });
 
   it('asks the host for attention on chat from others only', async () => {

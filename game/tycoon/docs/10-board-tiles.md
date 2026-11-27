@@ -1,6 +1,6 @@
 # Cờ Tỷ Phú — danh sách ô trên bàn
 
-Ghi chú nhanh bàn hiện tại (20/10/2026). Nguồn dữ liệu: `logic/board.json`, `logic/cards.json`. Luật chi tiết: [05-gameplay-rules-and-protocol.md](./05-gameplay-rules-and-protocol.md); giá và cân bằng: [09-economy.md](./09-economy.md).
+Ghi chú nhanh bàn hiện tại (20/10/2026, giá nâng / mua lại cập nhật theo luật 15/11/2026). Nguồn dữ liệu: `Board`, `Cards` trong `server/internal/game/games/tycoon/board.go`, sinh sang client thành `BOARD_DATA`, `CARD_DATA` trong `logic/constants.gen.ts`. Luật chi tiết: [05-gameplay-rules-and-protocol.md](./05-gameplay-rules-and-protocol.md); giá và cân bằng: [09-economy.md](./09-economy.md).
 
 ## 1. Tổng quan
 
@@ -21,9 +21,9 @@ Tổng: 16 + 4 + 4 + 3 + 1 + 4 = 32.
 
 ## 2. Toàn bộ 32 ô
 
-Tiền thuê thành phố theo cấp: đất trống / Nhà / Biệt thự / Khách sạn (đơn vị tr). Đất trống mà chủ sở hữu trọn nhóm thì thuê ×2; ô đang có Lễ hội thì ×2 thêm.
+Tiền thuê thành phố theo cấp: đất trống / Nhà / Biệt thự / Khách sạn (đơn vị tr). Đất trống mà chủ sở hữu trọn nhóm thì thuê ×2; ô đang có Lễ hội thì ×2 thêm. Cột cuối là giá nâng gốc của nhóm (`houseCost`), không phải giá trả mỗi lần nâng: giá thật của từng cấp ở §2b.
 
-| # | Cạnh | Ô | Loại | Nhóm | Giá | Thuê | Giá mỗi cấp |
+| # | Cạnh | Ô | Loại | Nhóm | Giá | Thuê | Giá nâng gốc |
 |---|---|---|---|---|---|---|---|
 | 0 | góc dưới-trái | Xuất phát | góc | — | — | đi qua hoặc đáp vào nhận 160 | — |
 | 1 | cột trái ↑ | Thanh Hóa | thành phố | Bắc Trung Bộ (nâu) | 60 | 6 / 40 / 145 / 320 | 50 |
@@ -60,26 +60,32 @@ Tiền thuê thành phố theo cấp: đất trống / Nhà / Biệt thự / Kh�
 
 ## 2b. Giá phát sinh theo luật (thành phố)
 
-Tính từ bảng §2, đơn vị tr. **Trọn nhóm** = đất trống khi chủ có cả 2 ô (×2). **Mua lại** = 2 × (giá đất + cấp × giá mỗi cấp), trả cho chủ cũ; ô Khách sạn không mua lại được. **Hạ cấp** hoàn nửa giá mỗi cấp. **Lễ hội** = thuê ×2 thêm: cột đầu là đất trống trọn nhóm (×4 thuê gốc), các cột sau theo cấp (cấp 1–3 chỉ có khi đã trọn nhóm).
+Tính từ bảng §2 theo công thức trong `rules.go`, đơn vị tr.
 
-| # | Thành phố | Trọn nhóm (đất trống) | Mua lại: đất trống / Nhà / Biệt thự | Hạ cấp hoàn / cấp | Có Lễ hội: trống trọn nhóm / Nhà / Biệt thự / Khách sạn |
-|---|---|---|---|---|---|
-| 1 | Thanh Hóa | 12 | 120 / 220 / 320 | 25 | 24 / 80 / 290 / 640 |
-| 3 | Vinh | 16 | 160 / 260 / 360 | 25 | 32 / 90 / 320 / 680 |
-| 5 | Buôn Ma Thuột | 20 | 200 / 300 / 400 | 25 | 40 / 100 / 360 / 760 |
-| 7 | Đà Lạt | 24 | 240 / 340 / 440 | 25 | 48 / 120 / 400 / 800 |
-| 9 | Cần Thơ | 28 | 280 / 480 / 680 | 50 | 56 / 170 / 620 / 1.320 |
-| 11 | Phú Quốc | 32 | 320 / 520 / 720 | 50 | 64 / 180 / 640 / 1.380 |
-| 13 | Quy Nhơn | 36 | 360 / 560 / 760 | 50 | 72 / 200 / 680 / 1.440 |
-| 15 | Nha Trang | 40 | 400 / 600 / 800 | 50 | 80 / 210 / 720 / 1.500 |
-| 17 | Hội An | 44 | 440 / 740 / 1.040 | 75 | 88 / 260 / 940 / 2.000 |
-| 19 | Huế | 48 | 480 / 780 / 1.080 | 75 | 96 / 270 / 980 / 2.080 |
-| 21 | Hạ Long | 52 | 520 / 820 / 1.120 | 75 | 104 / 290 / 1.000 / 2.120 |
-| 23 | Hải Phòng | 56 | 560 / 860 / 1.160 | 75 | 112 / 300 / 1.040 / 2.200 |
-| 25 | Vũng Tàu | 60 | 600 / 1.000 / 1.400 | 100 | 120 / 350 / 1.260 / 2.700 |
-| 27 | Đà Nẵng | 64 | 640 / 1.040 / 1.440 | 100 | 128 / 360 / 1.300 / 2.760 |
-| 30 | Hà Nội | 70 | 700 / 1.100 / 1.500 | 100 | 140 / 380 / 1.360 / 2.840 |
-| 31 | TP. Hồ Chí Minh | 80 | 800 / 1.200 / 1.600 | 100 | 160 / 420 / 1.440 / 3.000 |
+- **Trọn nhóm** = đất trống khi chủ có cả 2 ô (×2).
+- **Giá nâng** từng cấp = giá nâng gốc × 75% / 100% / 125%, làm tròn tới 10 (`levelCost`): gốc 50 → 40 / 50 / 60, 100 → 80 / 100 / 130, 150 → 110 / 150 / 190, 200 → 150 / 200 / 250.
+- **Mua lại** = (giá đất + tổng giá các cấp đang có) × 1,5, làm tròn xuống (`takeoverPrice`), trả cho chủ cũ; ô Khách sạn không mua lại được.
+- **Hạ cấp** hoàn nửa giá của đúng cấp bị hạ (`levelCost / 2`), nên mỗi cấp hoàn một số khác nhau.
+- **Lễ hội** = thuê ×2 thêm: cột đầu là đất trống trọn nhóm (×4 thuê gốc; đất trống chưa trọn nhóm chỉ ×2), các cột sau theo cấp. Nâng cấp không cần trọn nhóm nên ô có nhà có thể chưa trọn nhóm.
+
+| # | Thành phố | Trọn nhóm (đất trống) | Giá nâng: Nhà / Biệt thự / Khách sạn | Mua lại: đất trống / Nhà / Biệt thự | Hạ cấp hoàn: Nhà / Biệt thự / Khách sạn | Có Lễ hội: trống trọn nhóm / Nhà / Biệt thự / Khách sạn |
+|---|---|---|---|---|---|---|
+| 1 | Thanh Hóa | 12 | 40 / 50 / 60 | 90 / 150 / 225 | 20 / 25 / 30 | 24 / 80 / 290 / 640 |
+| 3 | Vinh | 16 | 40 / 50 / 60 | 120 / 180 / 255 | 20 / 25 / 30 | 32 / 90 / 320 / 680 |
+| 5 | Buôn Ma Thuột | 20 | 40 / 50 / 60 | 150 / 210 / 285 | 20 / 25 / 30 | 40 / 100 / 360 / 760 |
+| 7 | Đà Lạt | 24 | 40 / 50 / 60 | 180 / 240 / 315 | 20 / 25 / 30 | 48 / 120 / 400 / 800 |
+| 9 | Cần Thơ | 28 | 80 / 100 / 130 | 210 / 330 / 480 | 40 / 50 / 65 | 56 / 170 / 620 / 1.320 |
+| 11 | Phú Quốc | 32 | 80 / 100 / 130 | 240 / 360 / 510 | 40 / 50 / 65 | 64 / 180 / 640 / 1.380 |
+| 13 | Quy Nhơn | 36 | 80 / 100 / 130 | 270 / 390 / 540 | 40 / 50 / 65 | 72 / 200 / 680 / 1.440 |
+| 15 | Nha Trang | 40 | 80 / 100 / 130 | 300 / 420 / 570 | 40 / 50 / 65 | 80 / 210 / 720 / 1.500 |
+| 17 | Hội An | 44 | 110 / 150 / 190 | 330 / 495 / 720 | 55 / 75 / 95 | 88 / 260 / 940 / 2.000 |
+| 19 | Huế | 48 | 110 / 150 / 190 | 360 / 525 / 750 | 55 / 75 / 95 | 96 / 270 / 980 / 2.080 |
+| 21 | Hạ Long | 52 | 110 / 150 / 190 | 390 / 555 / 780 | 55 / 75 / 95 | 104 / 290 / 1.000 / 2.120 |
+| 23 | Hải Phòng | 56 | 110 / 150 / 190 | 420 / 585 / 810 | 55 / 75 / 95 | 112 / 300 / 1.040 / 2.200 |
+| 25 | Vũng Tàu | 60 | 150 / 200 / 250 | 450 / 675 / 975 | 75 / 100 / 125 | 120 / 350 / 1.260 / 2.700 |
+| 27 | Đà Nẵng | 64 | 150 / 200 / 250 | 480 / 705 / 1.005 | 75 / 100 / 125 | 128 / 360 / 1.300 / 2.760 |
+| 30 | Hà Nội | 70 | 150 / 200 / 250 | 525 / 750 / 1.050 | 75 / 100 / 125 | 140 / 380 / 1.360 / 2.840 |
+| 31 | TP. Hồ Chí Minh | 80 | 150 / 200 / 250 | 600 / 825 / 1.125 | 75 / 100 / 125 | 160 / 420 / 1.440 / 3.000 |
 
 Sân bay: không mua lại, không chịu Lễ hội. Thẻ Cơ hội "Đi đến sân bay gần nhất" bắt trả ×2: 50 / 100 / 200 / 400 theo số sân bay chủ có.
 
@@ -96,10 +102,10 @@ Sân bay: không mua lại, không chịu Lễ hội. Thẻ Cơ hội "Đi đế
 
 ## 3. Cách tính từng loại ô
 
-- **Thành phố:** đáp vào thành phố của mình thì nâng được ô đó (không cần trọn nhóm, không nâng đều), tối đa 3 cấp Nhà → Biệt thự → Khách sạn; hộp nâng cấp hiện dạng modal giữa màn hình. Vừa mua xong được hỏi xây Nhà luôn (cấp 1 → cấp 2 theo cách đếm Đất trống là cấp 1); Biệt thự, Khách sạn thì lần sau đáp lại mới nâng. Giá nâng tăng dần theo cấp: cấp 1 = 75%, cấp 2 = 100%, cấp 3 = 125% giá nâng của nhóm (ví dụ nhóm 200: 150 · 200 · 250). Hạ cấp hoàn nửa giá của cấp đó, ô nào cũng bán được. Trả thuê xong được mua lại với giá ×1,5 (giá đất + tiền đã nâng), trừ ô đã lên Khách sạn.
+- **Thành phố:** đáp vào thành phố của mình thì nâng được ô đó (không cần trọn nhóm, không nâng đều), tối đa 3 cấp Nhà → Biệt thự → Khách sạn; hộp nâng cấp hiện dạng modal giữa màn hình. Vừa mua (hoặc vừa mua lại ô còn đất trống) được hỏi xây Nhà luôn; Biệt thự, Khách sạn thì lần sau đáp lại mới nâng. Giá nâng tăng dần theo cấp: Nhà = 75%, Biệt thự = 100%, Khách sạn = 125% giá nâng gốc của nhóm (ví dụ nhóm 200: 150 · 200 · 250). Hạ cấp hoàn nửa giá của cấp đó, ô nào cũng bán được. Trả thuê xong (không rơi vào nợ) mà đủ tiền thì được mua lại với giá ×1,5 (giá đất + tiền đã nâng), trừ ô đã lên Khách sạn.
 - **Sân bay:** thuê theo số sân bay chủ đang có: 1 → 25, 2 → 50, 3 → 100, 4 → 200. Không nâng cấp, không mua lại. Đủ 4 sân bay là thắng ngay.
-- **Lễ hội (16):** đáp vào mà có ít nhất 1 thành phố thì chọn một thành phố của mình để tổ chức Lễ hội: thuê ô đó ×2. Cả bàn chỉ có một Lễ hội — người sau tổ chức thì Lễ hội chuyển đi. Không chọn trong 30 giây thì hệ thống chọn ô có tiền thuê cao nhất.
-- **Du lịch (24):** đáp vào là chọn ô và đi ngay trong lượt đó: chạm ô trên bàn là quân đi luôn (không mở bảng thông tin ô), đi từng bước qua các ô theo chiều kim đồng hồ, xử lý ô đáp như thường. Đáp xuống thành phố của mình thì tự mở hộp nâng cấp. Bay qua Xuất phát vẫn nhận 160. Có thể bấm "Không bay, ở lại"; hết giờ cũng là ở lại. Đổi 14/11/2026, trước đó phải chờ lượt sau mới bay.
+- **Lễ hội (16):** đáp vào mà có ít nhất 1 thành phố thì chọn một thành phố của mình để tổ chức Lễ hội: thuê ô đó ×2. Cả bàn chỉ có một Lễ hội — người sau tổ chức thì Lễ hội chuyển đi. Không chọn trong 30 giây thì hệ thống chọn ô có tiền thuê gốc cao nhất (chưa tính ×2 của Lễ hội).
+- **Du lịch (24):** đáp vào thì mất lượt gieo thêm nếu vừa gieo đôi, rồi chọn ô và đi ngay trong lượt đó: chạm ô trên bàn là quân đi luôn (không mở bảng thông tin ô), đi từng bước qua các ô theo chiều kim đồng hồ, xử lý ô đáp như thường. Đáp xuống thành phố của mình thì tự mở hộp nâng cấp. Bay qua Xuất phát vẫn nhận 160. Có thể bấm "Không bay, ở lại"; hết giờ cũng là ở lại. Đổi 14/11/2026, trước đó phải chờ lượt sau mới bay.
 - **Thuế (12):** đóng 10% tổng tài sản (tiền mặt + giá đất + tiền nâng cấp), làm tròn. Thiếu tiền thì hạ cấp nhà hoặc phá sản như nợ ngân hàng.
 - **Cơ hội / Khí vận:** mỗi bộ 12 thẻ. Cơ hội thiên về di chuyển (về Xuất phát, tới TP. HCM / Huế / Cần Thơ, tới sân bay gần nhất trả thuê ×2, đi dự Lễ hội), Khí vận thiên về tiền. Cả hai có thẻ ra tù, vào tù, sửa nhà theo số cấp. Thẻ di chuyển cho quân đi từng ô theo chiều kim đồng hồ (không bay thẳng); thẻ vào tù cho quân đi từng ô về Nhà tù theo chiều gần hơn. Danh sách thẻ: §2 trong [05](./05-gameplay-rules-and-protocol.md).
 - **Nhà tù (8):** đáp vào chỉ là thăm tù. Chỉ vào tù khi rút thẻ Vào tù hoặc gieo đôi 3 lần liên tiếp; quân đi từng ô về đây theo chiều gần hơn, có thể đi lùi. Ra tù bằng gieo đôi, nộp 50 hoặc dùng thẻ ra tù; đến lượt thứ 3 bắt buộc nộp phạt.

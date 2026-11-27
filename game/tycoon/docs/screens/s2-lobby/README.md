@@ -282,7 +282,7 @@ Người dùng chốt bốn ảnh ngày 23/10/2026, theo [02 §2.4](../../02-scr
 
 ### Nội dung
 
-Giữ đủ 10 mục luật cũ, chia lại theo tab; số đọc từ `logic/constants.ts` (vốn, lương Xuất phát, phạt tù, số đôi, số lượt tù, ×mua lại, ×lễ hội, thuế, số vòng, phút, số nhóm thắng, số sân bay từ `STATION_RENT`).
+Giữ đủ 10 mục luật cũ, chia lại theo tab; số đọc từ `logic/constants.ts` (re-export `constants.gen.ts` sinh từ Go: vốn, lương Xuất phát, phạt tù, số đôi, số lượt tù, ×mua lại, ×lễ hội, thuế, số vòng, phút, số nhóm thắng, số sân bay từ `STATION_RENT`).
 
 | Tab | Mục | Ý phải giữ (ảnh có thể rút gọn) |
 |---|---|---|
@@ -290,11 +290,11 @@ Giữ đủ 10 mục luật cũ, chia lại theo tab; số đọc từ `logic/co
 | | Gieo & di chuyển | Qua hoặc đáp Xuất phát nhận 160 tr; đi thẳng vào tù không nhận |
 | | Gieo đôi | Đôi 3 lần liên tiếp vào tù ngay; ngoại lệ ra tù ở tab Ô đặc biệt |
 | Tài sản | Mua & thuê đất | Thuê trong viên tròn trên ô; trọn nhóm màu thuê đất trống ×2; sân bay theo số sân bay sở hữu |
-| | Mua lại đất | Sau khi trả thuê và không nợ; ×2 (giá đất + tiền nâng cấp) trả chủ cũ, giữ cấp nhà; không mua lại sân bay hoặc Khách sạn |
-| | Nâng cấp | Đủ 2 thành phố cùng nhóm; Nhà → Biệt thự → Khách sạn, nâng đều trong lượt mình; hạ cấp hoàn 50%, hạ đều |
+| | Mua lại đất | Sau khi trả thuê và không nợ; ×1,5 (giá đất + tiền nâng cấp) trả chủ cũ, giữ cấp nhà, phải đủ tiền; không mua lại sân bay hoặc Khách sạn |
+| | Nâng cấp | Đáp vào thành phố của mình thì nâng được ô đó, không cần đủ nhóm; vừa mua xong được xây ngay Nhà, Biệt thự / Khách sạn phải đáp lại; Nhà → Biệt thự → Khách sạn, giá tăng dần theo cấp; bán nhà hoàn 50% giá của cấp đó, ô nào cũng bán được |
 | | Nợ & phá sản | Hạ cấp để trả; phá sản thì tài sản về chủ nợ là người chơi, nợ ngân hàng thì đất về ngân hàng |
 | Ô đặc biệt | Lễ hội | Thuê ×2; cả bàn một Lễ hội, người sau tổ chức thì chuyển ô |
-| | Du lịch | Lượt sau bay tới ô bất kỳ trừ ô đang đứng, hoặc gieo thường; qua Xuất phát vẫn nhận lương |
+| | Du lịch | Đáp vào là bay ngay tới ô bất kỳ trừ ô đang đứng, hoặc ở lại; qua Xuất phát vẫn nhận lương, ô đáp xử lý như thường |
 | | Thuế & thẻ bài | Thuế 10% tổng tài sản; Cơ hội/Khí vận rút thẻ |
 | | Nhà tù | Nộp 50 tr / thẻ ra tù / gieo đôi; ra bằng đôi đi theo số vừa gieo, không gieo tiếp; lượt thứ 3 chưa đôi bắt buộc nộp rồi đi |
 | Kết thúc | Thắng ngay | Đạt 1 trong 3: trọn 3 nhóm màu, toàn bộ thành phố một cạnh bàn, cả 4 sân bay |

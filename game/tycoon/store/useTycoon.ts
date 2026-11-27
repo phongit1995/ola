@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import type { TyIconName } from '../components/TyIcon';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import { vipIconUrl } from '@ola/shared/lib/vip';
-import { bridge, joinGame, SPECTATE_LEFT_REASON, type ChatMessageData, type ErrorData, type GameReactionType, type GameSession, type MatchFoundData, type MatchOverData, type PlayerInfo, type RoomStateData, type StateData } from '../../src/sdk';
+import { bridge, GAME_ERROR_CODE, joinGame, SPECTATE_LEFT_REASON, type ChatMessageData, type ErrorData, type GameReactionType, type GameSession, type MatchFoundData, type MatchOverData, type PlayerInfo, type RoomStateData, type StateData } from '../../src/sdk';
 import { BOARD, cardById, GROUP_LABEL, tilesOfGroup } from '../logic/board';
 import { BOARD_SIZE, FESTIVAL_MULTIPLIER, GAME_ID, JAIL_FINE, JAIL_MAX_TURNS, JAIL_TILE, LEVEL_NAMES, MAX_ROUNDS, TAX_RATE, TIME_LIMIT_MS, WIN_GROUPS, type Group } from '../logic/constants';
 import { housesRefund, worth } from '../logic/engine';
@@ -15,7 +15,7 @@ import { formatMoney } from '../helpers/format';
 import { botHistoryEntry, saveBotHistory } from '../helpers/history';
 import { avatarIconUrl } from '../helpers/player';
 import { houseArt } from '../components/art';
-import { MOCK_PROFILE, type LobbyProfile } from '../helpers/profile';
+import { GUEST_PROFILE, type LobbyProfile } from '../helpers/profile';
 import { createPracticeSession, type PracticeSession } from '../practice';
 import { playSound, setSoundEnabled } from '../audio';
 import * as fx from '../fx/boardFx';
@@ -112,6 +112,7 @@ export interface MatchResultState {
   kenDelta?: number;
   exp?: number;
   spectator?: boolean;
+  aborted?: boolean;
 }
 
 export type OnlineStatus = 'connecting' | 'ready' | 'offline';
@@ -142,6 +143,7 @@ interface TycoonState {
   matchChat: ChatMessageData[];
   chatUnread: boolean;
   reactionFx: ReactionFloat | null;
+  reactionReadyAt: number;
   awaySeats: Record<number, number>;
   selfDisconnected: boolean;
   spectating: boolean;
@@ -242,6 +244,7 @@ const RESULT_REVEAL_MS = 900;
 const WIN_REVEAL_MS = 2400;
 const SPECTATE_ENDED_TEXT = 'Đã thôi xem ván';
 const SCREEN_IN_MS = 260;
+const REACTION_COOLDOWN_MS = 1500;
 const STEP_MS = { land: 300, debt: 320, round: 240 };
 const SILENT_PAY_REASONS = new Set(['buy', 'takeover', 'build', 'sell', 'fine']);
 
@@ -353,9 +356,18 @@ export const useTycoon = create<TycoonState>((set, get) => {
     lastTick: -1,
     timedOut: false,
     feedSeat: -1,
+    revealing: false,
+    reactionAt: 0,
   };
 
   const matchSession = (): TycoonSession | null => refs.practice ?? refs.session;
+
+  const matchEnded = (): boolean => Boolean(get().matchId) && refs.handledMatches.includes(`over:${get().matchId}`);
+
+  const iQuit = (): boolean => {
+    const me = get().view?.players[get().you];
+    return Boolean(me && (me.quit || me.bankrupt)) && !get().spectating;
+  };
 
   const markMatch = (id: string): boolean => {
     if (refs.handledMatches.includes(id)) return false;
@@ -474,7 +486,10 @@ export const useTycoon = create<TycoonState>((set, get) => {
 
   const playTurnBanner = (state: TycoonView): Promise<void> => {
     const { you, players } = get();
-    if (state.turn !== you) return Promise.resolve();
+    if (state.turn !== you) {
+      fx.markTurn(state.turn);
+      return Promise.resolve();
+    }
     return fx.showTurnBanner({ seat: state.turn, mine: state.turn === you, name: seatName(state.turn), avatar: players[state.turn]?.avatar, tip: turnTip(state) });
   };
 
@@ -613,7 +628,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
         const payerPos = step.reason === 'rent' && from >= 0 ? get().positions[from] : undefined;
         const rentTile = payerPos != null ? ((payerPos % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE : undefined;
         if (rentTile != null) fx.tileCallout(rentTile, to, `${seatName(from)} trả thuê`, formatMoney(amount), from === you ? 'down' : to === you ? 'up' : 'neutral');
-        await fx.payMoney({ from, to, amount, reason: step.reason, tile: step.tile, debit: () => addCash(from, -amount), credit: () => addCash(to, amount) });
+        await fx.payMoney({ from, to, amount, reason: step.reason, tile: step.tile, debit: () => addCash(from, -amount), credit: () => addCash(to, amount), alive });
         return;
       }
       case 'buy': {
@@ -645,18 +660,19 @@ export const useTycoon = create<TycoonState>((set, get) => {
         return;
       }
       case 'jail-in': {
+        const alreadyClosed = get().barsOn;
         commitPosition(step.by, JAIL_TILE);
         flushSync(() => set({ barsOn: true }));
         pushLog(`${seatName(step.by)} vào tù ${step.how === 'dice3' ? 'vì gieo đôi 3 lần' : 'vì rút thẻ'} · tối đa ${JAIL_MAX_TURNS} lượt`, step.by === you ? 'down' : 'neutral', { kind: 'jail', seat: step.by, feed: `${seatName(step.by)} vào tù · tối đa ${JAIL_MAX_TURNS} lượt` });
-        await fx.jailDoorClose(step.by);
+        await fx.jailDoorClose(step.by, alreadyClosed);
         return;
       }
       case 'jail-out': {
         const paid = step.how === 'pay' || step.how === 'forced';
         const how = step.how === 'double' ? 'ra tù nhờ gieo đôi' : step.how === 'card' ? 'dùng thẻ ra tù' : step.how === 'forced' ? `hết ${JAIL_MAX_TURNS} lượt, nộp phạt ra tù` : 'nộp phạt ra tù';
         pushLog(`${seatName(step.by)} ${how}`, step.by === you && !paid ? 'up' : 'neutral', { kind: 'jail', seat: step.by, ...(paid ? { money: -JAIL_FINE } : {}) });
-        await fx.jailDoorOpen();
         const stillJailed = get().view?.players.some((p, seat) => seat !== step.by && p.inJail && !p.bankrupt) ?? false;
+        await fx.jailDoorOpen(stillJailed);
         set({ barsOn: stillJailed });
         return;
       }
@@ -798,11 +814,13 @@ export const useTycoon = create<TycoonState>((set, get) => {
     const epoch = refs.replayEpoch;
     queueReplay(async () => {
       if (epoch !== refs.replayEpoch) return;
+      setTempo(get().speed);
       const state = data.state;
       snapState(state);
       const { you, players, practice } = get();
+      const aborted = data.reason === 'aborted';
       const ranked = (data.rankings ?? []).slice().sort((x, y) => x.place - y.place).map((entry) => seatOf(entry.userId)).filter((seat) => seat >= 0);
-      const order = ranked.length > 0 ? ranked : state.players.map((_, seat) => seat);
+      const order = ranked.length > 0 ? ranked : state.players.map((_, seat) => seat).sort((x, y) => worth(state, y) - worth(state, x));
       const rows: RankRow[] = order.map((seat, i) => ({
         seat,
         place: i + 1,
@@ -811,16 +829,32 @@ export const useTycoon = create<TycoonState>((set, get) => {
         bankrupt: state.players[seat]?.bankrupt ?? false,
       }));
       const spectator = get().spectating;
+      if (aborted) {
+        refs.revealing = false;
+        bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won: false });
+        if (!practice && !spectator) bridge.refreshUser();
+        set({
+          result: { matchId: data.matchId, rows, myPlace: 0, aborted: true, reasonText: data.bet ? 'Tiền cược đã được hoàn lại' : 'Ván không được tính', ...(spectator ? { spectator } : {}) },
+          myTurn: false,
+          replaying: false,
+          sheet: null,
+          cardFx: null,
+          deadline: 0,
+        });
+        return;
+      }
       const myPlace = spectator ? 0 : (rows.find((row) => row.seat === you)?.place ?? rows.length);
       const winnerName = state.winner === you ? 'Bạn' : players[state.winner]?.name ?? '';
-      const profile = get().profile;
-      if (practice && profile) saveBotHistory(profile.id, botHistoryEntry(state, order, you, profile, get().lastBots, Date.now()));
+      const profile = get().profile ?? GUEST_PROFILE;
+      if (practice) saveBotHistory(profile.id, botHistoryEntry(state, order, you, profile, get().lastBots, Date.now()));
       const winTiles = state.winner >= 0 ? winningTiles(state, state.winner, state.endReason) : [];
+      refs.revealing = true;
       if (winTiles.length > 0) {
         set({ winFx: { seat: state.winner, tiles: winTiles } });
         void fx.winBanner(`${winnerName === 'Bạn' ? 'BẠN' : winnerName.toUpperCase()} THẮNG!`);
         await new Promise((resolve) => setTimeout(resolve, WIN_REVEAL_MS));
       } else await sleep(RESULT_REVEAL_MS);
+      refs.revealing = false;
       if (epoch !== refs.replayEpoch || get().boardMode !== 'playing') return;
       playSound(myPlace === 1 || spectator ? 'win' : 'lose');
       fx.celebrateResult(myPlace === 1, order[0] ?? 0);
@@ -901,7 +935,13 @@ export const useTycoon = create<TycoonState>((set, get) => {
     if (!spectating && !data.resumed && !markMatch(`found:${data.matchId}`)) return;
     refs.replayEpoch += 1;
     refs.leftMatchId = '';
+    refs.pendingMoves = [];
+    refs.batchLevels = new Map();
+    refs.incoming = null;
+    refs.revealing = false;
+    setTempo(get().speed);
     const epoch = refs.replayEpoch;
+    const sameMatch = data.matchId === get().matchId;
     set({
       boardMode: 'playing',
       setupOpen: false,
@@ -911,7 +951,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       matchId: data.matchId,
       matchSeq: get().matchSeq + 1,
       startedAt: data.state.startedAt ?? Date.now(),
-      log: [],
+      ...(sameMatch ? {} : { log: [] }),
       winFx: null,
       result: null,
       awaySeats: {},
@@ -920,7 +960,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
       spectators: spectating ? get().spectators : 0,
       matchBet: data.bet ?? 0,
       betFloat: 0,
-      ...(data.matchId === get().matchId ? {} : { matchChat: [], chatUnread: false, reactionFx: null }),
+      ...(sameMatch ? {} : { matchChat: [], chatUnread: false, reactionFx: null }),
     });
     snapState(data.state);
     if (!data.resumed && !spectating) {
@@ -950,7 +990,14 @@ export const useTycoon = create<TycoonState>((set, get) => {
     refs.pendingMoves = [];
     refs.batchLevels = new Map();
     set({ movePending: false });
-    if (get().boardMode === 'playing' || get().room) get().showToast(errorText(data.code, data.message));
+    const s = get();
+    if (s.spectating && !s.result && data.code === GAME_ERROR_CODE.MatchNotFound) {
+      resetBoard();
+      set({ roomsOpen: true });
+      get().showToast('Ván đã kết thúc');
+      return;
+    }
+    if (s.boardMode === 'playing' || s.room) get().showToast(errorText(data.code, data.message));
   };
 
   const onlineSeats = (players: PlayerInfo[]): SeatInfo[] => players.map((p) => ({ id: p.id, name: p.name, avatar: avatarIconUrl(p.vipType), bot: false }));
@@ -974,7 +1021,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
         if (active()) handleMatchOver(data);
       }),
       session.onError((data) => {
-        if (active() || session === refs.session) handleError(data);
+        if (active()) handleError(data);
       }),
     ];
   };
@@ -991,6 +1038,8 @@ export const useTycoon = create<TycoonState>((set, get) => {
     refs.pendingMoves = [];
     refs.batchLevels = new Map();
     refs.incoming = null;
+    refs.revealing = false;
+    setTempo(get().speed);
     stopTimer();
     clearTransientTimers();
     set({
@@ -1047,7 +1096,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
         set({ online: 'ready', profile: { id: data.id, username: data.username, vipType: data.vipType ?? null, ken: data.ken, maxBet: data.maxBet ?? null } });
       }),
       session.onRoomState((data) => {
-        if (data.watcher) return;
+        if (data.watcher || refs.practice) return;
         set({ room: data, roomsOpen: false });
       }),
       session.onRoomSync((data) => {
@@ -1059,12 +1108,18 @@ export const useTycoon = create<TycoonState>((set, get) => {
           get().showNotice({ kind: 'notice', tone: 'warning', icon: 'wifi-off', title: 'Đã rời ván', body: 'Bạn mất kết nối quá lâu nên đã rời ván đang chơi.', okLabel: 'Đã hiểu' });
           return;
         }
-        if (!data.roomId && s.room) set({ room: null, roomChat: [], ...(s.boardMode === 'playing' ? {} : { roomsOpen: true }) });
+        if (!data.roomId && s.room) {
+          set({ room: null, roomChat: [], ...(s.boardMode === 'playing' ? {} : { roomsOpen: true }) });
+          if (s.boardMode !== 'playing') get().showToast('Kết nối bị gián đoạn, bạn đã rời bàn');
+        }
       }),
       session.onRoomClosed((data) => {
         const s = get();
         if (s.room?.roomId !== data.roomId) return;
-        if (s.boardMode === 'playing' && !s.practice) return;
+        if (s.boardMode === 'playing' && !s.practice) {
+          set({ room: null, roomChat: [] });
+          return;
+        }
         set({ room: null, roomChat: [], roomsOpen: true });
         if (data.reason !== 'guest_left') get().showToast(roomClosedText(data.reason));
         session.listRooms();
@@ -1142,7 +1197,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     if (bots.length === 0) return;
     leaveToLobby();
     const lineup = bots.slice(0, MAX_BOTS);
-    const profile = get().profile ?? MOCK_PROFILE;
+    const profile = get().profile ?? GUEST_PROFILE;
     set({ room: null, roomChat: [] });
     const session = createPracticeSession({ user: { id: profile.id, username: profile.username, vipType: profile.vipType }, bots: lineup, speed: () => get().speed });
     const seats: SeatInfo[] = [
@@ -1157,7 +1212,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
   };
 
   return {
-    profile: MOCK_PROFILE,
+    profile: null,
     online: 'connecting',
     room: null,
     roomChat: [],
@@ -1168,6 +1223,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     matchChat: [],
     chatUnread: false,
     reactionFx: null,
+    reactionReadyAt: 0,
     soundOn: readSound(),
     speed: readPref(SPEED_KEY) === '2' ? 2 : 1,
     rulesOpen: false,
@@ -1297,7 +1353,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     skipReplay() {
-      if (get().replaying) setTempo(SKIP_TEMPO);
+      if (get().replaying && !refs.revealing) setTempo(SKIP_TEMPO);
     },
 
     toggleSound() {
@@ -1369,8 +1425,11 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     sendReaction(type: GameReactionType) {
-      const { matchId, practice, spectating } = get();
-      if (matchId && !practice && !spectating) refs.session?.sendReaction(matchId, type);
+      const { matchId, practice, spectating, reactionReadyAt } = get();
+      const now = Date.now();
+      if (!matchId || practice || spectating || now < reactionReadyAt) return;
+      set({ reactionReadyAt: now + REACTION_COOLDOWN_MS });
+      refs.session?.sendReaction(matchId, type);
     },
 
     closeSheet() {
@@ -1378,7 +1437,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
     },
 
     forfeitMatch() {
-      if (!get().matchId || get().result || get().spectating) return;
+      if (!get().matchId || get().result || get().spectating || matchEnded() || iQuit()) return;
       get().showNotice({
         kind: 'confirm',
         tone: 'danger',
@@ -1387,7 +1446,7 @@ export const useTycoon = create<TycoonState>((set, get) => {
         okLabel: 'Bỏ cuộc',
         onOk: () => {
           const session = matchSession();
-          if (!session || get().result) return;
+          if (!session || get().result || matchEnded() || iQuit()) return;
           refs.replayEpoch += 1;
           refs.pendingMoves = [];
           set({ replaying: false, movePending: false, myTurn: false, deadline: 0 });
@@ -1406,20 +1465,27 @@ export const useTycoon = create<TycoonState>((set, get) => {
         return;
       }
       const online = !get().practice;
+      const leave = () => {
+        if (online && refs.session && get().matchId) {
+          refs.leftMatchId = get().matchId;
+          const roomId = get().room?.roomId;
+          if (!matchEnded()) refs.session.forfeit(get().matchId, true);
+          else if (roomId) refs.session.leaveRoom(roomId);
+          set({ room: null, roomChat: [] });
+        }
+        leaveToLobby();
+      };
+      if (matchEnded() || (online && iQuit())) {
+        leave();
+        return;
+      }
       get().showNotice({
         kind: 'confirm',
         tone: 'danger',
         title: 'Về sảnh',
         body: online ? 'Rời ván online sẽ bị tính bỏ cuộc và xếp cuối. Về sảnh chứ?' : 'Ván đang chơi sẽ bị huỷ. Về sảnh chứ?',
         okLabel: 'Về sảnh',
-        onOk: () => {
-          if (online && refs.session && get().matchId) {
-            refs.leftMatchId = get().matchId;
-            refs.session.forfeit(get().matchId, true);
-            set({ room: null, roomChat: [] });
-          }
-          leaveToLobby();
-        },
+        onOk: leave,
       });
     },
 
@@ -1433,8 +1499,9 @@ export const useTycoon = create<TycoonState>((set, get) => {
         return;
       }
       const roomId = get().room?.roomId;
+      const quit = Boolean(get().view?.players[get().you]?.quit);
       resetBoard();
-      if (roomId) refs.session?.leaveRoom(roomId);
+      if (roomId && !quit) refs.session?.leaveRoom(roomId);
       set({ room: null, roomChat: [] });
     },
 
@@ -1443,7 +1510,9 @@ export const useTycoon = create<TycoonState>((set, get) => {
         beginPractice(get().lastBots);
         return;
       }
+      const quit = Boolean(get().view?.players[get().you]?.quit);
       resetBoard();
+      if (quit) set({ room: null, roomChat: [] });
       if (!get().room) set({ roomsOpen: true });
     },
 

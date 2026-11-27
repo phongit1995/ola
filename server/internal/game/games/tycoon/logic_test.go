@@ -150,6 +150,16 @@ func TestRentRules(t *testing.T) {
 	}
 }
 
+func TestFestivalPickIgnoresTheCurrentFestival(t *testing.T) {
+	s := testState(2)
+	s.Tiles[1] = TileState{Owner: 0}
+	s.Tiles[5] = TileState{Owner: 0}
+	s.Festival = 1
+	if got := s.festivalPick(0); got != 5 {
+		t.Fatalf("festival pick = %d, want the higher base rent tile 5", got)
+	}
+}
+
 func TestNearestAirportCardDoublesRent(t *testing.T) {
 	s := testState(2)
 	s.Players[0].Pos = 4
@@ -415,6 +425,19 @@ func TestTimeLimitEndsOnlyAtTheNextTurn(t *testing.T) {
 	ended := next.(*State)
 	if !ended.Finished || *ended.EndReason != EndTime {
 		t.Fatalf("time limit: finished %v reason %v", ended.Finished, ended.EndReason)
+	}
+}
+
+func TestTimeLimitAlsoEndsWhenAQuitPassesTheTurn(t *testing.T) {
+	fixed := time.Date(2026, 11, 1, 10, 0, 0, 0, time.UTC)
+	now = func() time.Time { return fixed }
+	defer func() { now = time.Now }()
+
+	s := testState(3)
+	s.StartedAt = fixed.Add(-TimeLimit).UnixMilli()
+	Logic{}.OnPlayerQuit(s, s.Turn)
+	if !s.Finished || *s.EndReason != EndTime {
+		t.Fatalf("quit after the time limit: finished %v reason %v", s.Finished, s.EndReason)
 	}
 }
 

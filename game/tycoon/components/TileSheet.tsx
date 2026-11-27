@@ -20,7 +20,7 @@ function specialDescription(idx: number): string {
     case 'festival':
       return `Chọn một thành phố của bạn để tổ chức Lễ hội: tiền thuê ô đó ×${FESTIVAL_MULTIPLIER}. Cả bàn chỉ có một Lễ hội, người sau tổ chức thì Lễ hội chuyển đi.`;
     case 'travel':
-      return 'Lượt sau được bay tới bất kỳ ô nào thay vì gieo xúc xắc. Bay qua Xuất phát vẫn nhận lương.';
+      return 'Đáp vào là được bay ngay tới một ô bất kỳ, hoặc chọn ở lại. Bay qua Xuất phát vẫn nhận lương. Đáp vào đây thì mất lượt gieo thêm nếu vừa gieo đôi.';
     case 'chance':
       return 'Rút một thẻ Cơ hội: có thể được tiền, mất tiền hoặc phải di chuyển.';
     case 'chest':
@@ -34,13 +34,14 @@ function specialDescription(idx: number): string {
 
 export function TileSheet({ idx }: { idx: number }) {
   const [want, setWant] = useState<number | null>(null);
-  const { view, you, myTurn, movePending, replaying, cash, sendMove, sendMoves, closeSheet } = useTycoon(
+  const { view, you, myTurn, movePending, replaying, turnExpired, cash, sendMove, sendMoves, closeSheet } = useTycoon(
     useShallow((s) => ({
       view: s.view,
       you: s.you,
       myTurn: s.myTurn,
       movePending: s.movePending,
       replaying: s.replaying,
+      turnExpired: s.turnExpired,
       cash: s.cash,
       sendMove: s.sendMove,
       sendMoves: s.sendMoves,
@@ -53,7 +54,7 @@ export function TileSheet({ idx }: { idx: number }) {
   const owner = state.owner;
   const me = view.players[you];
   const myCash = cash[you] ?? me?.cash ?? 0;
-  const busy = movePending || replaying;
+  const busy = movePending || replaying || turnExpired;
   const street = tile.kind === 'street';
   const property = street || tile.kind === 'station';
   const price = tile.price ?? 0;

@@ -81,7 +81,7 @@ const TABS: RuleTab[] = [
         tone: 'mint',
         title: 'Gieo đôi',
         lines: [
-          'Gieo đôi được thêm lượt gieo.',
+          'Gieo đôi được thêm lượt gieo, trừ khi đáp vào ô Du lịch.',
           `Đôi ${MAX_DOUBLES}\u00a0lần liên tiếp trong cùng lượt: vào tù ngay.`,
           'Gieo đôi để ra tù: xem tab Ô đặc biệt.',
         ],

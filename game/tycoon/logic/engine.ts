@@ -160,13 +160,17 @@ export function liquidationValue(s: ViewState, seat: number): number {
 }
 
 export function computeRent(s: ViewState, idx: number, owner: number): number {
+  const rent = baseRent(s, idx, owner);
+  return BOARD[idx].kind === 'street' && s.festival === idx ? rent * FESTIVAL_MULTIPLIER : rent;
+}
+
+export function baseRent(s: ViewState, idx: number, owner: number): number {
   const tile = BOARD[idx];
   switch (tile.kind) {
     case 'street': {
       const houses = s.tiles[idx].houses;
       const rent = tile.rent?.[houses] ?? 0;
-      const base = houses === 0 && tile.group && ownsGroup(s, owner, tile.group) ? rent * 2 : rent;
-      return s.festival === idx ? base * FESTIVAL_MULTIPLIER : base;
+      return houses === 0 && tile.group && ownsGroup(s, owner, tile.group) ? rent * 2 : rent;
     }
     case 'station':
       return STATION_RENT[ownedCount(s, owner, 'station')] ?? 0;
@@ -204,7 +208,7 @@ export function festivalPick(s: GameState, seat: number): number {
   let best = -1;
   s.tiles.forEach((t, idx) => {
     if (t.owner !== seat || BOARD[idx].kind !== 'street') return;
-    if (best < 0 || computeRent(s, idx, seat) > computeRent(s, best, seat)) best = idx;
+    if (best < 0 || baseRent(s, idx, seat) > baseRent(s, best, seat)) best = idx;
   });
   return best;
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { reducedMotion } from '../fx/runtime';
+import { reducedMotion, scaled } from '../fx/runtime';
 import { worthOf } from '../logic/rules-hint';
 import kenUrl from '../assets/lobby/ken.png';
 import { formatDelta, formatKen, formatMoney } from '../helpers/format';
@@ -26,9 +26,10 @@ function PodCash({ value }: { value: number }) {
     }
     const from = shown.current;
     const startedAt = performance.now();
+    const duration = scaled(COUNT_MS);
     el.className = value < from ? 'ty-s6-cash-down' : 'ty-s6-cash-up';
     let frame = requestAnimationFrame(function step(now) {
-      const progress = Math.min(1, (now - startedAt) / COUNT_MS);
+      const progress = Math.min(1, (now - startedAt) / duration);
       shown.current = Math.round(from + (value - from) * (1 - (1 - progress) ** 3));
       el.textContent = formatMoney(shown.current);
       if (progress < 1) {
